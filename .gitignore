@@ -1,0 +1,61 @@
+# =========================
+# SISTEMA / GERAL
+# =========================
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+Thumbs.db
+
+# =========================
+# EDITORES
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+.vscode/
+
+# =========================
+# FLUTTER / DART
+# =========================
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+
+# =========================
+# ANDROID
+# =========================
+android/.gradle/
+android/app/build/
+android/local.properties
+android/key.properties
+
+# =========================
+# IOS
+# =========================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/.last_build_id
+
+# =========================
+# WEB BUILD
+# =========================
+build/web/
+
+# =========================
+# ARQUIVOS SENSÍVEIS
+# =========================
+.env
+.env.*
+
+# =========================
+# OUTROS
+# =========================
+*.lock
