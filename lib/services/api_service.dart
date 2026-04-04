@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/auth_response.dart';
 import '../models/evento.dart';
 import '../models/loja.dart';
+import '../models/carteira_item.dart';
 
 class ApiService {
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
@@ -57,32 +58,15 @@ class ApiService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
-        List<Loja> lojas = [];
-
         if (data is List) {
-          lojas = data.map((e) => Loja.fromJson(e)).toList();
-        } else if (data is Map && data['items'] is List) {
-          lojas = (data['items'] as List).map((e) => Loja.fromJson(e)).toList();
+          return data.map((e) => Loja.fromJson(e)).toList();
         }
 
-        // 🔥 Corrige URL da imagem
-        return lojas.map((loja) {
-          final foto = loja.imagemUrl.isEmpty
-              ? ''
-              : (loja.imagemUrl.startsWith('http')
-                    ? loja.imagemUrl
-                    : '$baseUrl${loja.imagemUrl}');
+        if (data is Map && data['items'] is List) {
+          return (data['items'] as List).map((e) => Loja.fromJson(e)).toList();
+        }
 
-          print('FOTO LOJA: $foto');
-
-          return Loja(
-            id: loja.id,
-            nome: loja.nome,
-            bairro: loja.bairro,
-            horario: loja.horario,
-            imagemUrl: foto,
-          );
-        }).toList();
+        return [];
       }
 
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
@@ -138,6 +122,46 @@ class ApiService {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     } catch (e) {
       throw Exception('Falha ao buscar eventos: $e');
+    }
+  }
+
+  // ===============================
+  // CARTEIRA
+  // ===============================
+  Future<List<CarteiraItem>> buscarCarteira({
+    required int clienteId,
+    required int lojaId,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/entregas/pendentes?cliente_id=$clienteId&loja_id=$lojaId',
+        ),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('CARTEIRA STATUS: ${response.statusCode}');
+      print('CARTEIRA BODY: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+
+        if (data is List) {
+          return data.map((e) => CarteiraItem.fromJson(e)).toList();
+        }
+
+        if (data is Map && data['items'] is List) {
+          return (data['items'] as List)
+              .map((e) => CarteiraItem.fromJson(e))
+              .toList();
+        }
+
+        return [];
+      }
+
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      throw Exception('Falha ao buscar carteira: $e');
     }
   }
 }

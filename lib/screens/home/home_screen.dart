@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool carregando = true;
   bool logado = false;
   String? erro;
-  String? nomeCliente;
+  String nomeCliente = '';
 
   List<Evento> eventos = [];
   List<Loja> lojas = [];
@@ -50,9 +50,14 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final token = await authStorage.obterToken();
       final nome = await authStorage.obterNmcliente();
+      final idCliente = await authStorage.obterClienteId();
+
+      print('HOME TOKEN: $token');
+      print('HOME NMCLIENTE: $nome');
+      print('HOME CLIENTE ID: $idCliente');
 
       logado = token != null && token.isNotEmpty;
-      nomeCliente = nome;
+      nomeCliente = nome ?? '';
 
       try {
         lojas = await apiService.buscarLojas();
@@ -112,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       logado = false;
-      nomeCliente = null;
+      nomeCliente = '';
     });
 
     ScaffoldMessenger.of(context).showSnackBar(

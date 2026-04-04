@@ -15,6 +15,10 @@ class AuthStorage {
     await prefs.setString(_keyToken, token);
     await prefs.setInt(_keyClienteId, clienteId);
     await prefs.setString(_keyNomeCliente, nomeCliente);
+
+    print('LOGIN SALVO -> token: $token');
+    print('LOGIN SALVO -> cliente_id: $clienteId');
+    print('LOGIN SALVO -> nmcliente: $nomeCliente');
   }
 
   Future<String?> obterToken() async {

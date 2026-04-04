@@ -19,8 +19,6 @@ class Loja {
       nome: (json['nmloja'] ?? '').toString(),
       bairro: (json['endloja'] ?? '').toString(),
       horario: (json['dshorarioloja'] ?? '').toString(),
-
-      // 🔥 AQUI ESTÁ O ERRO — CORRIGIDO
       imagemUrl: (json['urllogoloja'] ?? '').toString(),
     );
   }

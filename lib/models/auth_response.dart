@@ -12,11 +12,13 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final cliente = json['cliente'] as Map<String, dynamic>?;
+
     return AuthResponse(
       accessToken: (json['access_token'] ?? '').toString(),
       tokenType: (json['token_type'] ?? 'bearer').toString(),
-      clienteId: _toInt(json['cliente_id']),
-      nmcliente: json['nmcliente']?.toString(),
+      clienteId: _toInt(json['cliente_id'] ?? cliente?['cliente_id']),
+      nmcliente: (json['nmcliente'] ?? cliente?['nmcliente'])?.toString(),
     );
   }
 
