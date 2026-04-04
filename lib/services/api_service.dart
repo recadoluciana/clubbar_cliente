@@ -4,7 +4,10 @@ import 'package:http/http.dart' as http;
 import '../models/auth_response.dart';
 import '../models/evento.dart';
 import '../models/loja.dart';
+import '../models/categoria.dart';
+import '../models/produto.dart';
 import '../models/carteira_item.dart';
+import '../models/carrinho_item.dart';
 
 class ApiService {
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
@@ -162,6 +165,206 @@ class ApiService {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     } catch (e) {
       throw Exception('Falha ao buscar carteira: $e');
+    }
+  }
+
+  Future<List<Categoria>> buscarCategoriasPorLoja(int lojaId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/lojas/$lojaId/categorias'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('CATEGORIAS STATUS: ${response.statusCode}');
+      print('CATEGORIAS BODY: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+
+        if (data is List) {
+          return data.map((e) => Categoria.fromJson(e)).toList();
+        }
+
+        if (data is Map && data['items'] is List) {
+          return (data['items'] as List)
+              .map((e) => Categoria.fromJson(e))
+              .toList();
+        }
+
+        return [];
+      }
+
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      throw Exception('Falha ao buscar categorias: $e');
+    }
+  }
+
+  Future<List<Produto>> buscarProdutosPorLoja(int lojaId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/lojas/$lojaId/produtos'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('PRODUTOS STATUS: ${response.statusCode}');
+      print('PRODUTOS BODY: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+
+        List<Produto> produtos = [];
+
+        if (data is List) {
+          produtos = data.map((e) => Produto.fromJson(e)).toList();
+        } else if (data is Map && data['items'] is List) {
+          produtos = (data['items'] as List)
+              .map((e) => Produto.fromJson(e))
+              .toList();
+        }
+
+        return produtos.map((produto) {
+          String foto = produto.imagemUrl.trim();
+
+          if (foto.isEmpty) {
+            return Produto(
+              id: produto.id,
+              categoriaId: produto.categoriaId,
+              nome: produto.nome,
+              descricao: produto.descricao,
+              preco: produto.preco,
+              categoriaNome: produto.categoriaNome,
+              imagemUrl: '',
+            );
+          }
+
+          if (foto.startsWith('/')) {
+            foto = '$baseUrl$foto';
+          }
+
+          if (foto.startsWith('http://')) {
+            foto = foto.replaceFirst('http://', 'https://');
+          }
+
+          return Produto(
+            id: produto.id,
+            categoriaId: produto.categoriaId,
+            nome: produto.nome,
+            descricao: produto.descricao,
+            preco: produto.preco,
+            categoriaNome: produto.categoriaNome,
+            imagemUrl: foto,
+          );
+        }).toList();
+      }
+
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      throw Exception('Falha ao buscar produtos: $e');
+    }
+  }
+
+  Future<void> adicionarAoCarrinho({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+    required int produtoId,
+    int quantidade = 1,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/carrinho/adicionar'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'cliente_id': clienteId,
+          'organizacao_id': organizacaoId,
+          'loja_id': lojaId,
+          'produto_id': produtoId,
+          'quantidade': quantidade,
+        }),
+      );
+
+      print('ADD CARRINHO STATUS: ${response.statusCode}');
+      print('ADD CARRINHO BODY: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return;
+      }
+
+      String mensagem = 'Não foi possível adicionar ao carrinho';
+      try {
+        final body = jsonDecode(response.body);
+        mensagem = body['detail']?.toString() ?? response.body;
+      } catch (_) {
+        mensagem = response.body;
+      }
+
+      throw Exception(mensagem);
+    } catch (e) {
+      throw Exception('Falha ao adicionar ao carrinho: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> buscarCarrinho({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+  }) async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/carrinho/itens?cliente_id=$clienteId&organizacao_id=$organizacaoId&loja_id=$lojaId',
+        ),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('CARRINHO STATUS: ${response.statusCode}');
+      print('CARRINHO BODY: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+
+        if (data is Map<String, dynamic>) {
+          return data;
+        }
+
+        return {'carrinho_id': 0, 'itens': []};
+      }
+
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      throw Exception('Falha ao buscar carrinho: $e');
+    }
+  }
+
+  Future<void> removerItemCarrinho({
+    required int carrinhoId,
+    required int produtoId,
+  }) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('REMOVER ITEM STATUS: ${response.statusCode}');
+      print('REMOVER ITEM BODY: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return;
+      }
+
+      String mensagem = 'Não foi possível remover o item do carrinho';
+      try {
+        final body = jsonDecode(response.body);
+        mensagem = body['detail']?.toString() ?? response.body;
+      } catch (_) {
+        mensagem = response.body;
+      }
+
+      throw Exception(mensagem);
+    } catch (e) {
+      throw Exception('Falha ao remover item do carrinho: $e');
     }
   }
 }

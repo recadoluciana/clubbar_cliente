@@ -1,5 +1,6 @@
 class Loja {
   final int id;
+  final int organizacaoId;
   final String nome;
   final String bairro;
   final String horario;
@@ -7,6 +8,7 @@ class Loja {
 
   Loja({
     required this.id,
+    required this.organizacaoId,
     required this.nome,
     required this.bairro,
     required this.horario,
@@ -16,6 +18,7 @@ class Loja {
   factory Loja.fromJson(Map<String, dynamic> json) {
     return Loja(
       id: _toInt(json['loja_id'] ?? 0),
+      organizacaoId: _toInt(json['organizacao_id'] ?? 0),
       nome: (json['nmloja'] ?? '').toString(),
       bairro: (json['endloja'] ?? '').toString(),
       horario: (json['dshorarioloja'] ?? '').toString(),

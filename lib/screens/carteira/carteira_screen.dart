@@ -98,8 +98,14 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     if (lojaSelecionadaId == null) return 'Loja';
     final loja = lojas.firstWhere(
       (l) => l.id == lojaSelecionadaId,
-      orElse: () =>
-          Loja(id: 0, nome: 'Loja', bairro: '', horario: '', imagemUrl: ''),
+      orElse: () => Loja(
+        id: 0,
+        organizacaoId: 0,
+        nome: 'Loja',
+        bairro: '',
+        horario: '',
+        imagemUrl: '',
+      ),
     );
     return loja.nome;
   }
