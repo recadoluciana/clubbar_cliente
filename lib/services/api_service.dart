@@ -12,6 +12,17 @@ import '../models/carrinho_item.dart';
 class ApiService {
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
+  String montarUrlCartaoWeb({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+  }) {
+    return '$baseUrl/pagamentos/cartao-web'
+        '?cliente_id=$clienteId'
+        '&organizacao_id=$organizacaoId'
+        '&loja_id=$lojaId';
+  }
+
   // ===============================
   // LOGIN
   // ===============================
@@ -365,6 +376,47 @@ class ApiService {
       throw Exception(mensagem);
     } catch (e) {
       throw Exception('Falha ao remover item do carrinho: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> pagarCarrinhoPix({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/pagamentos/pix'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'cliente_id': clienteId,
+          'organizacao_id': organizacaoId,
+          'loja_id': lojaId,
+        }),
+      );
+
+      print('PIX STATUS: ${response.statusCode}');
+      print('PIX BODY: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+        if (data is Map<String, dynamic>) {
+          return data;
+        }
+        throw Exception('Resposta inválida do pagamento PIX');
+      }
+
+      String mensagem = 'Não foi possível gerar o PIX';
+      try {
+        final body = jsonDecode(response.body);
+        mensagem = body['detail']?.toString() ?? response.body;
+      } catch (_) {
+        mensagem = response.body;
+      }
+
+      throw Exception(mensagem);
+    } catch (e) {
+      throw Exception('Falha ao iniciar pagamento PIX: $e');
     }
   }
 }

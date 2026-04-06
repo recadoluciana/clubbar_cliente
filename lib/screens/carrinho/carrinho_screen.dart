@@ -4,6 +4,9 @@ import '../../models/carrinho_item.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../pagamento/pix_pagamento_screen.dart';
+
+import 'package:url_launcher/url_launcher.dart';
 
 enum FormaPagamento { pix, credito, debito }
 
@@ -77,16 +80,42 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return itensCarrinho.fold<double>(0, (soma, item) => soma + item.subtotal);
   }
 
-  void finalizarPagamento() {
-    final forma = switch (formaPagamento) {
-      FormaPagamento.pix => 'PIX',
-      FormaPagamento.credito => 'Cartão de Crédito',
-      FormaPagamento.debito => 'Cartão de Débito',
-    };
+  Future<void> finalizarPagamento() async {
+    if (clienteId == null || clienteId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Faça login para continuar')),
+      );
+      return;
+    }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Pagamento via $forma será a próxima etapa')),
+    if (formaPagamento == FormaPagamento.pix) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'PIX será a próxima etapa. Vamos fechar cartão primeiro.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final url = apiService.montarUrlCartaoWeb(
+      clienteId: clienteId!,
+      organizacaoId: widget.loja.organizacaoId,
+      lojaId: widget.loja.id,
     );
+
+    final uri = Uri.parse(url);
+
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Não foi possível abrir a página de pagamento'),
+        ),
+      );
+    }
   }
 
   Widget _imagemProduto(String url) {
