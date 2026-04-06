@@ -30,7 +30,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           const SizedBox(width: 12),
           const Text(
-            'Clubbar',
+            'Clubbar Client VERSAO NOVA 06/04 v1.0.0',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
