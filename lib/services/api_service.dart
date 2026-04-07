@@ -419,4 +419,62 @@ class ApiService {
       throw Exception('Falha ao iniciar pagamento PIX: $e');
     }
   }
+
+  Future<void> cadastrarCliente({
+    required String nome,
+    required String email,
+    required String senha,
+    String? telefone,
+    String? cpf,
+  }) async {
+    final body = {
+      'nmcliente': nome,
+      'emailcliente': email,
+      'senhahashcli': senha,
+      'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
+      'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
+    };
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/register_cliente'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Erro ao cadastrar cliente');
+    }
+  }
+
+  Future<void> esqueceuSenha({required String email}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/clientes/esqueci-senha'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'emailcliente': email}),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Não foi possível enviar o código');
+    }
+  }
+
+  Future<void> redefinirSenha({
+    required String email,
+    required String codigo,
+    required String novaSenha,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/clientes/redefinir-senha'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'emailcliente': email,
+        'codigo': codigo,
+        'novasenha': novaSenha,
+      }),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Não foi possível redefinir a senha');
+    }
+  }
 }

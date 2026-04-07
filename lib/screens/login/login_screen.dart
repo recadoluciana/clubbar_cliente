@@ -362,10 +362,29 @@ class _LoginScreenState extends State<LoginScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
-                                  'Novo por aqui?',
-                                  style: TextStyle(color: Colors.grey.shade700),
+                                TextButton(
+                                  onPressed: () async {
+                                    final ok = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const CadastroClienteScreen(),
+                                      ),
+                                    );
+
+                                    if (ok == true && mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Agora faça seu login'),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: const Text('Novo por aqui?'),
                                 ),
+                                const Text(' | '),
                                 TextButton(
                                   onPressed: carregando
                                       ? null
@@ -374,30 +393,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                             context,
                                             MaterialPageRoute(
                                               builder: (_) =>
-                                                  const CadastroScreen(),
+                                                  const EsqueceuSenhaScreen(),
                                             ),
                                           );
                                         },
-                                  child: const Text('Cadastre-se aqui'),
+                                  child: const Text('Esqueceu a senha?'),
                                 ),
                               ],
-                            ),
-                            TextButton(
-                              onPressed: carregando
-                                  ? null
-                                  : () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) =>
-                                              const EsqueceuSenhaScreen(),
-                                        ),
-                                      );
-                                    },
-                              child: const Text(
-                                'Esqueceu a senha? Clique aqui',
-                                style: TextStyle(fontWeight: FontWeight.w500),
-                              ),
                             ),
                           ],
                         ),
