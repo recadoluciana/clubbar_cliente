@@ -4,6 +4,8 @@ class ItemCarrinho {
   final double preco;
   final int quantidade;
   final String fotoUrl;
+  final String observacao;
+  final double subtotal;
 
   ItemCarrinho({
     required this.produtoId,
@@ -11,9 +13,9 @@ class ItemCarrinho {
     required this.preco,
     required this.quantidade,
     required this.fotoUrl,
+    required this.observacao,
+    required this.subtotal,
   });
-
-  double get subtotal => preco * quantidade;
 
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
@@ -28,8 +30,10 @@ class ItemCarrinho {
       produtoId: _toInt(json['produto_id'] ?? 0),
       nome: (json['nmproduto'] ?? '').toString(),
       preco: _toDouble(json['vrprecoprod'] ?? 0),
-      quantidade: _toInt(json['qtitcarrinho'] ?? 0),
+      quantidade: _toInt(json['qt'] ?? 0),
       fotoUrl: buildUrl((json['urlfotoproduto'] ?? '').toString()),
+      observacao: (json['obs'] ?? '').toString(),
+      subtotal: _toDouble(json['subtotal'] ?? 0),
     );
   }
 
