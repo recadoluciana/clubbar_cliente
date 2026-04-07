@@ -15,14 +15,28 @@ class Loja {
     required this.imagemUrl,
   });
 
+  static const String baseUrl = "https://bitbeer-production.up.railway.app";
+
   factory Loja.fromJson(Map<String, dynamic> json) {
+    String path = (json['urllogoloja'] ?? '').toString();
+
+    String urlFinal = '';
+
+    if (path.isNotEmpty) {
+      if (path.startsWith('http')) {
+        urlFinal = path;
+      } else {
+        urlFinal = "$baseUrl$path";
+      }
+    }
+
     return Loja(
       id: _toInt(json['loja_id'] ?? 0),
       organizacaoId: _toInt(json['organizacao_id'] ?? 0),
       nome: (json['nmloja'] ?? '').toString(),
       bairro: (json['endloja'] ?? '').toString(),
       horario: (json['dshorarioloja'] ?? '').toString(),
-      imagemUrl: (json['urllogoloja'] ?? '').toString(),
+      imagemUrl: urlFinal,
     );
   }
 
