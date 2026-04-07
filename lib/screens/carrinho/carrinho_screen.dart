@@ -223,9 +223,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _imagemProduto(item.fotoUrl),
               const SizedBox(width: 14),
+
+              /// TEXTO PRINCIPAL
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,15 +240,33 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+
+                    const SizedBox(height: 6),
+
+                    /// OBSERVAÇÃO
+                    if (item.observacao.isNotEmpty)
+                      Text(
+                        item.observacao,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                        ),
+                      ),
+
                     const SizedBox(height: 8),
+
+                    /// QUANTIDADE
                     Text(
                       'Qtd: ${item.quantidade}',
                       style: const TextStyle(
-                        fontSize: 14,
                         fontWeight: FontWeight.w600,
+                        fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 8),
+
+                    const SizedBox(height: 10),
+
+                    /// BOTÃO REMOVER
                     TextButton(
                       onPressed: () => removerItem(item),
                       style: TextButton.styleFrom(
@@ -261,18 +282,34 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   ],
                 ),
               ),
+
               const SizedBox(width: 12),
+
+              /// PREÇO / SUBTOTAL
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
                     'R\$ ${item.preco.toStringAsFixed(2)}',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
                   ),
+
                   const SizedBox(height: 8),
+
                   Text(
-                    'Subtotal: R\$ ${item.subtotal.toStringAsFixed(2)}',
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                    'Subtotal',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  ),
+
+                  Text(
+                    'R\$ ${item.subtotal.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
