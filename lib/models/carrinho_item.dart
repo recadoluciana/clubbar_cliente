@@ -1,33 +1,33 @@
-class CarrinhoItem {
-  final int id;
+class ItemCarrinho {
   final int produtoId;
   final String nome;
-  final String descricao;
+  final double preco;
   final int quantidade;
-  final double precoUnitario;
-  final String imagemUrl;
+  final String fotoUrl;
 
-  CarrinhoItem({
-    required this.id,
+  ItemCarrinho({
     required this.produtoId,
     required this.nome,
-    required this.descricao,
+    required this.preco,
     required this.quantidade,
-    required this.precoUnitario,
-    required this.imagemUrl,
+    required this.fotoUrl,
   });
 
-  double get subtotal => quantidade * precoUnitario;
+  static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
-  factory CarrinhoItem.fromJson(Map<String, dynamic> json) {
-    return CarrinhoItem(
-      id: _toInt(json['itcarrinho_id'] ?? json['id'] ?? 0),
+  static String buildUrl(String path) {
+    if (path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    return '$baseUrl$path';
+  }
+
+  factory ItemCarrinho.fromJson(Map<String, dynamic> json) {
+    return ItemCarrinho(
       produtoId: _toInt(json['produto_id'] ?? 0),
-      nome: (json['nmproduto'] ?? 'Produto').toString(),
-      descricao: (json['obs'] ?? '').toString(),
-      quantidade: _toInt(json['qt'] ?? 1),
-      precoUnitario: _toDouble(json['vrprecoprod'] ?? 0),
-      imagemUrl: (json['urlfotoproduto'] ?? '').toString(),
+      nome: (json['nmproduto'] ?? '').toString(),
+      preco: _toDouble(json['vrprecoprod'] ?? 0),
+      quantidade: _toInt(json['qtitcarrinho'] ?? 0),
+      fotoUrl: buildUrl((json['urlfotoproduto'] ?? '').toString()),
     );
   }
 
@@ -39,6 +39,6 @@ class CarrinhoItem {
   static double _toDouble(dynamic valor) {
     if (valor is double) return valor;
     if (valor is int) return valor.toDouble();
-    return double.tryParse(valor.toString()) ?? 0.0;
+    return double.tryParse(valor.toString()) ?? 0;
   }
 }
