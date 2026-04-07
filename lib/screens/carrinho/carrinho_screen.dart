@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/carrinho_item.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../pagamento/pix_pagamento_screen.dart';
-
-import 'package:url_launcher/url_launcher.dart';
 
 enum FormaPagamento { pix, credito, debito }
 
@@ -30,7 +29,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   int? clienteId;
   int? carrinhoId;
 
-  List<CarrinhoItem> itensCarrinho = [];
+  List<ItemCarrinho> itensCarrinho = [];
 
   @override
   void initState() {
@@ -60,7 +59,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       carrinhoId = data['carrinho_id'] as int? ?? 0;
 
       final lista = (data['itens'] as List? ?? [])
-          .map((e) => CarrinhoItem.fromJson(e as Map<String, dynamic>))
+          .map((e) => ItemCarrinho.fromJson(e as Map<String, dynamic>))
           .toList();
 
       setState(() {
@@ -90,11 +89,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
     if (formaPagamento == FormaPagamento.pix) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'PIX será a próxima etapa. Vamos fechar cartão primeiro.',
-          ),
-        ),
+        const SnackBar(content: Text('Tela PIX ainda está em ajuste.')),
       );
       return;
     }
@@ -106,7 +101,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
 
     final uri = Uri.parse(url);
-
     final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
 
     if (!ok && mounted) {
@@ -219,7 +213,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
   }
 
-  Widget _itemCarrinho(CarrinhoItem item) {
+  Widget _itemCarrinho(ItemCarrinho item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
@@ -230,7 +224,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              _imagemProduto(item.imagemUrl),
+              _imagemProduto(item.fotoUrl),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -243,15 +237,10 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 10),
                     Text(
-                      item.descricao.isEmpty
-                          ? 'Sem observações'
-                          : item.descricao,
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 13,
-                      ),
+                      'Qtd: ${item.quantidade}',
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
                     TextButton(
@@ -266,11 +255,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         style: TextStyle(color: Colors.red),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Qtd: ${item.quantidade}',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
                   ],
                 ),
               ),
@@ -279,7 +263,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'R\$ ${item.precoUnitario.toStringAsFixed(2)}',
+                    'R\$ ${item.preco.toStringAsFixed(2)}',
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 8),
@@ -348,6 +332,38 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> removerItem(ItemCarrinho item) async {
+    if (carrinhoId == null || carrinhoId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Carrinho inválido para remoção')),
+      );
+      return;
+    }
+
+    try {
+      await apiService.removerItemCarrinho(
+        carrinhoId: carrinhoId!,
+        produtoId: item.produtoId,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('1 unidade de "${item.nome}" removida do carrinho'),
+        ),
+      );
+
+      await carregarCarrinho();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   @override
@@ -463,37 +479,5 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
               ),
             ),
     );
-  }
-
-  Future<void> removerItem(CarrinhoItem item) async {
-    if (carrinhoId == null || carrinhoId == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Carrinho inválido para remoção')),
-      );
-      return;
-    }
-
-    try {
-      await apiService.removerItemCarrinho(
-        carrinhoId: carrinhoId!,
-        produtoId: item.produtoId,
-      );
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('1 unidade de "${item.nome}" removida do carrinho'),
-        ),
-      );
-
-      await carregarCarrinho();
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
-    }
   }
 }

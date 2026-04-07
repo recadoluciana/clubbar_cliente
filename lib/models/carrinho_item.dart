@@ -13,6 +13,8 @@ class ItemCarrinho {
     required this.fotoUrl,
   });
 
+  double get subtotal => preco * quantidade;
+
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
   static String buildUrl(String path) {
