@@ -547,4 +547,30 @@ class ApiService {
       throw Exception(data?['detail'] ?? 'Erro ao atualizar perfil');
     }
   }
+
+  Future<void> pagarComCartao({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+    required String encryptedCard,
+    required String tipoPagamento,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/pagar-novo'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+        'encrypted_card': encryptedCard,
+        'payment_method': tipoPagamento,
+      }),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(data?['detail'] ?? 'Erro no pagamento');
+    }
+  }
 }

@@ -6,6 +6,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../pagamento/pix_pagamento_screen.dart';
+import '../pagamento/cartao_pagamento_screen.dart';
 
 enum FormaPagamento { pix, credito, debito }
 
@@ -91,6 +92,23 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Tela PIX ainda está em ajuste.')),
       );
+      return;
+    }
+
+    if (formaPagamento == FormaPagamento.credito ||
+        formaPagamento == FormaPagamento.debito) {
+      final tipo = formaPagamento == FormaPagamento.debito
+          ? 'DEBIT_CARD'
+          : 'CREDIT_CARD';
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              CartaoPagamentoScreen(loja: widget.loja!, tipoPagamento: tipo),
+        ),
+      );
+
       return;
     }
 

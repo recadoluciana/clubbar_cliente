@@ -14,4 +14,26 @@
 <body>
   <script src="flutter_bootstrap.js" async></script>
 </body>
+
+<script src="https://assets.pagseguro.com.br/checkout-sdk-js/rc/dist/browser/pagseguro.min.js"></script>
+
+<script>
+  window.pagbankEncryptCard = function (payload) {
+    const card = PagSeguro.encryptCard({
+      publicKey: payload.publicKey,
+      holder: payload.holder,
+      number: payload.number,
+      expMonth: payload.expMonth,
+      expYear: payload.expYear,
+      securityCode: payload.securityCode
+    });
+
+    return {
+      encryptedCard: card.encryptedCard || "",
+      hasErrors: !!card.hasErrors,
+      errors: card.errors || []
+    };
+  };
+</script>
+
 </html>
