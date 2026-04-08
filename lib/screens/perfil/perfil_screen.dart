@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/auth_storage.dart';
 import '../login/login_screen.dart';
+import '../esqueceu_senha/alterar_senha_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -179,9 +180,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        clienteId == null
-                            ? 'Perfil do cliente'
-                            : 'Cliente ID: $clienteId',
+                        'Gerencie suas informações, e altere sua senha de acesso à conta.',
                         style: TextStyle(
                           color: Colors.grey.shade300,
                           fontSize: 14,
@@ -194,6 +193,22 @@ class _PerfilScreenState extends State<PerfilScreen> {
             ),
           ),
           const SizedBox(height: 22),
+
+          // 🔒 ALTERAR SENHA
+          _itemAcao(
+            icon: Icons.password_rounded,
+            titulo: 'Alterar Senha',
+            subtitulo: 'Altere sua senha de acesso à conta',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AlterarSenhaScreen()),
+              );
+            },
+            iconColor: Colors.blue,
+          ),
+
+          // 📄 MEUS PEDIDOS
           _itemAcao(
             icon: Icons.receipt_long_outlined,
             titulo: 'Meus pedidos',
@@ -201,7 +216,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
             onTap: abrirPedidos,
             iconColor: Colors.blue,
           ),
+
           const SizedBox(height: 14),
+
+          // 🚪 SAIR
           _itemAcao(
             icon: Icons.logout_rounded,
             titulo: 'Sair da conta',

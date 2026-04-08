@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import 'auth_storage.dart';
+
 import '../models/auth_response.dart';
 import '../models/evento.dart';
 import '../models/loja.dart';
@@ -21,6 +23,19 @@ class ApiService {
         '?cliente_id=$clienteId'
         '&organizacao_id=$organizacaoId'
         '&loja_id=$lojaId';
+  }
+
+  Future<Map<String, String>> _headersAutenticado() async {
+    final token = await AuthStorage().obterToken();
+
+    if (token == null || token.isEmpty) {
+      throw Exception('Usuário não autenticado');
+    }
+
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
   }
 
   // ===============================
@@ -476,6 +491,23 @@ class ApiService {
 
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Não foi possível redefinir a senha');
+    }
+  }
+
+  Future<void> alterarMinhaSenha({
+    required String senhaAtual,
+    required String novaSenha,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/clientes/me/senha'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({'senha_atual': senhaAtual, 'nova_senha': novaSenha}),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200) {
+      throw Exception(data?['detail'] ?? 'Erro ao alterar senha');
     }
   }
 }
