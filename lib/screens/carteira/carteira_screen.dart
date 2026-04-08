@@ -105,6 +105,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         bairro: '',
         horario: '',
         imagemUrl: '',
+        instagram: '',
       ),
     );
     return loja.nome;

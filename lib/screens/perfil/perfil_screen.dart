@@ -226,4 +226,37 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
     );
   }
+
+  Widget itemMenu({
+    required IconData icon,
+    required Color corIcone,
+    required String titulo,
+    required String subtitulo,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: corIcone.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: corIcone),
+        ),
+        title: Text(
+          titulo,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(subtitulo),
+        trailing: const Icon(Icons.chevron_right),
+      ),
+    );
+  }
 }

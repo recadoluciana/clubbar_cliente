@@ -5,6 +5,7 @@ class Loja {
   final String bairro;
   final String horario;
   final String imagemUrl;
+  final String instagram;
 
   Loja({
     required this.id,
@@ -13,22 +14,19 @@ class Loja {
     required this.bairro,
     required this.horario,
     required this.imagemUrl,
+    required this.instagram,
   });
 
   static const String baseUrl = "https://bitbeer-production.up.railway.app";
 
+  static String buildUrl(String path) {
+    if (path.isEmpty) return '';
+    if (path.startsWith('http')) return path;
+    return "$baseUrl$path";
+  }
+
   factory Loja.fromJson(Map<String, dynamic> json) {
-    String path = (json['urllogoloja'] ?? '').toString();
-
-    String urlFinal = '';
-
-    if (path.isNotEmpty) {
-      if (path.startsWith('http')) {
-        urlFinal = path;
-      } else {
-        urlFinal = "$baseUrl$path";
-      }
-    }
+    final path = (json['urllogoloja'] ?? '').toString();
 
     return Loja(
       id: _toInt(json['loja_id'] ?? 0),
@@ -36,7 +34,8 @@ class Loja {
       nome: (json['nmloja'] ?? '').toString(),
       bairro: (json['endloja'] ?? '').toString(),
       horario: (json['dshorarioloja'] ?? '').toString(),
-      imagemUrl: urlFinal,
+      imagemUrl: buildUrl(path),
+      instagram: (json['dsinstaloja'] ?? '').toString(),
     );
   }
 

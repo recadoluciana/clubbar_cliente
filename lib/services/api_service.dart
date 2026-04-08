@@ -454,7 +454,8 @@ class ApiService {
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Não foi possível enviar o código');
+      final data = jsonDecode(response.body);
+      throw Exception(data['detail'] ?? 'Erro ao enviar código');
     }
   }
 

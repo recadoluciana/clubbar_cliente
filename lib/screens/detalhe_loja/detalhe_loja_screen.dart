@@ -2,15 +2,41 @@ import 'package:flutter/material.dart';
 import '../../models/loja.dart';
 import '../eventos_loja/eventos_loja_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DetalheLojaScreen extends StatelessWidget {
   final Loja loja;
 
   const DetalheLojaScreen({super.key, required this.loja});
 
-  String get instagramLoja {
-    // depois você troca por campo real da API
-    return '@${loja.nome.toLowerCase().replaceAll(' ', '')}';
+  Future<void> abrirInstagram(BuildContext context) async {
+    final handle = loja.instagram.replaceAll('@', '').trim();
+
+    if (handle.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Instagram não informado')));
+      return;
+    }
+
+    final uriApp = Uri.parse('instagram://user?username=$handle');
+    final uriWeb = Uri.parse('https://instagram.com/$handle');
+
+    if (await canLaunchUrl(uriApp)) {
+      await launchUrl(uriApp, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    if (await canLaunchUrl(uriWeb)) {
+      await launchUrl(uriWeb, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível abrir o Instagram')),
+      );
+    }
   }
 
   @override
@@ -103,20 +129,28 @@ class DetalheLojaScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(Icons.alternate_email, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          instagramLoja,
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 15,
+                  InkWell(
+                    onTap: () => abrirInstagram(context),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.alternate_email, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              loja.instagram,
+                              style: TextStyle(
+                                color: Colors.blue.shade700,
+                                fontSize: 15,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 26),
                   const Text(
