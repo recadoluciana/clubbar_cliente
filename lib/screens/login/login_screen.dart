@@ -3,6 +3,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../cadastro/cadastro_screen.dart';
 import '../esqueceu_senha/esqueceu_senha_screen.dart';
+import '../main/main_navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -90,7 +91,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-      Navigator.pop(context, true);
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        (route) => false,
+      );
     } catch (e) {
       setState(() {
         erro = traduzirErro(e.toString());

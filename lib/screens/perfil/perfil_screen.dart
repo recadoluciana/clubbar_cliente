@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_storage.dart';
 import '../login/login_screen.dart';
 import '../esqueceu_senha/alterar_senha_screen.dart';
+import '../dados_pessoais/dados_pessoais_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -192,6 +193,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ],
             ),
           ),
+
+          const SizedBox(height: 22),
+
+          // 🔒 Dados Pessoais
+          _itemAcao(
+            icon: Icons.person,
+            titulo: 'Dados Pessoais',
+            subtitulo: 'Altere suas informações pessoais',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DadosPessoaisScreen()),
+              );
+            },
+            iconColor: Colors.blue,
+          ),
+
           const SizedBox(height: 22),
 
           // 🔒 ALTERAR SENHA
@@ -207,6 +225,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
             },
             iconColor: Colors.blue,
           ),
+
+          const SizedBox(height: 14),
 
           // 📄 MEUS PEDIDOS
           _itemAcao(

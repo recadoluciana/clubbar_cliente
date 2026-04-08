@@ -510,4 +510,41 @@ class ApiService {
       throw Exception(data?['detail'] ?? 'Erro ao alterar senha');
     }
   }
+
+  Future<Map<String, dynamic>> buscarMeuPerfil() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/clientes/me'),
+      headers: await _headersAutenticado(),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200) {
+      throw Exception(data?['detail'] ?? 'Erro ao buscar perfil');
+    }
+
+    return Map<String, dynamic>.from(data);
+  }
+
+  Future<void> atualizarMeuPerfil({
+    required String nome,
+    String? telefone,
+    String? cpf,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/clientes/me'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'nmcliente': nome,
+        'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
+        'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
+      }),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200) {
+      throw Exception(data?['detail'] ?? 'Erro ao atualizar perfil');
+    }
+  }
 }
