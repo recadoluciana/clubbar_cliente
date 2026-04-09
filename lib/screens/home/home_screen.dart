@@ -501,11 +501,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
                   const SizedBox(height: 28),
 
-                  _secaoTitulo('Lojas', Icons.storefront_outlined),
+                  _secaoTitulo(
+                    'Bares e Casas Noturnas',
+                    Icons.storefront_outlined,
+                  ),
                   const SizedBox(height: 14),
 
                   if (lojas.isEmpty)
-                    _cardVazio('Nenhuma loja disponível no momento.')
+                    _cardVazio(
+                      'Nenhum bar ou casa noturna disponível no momento.',
+                    )
                   else
                     ListView.builder(
                       itemCount: lojas.length,

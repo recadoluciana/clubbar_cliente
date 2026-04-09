@@ -129,10 +129,10 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
 
           TextFormField(
             controller: _nomeCtrl,
-            decoration: _decoracao('Nome do portador', Icons.person_outline),
+            decoration: _decoracao('Nome do titular', Icons.person_outline),
             validator: (value) {
               if ((value ?? '').trim().isEmpty) {
-                return 'Informe o nome do portador';
+                return 'Informe o nome do titular';
               }
               return null;
             },
@@ -292,8 +292,8 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
   @override
   Widget build(BuildContext context) {
     final titulo = widget.tipoPagamento == 'DEBIT_CARD'
-        ? 'Pagamento com débito'
-        : 'Pagamento com crédito';
+        ? 'Pagamento com cartão de débito'
+        : 'Pagamento com cartão de crédito';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),

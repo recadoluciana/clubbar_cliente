@@ -541,7 +541,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         ),
                         icon: const Icon(Icons.lock_outline),
                         label: const Text(
-                          'Finalizar pagamento',
+                          'Efetuar pagamento',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
