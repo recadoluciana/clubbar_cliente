@@ -112,7 +112,9 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     return loja.nome;
   }
 
-  void abrirQrOuRetirada(String codigo) {
+  void abrirQrOuRetirada(CarteiraItem item) {
+    final codigo = item.titulo + '-' + item.dataCriacao;
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -140,7 +142,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
                 const SizedBox(height: 20),
 
-                // 🔥 QR CODE
                 QrImageView(
                   data: codigo,
                   size: 220,
