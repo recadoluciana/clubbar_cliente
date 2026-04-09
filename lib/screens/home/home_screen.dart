@@ -238,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: ClubbarAppBar(showLogout: logado, onLogout: logado ? sair : null),
+      appBar: const ClubbarAppBar(),
       body: RefreshIndicator(
         onRefresh: carregarHome,
         child: carregando

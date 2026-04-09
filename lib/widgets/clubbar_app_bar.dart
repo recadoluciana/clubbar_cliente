@@ -1,52 +1,36 @@
 import 'package:flutter/material.dart';
 
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final VoidCallback? onLogout;
-  final bool showLogout;
-
-  const ClubbarAppBar({super.key, this.onLogout, this.showLogout = true});
+  const ClubbarAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(68);
+  Size get preferredSize => const Size.fromHeight(60);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      toolbarHeight: 68,
-      backgroundColor: const Color(0xFF111111),
       elevation: 0,
-      titleSpacing: 12,
+      backgroundColor: Colors.white,
+      centerTitle: true, // 🔥 CENTRALIZA
+
       title: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 42,
-            height: 42,
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Image.asset('assets/images/logo.png', fit: BoxFit.contain),
-          ),
-          const SizedBox(width: 12),
+          Image.asset('assets/images/logo.png', height: 28),
+          const SizedBox(width: 10),
           const Text(
-            'Clubbar v1.0.0',
+            'Clubbar',
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.3,
+              color: Colors.black,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
       ),
-      actions: [
-        if (showLogout)
-          IconButton(
-            onPressed: onLogout,
-            tooltip: 'Sair',
-            icon: const Icon(Icons.logout_rounded),
-          ),
-      ],
+
+      // ❌ REMOVE logout
+      actions: const [],
     );
   }
 }

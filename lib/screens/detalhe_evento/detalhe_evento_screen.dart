@@ -10,7 +10,7 @@ class DetalheEventoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ClubbarAppBar(showLogout: false),
+      appBar: const ClubbarAppBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [

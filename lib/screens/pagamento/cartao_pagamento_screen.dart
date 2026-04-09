@@ -8,12 +8,18 @@ import 'pagamento_sucesso_screen.dart';
 
 class CartaoPagamentoScreen extends StatefulWidget {
   final Loja loja;
-  final String tipoPagamento; // "CREDIT_CARD" ou "DEBIT_CARD"
+  final String tipoPagamento;
+  final double totalProdutos;
+  final double taxaConveniencia;
+  final double totalPagar;
 
   const CartaoPagamentoScreen({
     super.key,
     required this.loja,
     required this.tipoPagamento,
+    required this.totalProdutos,
+    required this.taxaConveniencia,
+    required this.totalPagar,
   });
 
   @override
@@ -49,6 +55,153 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
 
   String _somenteNumeros(String valor) {
     return valor.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  Widget _linhaResumo(String titulo, double valor, {bool destaque = false}) {
+    final estilo = TextStyle(
+      fontSize: destaque ? 18 : 15,
+      fontWeight: destaque ? FontWeight.bold : FontWeight.w500,
+      color: destaque ? Colors.black : Colors.grey.shade800,
+    );
+
+    return Row(
+      children: [
+        Expanded(child: Text(titulo, style: estilo)),
+        Text('R\$ ${valor.toStringAsFixed(2)}', style: estilo),
+      ],
+    );
+  }
+
+  Widget _resumoPagamento() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Resumo do pagamento',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 14),
+          _linhaResumo('Total produtos', widget.totalProdutos),
+          const SizedBox(height: 8),
+          _linhaResumo('Taxa de conveniência', widget.taxaConveniencia),
+          const Divider(height: 24),
+          _linhaResumo('Total a pagar', widget.totalPagar, destaque: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _dadosCartaoBox() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Dados do cartão',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+
+          TextFormField(
+            controller: _nomeCtrl,
+            decoration: _decoracao('Nome do portador', Icons.person_outline),
+            validator: (value) {
+              if ((value ?? '').trim().isEmpty) {
+                return 'Informe o nome do portador';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+
+          TextFormField(
+            controller: _numeroCtrl,
+            keyboardType: TextInputType.number,
+            decoration: _decoracao('Número do cartão', Icons.credit_card),
+            validator: (value) {
+              final n = _somenteNumeros(value ?? '');
+              if (n.length < 13) return 'Número do cartão inválido';
+              return null;
+            },
+          ),
+          const SizedBox(height: 14),
+
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _mesCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: _decoracao('Mês', Icons.date_range),
+                  validator: (value) {
+                    final v = int.tryParse(value ?? '');
+                    if (v == null || v < 1 || v > 12) {
+                      return 'Mês inválido';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: TextFormField(
+                  controller: _anoCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: _decoracao('Ano', Icons.event),
+                  validator: (value) {
+                    final v = value?.trim() ?? '';
+                    if (v.length != 4) return 'Ano inválido';
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: TextFormField(
+                  controller: _cvvCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: _decoracao('CVV', Icons.lock_outline),
+                  validator: (value) {
+                    final n = _somenteNumeros(value ?? '');
+                    if (n.length < 3 || n.length > 4) {
+                      return 'CVV inválido';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> pagar() async {
@@ -150,75 +303,12 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            TextFormField(
-              controller: _nomeCtrl,
-              decoration: _decoracao('Nome do portador', Icons.person_outline),
-              validator: (value) {
-                if ((value ?? '').trim().isEmpty) {
-                  return 'Informe o nome do portador';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _numeroCtrl,
-              keyboardType: TextInputType.number,
-              decoration: _decoracao('Número do cartão', Icons.credit_card),
-              validator: (value) {
-                final n = _somenteNumeros(value ?? '');
-                if (n.length < 13) return 'Número do cartão inválido';
-                return null;
-              },
-            ),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _mesCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: _decoracao('Mês', Icons.date_range),
-                    validator: (value) {
-                      final v = int.tryParse(value ?? '');
-                      if (v == null || v < 1 || v > 12) {
-                        return 'Mês inválido';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _anoCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: _decoracao('Ano', Icons.event),
-                    validator: (value) {
-                      final v = value?.trim() ?? '';
-                      if (v.length != 4) return 'Ano inválido';
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _cvvCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: _decoracao('CVV', Icons.lock_outline),
-                    validator: (value) {
-                      final n = _somenteNumeros(value ?? '');
-                      if (n.length < 3 || n.length > 4) {
-                        return 'CVV inválido';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
-            ),
+            _resumoPagamento(),
+            const SizedBox(height: 20),
+
+            _dadosCartaoBox(),
             const SizedBox(height: 24),
+
             SizedBox(
               height: 54,
               child: ElevatedButton(

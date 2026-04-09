@@ -104,8 +104,13 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       final sucesso = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              CartaoPagamentoScreen(loja: widget.loja!, tipoPagamento: tipo),
+          builder: (_) => CartaoPagamentoScreen(
+            loja: widget.loja!,
+            tipoPagamento: tipo,
+            totalProdutos: total,
+            taxaConveniencia: 0,
+            totalPagar: total,
+          ),
         ),
       );
 
