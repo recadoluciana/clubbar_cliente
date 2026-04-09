@@ -575,4 +575,25 @@ class ApiService {
       throw Exception(data?['detail'] ?? 'Erro no pagamento');
     }
   }
+
+  Future<List<Map<String, dynamic>>> buscarCompras({
+    required int clienteId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/compras?cliente_id=$clienteId&incluir_itens=true'),
+      headers: await _headersAutenticado(),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200) {
+      throw Exception(data?['detail'] ?? 'Erro ao buscar compras');
+    }
+
+    if (data is List) {
+      return data.map((e) => Map<String, dynamic>.from(e)).toList();
+    }
+
+    return [];
+  }
 }

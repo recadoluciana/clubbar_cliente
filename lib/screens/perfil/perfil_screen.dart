@@ -4,6 +4,7 @@ import '../../services/auth_storage.dart';
 import '../login/login_screen.dart';
 import '../esqueceu_senha/alterar_senha_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
+import '../pedidos/meus_pedidos_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -55,8 +56,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   void abrirPedidos() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Tela de pedidos será a próxima etapa')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MeusPedidosScreen()),
     );
   }
 
@@ -231,7 +233,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           // 📄 MEUS PEDIDOS
           _itemAcao(
             icon: Icons.receipt_long_outlined,
-            titulo: 'Meus pedidos',
+            titulo: 'Minhas Compras',
             subtitulo: 'Veja seu histórico de compras e retiradas',
             onTap: abrirPedidos,
             iconColor: Colors.blue,
