@@ -4,6 +4,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/pagbank_web_service.dart';
+import 'pagamento_sucesso_screen.dart';
 
 class CartaoPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -91,11 +92,14 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pagamento realizado com sucesso')),
+      final voltar = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const PagamentoSucessoScreen()),
       );
 
-      Navigator.pop(context, true);
+      if (!mounted) return;
+
+      Navigator.pop(context, voltar == true);
     } catch (e) {
       if (!mounted) return;
 

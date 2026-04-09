@@ -101,13 +101,25 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           ? 'DEBIT_CARD'
           : 'CREDIT_CARD';
 
-      await Navigator.push(
+      final sucesso = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) =>
               CartaoPagamentoScreen(loja: widget.loja!, tipoPagamento: tipo),
         ),
       );
+
+      if (sucesso == true) {
+        await carregarCarrinho();
+
+        if (!mounted) return;
+
+        if (itensCarrinho.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Pagamento concluído com sucesso')),
+          );
+        }
+      }
 
       return;
     }
