@@ -553,6 +553,7 @@ class ApiService {
     required int organizacaoId,
     required int lojaId,
     required String encryptedCard,
+    required String securityCode,
     required String tipoPagamento,
   }) async {
     final response = await http.post(
@@ -563,6 +564,7 @@ class ApiService {
         'organizacao_id': organizacaoId,
         'loja_id': lojaId,
         'encrypted_card': encryptedCard,
+        'security_code': securityCode,
         'payment_method': tipoPagamento,
       }),
     );
