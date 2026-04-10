@@ -337,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 22),
 
-                  _secaoTitulo('Próximos eventos', Icons.celebration_outlined),
+                  _secaoTitulo('Destaques', Icons.celebration_outlined),
                   const SizedBox(height: 14),
 
                   if (eventos.isEmpty)

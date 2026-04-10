@@ -250,18 +250,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
             iconColor: Colors.red,
           ),
           const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Text(
-              'No Clubbar, sua carteira mostra os itens ainda disponíveis para uso ou retirada. '
-              'O histórico completo fica em “Meus pedidos”.',
-              style: TextStyle(color: Colors.grey.shade700, height: 1.45),
-            ),
-          ),
         ],
       ),
     );
