@@ -596,4 +596,25 @@ class ApiService {
 
     return [];
   }
+
+  Future<List<Map<String, dynamic>>> buscarLojasComCarrinho({
+    required int clienteId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/carrinho/lojas?cliente_id=$clienteId'),
+      headers: await _headersAutenticado(),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200) {
+      throw Exception(data?['detail'] ?? 'Erro ao buscar lojas do carrinho');
+    }
+
+    if (data is List) {
+      return data.map((e) => Map<String, dynamic>.from(e)).toList();
+    }
+
+    return [];
+  }
 }

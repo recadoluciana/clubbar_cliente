@@ -5,7 +5,7 @@ import '../carteira/carteira_screen.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
-import '../carrinho/carrinho_screen.dart';
+import '../carrinho/carrinho_lojas_screen.dart';
 import '../../models/loja.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -55,28 +55,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final logado = await _estaLogado();
 
     if (!logado) {
-      await _abrirLoginComMensagem('Faça login para acessar seu carrinho');
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Faça login para acessar seu carrinho')),
+      );
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
       return;
     }
-
-    // EXEMPLO TEMPORÁRIO:
-    // aqui você precisa passar uma loja real.
-    // troque pelos dados corretos da sua loja selecionada.
-    final lojaTemp = Loja(
-      id: 1,
-      organizacaoId: 1,
-      nome: 'Loja',
-      bairro: '',
-      horario: '',
-      imagemUrl: '',
-      instagram: '',
-    );
 
     if (!mounted) return;
 
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: lojaTemp)),
+      MaterialPageRoute(builder: (_) => const CarrinhoLojasScreen()),
     );
   }
 
