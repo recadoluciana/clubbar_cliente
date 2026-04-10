@@ -67,37 +67,6 @@ class _SplashScreenState extends State<SplashScreen>
 
             // 🔥 OVERLAY ESCURO (opcional, mas recomendado)
             Container(color: Colors.black.withOpacity(0.4)),
-
-            // 🔥 CONTEÚDO POR CIMA
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ScaleTransition(
-                    scale: _logoScale,
-                    child: const Text(
-                      'Clubbar',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  FadeTransition(
-                    opacity: _textOpacity,
-                    child: Text(
-                      'Sua experiência começa aqui',
-                      style: TextStyle(
-                        color: Colors.grey.shade300,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),
