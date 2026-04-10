@@ -617,4 +617,21 @@ class ApiService {
 
     return [];
   }
+
+  Future<int> buscarQuantidadeCarrinho({required int clienteId}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/carrinho/qtde_itens_geral?cliente_id=$clienteId'),
+      headers: await _headersAutenticado(),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200) {
+      throw Exception(
+        data?['detail'] ?? 'Erro ao buscar quantidade do carrinho',
+      );
+    }
+
+    return int.tryParse('${data['qt_total'] ?? 0}') ?? 0;
+  }
 }

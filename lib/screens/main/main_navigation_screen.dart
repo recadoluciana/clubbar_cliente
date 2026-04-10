@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../carteira/carteira_screen.dart';
+import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
-import '../carrinho/carrinho_lojas_screen.dart';
-import '../../models/loja.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -17,8 +17,16 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final authStorage = AuthStorage();
+  final apiService = ApiService();
 
   int currentIndex = 0;
+  int totalItensCarrinho = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    carregarBadgeCarrinho();
+  }
 
   Widget _buildPage() {
     switch (currentIndex) {
@@ -38,16 +46,55 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return token != null && token.isNotEmpty;
   }
 
-  Future<void> _abrirLoginComMensagem(String mensagem) async {
-    if (!mounted) return;
+  Future<void> carregarBadgeCarrinho() async {
+    try {
+      final clienteId = await authStorage.obterClienteId();
+      print('clienteId badge: $clienteId');
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(mensagem)));
+      if (clienteId == null || clienteId == 0) {
+        if (!mounted) return;
+        setState(() {
+          totalItensCarrinho = 0;
+        });
+        return;
+      }
 
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      final total = await apiService.buscarQuantidadeCarrinho(
+        clienteId: clienteId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        totalItensCarrinho = total;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        totalItensCarrinho = 0;
+      });
+    }
+  }
+
+  Widget _iconeCarrinhoComBadge({required bool selecionado}) {
+    final icone = Icon(
+      selecionado ? Icons.shopping_cart : Icons.shopping_cart_outlined,
+    );
+
+    if (totalItensCarrinho <= 0) {
+      return icone;
+    }
+
+    return Badge(
+      label: Text(
+        totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      child: icone,
     );
   }
 
@@ -61,10 +108,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         const SnackBar(content: Text('Faça login para acessar seu carrinho')),
       );
 
-      await Navigator.push(
+      final resultado = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
+
+      if (resultado == true) {
+        await carregarBadgeCarrinho();
+      }
+
       return;
     }
 
@@ -74,11 +126,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       context,
       MaterialPageRoute(builder: (_) => const CarrinhoLojasScreen()),
     );
+
+    await carregarBadgeCarrinho();
   }
 
   Future<void> _selecionarAba(int index) async {
     // 0 = Home
-    // 1 = Carrinho
+    // 1 = Carrinho (abre por push)
     // 2 = Carteira
     // 3 = Perfil
 
@@ -93,11 +147,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final logado = await _estaLogado();
 
       if (!logado) {
+        if (!mounted) return;
+
         final mensagem = index == 2
             ? 'Faça login para acessar sua carteira'
             : 'Faça login para acessar seu perfil';
 
-        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mensagem)));
 
         final resultado = await Navigator.push(
           context,
@@ -107,13 +165,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         if (!mounted) return;
 
         if (resultado == true) {
+          await carregarBadgeCarrinho();
+
           setState(() {
-            currentIndex = index;
+            currentIndex = index == 2 ? 1 : 2;
           });
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(mensagem)));
         }
 
         return;
@@ -123,10 +179,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!mounted) return;
 
     setState(() {
-      // como carrinho não ocupa o body, os índices visuais ficam:
-      // 0 = Home
-      // 2 = Carteira
-      // 3 = Perfil
       if (index == 2) {
         currentIndex = 1;
       } else if (index == 3) {
@@ -151,23 +203,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         selectedIndex: _selectedNavIndex(),
         onDestinationSelected: _selecionarAba,
         height: 72,
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.shopping_cart_outlined),
-            selectedIcon: Icon(Icons.shopping_cart),
+            icon: _iconeCarrinhoComBadge(selecionado: false),
+            selectedIcon: _iconeCarrinhoComBadge(selecionado: true),
             label: 'Carrinho',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
             selectedIcon: Icon(Icons.account_balance_wallet),
             label: 'Carteira',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
             label: 'Perfil',
