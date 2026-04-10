@@ -296,18 +296,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               : 'Bem-vindo ao Clubbar',
                           style: TextStyle(
                             color: Colors.grey.shade100,
-                            fontSize: 28,
+                            fontSize: 20,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           logado
-                              ? 'Escolha um evento ou uma loja para continuar sua experiência.'
-                              : 'Descubra os próximos eventos e encontre sua loja favorita.',
+                              ? 'Escolha sua balada e prepare-se para se divertir! Compre seu ingresso e o que vai consumir.'
+                              : 'Escolha sua balada e prepare-se para se divertir! Compre seu ingresso e o que vai consumir.',
                           style: TextStyle(
                             color: Colors.grey.shade300,
-                            fontSize: 15,
+                            fontSize: 12,
                             height: 1.45,
                           ),
                         ),
