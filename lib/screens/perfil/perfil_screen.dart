@@ -174,7 +174,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       Text(
                         nomeCliente.trim().isEmpty
                             ? 'Cliente Clubbar'
-                            : nomeCliente,
+                            : nomeCliente.split(' ').first,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -183,7 +183,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Gerencie suas informações, e altere sua senha de acesso à conta.',
+                        'Veja e gerencie suas informações.',
                         style: TextStyle(
                           color: Colors.grey.shade300,
                           fontSize: 14,
