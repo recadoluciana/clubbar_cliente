@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             // 🔥 IMAGEM FULLSCREEN
             Image.asset(
-              '/images/presplash1.png',
+              'assets/images/presplash1.png',
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
