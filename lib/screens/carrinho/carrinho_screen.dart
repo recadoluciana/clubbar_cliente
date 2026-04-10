@@ -5,7 +5,6 @@ import '../../models/carrinho_item.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import '../pagamento/pix_pagamento_screen.dart';
 import '../pagamento/cartao_pagamento_screen.dart';
 
 enum FormaPagamento { pix, credito, debito }

@@ -183,7 +183,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
       instagram: '',
     );
 
-    final qtItens = int.tryParse('${lojaData['qt_itens'] ?? 0}') ?? 0;
+    final qtItens = int.tryParse('${lojaData['total_itens'] ?? 0}') ?? 0;
     final total = lojaData['total'] ?? 0;
 
     return Container(

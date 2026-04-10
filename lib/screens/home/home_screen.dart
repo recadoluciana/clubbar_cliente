@@ -92,6 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _timer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted || eventos.isEmpty) return;
+      if (!_pageController.hasClients) return; // 🔥 ESSA LINHA RESOLVE
 
       _paginaAtual = (_paginaAtual + 1) % eventos.length;
 
