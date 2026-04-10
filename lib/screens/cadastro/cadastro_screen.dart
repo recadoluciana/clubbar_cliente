@@ -214,7 +214,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                 controller: _telefoneCtrl,
                 keyboardType: TextInputType.phone,
                 decoration: _decoracao(
-                  label: 'Telefone',
+                  label: 'Celular',
                   icon: Icons.phone_outlined,
                 ),
                 onChanged: (value) {
