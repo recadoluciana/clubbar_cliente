@@ -48,7 +48,7 @@ class PagamentoSucessoScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Seu pedido foi confirmado. Você já pode acompanhar pela carteira ou pelos seus pedidos.',
+                  'Sua compra foi confirmada. Você já pode acompanhar pela sua carteira.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
