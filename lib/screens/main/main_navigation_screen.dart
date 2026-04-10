@@ -5,6 +5,8 @@ import '../carteira/carteira_screen.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
+import '../carrinho/carrinho_screen.dart';
+import '../../models/loja.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -36,22 +38,70 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return token != null && token.isNotEmpty;
   }
 
+  Future<void> _abrirLoginComMensagem(String mensagem) async {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensagem)));
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  Future<void> _abrirCarrinho() async {
+    final logado = await _estaLogado();
+
+    if (!logado) {
+      await _abrirLoginComMensagem('Faça login para acessar seu carrinho');
+      return;
+    }
+
+    // EXEMPLO TEMPORÁRIO:
+    // aqui você precisa passar uma loja real.
+    // troque pelos dados corretos da sua loja selecionada.
+    final lojaTemp = Loja(
+      id: 1,
+      organizacaoId: 1,
+      nome: 'Loja',
+      bairro: '',
+      horario: '',
+      imagemUrl: '',
+      instagram: '',
+    );
+
+    if (!mounted) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: lojaTemp)),
+    );
+  }
+
   Future<void> _selecionarAba(int index) async {
-    final exigeLogin = index == 1 || index == 2;
+    // 0 = Home
+    // 1 = Carrinho
+    // 2 = Carteira
+    // 3 = Perfil
+
+    if (index == 1) {
+      await _abrirCarrinho();
+      return;
+    }
+
+    final exigeLogin = index == 2 || index == 3;
 
     if (exigeLogin) {
       final logado = await _estaLogado();
 
       if (!logado) {
-        if (!mounted) return;
-
-        final mensagem = index == 1
+        final mensagem = index == 2
             ? 'Faça login para acessar sua carteira'
             : 'Faça login para acessar seu perfil';
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(mensagem)));
+        if (!mounted) return;
 
         final resultado = await Navigator.push(
           context,
@@ -64,6 +114,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           setState(() {
             currentIndex = index;
           });
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(mensagem)));
         }
 
         return;
@@ -73,8 +127,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!mounted) return;
 
     setState(() {
-      currentIndex = index;
+      // como carrinho não ocupa o body, os índices visuais ficam:
+      // 0 = Home
+      // 2 = Carteira
+      // 3 = Perfil
+      if (index == 2) {
+        currentIndex = 1;
+      } else if (index == 3) {
+        currentIndex = 2;
+      } else {
+        currentIndex = 0;
+      }
     });
+  }
+
+  int _selectedNavIndex() {
+    if (currentIndex == 1) return 2;
+    if (currentIndex == 2) return 3;
+    return 0;
   }
 
   @override
@@ -82,7 +152,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Scaffold(
       body: _buildPage(),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex,
+        selectedIndex: _selectedNavIndex(),
         onDestinationSelected: _selecionarAba,
         height: 72,
         destinations: const [
@@ -90,6 +160,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.shopping_cart_outlined),
+            selectedIcon: Icon(Icons.shopping_cart),
+            label: 'Carrinho',
           ),
           NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
