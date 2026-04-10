@@ -119,6 +119,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       return;
     }
 
+    // 🔥 NOVA REGRA: carrinho vazio
+    if (totalItensCarrinho == 0) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Seu carrinho está vazio')));
+
+      return;
+    }
+
     if (!mounted) return;
 
     await Navigator.push(

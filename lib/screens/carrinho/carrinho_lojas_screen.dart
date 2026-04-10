@@ -148,7 +148,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Escolha a loja',
+                  'Escolha o bar/casa noturna',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 25,
@@ -157,7 +157,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Selecione em qual loja você quer visualizar o carrinho.',
+                  'Você tem itens nesses Bares e Casas Noturnas.',
                   style: TextStyle(
                     color: Colors.grey.shade300,
                     fontSize: 14,
@@ -277,7 +277,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Quando adicionar produtos ou ingressos, as lojas aparecerão aqui.',
+            'Quando adicionar produtos ou ingressos, os bares e casas noturnas aparecerão aqui.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade700, height: 1.4),
           ),
