@@ -15,18 +15,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       title: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset('assets/images/logo.png', height: 28),
-          const SizedBox(width: 10),
-          const Text(
-            'Clubbar',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+        children: [Image.asset('assets/images/logo.png', height: 120)],
       ),
 
       // ❌ REMOVE logout

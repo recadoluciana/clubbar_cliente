@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_colors.dart';
-import 'screens/main/main_navigation_screen.dart';
+import 'screens/splash/splash_screen.dart';
 
 class ClubbarApp extends StatelessWidget {
   const ClubbarApp({super.key});
@@ -21,7 +21,7 @@ class ClubbarApp extends StatelessWidget {
           border: OutlineInputBorder(),
         ),
       ),
-      home: const MainNavigationScreen(),
+      home: const SplashScreen(),
     );
   }
 }

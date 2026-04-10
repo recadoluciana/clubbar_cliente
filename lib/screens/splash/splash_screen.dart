@@ -1,5 +1,5 @@
+import 'package:clubbar_cliente/screens/main/main_navigation_screen.dart';
 import 'package:flutter/material.dart';
-import '../home/home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,12 +35,12 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
       );
     });
   }
@@ -54,66 +54,51 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF111111), Color(0xFF1C1C1C), Color(0xFF2A2A2A)],
-          ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ScaleTransition(
-                scale: _logoScale,
-                child: Container(
-                  width: 130,
-                  height: 130,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
-                        blurRadius: 26,
-                        offset: const Offset(0, 12),
+      body: SizedBox.expand(
+        child: Stack(
+          children: [
+            // 🔥 IMAGEM FULLSCREEN
+            Image.asset(
+              '/images/presplash.png',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            ),
+
+            // 🔥 OVERLAY ESCURO (opcional, mas recomendado)
+            Container(color: Colors.black.withOpacity(0.4)),
+
+            // 🔥 CONTEÚDO POR CIMA
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ScaleTransition(
+                    scale: _logoScale,
+                    child: const Text(
+                      'Clubbar',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
                       ),
-                    ],
+                    ),
                   ),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.contain,
+                  const SizedBox(height: 10),
+                  FadeTransition(
+                    opacity: _textOpacity,
+                    child: Text(
+                      'Sua experiência começa aqui',
+                      style: TextStyle(
+                        color: Colors.grey.shade300,
+                        fontSize: 14,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-              const SizedBox(height: 26),
-              FadeTransition(
-                opacity: _textOpacity,
-                child: const Text(
-                  'Clubbar',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              FadeTransition(
-                opacity: _textOpacity,
-                child: Text(
-                  'Sua experiência começa aqui',
-                  style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

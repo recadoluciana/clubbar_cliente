@@ -52,10 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final nome = await authStorage.obterNmcliente();
       final idCliente = await authStorage.obterClienteId();
 
-      print('HOME TOKEN: $token');
-      print('HOME NMCLIENTE: $nome');
-      print('HOME CLIENTE ID: $idCliente');
-
       logado = token != null && token.isNotEmpty;
       nomeCliente = nome ?? '';
 

@@ -49,7 +49,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Future<void> carregarBadgeCarrinho() async {
     try {
       final clienteId = await authStorage.obterClienteId();
-      print('clienteId badge: $clienteId');
 
       if (clienteId == null || clienteId == 0) {
         if (!mounted) return;
