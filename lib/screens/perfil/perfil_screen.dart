@@ -183,7 +183,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Veja e gerencie suas informações.',
+                        'Gerencie suas informações.',
                         style: TextStyle(
                           color: Colors.grey.shade300,
                           fontSize: 14,
@@ -234,7 +234,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           _itemAcao(
             icon: Icons.receipt_long_outlined,
             titulo: 'Minhas Compras',
-            subtitulo: 'Veja seu histórico de compras e retiradas',
+            subtitulo: 'Histórico de compras e retiradas',
             onTap: abrirPedidos,
             iconColor: Colors.blue,
           ),

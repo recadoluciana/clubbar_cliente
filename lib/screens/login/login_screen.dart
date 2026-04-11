@@ -174,26 +174,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
-                    Container(
-                      width: 110,
-                      height: 110,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(26),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.25),
-                            blurRadius: 24,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        fit: BoxFit.contain,
-                      ),
-                    ),
                     const SizedBox(height: 20),
                     const Text(
                       'Clubbar',
@@ -205,15 +185,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Entre para acessar sua conta e continuar sua experiência.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey.shade300,
-                        fontSize: 15,
-                        height: 1.4,
-                      ),
-                    ),
                     const SizedBox(height: 28),
                     Container(
                       decoration: BoxDecoration(

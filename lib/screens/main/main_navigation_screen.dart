@@ -23,9 +23,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int totalItensCarrinho = 0;
   int totalItensCarteira = 0;
 
+  String nomeCliente = '';
+  bool logado = false;
+
   @override
   void initState() {
     super.initState();
+    carregarUsuario();
     carregarBadgeCarrinho();
     carregarBadgeCarteira();
   }
@@ -45,9 +49,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  String _primeiroNome(String nomeCompleto) {
+    final partes = nomeCompleto.trim().split(' ');
+    return partes.isNotEmpty ? partes.first : '';
+  }
+
   Future<bool> _estaLogado() async {
     final token = await authStorage.obterToken();
     return token != null && token.isNotEmpty;
+  }
+
+  Future<void> carregarUsuario() async {
+    final token = await authStorage.obterToken();
+    final nome = await authStorage.obterNmcliente();
+
+    if (!mounted) return;
+
+    setState(() {
+      logado = token != null && token.isNotEmpty;
+      nomeCliente = nome ?? '';
+    });
   }
 
   Future<void> carregarBadgeCarrinho() async {
@@ -186,6 +207,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         if (!mounted) return;
 
         if (resultado == true) {
+          await carregarUsuario();
           await carregarBadgeCarrinho();
           await carregarBadgeCarteira();
 
@@ -238,10 +260,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             selectedIcon: _iconeCarteiraComBadge(selecionado: true),
             label: 'Carteira',
           ),
-          const NavigationDestination(
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
             selectedIcon: Icon(Icons.person),
-            label: 'Perfil',
+            label: logado && nomeCliente.trim().isNotEmpty
+                ? _primeiroNome(nomeCliente)
+                : 'Perfil',
           ),
         ],
       ),
