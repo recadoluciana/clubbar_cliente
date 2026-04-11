@@ -7,8 +7,6 @@ import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
-import '../../models/loja.dart';
-import '../carrinho/carrinho_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -37,8 +35,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 0:
         return const HomeScreen();
       case 1:
-        return const CarteiraScreen();
+        return const CarrinhoLojasScreen();
       case 2:
+        return const CarteiraScreen();
+      case 3:
         return const PerfilScreen();
       default:
         return const HomeScreen();
@@ -108,6 +108,28 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  Widget _iconeCarrinhoComBadge({required bool selecionado}) {
+    final icone = Icon(
+      selecionado ? Icons.shopping_cart : Icons.shopping_cart_outlined,
+    );
+
+    if (totalItensCarrinho <= 0) {
+      return icone;
+    }
+
+    return Badge(
+      label: Text(
+        totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      child: icone,
+    );
+  }
+
   Widget _iconeCarteiraComBadge({required bool selecionado}) {
     final icone = Icon(
       selecionado
@@ -133,140 +155,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _iconeCarrinhoComBadge({required bool selecionado}) {
-    final icone = Icon(
-      selecionado ? Icons.shopping_cart : Icons.shopping_cart_outlined,
-    );
-
-    if (totalItensCarrinho <= 0) {
-      return icone;
-    }
-
-    return Badge(
-      label: Text(
-        totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      child: icone,
-    );
-  }
-
-  Future<void> _abrirCarrinho() async {
-    final logado = await _estaLogado();
-
-    if (!logado) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Faça login para acessar seu carrinho')),
-      );
-
-      final resultado = await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
-
-      if (resultado == true) {
-        await carregarBadgeCarrinho();
-        await carregarBadgeCarteira();
-      }
-
-      return;
-    }
-
-    if (totalItensCarrinho == 0) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Seu carrinho está vazio')));
-
-      return;
-    }
-
-    try {
-      final clienteId = await authStorage.obterClienteId();
-
-      if (clienteId == null || clienteId == 0) {
-        throw Exception('Cliente não identificado');
-      }
-
-      final lojasCarrinho = await apiService.buscarLojasComCarrinho(
-        clienteId: clienteId,
-      );
-
-      if (!mounted) return;
-
-      if (lojasCarrinho.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Seu carrinho está vazio')),
-        );
-        await carregarBadgeCarrinho();
-        await carregarBadgeCarteira();
-        return;
-      }
-
-      if (lojasCarrinho.length == 1) {
-        final lojaData = lojasCarrinho.first;
-
-        String buildImageUrl(String path) {
-          if (path.isEmpty) return '';
-          if (path.startsWith('http')) return path;
-          return 'https://bitbeer-production.up.railway.app$path';
-        }
-
-        final loja = Loja(
-          id: int.tryParse('${lojaData['loja_id']}') ?? 0,
-          organizacaoId: int.tryParse('${lojaData['organizacao_id']}') ?? 0,
-          nome: (lojaData['nmloja'] ?? 'Loja').toString(),
-          bairro: (lojaData['dsbairroloja'] ?? '').toString(),
-          horario: '',
-          imagemUrl: buildImageUrl((lojaData['urllogoloja'] ?? '').toString()),
-          instagram: '',
-        );
-
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: loja)),
-        );
-
-        await carregarBadgeCarrinho();
-        await carregarBadgeCarteira();
-        return;
-      }
-
-      await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const CarrinhoLojasScreen()),
-      );
-
-      await carregarBadgeCarrinho();
-      await carregarBadgeCarteira();
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
-    }
-  }
-
   Future<void> _selecionarAba(int index) async {
-    // 0 = Home
-    // 1 = Carrinho (abre por push)
-    // 2 = Carteira
-    // 3 = Perfil
-
-    if (index == 1) {
-      await _abrirCarrinho();
-      return;
-    }
-
-    final exigeLogin = index == 2 || index == 3;
+    final exigeLogin = index == 1 || index == 2 || index == 3;
 
     if (exigeLogin) {
       final logado = await _estaLogado();
@@ -274,9 +164,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       if (!logado) {
         if (!mounted) return;
 
-        final mensagem = index == 2
-            ? 'Faça login para acessar sua carteira'
-            : 'Faça login para acessar seu perfil';
+        String mensagem = 'Faça login para continuar';
+
+        if (index == 1) {
+          mensagem = 'Faça login para acessar seu carrinho';
+        } else if (index == 2) {
+          mensagem = 'Faça login para acessar sua carteira';
+        } else if (index == 3) {
+          mensagem = 'Faça login para acessar seu perfil';
+        }
 
         ScaffoldMessenger.of(
           context,
@@ -294,10 +190,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           await carregarBadgeCarteira();
 
           setState(() {
-            currentIndex = index == 2 ? 1 : 2;
+            currentIndex = index;
           });
         }
 
+        return;
+      }
+
+      if (index == 1 && totalItensCarrinho == 0) {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Seu carrinho está vazio')),
+        );
         return;
       }
     }
@@ -305,20 +210,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!mounted) return;
 
     setState(() {
-      if (index == 2) {
-        currentIndex = 1;
-      } else if (index == 3) {
-        currentIndex = 2;
-      } else {
-        currentIndex = 0;
-      }
+      currentIndex = index;
     });
-  }
-
-  int _selectedNavIndex() {
-    if (currentIndex == 1) return 2;
-    if (currentIndex == 2) return 3;
-    return 0;
   }
 
   @override
@@ -326,7 +219,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return Scaffold(
       body: _buildPage(),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedNavIndex(),
+        selectedIndex: currentIndex,
         onDestinationSelected: _selecionarAba,
         height: 72,
         destinations: [
