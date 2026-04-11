@@ -457,7 +457,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   const Text(
-                    'Itens do carrinho',
+                    'Itens',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 14),
@@ -465,7 +465,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     _estadoVazio()
                   else
                     ...itensCarrinho.map(_itemCarrinho),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 14),
                   if (!vazio) ...[
                     const Text(
                       'Forma de pagamento',

@@ -157,7 +157,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Selecione um bar ou casa noturna para ver os itens do seu carrinho.',
+                  'Aproveite o seu carrinho para concluir a sua compra ou adicionar mais produtos e ingressos.',
                   style: TextStyle(
                     color: Colors.grey.shade300,
                     fontSize: 14,
@@ -314,7 +314,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Carrinho')),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

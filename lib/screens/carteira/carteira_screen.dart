@@ -129,7 +129,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Retirada do pedido',
+                  'Retirada do produto',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
 
@@ -244,7 +244,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Itens disponíveis para uso ou retirada na loja selecionada.',
+                  'Itens disponíveis para uso no bar/casa noturna selecionada.',
                   style: TextStyle(
                     color: Colors.grey.shade300,
                     fontSize: 14,
@@ -454,13 +454,13 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           ),
           const SizedBox(height: 14),
           const Text(
-            'Sua carteira está vazia nesta loja',
+            'Sua carteira está vazia neste bar/casa noturna.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
-            'Selecione outra loja ou faça uma nova compra para visualizar itens aqui.',
+            'Selecione outro bar/casa noturna ou faça uma nova compra para visualizar itens aqui.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade700, height: 1.4),
           ),
@@ -521,7 +521,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                 _cabecalho(),
                 const SizedBox(height: 20),
                 const Text(
-                  'Loja selecionada',
+                  'Bar/casa noturna selecionada',
                   style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -532,7 +532,9 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(22),
                     ),
-                    child: const Text('Nenhuma loja disponível para seleção.'),
+                    child: const Text(
+                      'Nenhum bar/casa noturna disponível para seleção.',
+                    ),
                   )
                 else
                   _seletorLoja(),

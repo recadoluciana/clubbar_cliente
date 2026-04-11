@@ -129,8 +129,6 @@ class ApiService {
               ? evento.bannerUrl
               : '$baseUrl${evento.bannerUrl}';
 
-          print('BANNER EVENTO: $banner');
-
           return Evento(
             id: evento.id,
             titulo: evento.titulo,
@@ -162,9 +160,6 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('CARTEIRA STATUS: ${response.statusCode}');
-      print('CARTEIRA BODY: ${response.body}');
-
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
@@ -193,9 +188,6 @@ class ApiService {
         Uri.parse('$baseUrl/lojas/$lojaId/categorias'),
         headers: {'Content-Type': 'application/json'},
       );
-
-      print('CATEGORIAS STATUS: ${response.statusCode}');
-      print('CATEGORIAS BODY: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
@@ -331,9 +323,6 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('CARRINHO STATUS: ${response.statusCode}');
-      print('CARRINHO BODY: ${response.body}');
-
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
@@ -359,9 +348,6 @@ class ApiService {
         Uri.parse('$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um'),
         headers: {'Content-Type': 'application/json'},
       );
-
-      print('REMOVER ITEM STATUS: ${response.statusCode}');
-      print('REMOVER ITEM BODY: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return;
@@ -396,9 +382,6 @@ class ApiService {
           'loja_id': lojaId,
         }),
       );
-
-      print('PIX STATUS: ${response.statusCode}');
-      print('PIX BODY: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
