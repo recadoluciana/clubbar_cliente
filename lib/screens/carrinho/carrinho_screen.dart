@@ -209,8 +209,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         child: Row(
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 color: cor.withOpacity(0.14),
                 borderRadius: BorderRadius.circular(14),
@@ -230,10 +230,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    subtitulo,
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
-                  ),
                 ],
               ),
             ),
