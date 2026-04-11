@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final apiService = ApiService();
 
   final PageController _pageController = PageController(viewportFraction: 0.92);
+  final TextEditingController _buscaCtrl = TextEditingController();
 
   Timer? _timer;
   int _paginaAtual = 0;
@@ -31,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool logado = false;
   String? erro;
   String nomeCliente = '';
+  String termoBusca = '';
 
   List<Evento> eventos = [];
   List<Loja> lojas = [];
@@ -69,7 +71,9 @@ class _HomeScreenState extends State<HomeScreen> {
         debugPrint('Erro ao buscar eventos: $e');
       }
 
-      iniciarCarousel();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        iniciarCarousel();
+      });
     } catch (e) {
       erro = e.toString().replaceFirst('Exception: ', '');
     } finally {
@@ -81,16 +85,49 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  String _normalizar(String texto) {
+    return texto.toLowerCase().trim();
+  }
+
+  List<Evento> get eventosFiltrados {
+    if (termoBusca.trim().isEmpty) return eventos;
+
+    final q = _normalizar(termoBusca);
+
+    return eventos.where((evento) {
+      final titulo = _normalizar(evento.titulo);
+      final local = _normalizar(evento.local);
+      final data = _normalizar(evento.data);
+
+      return titulo.contains(q) || local.contains(q) || data.contains(q);
+    }).toList();
+  }
+
+  List<Loja> get lojasFiltradas {
+    if (termoBusca.trim().isEmpty) return lojas;
+
+    final q = _normalizar(termoBusca);
+
+    return lojas.where((loja) {
+      final nome = _normalizar(loja.nome);
+      final bairro = _normalizar(loja.bairro);
+      final horario = _normalizar(loja.horario);
+
+      return nome.contains(q) || bairro.contains(q) || horario.contains(q);
+    }).toList();
+  }
+
   void iniciarCarousel() {
     _timer?.cancel();
 
-    if (eventos.isEmpty) return;
+    if (eventosFiltrados.isEmpty) return;
 
     _timer = Timer.periodic(const Duration(seconds: 4), (_) {
-      if (!mounted || eventos.isEmpty) return;
-      if (!_pageController.hasClients) return; // 🔥 ESSA LINHA RESOLVE
+      if (!mounted) return;
+      if (eventosFiltrados.isEmpty) return;
+      if (!_pageController.hasClients) return;
 
-      _paginaAtual = (_paginaAtual + 1) % eventos.length;
+      _paginaAtual = (_paginaAtual + 1) % eventosFiltrados.length;
 
       _pageController.animateToPage(
         _paginaAtual,
@@ -104,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _timer?.cancel();
     _pageController.dispose();
+    _buscaCtrl.dispose();
     super.dispose();
   }
 
@@ -172,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
         width: width,
         height: height,
         fit: fit,
-        errorBuilder: (_, _, error) {
+        errorBuilder: (_, __, error) {
           debugPrint('ERRO AO CARREGAR IMAGEM: $error');
           debugPrint('URL DA IMAGEM: $url');
           return Container(
@@ -231,6 +269,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _campoBusca() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: TextField(
+        controller: _buscaCtrl,
+        onChanged: (value) {
+          setState(() {
+            termoBusca = value;
+            _paginaAtual = 0;
+          });
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_pageController.hasClients) {
+              _pageController.jumpToPage(0);
+            }
+          });
+
+          iniciarCarousel();
+        },
+        decoration: InputDecoration(
+          hintText: 'Buscar por bar, artista, bairro ou cidade',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: termoBusca.isEmpty
+              ? null
+              : IconButton(
+                  onPressed: () {
+                    _buscaCtrl.clear();
+                    setState(() {
+                      termoBusca = '';
+                      _paginaAtual = 0;
+                    });
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (_pageController.hasClients) {
+                        _pageController.jumpToPage(0);
+                      }
+                    });
+
+                    iniciarCarousel();
+                  },
+                  icon: const Icon(Icons.close),
+                ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(18),
+            borderSide: const BorderSide(color: Colors.amber, width: 1.6),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -270,26 +373,27 @@ class _HomeScreenState extends State<HomeScreen> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                 children: [
+                  _campoBusca(),
                   const SizedBox(height: 22),
 
                   _secaoTitulo('Destaques', Icons.celebration_outlined),
                   const SizedBox(height: 14),
 
-                  if (eventos.isEmpty)
-                    _cardVazio('Nenhum evento disponível no momento.')
+                  if (eventosFiltrados.isEmpty)
+                    _cardVazio('Nenhum evento encontrado.')
                   else
                     SizedBox(
                       height: 280,
                       child: PageView.builder(
                         controller: _pageController,
-                        itemCount: eventos.length,
+                        itemCount: eventosFiltrados.length,
                         onPageChanged: (index) {
                           setState(() {
                             _paginaAtual = index;
                           });
                         },
                         itemBuilder: (context, index) {
-                          final evento = eventos[index];
+                          final evento = eventosFiltrados[index];
 
                           return GestureDetector(
                             onTap: () {
@@ -411,11 +515,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                  if (eventos.isNotEmpty) ...[
+                  if (eventosFiltrados.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(eventos.length, (index) {
+                      children: List.generate(eventosFiltrados.length, (index) {
                         final ativo = index == _paginaAtual;
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
@@ -439,18 +543,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  if (lojas.isEmpty)
-                    _cardVazio(
-                      'Nenhum bar ou casa noturna disponível no momento.',
-                    )
+                  if (lojasFiltradas.isEmpty)
+                    _cardVazio('Nenhum bar ou casa noturna encontrado.')
                   else
                     ListView.builder(
-                      itemCount: lojas.length,
+                      itemCount: lojasFiltradas.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       itemBuilder: (context, index) {
-                        final loja = lojas[index];
+                        final loja = lojasFiltradas[index];
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 16),
