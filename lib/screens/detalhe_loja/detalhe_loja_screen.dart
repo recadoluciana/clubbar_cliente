@@ -152,17 +152,12 @@ class DetalheLojaScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 26),
-                  const Text(
-                    'Escolha uma opção',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
                   const SizedBox(height: 16),
                   _menuCard(
                     context: context,
                     titulo: 'Produtos',
                     subtitulo:
-                        'Acesse o cardápio da loja, navegue por categorias e escolha seus itens.',
+                        'Acesse o cardápio do bar, navegue por categorias e escolha seus itens.',
                     icone: Icons.restaurant_menu_rounded,
                     cor: Colors.amber,
                     onTap: () {
@@ -179,7 +174,7 @@ class DetalheLojaScreen extends StatelessWidget {
                     context: context,
                     titulo: 'Ingressos',
                     subtitulo:
-                        'Veja os eventos desta loja, confira os lotes e escolha seu ingresso.',
+                        'Veja os eventos deste bar, confira os lotes e escolha seu ingresso.',
                     icone: Icons.confirmation_number_rounded,
                     cor: Colors.blue,
                     onTap: () {

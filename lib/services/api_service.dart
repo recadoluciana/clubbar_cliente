@@ -80,9 +80,6 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('LOJAS STATUS: ${response.statusCode}');
-      print('LOJAS BODY: ${response.body}');
-
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
@@ -112,9 +109,6 @@ class ApiService {
         Uri.parse('$baseUrl/eventos/proximos'),
         headers: {'Content-Type': 'application/json'},
       );
-
-      print('EVENTOS STATUS: ${response.statusCode}');
-      print('EVENTOS BODY: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
@@ -232,9 +226,6 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
       );
 
-      print('PRODUTOS STATUS: ${response.statusCode}');
-      print('PRODUTOS BODY: ${response.body}');
-
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
@@ -308,9 +299,6 @@ class ApiService {
           'quantidade': quantidade,
         }),
       );
-
-      print('ADD CARRINHO STATUS: ${response.statusCode}');
-      print('ADD CARRINHO BODY: ${response.body}');
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return;
