@@ -76,7 +76,7 @@ class ApiService {
   Future<List<Loja>> buscarLojas() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/lojas/listar_todas_ativas'),
+        Uri.parse('$baseUrl/lojas/com_retirada'),
         headers: {'Content-Type': 'application/json'},
       );
 
