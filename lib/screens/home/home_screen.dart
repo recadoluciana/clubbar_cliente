@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
         lojas = await apiService.buscarLojas();
       } catch (e) {
         lojas = [];
-        debugPrint('Erro ao buscar lojas: $e');
+        debugPrint('Erro ao buscar bares: $e');
       }
 
       try {
@@ -289,7 +289,8 @@ class _HomeScreenState extends State<HomeScreen> {
           iniciarCarousel();
         },
         decoration: InputDecoration(
-          hintText: 'Buscar por bar, artista, bairro ou cidade',
+          hintText:
+              'Busca por bar, casa noturna, estilo musical, cidade ou bairro',
           prefixIcon: const Icon(Icons.search),
           suffixIcon: termoBusca.isEmpty
               ? null

@@ -76,7 +76,7 @@ class ApiService {
   Future<List<Loja>> buscarLojas() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/lojas/com_retirada'),
+        Uri.parse('$baseUrl/lojas/listar_todas_ativas'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -620,5 +620,29 @@ class ApiService {
     }
 
     return int.tryParse('${data['qt_total'] ?? 0}') ?? 0;
+  }
+
+  Future<List<Map<String, dynamic>>> buscarPendentes({
+    required int clienteId,
+    int lojaId = 0,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/entregas/pendentes?cliente_id=$clienteId&loja_id=$lojaId',
+      ),
+      headers: await _headersAutenticado(),
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+
+    if (response.statusCode != 200) {
+      throw Exception(data?['detail'] ?? 'Erro ao buscar itens pendentes');
+    }
+
+    if (data is List) {
+      return data.map((e) => Map<String, dynamic>.from(e)).toList();
+    }
+
+    return [];
   }
 }

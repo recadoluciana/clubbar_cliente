@@ -183,7 +183,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Gerencie suas informações.',
+                        'Veja e gerencie suas informações',
                         style: TextStyle(
                           color: Colors.grey.shade300,
                           fontSize: 14,
@@ -201,7 +201,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           // 🔒 Dados Pessoais
           _itemAcao(
             icon: Icons.person,
-            titulo: 'Dados Pessoais',
+            titulo: 'Dados pessoais',
             subtitulo: 'Altere suas informações pessoais',
             onTap: () {
               Navigator.push(
@@ -217,7 +217,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           // 🔒 ALTERAR SENHA
           _itemAcao(
             icon: Icons.password_rounded,
-            titulo: 'Alterar Senha',
+            titulo: 'Alterar senha',
             subtitulo: 'Altere sua senha de acesso à conta',
             onTap: () {
               Navigator.push(
@@ -233,7 +233,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           // 📄 MEUS PEDIDOS
           _itemAcao(
             icon: Icons.receipt_long_outlined,
-            titulo: 'Minhas Compras',
+            titulo: 'Minhas compras',
             subtitulo: 'Histórico de compras e retiradas',
             onTap: abrirPedidos,
             iconColor: Colors.blue,

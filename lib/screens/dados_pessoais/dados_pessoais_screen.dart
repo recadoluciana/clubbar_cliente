@@ -251,7 +251,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                     controller: _telefoneCtrl,
                     keyboardType: TextInputType.phone,
                     decoration: _decoracao(
-                      label: 'Telefone',
+                      label: 'Celular',
                       icon: Icons.phone_outlined,
                     ),
                     onChanged: (value) {
