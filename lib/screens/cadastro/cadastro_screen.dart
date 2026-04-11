@@ -160,7 +160,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Novo por aqui?')),
+      appBar: AppBar(title: const Text('Clubbar')),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -173,7 +173,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Preencha seus dados para continuar no Clubbar.',
+                'Dados Pessoais',
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
               ),
               const SizedBox(height: 24),
@@ -182,7 +182,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                 controller: _nomeCtrl,
                 textCapitalization: TextCapitalization.words,
                 decoration: _decoracao(
-                  label: 'Nome completo',
+                  label: 'Nome',
                   icon: Icons.person_outline,
                 ),
                 validator: (value) {

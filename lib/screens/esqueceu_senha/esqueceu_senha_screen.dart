@@ -86,12 +86,12 @@ class _EsqueceuSenhaScreenState extends State<EsqueceuSenhaScreen> {
             padding: const EdgeInsets.all(20),
             children: [
               const Text(
-                'Recuperar acesso',
+                'Recuperar senha',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 8),
               Text(
-                'Informe seu e-mail para receber o código de redefinição.',
+                'Informe seu e-mail para receber o código de redefinição da sua senha..',
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
               ),
               const SizedBox(height: 24),
