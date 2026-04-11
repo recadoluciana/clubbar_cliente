@@ -7,6 +7,8 @@ import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
+import '../../models/loja.dart';
+import '../carrinho/carrinho_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -119,7 +121,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       return;
     }
 
-    // 🔥 NOVA REGRA: carrinho vazio
     if (totalItensCarrinho == 0) {
       if (!mounted) return;
 
@@ -130,14 +131,68 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       return;
     }
 
-    if (!mounted) return;
+    try {
+      final clienteId = await authStorage.obterClienteId();
 
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const CarrinhoLojasScreen()),
-    );
+      if (clienteId == null || clienteId == 0) {
+        throw Exception('Cliente não identificado');
+      }
 
-    await carregarBadgeCarrinho();
+      final lojasCarrinho = await apiService.buscarLojasComCarrinho(
+        clienteId: clienteId,
+      );
+
+      if (!mounted) return;
+
+      if (lojasCarrinho.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Seu carrinho está vazio')),
+        );
+        await carregarBadgeCarrinho();
+        return;
+      }
+
+      if (lojasCarrinho.length == 1) {
+        final lojaData = lojasCarrinho.first;
+
+        String buildImageUrl(String path) {
+          if (path.isEmpty) return '';
+          if (path.startsWith('http')) return path;
+          return 'https://bitbeer-production.up.railway.app$path';
+        }
+
+        final loja = Loja(
+          id: int.tryParse('${lojaData['loja_id']}') ?? 0,
+          organizacaoId: int.tryParse('${lojaData['organizacao_id']}') ?? 0,
+          nome: (lojaData['nmloja'] ?? 'Loja').toString(),
+          bairro: (lojaData['dsbairroloja'] ?? '').toString(),
+          horario: '',
+          imagemUrl: buildImageUrl((lojaData['urllogoloja'] ?? '').toString()),
+          instagram: '',
+        );
+
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: loja)),
+        );
+
+        await carregarBadgeCarrinho();
+        return;
+      }
+
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CarrinhoLojasScreen()),
+      );
+
+      await carregarBadgeCarrinho();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   Future<void> _selecionarAba(int index) async {
