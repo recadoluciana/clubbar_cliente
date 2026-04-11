@@ -23,11 +23,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   int currentIndex = 0;
   int totalItensCarrinho = 0;
+  int totalItensCarteira = 0;
 
   @override
   void initState() {
     super.initState();
     carregarBadgeCarrinho();
+    carregarBadgeCarteira();
   }
 
   Widget _buildPage() {
@@ -77,6 +79,60 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  Future<void> carregarBadgeCarteira() async {
+    try {
+      final clienteId = await authStorage.obterClienteId();
+
+      if (clienteId == null || clienteId == 0) {
+        if (!mounted) return;
+        setState(() {
+          totalItensCarteira = 0;
+        });
+        return;
+      }
+
+      final total = await apiService.buscarQuantidadeCarteira(
+        clienteId: clienteId,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        totalItensCarteira = total;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        totalItensCarteira = 0;
+      });
+    }
+  }
+
+  Widget _iconeCarteiraComBadge({required bool selecionado}) {
+    final icone = Icon(
+      selecionado
+          ? Icons.account_balance_wallet
+          : Icons.account_balance_wallet_outlined,
+    );
+
+    if (totalItensCarteira <= 0) {
+      return icone;
+    }
+
+    return Badge(
+      backgroundColor: Colors.green,
+      label: Text(
+        totalItensCarteira > 99 ? '99+' : '$totalItensCarteira',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      child: icone,
+    );
+  }
+
   Widget _iconeCarrinhoComBadge({required bool selecionado}) {
     final icone = Icon(
       selecionado ? Icons.shopping_cart : Icons.shopping_cart_outlined,
@@ -116,6 +172,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
       if (resultado == true) {
         await carregarBadgeCarrinho();
+        await carregarBadgeCarteira();
       }
 
       return;
@@ -149,6 +206,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           const SnackBar(content: Text('Seu carrinho está vazio')),
         );
         await carregarBadgeCarrinho();
+        await carregarBadgeCarteira();
         return;
       }
 
@@ -177,6 +235,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         );
 
         await carregarBadgeCarrinho();
+        await carregarBadgeCarteira();
         return;
       }
 
@@ -186,6 +245,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       );
 
       await carregarBadgeCarrinho();
+      await carregarBadgeCarteira();
     } catch (e) {
       if (!mounted) return;
 
@@ -231,6 +291,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
         if (resultado == true) {
           await carregarBadgeCarrinho();
+          await carregarBadgeCarteira();
 
           setState(() {
             currentIndex = index == 2 ? 1 : 2;
@@ -279,9 +340,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             selectedIcon: _iconeCarrinhoComBadge(selecionado: true),
             label: 'Carrinho',
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
+          NavigationDestination(
+            icon: _iconeCarteiraComBadge(selecionado: false),
+            selectedIcon: _iconeCarteiraComBadge(selecionado: true),
             label: 'Carteira',
           ),
           const NavigationDestination(
