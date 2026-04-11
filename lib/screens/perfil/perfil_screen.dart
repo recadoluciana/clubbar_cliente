@@ -244,7 +244,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           // 🚪 SAIR
           _itemAcao(
             icon: Icons.logout_rounded,
-            titulo: 'Sair da conta',
+            titulo: 'Sair',
             subtitulo: 'Encerrar sessão neste dispositivo',
             onTap: fazerLogout,
             iconColor: Colors.red,
