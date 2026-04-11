@@ -138,8 +138,9 @@ class _RedefinirSenhaScreenState extends State<RedefinirSenhaScreen> {
                 validator: (value) {
                   final v = value ?? '';
                   if (v.isEmpty) return 'Informe a nova senha';
-                  if (v.length < 6)
+                  if (v.length < 6) {
                     return 'A senha deve ter pelo menos 6 caracteres';
+                  }
                   return null;
                 },
               ),

@@ -91,7 +91,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
         width: 58,
         height: 58,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
+        errorBuilder: (_, _, _) {
           return Container(
             width: 58,
             height: 58,

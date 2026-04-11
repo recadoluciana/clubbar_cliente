@@ -151,7 +151,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         width: 52,
         height: 52,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
+        errorBuilder: (_, _, _) {
           return Container(
             width: 52,
             height: 52,

@@ -104,7 +104,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => CartaoPagamentoScreen(
-            loja: widget.loja!,
+            loja: widget.loja,
             tipoPagamento: tipo,
             totalProdutos: total,
             taxaConveniencia: 0,
@@ -166,7 +166,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         width: 58,
         height: 58,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
+        errorBuilder: (_, _, _) => Container(
           width: 58,
           height: 58,
           decoration: BoxDecoration(
@@ -375,7 +375,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Adicione produtos da loja para continuar.',
+            'Adicione produtos para continuar.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade700, height: 1.4),
           ),
@@ -457,7 +457,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   const Text(
-                    'Itens do pedido',
+                    'Itens do carrinho',
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 14),
@@ -478,7 +478,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     _cardPagamento(
                       valor: FormaPagamento.pix,
                       titulo: 'PIX',
-                      subtitulo: 'Pagamento rápido e prático',
+                      subtitulo: '',
                       icone: Icons.pix,
                       cor: Colors.green,
                     ),
@@ -486,7 +486,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     _cardPagamento(
                       valor: FormaPagamento.credito,
                       titulo: 'Cartão de Crédito',
-                      subtitulo: 'Pague com seu cartão de crédito',
+                      subtitulo: '',
                       icone: Icons.credit_card,
                       cor: Colors.blue,
                     ),
@@ -494,7 +494,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     _cardPagamento(
                       valor: FormaPagamento.debito,
                       titulo: 'Cartão de Débito',
-                      subtitulo: 'Pague com seu cartão de débito',
+                      subtitulo: '',
                       icone: Icons.payment,
                       cor: Colors.deepPurple,
                     ),

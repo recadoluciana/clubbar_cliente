@@ -172,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
         width: width,
         height: height,
         fit: fit,
-        errorBuilder: (_, __, error) {
+        errorBuilder: (_, _, error) {
           debugPrint('ERRO AO CARREGAR IMAGEM: $error');
           debugPrint('URL DA IMAGEM: $url');
           return Container(
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         Text(
                           logado
-                              ? 'Olá, ${nomeCliente?.trim().isNotEmpty == true ? nomeCliente!.split(' ').first : 'cliente'} 👋'
+                              ? 'Olá, ${nomeCliente.trim().isNotEmpty == true ? nomeCliente.split(' ').first : 'cliente'} 👋'
                               : 'Bem-vindo ao Clubbar',
                           style: TextStyle(
                             color: Colors.grey.shade100,

@@ -113,7 +113,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   }
 
   void abrirQrOuRetirada(CarteiraItem item) {
-    final codigo = item.titulo + '-' + item.dataCriacao;
+    final codigo = '${item.titulo}-${item.dataCriacao}';
 
     showDialog(
       context: context,

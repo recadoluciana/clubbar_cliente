@@ -287,8 +287,9 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                 validator: (value) {
                   final v = value ?? '';
                   if (v.isEmpty) return 'Informe uma senha';
-                  if (v.length < 6)
+                  if (v.length < 6) {
                     return 'A senha deve ter pelo menos 6 caracteres';
+                  }
                   return null;
                 },
               ),

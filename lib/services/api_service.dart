@@ -9,7 +9,6 @@ import '../models/loja.dart';
 import '../models/categoria.dart';
 import '../models/produto.dart';
 import '../models/carteira_item.dart';
-import '../models/carrinho_item.dart';
 
 class ApiService {
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
@@ -637,7 +636,7 @@ class ApiService {
 
   Future<int> buscarQuantidadeCarteira({required int clienteId}) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/compras/qtitens?cliente_id=$clienteId'),
+      Uri.parse('$baseUrl/entregas/get_carteira_qt?cliente_id=$clienteId'),
       headers: await _headersAutenticado(),
     );
 

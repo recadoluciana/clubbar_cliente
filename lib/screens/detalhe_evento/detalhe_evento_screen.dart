@@ -19,7 +19,7 @@ class DetalheEventoScreen extends StatelessWidget {
               width: double.infinity,
               height: 240,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (_, _, _) => Container(
                 width: double.infinity,
                 height: 240,
                 color: Colors.grey.shade300,

@@ -57,7 +57,7 @@ class DetalheLojaScreen extends StatelessWidget {
                       ? Image.network(
                           loja.imagemUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
+                          errorBuilder: (_, _, _) =>
                               Container(color: Colors.grey.shade300),
                         )
                       : Container(color: Colors.grey.shade300),
