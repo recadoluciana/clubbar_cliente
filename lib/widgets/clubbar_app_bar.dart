@@ -19,7 +19,21 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
 
       // ❌ REMOVE logout
-      actions: const [],
+      actions: const [
+        Padding(
+          padding: EdgeInsets.only(right: 16),
+          child: Center(
+            child: Text(
+              "v1.0.1",
+              style: TextStyle(
+                color: Colors.black54,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
