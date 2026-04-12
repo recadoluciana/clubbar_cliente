@@ -186,14 +186,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  'Escolha o bar ou casa noturna para ver os itens disponíveis para retirada.',
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
               ],
             ),
           ),
@@ -302,7 +294,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Quando você tiver itens para retirada, os bares aparecerão aqui.',
+            ' ',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade700, height: 1.4),
           ),

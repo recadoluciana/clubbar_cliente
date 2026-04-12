@@ -9,6 +9,17 @@ class DetalheLojaScreen extends StatelessWidget {
 
   const DetalheLojaScreen({super.key, required this.loja});
 
+  void printLojaJson() {
+    // Monta o JSON manualmente com os campos que você precisa
+    debugPrint(
+      '{'
+      '"id": ${loja.id}, '
+      '"nome": "${loja.nome}", '
+      '"instagram": "${loja.instagram}"'
+      '}',
+    );
+  }
+
   Future<void> abrirInstagram(BuildContext context) async {
     final handle = loja.instagram.replaceAll('@', '').trim();
 
@@ -41,6 +52,9 @@ class DetalheLojaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Chama o print quando a tela é construída
+    printLojaJson();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       body: CustomScrollView(

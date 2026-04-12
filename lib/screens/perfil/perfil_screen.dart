@@ -202,7 +202,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           _itemAcao(
             icon: Icons.person,
             titulo: 'Dados pessoais',
-            subtitulo: 'Altere suas informações pessoais',
+            subtitulo: '',
             onTap: () {
               Navigator.push(
                 context,
@@ -218,7 +218,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           _itemAcao(
             icon: Icons.password_rounded,
             titulo: 'Alterar senha',
-            subtitulo: 'Altere sua senha de acesso à conta',
+            subtitulo: '',
             onTap: () {
               Navigator.push(
                 context,
@@ -234,7 +234,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           _itemAcao(
             icon: Icons.receipt_long_outlined,
             titulo: 'Minhas compras',
-            subtitulo: 'Histórico de compras e retiradas',
+            subtitulo: '',
             onTap: abrirPedidos,
             iconColor: Colors.blue,
           ),
@@ -245,7 +245,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           _itemAcao(
             icon: Icons.logout_rounded,
             titulo: 'Sair',
-            subtitulo: 'Encerrar sessão neste dispositivo',
+            subtitulo: '',
             onTap: fazerLogout,
             iconColor: Colors.red,
           ),

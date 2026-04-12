@@ -59,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       try {
         lojas = await apiService.buscarLojas();
+        print(lojas);
       } catch (e) {
         lojas = [];
         debugPrint('Erro ao buscar bares: $e');
@@ -112,8 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final nome = _normalizar(loja.nome);
       final bairro = _normalizar(loja.bairro);
       final horario = _normalizar(loja.horario);
+      final instagram = _normalizar(loja.instagram);
 
-      return nome.contains(q) || bairro.contains(q) || horario.contains(q);
+      return nome.contains(q) ||
+          bairro.contains(q) ||
+          horario.contains(q) ||
+          instagram.contains(q);
     }).toList();
   }
 
