@@ -244,14 +244,6 @@ class DetalheLojaScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitulo,
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        height: 1.35,
-                      ),
-                    ),
                   ],
                 ),
               ),

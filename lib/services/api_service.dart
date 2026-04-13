@@ -344,11 +344,13 @@ class ApiService {
   Future<void> removerItemCarrinho({
     required int carrinhoId,
     required int produtoId,
+    required String observacao,
   }) async {
     try {
       final response = await http.delete(
         Uri.parse('$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um'),
         headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'dsproduto': observacao}),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {

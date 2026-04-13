@@ -143,6 +143,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       await apiService.removerItemCarrinho(
         carrinhoId: carrinhoId!,
         produtoId: item.produtoId,
+        observacao: item.observacao,
       );
 
       if (!mounted) return;
