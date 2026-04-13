@@ -9,6 +9,26 @@ import '../pagamento/cartao_pagamento_screen.dart';
 
 enum FormaPagamento { pix, credito, debito }
 
+class ItemCarrinhoAgrupado {
+  final int produtoId;
+  final String nome;
+  final String observacao;
+  final String fotoUrl;
+  final double preco;
+  final int quantidade;
+
+  ItemCarrinhoAgrupado({
+    required this.produtoId,
+    required this.nome,
+    required this.observacao,
+    required this.fotoUrl,
+    required this.preco,
+    required this.quantidade,
+  });
+
+  double get subtotal => preco * quantidade;
+}
+
 class CarrinhoScreen extends StatefulWidget {
   final Loja loja;
 
@@ -35,6 +55,38 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   void initState() {
     super.initState();
     carregarCarrinho();
+  }
+
+  List<ItemCarrinhoAgrupado> get itensAgrupados {
+    final Map<String, ItemCarrinhoAgrupado> mapa = {};
+
+    for (final item in itensCarrinho) {
+      final obs = item.observacao.trim();
+      final chave = '${item.produtoId}__${obs.toLowerCase()}';
+
+      if (mapa.containsKey(chave)) {
+        final atual = mapa[chave]!;
+        mapa[chave] = ItemCarrinhoAgrupado(
+          produtoId: atual.produtoId,
+          nome: atual.nome,
+          observacao: atual.observacao,
+          fotoUrl: atual.fotoUrl,
+          preco: atual.preco,
+          quantidade: atual.quantidade + item.quantidade,
+        );
+      } else {
+        mapa[chave] = ItemCarrinhoAgrupado(
+          produtoId: item.produtoId,
+          nome: item.nome,
+          observacao: obs,
+          fotoUrl: item.fotoUrl,
+          preco: item.preco,
+          quantidade: item.quantidade,
+        );
+      }
+    }
+
+    return mapa.values.toList();
   }
 
   Future<void> carregarCarrinho() async {
@@ -76,7 +128,39 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   }
 
   double get total {
-    return itensCarrinho.fold<double>(0, (soma, item) => soma + item.subtotal);
+    return itensAgrupados.fold<double>(0, (soma, item) => soma + item.subtotal);
+  }
+
+  Future<void> removerItemAgrupado(ItemCarrinhoAgrupado item) async {
+    if (carrinhoId == null || carrinhoId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Carrinho inválido para remoção')),
+      );
+      return;
+    }
+
+    try {
+      await apiService.removerItemCarrinho(
+        carrinhoId: carrinhoId!,
+        produtoId: item.produtoId,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('1 unidade de "${item.nome}" removida do carrinho'),
+        ),
+      );
+
+      await carregarCarrinho();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   Future<void> finalizarPagamento() async {
@@ -243,7 +327,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
   }
 
-  Widget _itemCarrinho(ItemCarrinho item) {
+  Widget _itemCarrinho(ItemCarrinhoAgrupado item) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
@@ -257,8 +341,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
             children: [
               _imagemProduto(item.fotoUrl),
               const SizedBox(width: 14),
-
-              /// TEXTO PRINCIPAL
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,10 +352,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-
                     const SizedBox(height: 6),
-
-                    /// OBSERVAÇÃO
                     if (item.observacao.isNotEmpty)
                       Text(
                         item.observacao,
@@ -282,10 +361,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                           fontSize: 13,
                         ),
                       ),
-
                     const SizedBox(height: 8),
-
-                    /// QUANTIDADE
                     Text(
                       'Qtd: ${item.quantidade}',
                       style: const TextStyle(
@@ -293,12 +369,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         fontSize: 14,
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
-                    /// BOTÃO REMOVER
                     TextButton(
-                      onPressed: () => removerItem(item),
+                      onPressed: () => removerItemAgrupado(item),
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
                         minimumSize: const Size(0, 0),
@@ -312,10 +385,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   ],
                 ),
               ),
-
               const SizedBox(width: 12),
-
-              /// PREÇO / SUBTOTAL
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -326,14 +396,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                       fontSize: 14,
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
                   Text(
                     'Subtotal',
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   ),
-
                   Text(
                     'R\$ ${item.subtotal.toStringAsFixed(2)}',
                     style: const TextStyle(
@@ -438,7 +505,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final vazio = itensCarrinho.isEmpty;
+    final vazio = itensAgrupados.isEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
@@ -460,7 +527,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   if (vazio)
                     _estadoVazio()
                   else
-                    ...itensCarrinho.map(_itemCarrinho),
+                    ...itensAgrupados.map(_itemCarrinho),
                   const SizedBox(height: 14),
                   if (!vazio) ...[
                     const Text(

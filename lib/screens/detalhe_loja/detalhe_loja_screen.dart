@@ -170,8 +170,6 @@ class DetalheLojaScreen extends StatelessWidget {
                   _menuCard(
                     context: context,
                     titulo: 'Produtos',
-                    subtitulo:
-                        'Acesse o cardápio do bar, navegue por categorias e escolha seus itens.',
                     icone: Icons.restaurant_menu_rounded,
                     cor: Colors.amber,
                     onTap: () {
@@ -187,8 +185,6 @@ class DetalheLojaScreen extends StatelessWidget {
                   _menuCard(
                     context: context,
                     titulo: 'Ingressos',
-                    subtitulo:
-                        'Veja os eventos deste bar, confira os lotes e escolha seu ingresso.',
                     icone: Icons.confirmation_number_rounded,
                     cor: Colors.blue,
                     onTap: () {
@@ -212,7 +208,6 @@ class DetalheLojaScreen extends StatelessWidget {
   Widget _menuCard({
     required BuildContext context,
     required String titulo,
-    required String subtitulo,
     required IconData icone,
     required Color cor,
     required VoidCallback onTap,
