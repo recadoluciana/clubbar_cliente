@@ -726,8 +726,9 @@ class ApiService {
           local: evento.local,
           endereco: evento.endereco,
           bannerUrl: banner,
+          status: evento.status,
           nomeLoja: evento.nomeLoja,
-          cidade: evento.cidade,
+          nomeCidade: evento.nomeCidade,
         );
       }
 

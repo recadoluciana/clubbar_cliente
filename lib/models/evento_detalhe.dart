@@ -7,8 +7,9 @@ class EventoDetalhe {
   final String local;
   final String endereco;
   final String bannerUrl;
+  final String status;
   final String nomeLoja;
-  final String cidade;
+  final String nomeCidade;
 
   EventoDetalhe({
     required this.id,
@@ -19,8 +20,9 @@ class EventoDetalhe {
     required this.local,
     required this.endereco,
     required this.bannerUrl,
+    required this.status,
     required this.nomeLoja,
-    required this.cidade,
+    required this.nomeCidade,
   });
 
   factory EventoDetalhe.fromJson(Map<String, dynamic> json) {
@@ -33,8 +35,9 @@ class EventoDetalhe {
       local: (json['nmlocalevento'] ?? '').toString(),
       endereco: (json['dsendlocevento'] ?? '').toString(),
       bannerUrl: (json['urlbannerevento'] ?? '').toString().trim(),
+      status: (json['statusevento'] ?? '').toString(),
       nomeLoja: (json['nmloja'] ?? '').toString(),
-      cidade: (json['nmcidade'] ?? '').toString(),
+      nomeCidade: (json['nmcidade'] ?? '').toString(),
     );
   }
 
