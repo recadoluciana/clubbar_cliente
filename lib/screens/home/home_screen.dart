@@ -283,6 +283,69 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _bannerLogin() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1E1E1E), Color(0xFF2A2A2A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Escolha sua balada e prepare-se para se divertir!\n'
+              'Compre seu ingresso e o que vai consumir.',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                height: 1.4,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Badge LOGIN
+            InkWell(
+              onTap: abrirLogin,
+              borderRadius: BorderRadius.circular(30),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.login, color: Colors.black, size: 20),
+                    SizedBox(width: 6),
+                    Text(
+                      'Login',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _campoBusca() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -387,6 +450,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                 children: [
+                  if (!logado) _bannerLogin(),
                   _campoBusca(),
                   const SizedBox(height: 22),
 
