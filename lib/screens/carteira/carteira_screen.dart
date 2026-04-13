@@ -178,7 +178,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Minha carteira',
+                  'Carteira',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 25,
