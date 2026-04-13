@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/loja.dart';
-import '../eventos_loja/eventos_loja_screen.dart';
+import '../agenda/agenda_loja_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -176,7 +176,7 @@ class DetalheLojaScreen extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => EventosLojaScreen(loja: loja),
+                          builder: (_) => AgendaEventosScreen(loja: loja),
                         ),
                       );
                     },

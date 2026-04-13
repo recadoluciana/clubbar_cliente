@@ -6,6 +6,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../pagamento/cartao_pagamento_screen.dart';
+import '../../services/cart_badge_notifier.dart';
 
 enum FormaPagamento { pix, credito, debito }
 
@@ -155,6 +156,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       );
 
       await carregarCarrinho();
+
+      final total = await apiService.buscarQuantidadeCarrinho(
+        clienteId: clienteId!,
+      );
+      CartBadgeNotifier.atualizar(total);
     } catch (e) {
       if (!mounted) return;
 

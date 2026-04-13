@@ -6,6 +6,7 @@ import '../../models/produto.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../carrinho/carrinho_screen.dart';
+import '../../services/cart_badge_notifier.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -94,6 +95,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         quantidade: 1,
         observacao: observacao,
       );
+
+      final total = await apiService.buscarQuantidadeCarrinho(
+        clienteId: clienteId!,
+      );
+      CartBadgeNotifier.atualizar(total);
 
       if (!mounted) return;
 

@@ -347,10 +347,13 @@ class ApiService {
     required String observacao,
   }) async {
     try {
+      final uri = Uri.parse(
+        '$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um',
+      ).replace(queryParameters: {'observacao': observacao});
+
       final response = await http.delete(
-        Uri.parse('$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um'),
+        uri,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'dsproduto': observacao}),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -648,5 +651,48 @@ class ApiService {
     }
 
     return [];
+  }
+
+  Future<List<Evento>> buscarEventosPorLoja(int lojaId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/eventos/lojas/$lojaId/proximos'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+
+        if (data is! List) {
+          return [];
+        }
+
+        final eventos = data.map((e) => Evento.fromJson(e)).toList();
+
+        return eventos.map((evento) {
+          String banner = evento.bannerUrl.trim();
+
+          if (banner.isNotEmpty && banner.startsWith('/')) {
+            banner = '$baseUrl$banner';
+          }
+
+          if (banner.startsWith('http://')) {
+            banner = banner.replaceFirst('http://', 'https://');
+          }
+
+          return Evento(
+            id: evento.id,
+            titulo: evento.titulo,
+            data: evento.data,
+            local: evento.local,
+            bannerUrl: banner,
+          );
+        }).toList();
+      }
+
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      throw Exception('Falha ao buscar eventos da loja: $e');
+    }
   }
 }

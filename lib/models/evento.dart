@@ -17,9 +17,9 @@ class Evento {
     return Evento(
       id: _toInt(json['evento_id'] ?? json['id'] ?? 0),
       titulo: (json['nmtituloevento'] ?? 'Evento').toString(),
-      data: (json['dtinicioevento'] ?? '').toString(),
+      data: (json['dtinicioevento'] ?? json['data'] ?? '').toString(),
       local: (json['nmlocalevento'] ?? json['nmloja'] ?? '').toString(),
-      bannerUrl: (json['urlbannerevento'] ?? '').toString(),
+      bannerUrl: (json['urlbannerevento'] ?? '').toString().trim(),
     );
   }
 

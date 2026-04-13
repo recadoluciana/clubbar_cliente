@@ -7,6 +7,7 @@ import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
+import '../../services/cart_badge_notifier.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -20,7 +21,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final apiService = ApiService();
 
   int currentIndex = 0;
-  int totalItensCarrinho = 0;
   int totalItensCarteira = 0;
 
   String nomeCliente = '';
@@ -76,10 +76,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final clienteId = await authStorage.obterClienteId();
 
       if (clienteId == null || clienteId == 0) {
-        if (!mounted) return;
-        setState(() {
-          totalItensCarrinho = 0;
-        });
+        CartBadgeNotifier.limpar();
         return;
       }
 
@@ -87,16 +84,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         clienteId: clienteId,
       );
 
-      if (!mounted) return;
-
-      setState(() {
-        totalItensCarrinho = total;
-      });
+      CartBadgeNotifier.atualizar(total);
     } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        totalItensCarrinho = 0;
-      });
+      CartBadgeNotifier.limpar();
     }
   }
 
@@ -130,24 +120,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _iconeCarrinhoComBadge({required bool selecionado}) {
-    final icone = Icon(
-      selecionado ? Icons.shopping_cart : Icons.shopping_cart_outlined,
-    );
+    return ValueListenableBuilder<int>(
+      valueListenable: CartBadgeNotifier.totalItens,
+      builder: (context, totalItensCarrinho, _) {
+        final icone = Icon(
+          selecionado ? Icons.shopping_cart : Icons.shopping_cart_outlined,
+        );
 
-    if (totalItensCarrinho <= 0) {
-      return icone;
-    }
+        if (totalItensCarrinho <= 0) {
+          return icone;
+        }
 
-    return Badge(
-      label: Text(
-        totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      child: icone,
+        return Badge(
+          label: Text(
+            totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          child: icone,
+        );
+      },
     );
   }
 
@@ -219,7 +214,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         return;
       }
 
-      if (index == 1 && totalItensCarrinho == 0) {
+      if (index == 1 && CartBadgeNotifier.totalItens.value == 0) {
         if (!mounted) return;
 
         ScaffoldMessenger.of(context).showSnackBar(
