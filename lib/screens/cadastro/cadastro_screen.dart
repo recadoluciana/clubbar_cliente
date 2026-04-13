@@ -14,6 +14,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
 
   final _nomeCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _confirmarEmailCtrl = TextEditingController();
   final _senhaCtrl = TextEditingController();
   final _confirmarSenhaCtrl = TextEditingController();
   final _telefoneCtrl = TextEditingController();
@@ -29,6 +30,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
   void dispose() {
     _nomeCtrl.dispose();
     _emailCtrl.dispose();
+    _confirmarEmailCtrl.dispose();
     _senhaCtrl.dispose();
     _confirmarSenhaCtrl.dispose();
     _telefoneCtrl.dispose();
@@ -41,7 +43,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
   }
 
   bool _validarEmail(String email) {
-    final regex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    final regex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]{2,}$');
     return regex.hasMatch(email.trim());
   }
 
@@ -49,7 +51,6 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
     cpf = _somenteNumeros(cpf);
 
     if (cpf.length != 11) return false;
-
     if (RegExp(r'^(\d)\1{10}$').hasMatch(cpf)) return false;
 
     int calcularDigito(String base, int pesoInicial) {
@@ -102,10 +103,103 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
     return '(${cortado.substring(0, 2)}) ${cortado.substring(2, 7)}-${cortado.substring(7)}';
   }
 
+  String? sugerirEmail(String email) {
+    final original = email.trim();
+    final e = original.toLowerCase();
+
+    if (e.endsWith('.con')) {
+      return original.substring(0, original.length - 4) + '.com';
+    }
+
+    if (e.endsWith('.ccom')) {
+      return original.substring(0, original.length - 5) + '.com';
+    }
+
+    if (e.endsWith('.comm')) {
+      return original.substring(0, original.length - 5) + '.com';
+    }
+
+    if (e.contains('@gmai.com')) {
+      return original.replaceAll(
+        RegExp(r'@gmai\.com$', caseSensitive: false),
+        '@gmail.com',
+      );
+    }
+
+    if (e.contains('@gmil.com')) {
+      return original.replaceAll(
+        RegExp(r'@gmil\.com$', caseSensitive: false),
+        '@gmail.com',
+      );
+    }
+
+    if (e.contains('@hotmial.com')) {
+      return original.replaceAll(
+        RegExp(r'@hotmial\.com$', caseSensitive: false),
+        '@hotmail.com',
+      );
+    }
+
+    if (e.contains('@hotmai.com')) {
+      return original.replaceAll(
+        RegExp(r'@hotmai\.com$', caseSensitive: false),
+        '@hotmail.com',
+      );
+    }
+
+    if (e.contains('@outlok.com')) {
+      return original.replaceAll(
+        RegExp(r'@outlok\.com$', caseSensitive: false),
+        '@outlook.com',
+      );
+    }
+
+    if (e.contains('@outllok.com')) {
+      return original.replaceAll(
+        RegExp(r'@outllok\.com$', caseSensitive: false),
+        '@outlook.com',
+      );
+    }
+
+    return null;
+  }
+
   Future<void> _cadastrar() async {
     FocusScope.of(context).unfocus();
 
     if (!_formKey.currentState!.validate()) return;
+
+    String email = _emailCtrl.text.trim();
+
+    final sugestao = sugerirEmail(email);
+
+    if (sugestao != null && sugestao.toLowerCase() != email.toLowerCase()) {
+      final usarSugestao = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Confirmar e-mail'),
+          content: Text('Você quis dizer:\n\n$sugestao'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Não'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Sim'),
+            ),
+          ],
+        ),
+      );
+
+      if (usarSugestao == true) {
+        email = sugestao;
+        _emailCtrl.text = sugestao;
+        _confirmarEmailCtrl.text = sugestao;
+      } else {
+        return;
+      }
+    }
 
     setState(() {
       _carregando = true;
@@ -114,7 +208,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
     try {
       await apiService.cadastrarCliente(
         nome: _nomeCtrl.text.trim(),
-        email: _emailCtrl.text.trim(),
+        email: email,
         senha: _senhaCtrl.text,
         telefone: _somenteNumeros(_telefoneCtrl.text),
         cpf: _somenteNumeros(_cpfCtrl.text),
@@ -152,6 +246,14 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
       ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.amber, width: 1.5),
+      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
   }
@@ -173,7 +275,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Dados Pessoais',
+                'Dados pessoais',
                 style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
               ),
               const SizedBox(height: 24),
@@ -205,6 +307,25 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                   final v = value?.trim() ?? '';
                   if (v.isEmpty) return 'Informe seu e-mail';
                   if (!_validarEmail(v)) return 'E-mail inválido';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+
+              TextFormField(
+                controller: _confirmarEmailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: _decoracao(
+                  label: 'Confirmar e-mail',
+                  icon: Icons.mark_email_read_outlined,
+                ),
+                validator: (value) {
+                  final v = value?.trim() ?? '';
+                  if (v.isEmpty) return 'Confirme seu e-mail';
+                  if (!_validarEmail(v)) return 'E-mail inválido';
+                  if (v.toLowerCase() != _emailCtrl.text.trim().toLowerCase()) {
+                    return 'Os e-mails não conferem';
+                  }
                   return null;
                 },
               ),
