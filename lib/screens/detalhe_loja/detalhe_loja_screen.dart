@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../models/loja.dart';
+import '../../widgets/cart_badge_action.dart';
 import '../agenda/agenda_loja_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class DetalheLojaScreen extends StatelessWidget {
   final Loja loja;
@@ -10,7 +12,6 @@ class DetalheLojaScreen extends StatelessWidget {
   const DetalheLojaScreen({super.key, required this.loja});
 
   void printLojaJson() {
-    // Monta o JSON manualmente com os campos que você precisa
     debugPrint(
       '{'
       '"id": ${loja.id}, '
@@ -52,7 +53,6 @@ class DetalheLojaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Chama o print quando a tela é construída
     printLojaJson();
 
     return Scaffold(
@@ -63,6 +63,7 @@ class DetalheLojaScreen extends StatelessWidget {
             expandedHeight: 280,
             pinned: true,
             backgroundColor: const Color(0xFF111111),
+            actions: const [CartBadgeAction(), SizedBox(width: 6)],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
@@ -154,11 +155,17 @@ class DetalheLojaScreen extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              loja.instagram,
+                              loja.instagram.isEmpty
+                                  ? 'Instagram não informado'
+                                  : loja.instagram,
                               style: TextStyle(
-                                color: Colors.blue.shade700,
+                                color: loja.instagram.isEmpty
+                                    ? Colors.grey.shade700
+                                    : Colors.blue.shade700,
                                 fontSize: 15,
-                                decoration: TextDecoration.underline,
+                                decoration: loja.instagram.isEmpty
+                                    ? TextDecoration.none
+                                    : TextDecoration.underline,
                               ),
                             ),
                           ),
@@ -234,17 +241,12 @@ class DetalheLojaScreen extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      titulo,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  titulo,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
