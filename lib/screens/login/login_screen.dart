@@ -175,14 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const SizedBox(height: 10),
                     const SizedBox(height: 20),
-                    const Text(
-                      'Clubbar',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 34,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
+                    Column(
+                      children: [
+                        Image.asset('assets/images/logo.png', height: 70),
+                        const SizedBox(height: 8),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     const SizedBox(height: 28),
@@ -210,17 +207,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey.shade900,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Informe seus dados para entrar',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
                                 ),
                               ),
                             ),
@@ -384,7 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Ao continuar, você concorda com os termos de uso do app.',
+                      'Ao continuar você concorda com os termos de uso do app.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.grey.shade400,

@@ -28,6 +28,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   int? categoriaSelecionadaId;
   int? clienteId;
 
+  int quantidadeCarrinho = 0;
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +60,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       setState(() {
         carregando = false;
       });
+
+      // Se você já tiver um método para buscar a quantidade real do carrinho,
+      // chame aqui. Exemplo:
+      // await carregarQuantidadeCarrinho();
     } catch (e) {
       setState(() {
         erro = e.toString().replaceFirst('Exception: ', '');
@@ -66,7 +72,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     }
   }
 
-  Future<void> adicionarProdutoAoCarrinho(Produto produto) async {
+  Future<void> adicionarProdutoAoCarrinho(
+    Produto produto, {
+    String observacao = '',
+  }) async {
     if (clienteId == null || clienteId == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -83,12 +92,23 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         lojaId: widget.loja.id,
         produtoId: produto.id,
         quantidade: 1,
+        observacao: observacao,
       );
 
       if (!mounted) return;
 
+      setState(() {
+        quantidadeCarrinho += 1;
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('"${produto.nome}" adicionado ao carrinho')),
+        SnackBar(
+          content: Text(
+            observacao.trim().isEmpty
+                ? '"${produto.nome}" adicionado ao carrinho'
+                : '"${produto.nome}" adicionado ao carrinho com observação',
+          ),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
@@ -97,6 +117,45 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     }
+  }
+
+  Future<void> abrirDialogObservacao(Produto produto) async {
+    final controller = TextEditingController();
+
+    final resultado = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Observação - ${produto.nome}'),
+          content: TextField(
+            controller: controller,
+            maxLines: 3,
+            decoration: const InputDecoration(
+              hintText: 'Ex.: sem cebola, bem passado, tirar gelo...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, ''),
+              child: const Text('Sem observação'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, controller.text.trim()),
+              child: const Text('Adicionar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (resultado == null) return;
+
+    await adicionarProdutoAoCarrinho(produto, observacao: resultado);
   }
 
   List<Produto> get produtosFiltrados {
@@ -159,6 +218,72 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
+  Widget _iconeCarrinhoComBadge() {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: widget.loja)),
+        );
+
+        if (!mounted) return;
+        setState(() {});
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(right: 10),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 6,
+                    color: Colors.black12,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.shopping_cart_outlined, size: 22),
+            ),
+            if (quantidadeCarrinho > 0)
+              Positioned(
+                right: -6,
+                top: -6,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 20,
+                    minHeight: 20,
+                  ),
+                  child: Text(
+                    quantidadeCarrinho > 99 ? '99+' : '$quantidadeCarrinho',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _cardProduto(Produto produto) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -168,7 +293,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         elevation: 2,
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
-          onTap: () => adicionarProdutoAoCarrinho(produto),
+          onTap: () => abrirDialogObservacao(produto),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
@@ -210,15 +335,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () => adicionarProdutoAoCarrinho(produto),
-                      icon: const Icon(Icons.add_shopping_cart_rounded),
-                      tooltip: 'Adicionar ao carrinho',
-                    ),
-                  ],
+                IconButton(
+                  onPressed: () => abrirDialogObservacao(produto),
+                  icon: const Icon(Icons.add_shopping_cart_rounded),
+                  tooltip: 'Adicionar ao carrinho',
                 ),
               ],
             ),
@@ -287,23 +407,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(
-        title: Text('Produtos - ${widget.loja.nome}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.shopping_cart_outlined),
-            tooltip: 'Carrinho',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => CarrinhoScreen(loja: widget.loja),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text('Produtos - ${widget.loja.nome}')),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -313,9 +417,17 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  const Text(
-                    'Categorias',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  Row(
+                    children: [
+                      _iconeCarrinhoComBadge(),
+                      const Text(
+                        'Categorias',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
                   if (categorias.isEmpty)

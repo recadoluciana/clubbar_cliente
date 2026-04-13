@@ -278,6 +278,7 @@ class ApiService {
     required int lojaId,
     required int produtoId,
     int quantidade = 1,
+    String? observacao,
   }) async {
     try {
       final response = await http.post(
@@ -289,6 +290,7 @@ class ApiService {
           'loja_id': lojaId,
           'produto_id': produtoId,
           'quantidade': quantidade,
+          'observacao': observacao,
         }),
       );
 
