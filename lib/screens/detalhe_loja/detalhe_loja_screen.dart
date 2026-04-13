@@ -169,7 +169,7 @@ class DetalheLojaScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _menuCard(
                     context: context,
-                    titulo: 'Agenda'
+                    titulo: 'Agenda',
                     icone: Icons.confirmation_number_rounded,
                     cor: Colors.blue,
                     onTap: () {

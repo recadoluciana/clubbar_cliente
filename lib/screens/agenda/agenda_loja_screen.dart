@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../../models/evento.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
-import '../../widgets/clubbar_app_bar.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
   final Loja loja;
@@ -167,40 +166,45 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   }
 
   Widget estadoVazio() {
-    return Center(
+    return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.event_busy_outlined,
-              size: 60,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              'Nenhum evento encontrado',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Não há próximos eventos cadastrados para esta loja.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade700),
-            ),
-          ],
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                Icons.event_busy_outlined,
+                size: 60,
+                color: Colors.grey.shade400,
+              ),
+              const SizedBox(height: 14),
+              const Text(
+                'Nenhum evento encontrado',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Não há próximos eventos cadastrados para esta loja.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade700),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget erroWidget() {
-    return Center(
+    return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.cloud_off, size: 56),
             const SizedBox(height: 14),
@@ -224,35 +228,105 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(),
-      body: carregando
-          ? const Center(child: CircularProgressIndicator())
-          : erro != null
-          ? erroWidget()
-          : eventos.isEmpty
-          ? estadoVazio()
-          : RefreshIndicator(
-              onRefresh: carregarEventos,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  Text(
-                    'Agenda - ${widget.loja.nome}',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+      body: RefreshIndicator(
+        onRefresh: carregarEventos,
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              expandedHeight: 260,
+              pinned: true,
+              backgroundColor: const Color(0xFF111111),
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                title: Text(
+                  widget.loja.nome,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                background: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    widget.loja.imagemUrl.isNotEmpty
+                        ? Image.network(
+                            widget.loja.imagemUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                Container(color: Colors.grey.shade300),
+                          )
+                        : Container(color: Colors.grey.shade300),
+                    Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black54,
+                            Colors.black87,
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Próximos eventos desta loja',
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-                  ),
-                  const SizedBox(height: 18),
-                  ...eventos.map(itemEvento),
-                ],
+                  ],
+                ),
               ),
             ),
+
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Agenda - ${widget.loja.nome}',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Próximos eventos deste estabelecimento',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            if (carregando)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (erro != null)
+              erroWidget()
+            else if (eventos.isEmpty)
+              estadoVazio()
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => itemEvento(eventos[index]),
+                    childCount: eventos.length,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }
