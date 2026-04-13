@@ -294,7 +294,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Próximos eventos deste estabelecimento',
+                      'Próximos eventos',
                       style: TextStyle(
                         color: Colors.grey.shade700,
                         fontSize: 14,

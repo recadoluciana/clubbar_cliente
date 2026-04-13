@@ -9,6 +9,8 @@ import '../models/loja.dart';
 import '../models/categoria.dart';
 import '../models/produto.dart';
 import '../models/carteira_item.dart';
+import '../models/evento_detalhe.dart';
+import '../models/evento_lote.dart';
 
 class ApiService {
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
@@ -693,6 +695,68 @@ class ApiService {
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
     } catch (e) {
       throw Exception('Falha ao buscar eventos da loja: $e');
+    }
+  }
+
+  Future<EventoDetalhe> buscarDetalheEvento(int eventoId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/eventos/$eventoId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final evento = EventoDetalhe.fromJson(data);
+
+        String banner = evento.bannerUrl;
+        if (banner.isNotEmpty && banner.startsWith('/')) {
+          banner = '$baseUrl$banner';
+        }
+        if (banner.startsWith('http://')) {
+          banner = banner.replaceFirst('http://', 'https://');
+        }
+
+        return EventoDetalhe(
+          id: evento.id,
+          titulo: evento.titulo,
+          descricao: evento.descricao,
+          dataInicio: evento.dataInicio,
+          dataFim: evento.dataFim,
+          local: evento.local,
+          endereco: evento.endereco,
+          bannerUrl: banner,
+          nomeLoja: evento.nomeLoja,
+          cidade: evento.cidade,
+        );
+      }
+
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      throw Exception('Falha ao buscar detalhe do evento: $e');
+    }
+  }
+
+  Future<List<EventoLote>> buscarLotesDoEvento(int eventoId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/eventos/$eventoId/lotes'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+
+        if (data is! List) return [];
+
+        return data
+            .map((e) => EventoLote.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+
+      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+    } catch (e) {
+      throw Exception('Falha ao buscar lotes do evento: $e');
     }
   }
 }
