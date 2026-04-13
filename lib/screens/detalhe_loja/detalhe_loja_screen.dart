@@ -169,21 +169,6 @@ class DetalheLojaScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _menuCard(
                     context: context,
-                    titulo: 'Produtos',
-                    icone: Icons.restaurant_menu_rounded,
-                    cor: Colors.amber,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProdutosLojaScreen(loja: loja),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _menuCard(
-                    context: context,
                     titulo: 'Ingressos',
                     icone: Icons.confirmation_number_rounded,
                     cor: Colors.blue,
@@ -192,6 +177,21 @@ class DetalheLojaScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => EventosLojaScreen(loja: loja),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _menuCard(
+                    context: context,
+                    titulo: 'Produtos',
+                    icone: Icons.restaurant_menu_rounded,
+                    cor: Colors.amber,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProdutosLojaScreen(loja: loja),
                         ),
                       );
                     },
