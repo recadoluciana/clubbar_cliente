@@ -316,15 +316,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           ),
           const SizedBox(height: 14),
           const Text(
-            'Você ainda não tem pedidos pagos',
+            'Você ainda não tem nenuma compra.',
             style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Quando suas compras forem concluídas, elas aparecerão aqui.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-          ),
         ],
       ),
     );
@@ -339,7 +334,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             const Icon(Icons.cloud_off, size: 56),
             const SizedBox(height: 14),
             Text(
-              erro ?? 'Erro ao carregar pedidos',
+              erro ?? 'Erro ao carregar compras',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
@@ -350,69 +345,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _cabecalho() {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF111111), Color(0xFF1E1E1E), Color(0xFF2A2A2A)],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.receipt_long_rounded,
-              size: 36,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Compras',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Histórico de compras agrupadas por loja.',
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -429,7 +361,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                 children: [
-                  _cabecalho(),
                   const SizedBox(height: 22),
                   if (erro != null)
                     _erroWidget()

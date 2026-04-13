@@ -59,7 +59,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
       try {
         lojas = await apiService.buscarLojas();
-        print(lojas);
+
+        for (final loja in lojas) {
+          debugPrint('--------------------------------');
+          debugPrint('id: ${loja.id}');
+          debugPrint('nome: ${loja.nome}');
+          debugPrint('bairro: ${loja.bairro}');
+          debugPrint('horario: ${loja.horario}');
+          debugPrint('instagram: ${loja.instagram}');
+          debugPrint('imagemUrl: ${loja.imagemUrl}');
+        }
       } catch (e) {
         lojas = [];
         debugPrint('Erro ao buscar bares: $e');
@@ -215,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
         width: width,
         height: height,
         fit: fit,
-        errorBuilder: (_, __, error) {
+        errorBuilder: (_, _, error) {
           debugPrint('ERRO AO CARREGAR IMAGEM: $error');
           debugPrint('URL DA IMAGEM: $url');
           return Container(
