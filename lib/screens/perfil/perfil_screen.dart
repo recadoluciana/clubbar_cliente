@@ -65,7 +65,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget _itemAcao({
     required IconData icon,
     required String titulo,
-    required String subtitulo,
     required VoidCallback onTap,
     Color? iconColor,
   }) {
@@ -101,13 +100,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      subtitulo,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
                   ],
                 ),
               ),
