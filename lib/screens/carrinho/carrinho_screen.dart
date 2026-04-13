@@ -472,38 +472,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
   }
 
-  Future<void> removerItem(ItemCarrinho item) async {
-    if (carrinhoId == null || carrinhoId == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Carrinho inválido para remoção')),
-      );
-      return;
-    }
-
-    try {
-      await apiService.removerItemCarrinho(
-        carrinhoId: carrinhoId!,
-        produtoId: item.produtoId,
-      );
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('1 unidade de "${item.nome}" removida do carrinho'),
-        ),
-      );
-
-      await carregarCarrinho();
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final vazio = itensAgrupados.isEmpty;
