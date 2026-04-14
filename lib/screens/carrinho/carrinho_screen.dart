@@ -15,7 +15,13 @@ class ItemCarrinhoAgrupado {
   final String nome;
   final String observacao;
   final String fotoUrl;
-  final double preco;
+
+  final double precoOriginal;
+  final double precoFinal;
+  final bool descontoAtivo;
+  final String tipodesconto;
+  final double vrdesconto;
+
   final int quantidade;
 
   ItemCarrinhoAgrupado({
@@ -23,11 +29,15 @@ class ItemCarrinhoAgrupado {
     required this.nome,
     required this.observacao,
     required this.fotoUrl,
-    required this.preco,
+    required this.precoOriginal,
+    required this.precoFinal,
+    required this.descontoAtivo,
+    required this.tipodesconto,
+    required this.vrdesconto,
     required this.quantidade,
   });
 
-  double get subtotal => preco * quantidade;
+  double get subtotal => precoFinal * quantidade;
 }
 
 class CarrinhoScreen extends StatefulWidget {
@@ -72,7 +82,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           nome: atual.nome,
           observacao: atual.observacao,
           fotoUrl: atual.fotoUrl,
-          preco: atual.preco,
+          precoOriginal: atual.precoOriginal,
+          precoFinal: atual.precoFinal,
+          descontoAtivo: atual.descontoAtivo,
+          tipodesconto: atual.tipodesconto,
+          vrdesconto: atual.vrdesconto,
           quantidade: atual.quantidade + item.quantidade,
         );
       } else {
@@ -81,7 +95,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           nome: item.nome,
           observacao: obs,
           fotoUrl: item.fotoUrl,
-          preco: item.preco,
+          precoOriginal: item.precoOriginal,
+          precoFinal: item.precoFinal,
+          descontoAtivo: item.descontoAtivo,
+          tipodesconto: item.tipodesconto,
+          vrdesconto: item.vrdesconto,
           quantidade: item.quantidade,
         );
       }
@@ -115,6 +133,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           .map((e) => ItemCarrinho.fromJson(e as Map<String, dynamic>))
           .toList();
 
+      for (final item in lista) {
+        debugPrint(
+          'CARRINHO -> ${item.nome} | original=${item.precoOriginal} | final=${item.precoFinal} | ativo=${item.descontoAtivo} | tipo=${item.tipodesconto} | desconto=${item.vrdesconto}',
+        );
+      }
       setState(() {
         itensCarrinho = lista;
         carregando = false;
@@ -335,6 +358,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   }
 
   Widget _itemCarrinho(ItemCarrinhoAgrupado item) {
+    final bool temDesconto = item.descontoAtivo;
+
+    final String seloDesconto = item.tipodesconto.toUpperCase() == 'PERCENTUAL'
+        ? '${item.vrdesconto.toStringAsFixed(0)}% OFF'
+        : 'R\$ ${item.vrdesconto.toStringAsFixed(2)} OFF';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
@@ -352,6 +381,26 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (temDesconto)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          seloDesconto,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     Text(
                       item.nome,
                       style: const TextStyle(
@@ -396,13 +445,33 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    'R\$ ${item.preco.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
+                  if (temDesconto) ...[
+                    Text(
+                      'R\$ ${item.precoOriginal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                        color: Colors.grey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'R\$ ${item.precoFinal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      'R\$ ${item.precoFinal.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                      ),
+                    ),
                   const SizedBox(height: 8),
                   Text(
                     'Subtotal',
