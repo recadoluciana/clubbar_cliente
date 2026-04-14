@@ -54,6 +54,12 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       categorias = resultados[0] as List<Categoria>;
       produtos = resultados[1] as List<Produto>;
 
+      for (final p in produtos) {
+        debugPrint(
+          'PRODUTO: ${p.nmproduto} | preco=${p.vrprecoprod} | final=${p.vrprecofinal} | tipo=${p.tipodesconto} | desconto=${p.vrdesconto} | ativo=${p.descontoativo}',
+        );
+      }
+
       if (categorias.isNotEmpty) {
         categoriaSelecionadaId ??= categorias.first.id;
       }
@@ -61,10 +67,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       setState(() {
         carregando = false;
       });
-
-      // Se você já tiver um método para buscar a quantidade real do carrinho,
-      // chame aqui. Exemplo:
-      // await carregarQuantidadeCarrinho();
     } catch (e) {
       setState(() {
         erro = e.toString().replaceFirst('Exception: ', '');
@@ -91,7 +93,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         clienteId: clienteId!,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
-        produtoId: produto.id,
+        produtoId: produto.produtoId,
         quantidade: 1,
         observacao: observacao,
       );
@@ -111,8 +113,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         SnackBar(
           content: Text(
             observacao.trim().isEmpty
-                ? '"${produto.nome}" adicionado ao carrinho'
-                : '"${produto.nome}" adicionado ao carrinho com observação',
+                ? '"${produto.nmproduto}" adicionado ao carrinho'
+                : '"${produto.nmproduto}" adicionado ao carrinho com observação',
           ),
         ),
       );
@@ -132,7 +134,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Observação - ${produto.nome}'),
+          title: Text('Observação - ${produto.nmproduto}'),
           content: TextField(
             controller: controller,
             maxLines: 3,
@@ -172,8 +174,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         .toList();
   }
 
-  Widget _imagemProduto(String url) {
-    if (url.isEmpty) {
+  Widget _imagemProduto(String? url) {
+    if (url == null || url.isEmpty) {
       return Container(
         width: 86,
         height: 86,
@@ -192,7 +194,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         width: 86,
         height: 86,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Container(
+        errorBuilder: (_, __, ___) => Container(
           width: 86,
           height: 86,
           color: Colors.grey.shade200,
@@ -291,6 +293,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   }
 
   Widget _cardProduto(Produto produto) {
+    final bool temDesconto = produto.descontoativo;
+
+    final String seloDesconto =
+        produto.tipodesconto.toUpperCase() == 'PERCENTUAL'
+        ? '${produto.vrdesconto.toStringAsFixed(0)}% OFF'
+        : 'R\$ ${produto.vrdesconto.toStringAsFixed(2)} OFF';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
@@ -303,15 +312,36 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _imagemProduto(produto.imagemUrl),
+                _imagemProduto(produto.urlfotoproduto),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      if (temDesconto)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            seloDesconto,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       Text(
-                        produto.nome,
+                        produto.nmproduto,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -319,9 +349,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        produto.descricao.isEmpty
+                        produto.dsproduto.isEmpty
                             ? 'Sem descrição'
-                            : produto.descricao,
+                            : produto.dsproduto,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -330,13 +360,33 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Text(
-                        'R\$ ${produto.preco.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                      if (temDesconto) ...[
+                        Text(
+                          'R\$ ${produto.vrprecoprod.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                            decoration: TextDecoration.lineThrough,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'R\$ ${produto.vrprecofinal.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ] else
+                        Text(
+                          'R\$ ${produto.vrprecoprod.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                     ],
                   ),
                 ),

@@ -125,7 +125,6 @@ class ApiService {
               .toList();
         }
 
-        // 🔥 Corrige URL do banner
         return eventos.map((evento) {
           final banner = evento.bannerUrl.startsWith('http')
               ? evento.bannerUrl
@@ -184,6 +183,9 @@ class ApiService {
     }
   }
 
+  // ===============================
+  // CATEGORIAS
+  // ===============================
   Future<List<Categoria>> buscarCategoriasPorLoja(int lojaId) async {
     try {
       final response = await http.get(
@@ -213,6 +215,9 @@ class ApiService {
     }
   }
 
+  // ===============================
+  // PRODUTOS
+  // ===============================
   Future<List<Produto>> buscarProdutosPorLoja(int lojaId) async {
     try {
       final response = await http.get(
@@ -223,49 +228,17 @@ class ApiService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
-        List<Produto> produtos = [];
-
         if (data is List) {
-          produtos = data.map((e) => Produto.fromJson(e)).toList();
-        } else if (data is Map && data['items'] is List) {
-          produtos = (data['items'] as List)
+          return data.map((e) => Produto.fromJson(e)).toList();
+        }
+
+        if (data is Map && data['items'] is List) {
+          return (data['items'] as List)
               .map((e) => Produto.fromJson(e))
               .toList();
         }
 
-        return produtos.map((produto) {
-          String foto = produto.imagemUrl.trim();
-
-          if (foto.isEmpty) {
-            return Produto(
-              id: produto.id,
-              categoriaId: produto.categoriaId,
-              nome: produto.nome,
-              descricao: produto.descricao,
-              preco: produto.preco,
-              categoriaNome: produto.categoriaNome,
-              imagemUrl: '',
-            );
-          }
-
-          if (foto.startsWith('/')) {
-            foto = '$baseUrl$foto';
-          }
-
-          if (foto.startsWith('http://')) {
-            foto = foto.replaceFirst('http://', 'https://');
-          }
-
-          return Produto(
-            id: produto.id,
-            categoriaId: produto.categoriaId,
-            nome: produto.nome,
-            descricao: produto.descricao,
-            preco: produto.preco,
-            categoriaNome: produto.categoriaNome,
-            imagemUrl: foto,
-          );
-        }).toList();
+        return [];
       }
 
       throw Exception('HTTP ${response.statusCode}: ${response.body}');
