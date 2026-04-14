@@ -1,11 +1,17 @@
-// lib/widgets/cart_badge_action.dart
 import 'package:flutter/material.dart';
 
+import '../models/loja.dart';
 import '../screens/carrinho/carrinho_lojas_screen.dart';
+import '../screens/carrinho/carrinho_screen.dart';
 import '../services/cart_badge_notifier.dart';
 
 class CartBadgeAction extends StatelessWidget {
-  const CartBadgeAction({super.key});
+  final Loja? loja;
+
+  const CartBadgeAction({
+    super.key,
+    this.loja,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +39,11 @@ class CartBadgeAction extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const CarrinhoLojasScreen()),
+              MaterialPageRoute(
+                builder: (_) => loja != null
+                    ? CarrinhoScreen(loja: loja!)
+                    : const CarrinhoLojasScreen(),
+              ),
             );
           },
           icon: icon,

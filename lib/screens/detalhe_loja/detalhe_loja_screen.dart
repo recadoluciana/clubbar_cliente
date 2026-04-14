@@ -3,7 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/loja.dart';
 import '../../widgets/cart_badge_action.dart';
-import '../agenda/agenda_loja_screen.dart';
+import '../agenda/agenda_eventos_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 
 class DetalheLojaScreen extends StatelessWidget {
@@ -63,7 +63,10 @@ class DetalheLojaScreen extends StatelessWidget {
             expandedHeight: 280,
             pinned: true,
             backgroundColor: const Color(0xFF111111),
-            actions: const [CartBadgeAction(), SizedBox(width: 6)],
+            actions: [
+              CartBadgeAction(loja: loja),
+              const SizedBox(width: 6),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,

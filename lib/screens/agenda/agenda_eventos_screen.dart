@@ -5,6 +5,7 @@ import '../../models/evento.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
+import '../../utils/date_formatters.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
   final Loja loja;
@@ -50,19 +51,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   }
 
   String formatarCabecalhoData(String valor) {
-    if (valor.trim().isEmpty) return 'DATA NÃO INFORMADA';
-
-    try {
-      final data = DateTime.parse(valor).toLocal();
-      final diaSemana = DateFormat('EEE', 'pt_BR').format(data).toUpperCase();
-      final dia = DateFormat('dd', 'pt_BR').format(data);
-      final mes = DateFormat('MMM', 'pt_BR').format(data).toUpperCase();
-      final hora = DateFormat('HH:mm', 'pt_BR').format(data);
-
-      return '$diaSemana, $dia $mes · $hora';
-    } catch (_) {
-      return valor;
-    }
+    return DateFormatters.dataCompleta(valor);
   }
 
   String formatarLocal(Evento evento) {
@@ -198,12 +187,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                 'Nenhum evento encontrado',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Não há próximos eventos cadastrados para esta loja.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
+              
             ],
           ),
         ),

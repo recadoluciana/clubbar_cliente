@@ -5,6 +5,7 @@ import '../../models/evento_detalhe.dart';
 import '../../models/evento_lote.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
+import '../../utils/date_formatters.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -64,25 +65,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   String formatarDataHora(String valor) {
-    if (valor.trim().isEmpty) return 'Não informado';
-
-    try {
-      final data = DateTime.parse(valor).toLocal();
-      return DateFormat('dd/MM/yyyy - HH:mm', 'pt_BR').format(data);
-    } catch (_) {
-      return valor;
-    }
+    return DateFormatters.dataCompleta(valor);
   }
 
   String formatarPeriodoVenda(String inicio, String fim) {
-    final ini = formatarDataHora(inicio);
-    final fimFmt = formatarDataHora(fim);
-
-    if (inicio.trim().isEmpty && fim.trim().isEmpty) {
-      return 'Período de venda não informado';
-    }
-
-    return '$ini até $fimFmt';
+    return DateFormatters.periodo(inicio, fim);
   }
 
   Color corStatusLote(String status) {

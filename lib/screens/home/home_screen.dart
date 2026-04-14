@@ -300,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Escolha sua balada e prepare-se para se divertir!\n'
+              'Sua balada começa aqui.\n'
               'Compre seu ingresso e o que vai consumir.',
               style: TextStyle(
                 color: Colors.white,
