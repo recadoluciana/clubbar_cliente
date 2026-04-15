@@ -15,6 +15,64 @@ import '../models/evento_lote.dart';
 class ApiService {
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
+  String _mensagemErroAmigavel(Object e) {
+    final texto = e.toString().toLowerCase();
+
+    if (texto.contains('socketexception') ||
+        texto.contains('failed host lookup') ||
+        texto.contains('connection refused')) {
+      return 'Sem conexão com a internet ou servidor indisponível.';
+    }
+
+    if (texto.contains('timeout')) {
+      return 'O servidor demorou para responder. Tente novamente.';
+    }
+
+    if (texto.contains('502') ||
+        texto.contains('503') ||
+        texto.contains('500')) {
+      return 'Sistema em atualização. Tente novamente em instantes.';
+    }
+
+    return 'Não foi possível concluir a operação. Tente novamente.';
+  }
+
+  String _extrairMensagemHttp(http.Response response) {
+    try {
+      final data = jsonDecode(response.body);
+
+      if (data is Map) {
+        final detail = data['detail'];
+        if (detail is String && detail.trim().isNotEmpty) {
+          return detail;
+        }
+
+        final message = data['message'];
+        if (message is String && message.trim().isNotEmpty) {
+          return message;
+        }
+
+        final mensagem = data['mensagem'];
+        if (mensagem is String && mensagem.trim().isNotEmpty) {
+          return mensagem;
+        }
+      }
+    } catch (_) {}
+
+    switch (response.statusCode) {
+      case 500:
+      case 502:
+      case 503:
+        return 'Sistema em atualização. Tente novamente em instantes.';
+      case 401:
+        return 'Sessão expirada. Faça login novamente.';
+      case 404:
+        return 'Recurso não encontrado.';
+      default:
+        return 'Erro na comunicação com o servidor.';
+    }
+  }
+
   String montarUrlCartaoWeb({
     required int clienteId,
     required int organizacaoId,
@@ -58,17 +116,9 @@ class ApiService {
         return AuthResponse.fromJson(data);
       }
 
-      String mensagem = 'Erro ao fazer login';
-      try {
-        final body = jsonDecode(response.body);
-        mensagem = body['detail']?.toString() ?? response.body;
-      } catch (_) {
-        mensagem = response.body;
-      }
-
-      throw Exception('HTTP ${response.statusCode}: $mensagem');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha de conexão no login: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -96,9 +146,9 @@ class ApiService {
         return [];
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar lojas: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -140,9 +190,9 @@ class ApiService {
         }).toList();
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar eventos: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -177,9 +227,9 @@ class ApiService {
         return [];
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar carteira: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -209,9 +259,9 @@ class ApiService {
         return [];
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar categorias: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -241,9 +291,9 @@ class ApiService {
         return [];
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar produtos: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -273,17 +323,9 @@ class ApiService {
         return;
       }
 
-      String mensagem = 'Não foi possível adicionar ao carrinho';
-      try {
-        final body = jsonDecode(response.body);
-        mensagem = body['detail']?.toString() ?? response.body;
-      } catch (_) {
-        mensagem = response.body;
-      }
-
-      throw Exception(mensagem);
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao adicionar ao carrinho: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -310,9 +352,9 @@ class ApiService {
         return {'carrinho_id': 0, 'itens': []};
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar carrinho: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -335,17 +377,9 @@ class ApiService {
         return;
       }
 
-      String mensagem = 'Não foi possível remover o item do carrinho';
-      try {
-        final body = jsonDecode(response.body);
-        mensagem = body['detail']?.toString() ?? response.body;
-      } catch (_) {
-        mensagem = response.body;
-      }
-
-      throw Exception(mensagem);
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao remover item do carrinho: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -373,17 +407,9 @@ class ApiService {
         throw Exception('Resposta inválida do pagamento PIX');
       }
 
-      String mensagem = 'Não foi possível gerar o PIX';
-      try {
-        final body = jsonDecode(response.body);
-        mensagem = body['detail']?.toString() ?? response.body;
-      } catch (_) {
-        mensagem = response.body;
-      }
-
-      throw Exception(mensagem);
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao iniciar pagamento PIX: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -394,35 +420,46 @@ class ApiService {
     String? telefone,
     String? cpf,
   }) async {
-    final body = {
-      'nmcliente': nome,
-      'emailcliente': email,
-      'senhahashcli': senha,
-      'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
-      'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
-    };
+    try {
+      final body = {
+        'nmcliente': nome,
+        'emailcliente': email,
+        'senhahashcli': senha,
+        'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
+        'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
+      };
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/register_cliente'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/register_cliente'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Erro ao cadastrar cliente');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
   Future<void> esqueceuSenha({required String email}) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/clientes/esqueci-senha'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'emailcliente': email}),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/clientes/esqueci-senha'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'emailcliente': email}),
+      );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      final data = jsonDecode(response.body);
-      throw Exception(data['detail'] ?? 'Erro ao enviar código');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -431,18 +468,24 @@ class ApiService {
     required String codigo,
     required String novaSenha,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/clientes/redefinir-senha'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'emailcliente': email,
-        'codigo': codigo,
-        'novasenha': novaSenha,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/clientes/redefinir-senha'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'emailcliente': email,
+          'codigo': codigo,
+          'novasenha': novaSenha,
+        }),
+      );
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Não foi possível redefinir a senha');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -450,32 +493,41 @@ class ApiService {
     required String senhaAtual,
     required String novaSenha,
   }) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/clientes/me/senha'),
-      headers: await _headersAutenticado(),
-      body: jsonEncode({'senha_atual': senhaAtual, 'nova_senha': novaSenha}),
-    );
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/clientes/me/senha'),
+        headers: await _headersAutenticado(),
+        body: jsonEncode({'senha_atual': senhaAtual, 'nova_senha': novaSenha}),
+      );
 
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (response.statusCode == 200) {
+        return;
+      }
 
-    if (response.statusCode != 200) {
-      throw Exception(data?['detail'] ?? 'Erro ao alterar senha');
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
   Future<Map<String, dynamic>> buscarMeuPerfil() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/clientes/me'),
-      headers: await _headersAutenticado(),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/clientes/me'),
+        headers: await _headersAutenticado(),
+      );
 
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (response.statusCode == 200) {
+        final data = response.body.isNotEmpty
+            ? jsonDecode(response.body)
+            : null;
+        return Map<String, dynamic>.from(data);
+      }
 
-    if (response.statusCode != 200) {
-      throw Exception(data?['detail'] ?? 'Erro ao buscar perfil');
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
-
-    return Map<String, dynamic>.from(data);
   }
 
   Future<void> atualizarMeuPerfil({
@@ -483,20 +535,24 @@ class ApiService {
     String? telefone,
     String? cpf,
   }) async {
-    final response = await http.put(
-      Uri.parse('$baseUrl/clientes/me'),
-      headers: await _headersAutenticado(),
-      body: jsonEncode({
-        'nmcliente': nome,
-        'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
-        'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
-      }),
-    );
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/clientes/me'),
+        headers: await _headersAutenticado(),
+        body: jsonEncode({
+          'nmcliente': nome,
+          'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
+          'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
+        }),
+      );
 
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (response.statusCode == 200) {
+        return;
+      }
 
-    if (response.statusCode != 200) {
-      throw Exception(data?['detail'] ?? 'Erro ao atualizar perfil');
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -508,124 +564,152 @@ class ApiService {
     required String securityCode,
     required String tipoPagamento,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/pagamentos/pagar-novo'),
-      headers: await _headersAutenticado(),
-      body: jsonEncode({
-        'cliente_id': clienteId,
-        'organizacao_id': organizacaoId,
-        'loja_id': lojaId,
-        'encrypted_card': encryptedCard,
-        'security_code': securityCode,
-        'payment_method': tipoPagamento,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/pagamentos/pagar-novo'),
+        headers: await _headersAutenticado(),
+        body: jsonEncode({
+          'cliente_id': clienteId,
+          'organizacao_id': organizacaoId,
+          'loja_id': lojaId,
+          'encrypted_card': encryptedCard,
+          'security_code': securityCode,
+          'payment_method': tipoPagamento,
+        }),
+      );
 
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return;
+      }
 
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(data?['detail'] ?? 'Erro no pagamento');
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
   Future<List<Map<String, dynamic>>> buscarCompras({
     required int clienteId,
   }) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/compras?cliente_id=$clienteId&incluir_itens=true'),
-      headers: await _headersAutenticado(),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/compras?cliente_id=$clienteId&incluir_itens=true'),
+        headers: await _headersAutenticado(),
+      );
 
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (response.statusCode == 200) {
+        final data = response.body.isNotEmpty
+            ? jsonDecode(response.body)
+            : null;
 
-    if (response.statusCode != 200) {
-      throw Exception(data?['detail'] ?? 'Erro ao buscar compras');
+        if (data is List) {
+          return data.map((e) => Map<String, dynamic>.from(e)).toList();
+        }
+
+        return [];
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
-
-    if (data is List) {
-      return data.map((e) => Map<String, dynamic>.from(e)).toList();
-    }
-
-    return [];
   }
 
   Future<List<Map<String, dynamic>>> buscarLojasComCarrinho({
     required int clienteId,
   }) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/carrinho/lojas?cliente_id=$clienteId'),
-      headers: await _headersAutenticado(),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/carrinho/lojas?cliente_id=$clienteId'),
+        headers: await _headersAutenticado(),
+      );
 
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (response.statusCode == 200) {
+        final data = response.body.isNotEmpty
+            ? jsonDecode(response.body)
+            : null;
 
-    if (response.statusCode != 200) {
-      throw Exception(data?['detail'] ?? 'Erro ao buscar lojas do carrinho');
+        if (data is List) {
+          return data.map((e) => Map<String, dynamic>.from(e)).toList();
+        }
+
+        return [];
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
-
-    if (data is List) {
-      return data.map((e) => Map<String, dynamic>.from(e)).toList();
-    }
-
-    return [];
   }
 
   Future<int> buscarQuantidadeCarrinho({required int clienteId}) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/carrinho/qtde_itens_geral?cliente_id=$clienteId'),
-      headers: await _headersAutenticado(),
-    );
-
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        data?['detail'] ?? 'Erro ao buscar quantidade do carrinho',
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/carrinho/qtde_itens_geral?cliente_id=$clienteId'),
+        headers: await _headersAutenticado(),
       );
-    }
 
-    return int.tryParse('${data['qt_total'] ?? 0}') ?? 0;
+      if (response.statusCode == 200) {
+        final data = response.body.isNotEmpty
+            ? jsonDecode(response.body)
+            : null;
+        return int.tryParse('${data['qt_total'] ?? 0}') ?? 0;
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
+    }
   }
 
   Future<int> buscarQuantidadeCarteira({required int clienteId}) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/entregas/get_carteira_qt?cliente_id=$clienteId'),
-      headers: await _headersAutenticado(),
-    );
-
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
-
-    if (response.statusCode != 200) {
-      throw Exception(
-        data?['detail'] ?? 'Erro ao buscar quantidade da carteira',
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/entregas/get_carteira_qt?cliente_id=$clienteId'),
+        headers: await _headersAutenticado(),
       );
-    }
 
-    return int.tryParse('${data['qt_total'] ?? 0}') ?? 0;
+      if (response.statusCode == 200) {
+        final data = response.body.isNotEmpty
+            ? jsonDecode(response.body)
+            : null;
+        return int.tryParse('${data['qt_total'] ?? 0}') ?? 0;
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
+    }
   }
 
   Future<List<Map<String, dynamic>>> buscarPendentes({
     required int clienteId,
     int lojaId = 0,
   }) async {
-    final response = await http.get(
-      Uri.parse(
-        '$baseUrl/entregas/pendentes?cliente_id=$clienteId&loja_id=$lojaId',
-      ),
-      headers: await _headersAutenticado(),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse(
+          '$baseUrl/entregas/pendentes?cliente_id=$clienteId&loja_id=$lojaId',
+        ),
+        headers: await _headersAutenticado(),
+      );
 
-    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+      if (response.statusCode == 200) {
+        final data = response.body.isNotEmpty
+            ? jsonDecode(response.body)
+            : null;
 
-    if (response.statusCode != 200) {
-      throw Exception(data?['detail'] ?? 'Erro ao buscar itens pendentes');
+        if (data is List) {
+          return data.map((e) => Map<String, dynamic>.from(e)).toList();
+        }
+
+        return [];
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(_mensagemErroAmigavel(e));
     }
-
-    if (data is List) {
-      return data.map((e) => Map<String, dynamic>.from(e)).toList();
-    }
-
-    return [];
   }
 
   Future<List<Evento>> buscarEventosPorLoja(int lojaId) async {
@@ -665,9 +749,9 @@ class ApiService {
         }).toList();
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar eventos da loja: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -705,9 +789,9 @@ class ApiService {
         );
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar detalhe do evento: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 
@@ -728,9 +812,9 @@ class ApiService {
             .toList();
       }
 
-      throw Exception('HTTP ${response.statusCode}: ${response.body}');
+      throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception('Falha ao buscar lotes do evento: $e');
+      throw Exception(_mensagemErroAmigavel(e));
     }
   }
 }
