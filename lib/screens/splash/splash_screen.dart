@@ -20,6 +20,8 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _textOpacity;
   late Animation<Offset> _logoSlide;
 
+  bool _olhoFechado = false;
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +71,8 @@ class _SplashScreenState extends State<SplashScreen>
     _vooController.repeat(reverse: true);
     _particulasController.repeat();
 
+    _iniciarPiscada();
+
     Future.delayed(const Duration(seconds: 4), () {
       if (!mounted) return;
 
@@ -77,6 +81,25 @@ class _SplashScreenState extends State<SplashScreen>
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
       );
     });
+  }
+
+  Future<void> _iniciarPiscada() async {
+    while (mounted) {
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+
+      setState(() => _olhoFechado = true);
+      await Future.delayed(const Duration(milliseconds: 120));
+      if (!mounted) return;
+      setState(() => _olhoFechado = false);
+
+      await Future.delayed(const Duration(milliseconds: 220));
+      if (!mounted) return;
+      setState(() => _olhoFechado = true);
+      await Future.delayed(const Duration(milliseconds: 120));
+      if (!mounted) return;
+      setState(() => _olhoFechado = false);
+    }
   }
 
   @override
@@ -129,7 +152,6 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-
             AnimatedBuilder(
               animation: _particulasController,
               builder: (context, _) {
@@ -139,7 +161,6 @@ class _SplashScreenState extends State<SplashScreen>
                 );
               },
             ),
-
             Center(
               child: AnimatedBuilder(
                 animation: Listenable.merge([
@@ -206,9 +227,19 @@ class _SplashScreenState extends State<SplashScreen>
                                       ),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(30),
-                                        child: Image.asset(
-                                          'assets/images/corujao.png',
-                                          fit: BoxFit.contain,
+                                        child: AnimatedSwitcher(
+                                          duration: const Duration(
+                                            milliseconds: 90,
+                                          ),
+                                          switchInCurve: Curves.easeIn,
+                                          switchOutCurve: Curves.easeOut,
+                                          child: Image.asset(
+                                            _olhoFechado
+                                                ? 'assets/images/corujao_piscando.png'
+                                                : 'assets/images/corujao.png',
+                                            key: ValueKey(_olhoFechado),
+                                            fit: BoxFit.contain,
+                                          ),
                                         ),
                                       ),
                                     ),
