@@ -1,3 +1,5 @@
+import '../services/api_service.dart';
+
 class ItemCarrinho {
   final int produtoId;
   final String nome;
@@ -26,16 +28,36 @@ class ItemCarrinho {
 
   factory ItemCarrinho.fromJson(Map<String, dynamic> json) {
     return ItemCarrinho(
-      produtoId: json['produto_id'] ?? 0,
-      nome: json['nmproduto'] ?? '',
-      observacao: json['observacao'] ?? '',
-      fotoUrl: (json['urlfotoproduto'] ?? '').toString(),
-      quantidade: json['qt'] ?? 1,
-      precoOriginal: (json['vrprecoprod'] ?? 0).toDouble(),
-      precoFinal: (json['vrprecofinal'] ?? json['vrprecoprod'] ?? 0).toDouble(),
-      descontoAtivo: json['descontoativo'] ?? false,
+      produtoId: _toInt(json['produto_id']),
+      nome: (json['nmproduto'] ?? '').toString(),
+      observacao: (json['observacao'] ?? json['dsobsitcar'] ?? '').toString(),
+      fotoUrl: _buildUrl((json['urlfotoproduto'] ?? '').toString()),
+      quantidade: _toInt(json['qt'], fallback: 1),
+      precoOriginal: _toDouble(json['vrprecoprod']),
+      precoFinal: _toDouble(json['vrprecofinal'] ?? json['vrprecoprod']),
+      descontoAtivo: json['descontoativo'] == true,
       tipodesconto: (json['tipodesconto'] ?? 'NENHUM').toString(),
-      vrdesconto: (json['vrdesconto'] ?? 0).toDouble(),
+      vrdesconto: _toDouble(json['vrdesconto']),
     );
+  }
+
+  static String _buildUrl(String url) {
+    final texto = url.trim();
+
+    if (texto.isEmpty) return '';
+    if (texto.startsWith('http')) return texto;
+
+    return '${ApiService.baseUrl}${texto.startsWith('/') ? '' : '/'}$texto';
+  }
+
+  static int _toInt(dynamic valor, {int fallback = 0}) {
+    if (valor is int) return valor;
+    return int.tryParse(valor.toString()) ?? fallback;
+  }
+
+  static double _toDouble(dynamic valor) {
+    if (valor is double) return valor;
+    if (valor is int) return valor.toDouble();
+    return double.tryParse(valor.toString()) ?? 0;
   }
 }
