@@ -67,10 +67,45 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       setState(() {
         carregando = false;
       });
+
+      await carregarQuantidadeCarrinho();
     } catch (e) {
       setState(() {
         erro = e.toString().replaceFirst('Exception: ', '');
         carregando = false;
+      });
+    }
+  }
+
+  Future<void> carregarQuantidadeCarrinho() async {
+    try {
+      final id = clienteId ?? await authStorage.obterClienteId();
+
+      if (id == null || id == 0) {
+        CartBadgeNotifier.limpar();
+
+        if (!mounted) return;
+        setState(() {
+          quantidadeCarrinho = 0;
+        });
+
+        return;
+      }
+
+      final total = await apiService.buscarQuantidadeCarrinho(clienteId: id);
+
+      CartBadgeNotifier.atualizar(total);
+
+      if (!mounted) return;
+      setState(() {
+        quantidadeCarrinho = total;
+      });
+    } catch (_) {
+      CartBadgeNotifier.limpar();
+
+      if (!mounted) return;
+      setState(() {
+        quantidadeCarrinho = 0;
       });
     }
   }
@@ -236,10 +271,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         );
 
         if (!mounted) return;
-        setState(() {});
+        await carregarQuantidadeCarrinho();
       },
       child: Padding(
-        padding: const EdgeInsets.only(right: 10),
+        padding: EdgeInsets.zero,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -475,7 +510,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 children: [
                   Row(
                     children: [
-                      _iconeCarrinhoComBadge(),
                       const Text(
                         'Categorias',
                         style: TextStyle(
@@ -483,6 +517,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      const Spacer(),
+                      _iconeCarrinhoComBadge(),
                     ],
                   ),
                   const SizedBox(height: 14),
