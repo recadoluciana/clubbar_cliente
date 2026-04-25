@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../carrinho/carrinho_screen.dart';
 import '../../services/cart_badge_notifier.dart';
+import '../../utils/value_formatters.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -56,7 +57,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       for (final p in produtos) {
         debugPrint(
-          'PRODUTO: ${p.nmproduto} | preco=${p.vrprecoprod} | final=${p.vrprecofinal} | tipo=${p.tipodesconto} | desconto=${p.vrdesconto} | ativo=${p.descontoativo}',
+          'PRODUTO: ${p.nmproduto} | preco=${ValueFormatters.moeda(p.vrprecoprod)} | final=${ValueFormatters.moeda(vrprecofinal)} | tipo=${p.tipodesconto} | desconto=${p.vrdesconto} | ativo=${p.descontoativo}',
         );
       }
 
@@ -397,7 +398,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       const SizedBox(height: 10),
                       if (temDesconto) ...[
                         Text(
-                          'R\$ ${produto.vrprecoprod.toStringAsFixed(2)}',
+                          'R\$ ${ValueFormatters.moeda(produto.vrprecoprod)}',
                           style: const TextStyle(
                             fontSize: 13,
                             color: Colors.grey,
@@ -407,7 +408,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'R\$ ${produto.vrprecofinal.toStringAsFixed(2)}',
+                          'R\$ ${ValueFormatters.moeda(produto.vrprecofinal)}',
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
@@ -416,7 +417,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         ),
                       ] else
                         Text(
-                          'R\$ ${produto.vrprecoprod.toStringAsFixed(2)}',
+                          'R\$ ${ValueFormatters.moeda(produto.vrprecoprod)}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
