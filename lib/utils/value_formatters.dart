@@ -7,13 +7,13 @@ class ValueFormatters {
     decimalDigits: 2,
   );
 
-  static final NumberFormat _numeroBR = NumberFormat('#,##0.00', 'pt_BR');
+  static final NumberFormat _numeroBR = NumberFormat.decimalPattern('pt_BR');
 
-  static String moeda(double valor) {
+  static String moeda(num valor) {
     return _moedaBR.format(valor);
   }
 
-  static String numero(double valor) {
+  static String numero(num valor) {
     return _numeroBR.format(valor);
   }
 }

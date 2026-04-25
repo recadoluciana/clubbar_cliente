@@ -1,6 +1,7 @@
+import 'package:clubbar_cliente/utils/value_formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-
+import '../../utils/value_formatters.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 
@@ -186,6 +187,15 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                   ),
                 ),
                 const SizedBox(height: 6),
+                const Text(
+                  'Retire seus itens adquiridos nos bares participantes',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
               ],
             ),
           ),
@@ -251,7 +261,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '$totalItens item(ns) para retirar',
+                          '${ValueFormatters.numero(totalItens)} item(ns) para retirar',
                           style: TextStyle(
                             color: Colors.amber.shade900,
                             fontWeight: FontWeight.w700,

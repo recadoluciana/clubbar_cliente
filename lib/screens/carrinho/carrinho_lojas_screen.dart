@@ -66,11 +66,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     return '$baseUrl$path';
   }
 
-  String _valor(dynamic v) {
-    final n = (v is num) ? v.toDouble() : double.tryParse('$v') ?? 0;
-    return 'R\$ ${n.toStringAsFixed(2)}';
-  }
-
   Widget _logoLoja(String url) {
     if (url.isEmpty) {
       return Container(
@@ -157,7 +152,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Você tem itens nesses Bares e Casas Noturnas',
+                  'Aproveite o seu carrinho e continue sua compra',
                   style: TextStyle(
                     color: Colors.grey.shade300,
                     fontSize: 14,
@@ -184,7 +179,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     );
 
     final qtItens = int.tryParse('${lojaData['total_itens'] ?? 0}') ?? 0;
-    final total = lojaData['total'] ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -225,8 +219,11 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _chip('Itens: $qtItens'),
-                          _chip('Total: ${_valor(total)}'),
+                          _chip(
+                            qtItens == 1
+                                ? '1 item no carrinho'
+                                : '$qtItens itens no carrinho',
+                          ),
                         ],
                       ),
                     ],
