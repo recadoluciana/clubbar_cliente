@@ -55,12 +55,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       categorias = resultados[0] as List<Categoria>;
       produtos = resultados[1] as List<Produto>;
 
-      for (final p in produtos) {
-        debugPrint(
-          'PRODUTO: ${p.nmproduto} | preco=${ValueFormatters.moeda(p.vrprecoprod)} | final=${ValueFormatters.moeda(vrprecofinal)} | tipo=${p.tipodesconto} | desconto=${p.vrdesconto} | ativo=${p.descontoativo}',
-        );
-      }
-
       if (categorias.isNotEmpty) {
         categoriaSelecionadaId ??= categorias.first.id;
       }

@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../pagamento/cartao_pagamento_screen.dart';
 import '../../services/cart_badge_notifier.dart';
+import '../../utils/value_formatters.dart';
 
 enum FormaPagamento { pix, credito, debito }
 
@@ -447,7 +448,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 children: [
                   if (temDesconto) ...[
                     Text(
-                      'R\$ ${item.precoOriginal.toStringAsFixed(2)}',
+                      '${ValueFormatters.moeda(item.precoOriginal)}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 13,
@@ -457,7 +458,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'R\$ ${item.precoFinal.toStringAsFixed(2)}',
+                      '${ValueFormatters.moeda(item.precoFinal)}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -466,7 +467,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     ),
                   ] else
                     Text(
-                      'R\$ ${item.precoFinal.toStringAsFixed(2)}',
+                      '${ValueFormatters.moeda(item.precoFinal)}',
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
@@ -478,7 +479,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   ),
                   Text(
-                    'R\$ ${item.subtotal.toStringAsFixed(2)}',
+                    '${ValueFormatters.moeda(item.subtotal)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -624,7 +625,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                             ),
                           ),
                           Text(
-                            'R\$ ${total.toStringAsFixed(2)}',
+                            '${ValueFormatters.moeda(total)}',
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
