@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../home/home_screen.dart';
 
 class PagamentoSucessoScreen extends StatelessWidget {
   const PagamentoSucessoScreen({super.key});
@@ -62,7 +63,11 @@ class PagamentoSucessoScreen extends StatelessWidget {
                   height: 54,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context, true);
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                        (route) => false,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
@@ -72,7 +77,7 @@ class PagamentoSucessoScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      'Voltar',
+                      'Home',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
