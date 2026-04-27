@@ -309,37 +309,40 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 14),
 
-            // Badge LOGIN
-            InkWell(
-              onTap: abrirLogin,
-              borderRadius: BorderRadius.circular(30),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.login, color: Colors.black, size: 20),
-                    SizedBox(width: 6),
-                    Text(
-                      'Login',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
+            // 🔥 Só mostra o botão se NÃO estiver logado
+            if (!logado) ...[
+              const SizedBox(height: 14),
+
+              InkWell(
+                onTap: abrirLogin,
+                borderRadius: BorderRadius.circular(30),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.login, color: Colors.black, size: 20),
+                      SizedBox(width: 6),
+                      Text(
+                        'Login',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
         ),
       ),
@@ -451,7 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                 children: [
-                  if (!logado) _bannerLogin(),
+                  _bannerLogin(),
                   _campoBusca(),
                   const SizedBox(height: 22),
 
