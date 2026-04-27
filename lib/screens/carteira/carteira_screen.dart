@@ -1,9 +1,9 @@
-import 'package:clubbar_cliente/utils/value_formatters.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../../utils/value_formatters.dart';
+
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../utils/value_formatters.dart';
 
 class CarteiraScreen extends StatefulWidget {
   const CarteiraScreen({super.key});
@@ -15,6 +15,8 @@ class CarteiraScreen extends StatefulWidget {
 class _CarteiraScreenState extends State<CarteiraScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
+
+  Map<String, dynamic>? lojaSelecionada;
 
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
@@ -35,6 +37,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     setState(() {
       carregando = true;
       erro = null;
+      lojaSelecionada = null;
     });
 
     try {
@@ -195,7 +198,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 6),
               ],
             ),
           ),
@@ -218,20 +220,14 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         elevation: 2,
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CarteiraLojaScreen(
-                  nomeLoja: nome,
-                  logoLoja: logo,
-                  itens: itens,
-                ),
-              ),
-            );
-
-            if (!mounted) return;
-            await carregarTela();
+          onTap: () {
+            setState(() {
+              lojaSelecionada = {
+                'nomeLoja': nome,
+                'logoLoja': logo,
+                'itens': itens,
+              };
+            });
           },
           child: Padding(
             padding: const EdgeInsets.all(18),
@@ -302,12 +298,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
-          Text(
-            ' ',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-          ),
         ],
       ),
     );
@@ -339,29 +329,45 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     );
   }
 
+  Widget _listaCarteira() {
+    return RefreshIndicator(
+      onRefresh: carregarTela,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        children: [
+          _cabecalho(),
+          const SizedBox(height: 22),
+          if (erro != null)
+            _erroWidget()
+          else if (lojasResumo.isEmpty)
+            _estadoVazio()
+          else
+            ...lojasResumo.map(_cardLoja),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
-      body: carregando
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: carregarTela,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                children: [
-                  _cabecalho(),
-                  const SizedBox(height: 22),
-                  if (erro != null)
-                    _erroWidget()
-                  else if (lojasResumo.isEmpty)
-                    _estadoVazio()
-                  else
-                    ...lojasResumo.map(_cardLoja),
-                ],
-              ),
-            ),
-    );
+    if (carregando) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (lojaSelecionada != null) {
+      return CarteiraLojaScreen(
+        nomeLoja: lojaSelecionada!['nomeLoja'],
+        logoLoja: lojaSelecionada!['logoLoja'],
+        itens: List<Map<String, dynamic>>.from(lojaSelecionada!['itens']),
+        onVoltar: () {
+          setState(() {
+            lojaSelecionada = null;
+          });
+        },
+      );
+    }
+
+    return _listaCarteira();
   }
 }
 
@@ -369,12 +375,14 @@ class CarteiraLojaScreen extends StatelessWidget {
   final String nomeLoja;
   final String logoLoja;
   final List<Map<String, dynamic>> itens;
+  final VoidCallback onVoltar;
 
   const CarteiraLojaScreen({
     super.key,
     required this.nomeLoja,
     required this.logoLoja,
     required this.itens,
+    required this.onVoltar,
   });
 
   bool _isIngresso(Map<String, dynamic> item) {
@@ -387,6 +395,7 @@ class CarteiraLojaScreen extends StatelessWidget {
   }
 
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
+
   String _buildImageUrl(String path) {
     if (path.isEmpty) return '';
     if (path.startsWith('http')) return path;
@@ -518,7 +527,6 @@ class CarteiraLojaScreen extends StatelessWidget {
                 Builder(
                   builder: (_) {
                     final path = (item['urlfotoproduto'] ?? '').toString();
-
                     final url = _buildImageUrl(path);
 
                     if (url.isEmpty) {
@@ -669,48 +677,61 @@ class CarteiraLojaScreen extends StatelessWidget {
       (total, item) => total + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
     );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: Text(nomeLoja)),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Row(
-              children: [
-                _logoLoja(),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        nomeLoja,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '$totalUnidades item(ns) disponível(is) para retirada',
-                        style: TextStyle(color: Colors.grey.shade700),
-                      ),
-                    ],
-                  ),
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      children: [
+        Row(
+          children: [
+            IconButton(onPressed: onVoltar, icon: const Icon(Icons.arrow_back)),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                nomeLoja,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
           ),
-          const SizedBox(height: 20),
-          ...itens.map((item) => _itemCard(context, item)),
-        ],
-      ),
+          child: Row(
+            children: [
+              _logoLoja(),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nomeLoja,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '$totalUnidades item(ns) disponível(is) para retirada',
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        ...itens.map((item) => _itemCard(context, item)),
+      ],
     );
   }
 }
