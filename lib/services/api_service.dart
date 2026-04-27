@@ -301,7 +301,9 @@ class ApiService {
     required int clienteId,
     required int organizacaoId,
     required int lojaId,
-    required int produtoId,
+    int? produtoId,
+    int? loteId,
+    String idtipoproduto = 'P',
     int quantidade = 1,
     String? observacao,
   }) async {
@@ -314,8 +316,10 @@ class ApiService {
           'organizacao_id': organizacaoId,
           'loja_id': lojaId,
           'produto_id': produtoId,
-          'quantidade': quantidade,
-          'observacao': observacao,
+          'lote_id': loteId,
+          'idtipoproduto': idtipoproduto,
+          'qt': quantidade,
+          'obs': observacao,
         }),
       );
 

@@ -93,7 +93,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
-        produtoId: 0,
+        produtoId: null,
+        loteId: lote.loteId,
+        idtipoproduto: 'I',
         quantidade: 1,
         observacao: 'Ingresso ${lote.nome}',
       );
@@ -126,7 +128,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
-        produtoId: 0,
+        produtoId: null,
+        loteId: lote.loteId,
+        idtipoproduto: 'I',
         quantidade: 1,
         observacao: 'Ingresso ${lote.nome}',
       );
