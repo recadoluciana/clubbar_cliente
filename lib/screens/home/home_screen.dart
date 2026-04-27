@@ -366,8 +366,9 @@ class _HomeScreenState extends State<HomeScreen> {
           iniciarCarousel();
         },
         decoration: InputDecoration(
-          hintText: 'Bar, casa, música, cidade, bairro',
-          prefixIcon: const Icon(Icons.search),
+          hintText: 'Busque por bar, casa noturna, música, cidade ou bairro',
+          hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+          prefixIcon: const Icon(Icons.search, size: 22),
           suffixIcon: termoBusca.isEmpty
               ? null
               : IconButton(
@@ -391,8 +392,8 @@ class _HomeScreenState extends State<HomeScreen> {
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+            horizontal: 14,
+            vertical: 16,
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(18),
