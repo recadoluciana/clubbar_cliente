@@ -256,7 +256,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Column(
                           children: [
                             TypingText(
-                              text: 'CLUBBAR',
+                              text: '',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 34,

@@ -24,7 +24,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           padding: EdgeInsets.only(right: 16),
           child: Center(
             child: Text(
-              "v1.0.6",
+              "v1.0.7",
               style: TextStyle(
                 color: Colors.black54,
                 fontSize: 10,
