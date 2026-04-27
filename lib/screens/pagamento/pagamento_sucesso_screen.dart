@@ -63,9 +63,7 @@ class PagamentoSucessoScreen extends StatelessWidget {
                   height: 54,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (_) => const HomeScreen()),
-                      );
+                      Navigator.pop(context, true);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
@@ -75,7 +73,7 @@ class PagamentoSucessoScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Text(
-                      'Ir para Home',
+                      'Home',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

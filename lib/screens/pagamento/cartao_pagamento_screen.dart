@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/pagbank_web_service.dart';
 import 'pagamento_sucesso_screen.dart';
+import '../carteira/carteira_screen.dart';
 
 class CartaoPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -245,14 +246,22 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
 
       if (!mounted) return;
 
-      final voltar = await Navigator.push(
+      final resultado = await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const PagamentoSucessoScreen()),
       );
 
+      if (resultado == true && context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const CarteiraScreen()),
+        );
+        return;
+      }
+
       if (!mounted) return;
 
-      Navigator.pop(context, voltar == true);
+      Navigator.pop(context, false);
     } catch (e) {
       if (!mounted) return;
 

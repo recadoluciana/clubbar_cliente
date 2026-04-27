@@ -273,11 +273,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
             style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Quando adicionar produtos ou ingressos, os bares e casas noturnas aparecerão aqui.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade700, height: 1.4),
-          ),
         ],
       ),
     );
