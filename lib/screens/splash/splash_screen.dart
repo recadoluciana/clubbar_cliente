@@ -269,7 +269,7 @@ class _SplashScreenState extends State<SplashScreen>
                               'Sua balada começa aqui',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.80),
-                                fontSize: 15,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
