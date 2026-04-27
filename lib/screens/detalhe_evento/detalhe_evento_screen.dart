@@ -72,19 +72,30 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return DateFormatters.periodo(inicio, fim);
   }
 
-  Color corStatusLote(String status) {
-    switch (status.toUpperCase()) {
-      case 'ATIVO':
-        return Colors.green;
-      case 'ESGOTADO':
-        return Colors.red;
-      case 'ENCERRADO':
-        return Colors.orange;
-      case 'INATIVO':
-        return Colors.grey;
-      default:
-        return Colors.blueGrey;
-    }
+  Widget miniGraficoLote({required int total, required int vendidos}) {
+    final vendidosAjustado = vendidos.clamp(0, total);
+    final disponiveis = (total - vendidosAjustado).clamp(0, total);
+    final percentualVendido = total <= 0 ? 0.0 : vendidosAjustado / total;
+
+    return SizedBox(
+      width: 58,
+      height: 58,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularProgressIndicator(
+            value: percentualVendido,
+            strokeWidth: 7,
+            backgroundColor: Colors.green.withOpacity(0.18),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+          ),
+          Text(
+            '$disponiveis',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget linhaInfo({
@@ -126,7 +137,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget cardLote(EventoLote lote) {
     final disponivel = lote.qtDisponivel < 0 ? 0 : lote.qtDisponivel;
-    final cor = corStatusLote(lote.status);
+    final esgotado = disponivel <= 0;
+
+    final corBadge = esgotado ? Colors.red : Colors.green;
+    final textoBadge = esgotado ? 'Esgotado' : 'Disponível';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -141,6 +155,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             children: [
               Row(
                 children: [
+                  miniGraficoLote(
+                    total: lote.qtTotal,
+                    vendidos: lote.qtVendida,
+                  ),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Text(
                       lote.nome,
@@ -156,13 +175,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: cor.withOpacity(0.12),
+                      color: corBadge.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      lote.status,
+                      textoBadge,
                       style: TextStyle(
-                        color: cor,
+                        color: corBadge,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -337,7 +356,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       ),
                     ),
                   ),
-
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
@@ -374,7 +392,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ),
                           linhaInfo(
                             icone: Icons.storefront_outlined,
-                            titulo: 'Loja',
+                            titulo: 'Promovido por',
                             valor: ev.nomeLoja.isEmpty
                                 ? widget.loja.nome
                                 : ev.nomeLoja,
@@ -384,12 +402,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               icone: Icons.location_city_outlined,
                               titulo: 'Cidade',
                               valor: ev.nomeCidade,
-                            ),
-                          if (ev.status.trim().isNotEmpty)
-                            linhaInfo(
-                              icone: Icons.info_outline,
-                              titulo: 'Status',
-                              valor: ev.status,
                             ),
                           if (ev.descricao.trim().isNotEmpty) ...[
                             const SizedBox(height: 8),
