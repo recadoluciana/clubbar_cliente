@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../models/evento_detalhe.dart';
 import '../../models/evento_lote.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
+import '../../services/auth_storage.dart';
 import '../../utils/date_formatters.dart';
+import '../pagamento/cartao_pagamento_screen.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -23,8 +24,10 @@ class DetalheEventoScreen extends StatefulWidget {
 
 class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   final apiService = ApiService();
+  final authStorage = AuthStorage();
 
   bool carregando = true;
+  bool processandoCompra = false;
   String? erro;
 
   EventoDetalhe? evento;
@@ -70,6 +73,91 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   String formatarPeriodoVenda(String inicio, String fim) {
     return DateFormatters.periodo(inicio, fim);
+  }
+
+  Future<int> _obterClienteIdLogado() async {
+    final clienteId = await authStorage.obterClienteId();
+
+    if (clienteId == null || clienteId == 0) {
+      throw Exception('Faça login para continuar');
+    }
+
+    return clienteId;
+  }
+
+  Future<void> adicionarAoCarrinho(EventoLote lote) async {
+    try {
+      final clienteId = await _obterClienteIdLogado();
+
+      await apiService.adicionarAoCarrinho(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        produtoId: 0,
+        quantidade: 1,
+        observacao: 'Ingresso ${lote.nome}',
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingresso adicionado ao carrinho')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
+  Future<void> comprarAgora(EventoLote lote) async {
+    if (processandoCompra) return;
+
+    setState(() {
+      processandoCompra = true;
+    });
+
+    try {
+      final clienteId = await _obterClienteIdLogado();
+
+      await apiService.adicionarAoCarrinho(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        produtoId: 0,
+        quantidade: 1,
+        observacao: 'Ingresso ${lote.nome}',
+      );
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CartaoPagamentoScreen(
+            loja: widget.loja,
+            tipoPagamento: 'CREDIT_CARD',
+            totalProdutos: lote.preco,
+            taxaConveniencia: 0,
+            totalPagar: lote.preco,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          processandoCompra = false;
+        });
+      }
+    }
   }
 
   Widget miniGraficoLote({required int total, required int vendidos}) {
@@ -220,6 +308,34 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   lote.dataInicioVenda,
                   lote.dataFimVenda,
                 ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: esgotado || processandoCompra
+                          ? null
+                          : () => adicionarAoCarrinho(lote),
+                      icon: const Icon(Icons.add_shopping_cart),
+                      label: const Text('Adicionar'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: esgotado || processandoCompra
+                          ? null
+                          : () => comprarAgora(lote),
+                      icon: const Icon(Icons.flash_on),
+                      label: const Text('Comprar'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
