@@ -6,6 +6,7 @@ import '../../services/auth_storage.dart';
 import '../../services/pagbank_web_service.dart';
 import 'pagamento_sucesso_screen.dart';
 import '../carteira/carteira_screen.dart';
+import '../../services/carteira_badge_notifier.dart';
 
 class CartaoPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -252,6 +253,7 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
       );
 
       if (resultado == true && context.mounted) {
+        CarteiraBadgeNotifier.atualizar();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const CarteiraScreen()),

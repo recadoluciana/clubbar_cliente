@@ -8,6 +8,7 @@ import '../home/home_screen.dart';
 import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -32,6 +33,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     carregarUsuario();
     carregarBadgeCarrinho();
     carregarBadgeCarteira();
+
+    // 🔥 ATUALIZA AUTOMATICAMENTE
+    CarteiraBadgeNotifier.refresh.addListener(() {
+      carregarBadgeCarteira();
+    });
   }
 
   Widget _buildPage() {
@@ -147,27 +153,32 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _iconeCarteiraComBadge({required bool selecionado}) {
-    final icone = Icon(
-      selecionado
-          ? Icons.account_balance_wallet
-          : Icons.account_balance_wallet_outlined,
-    );
+    return ValueListenableBuilder<int>(
+      valueListenable: CarteiraBadgeNotifier.refresh,
+      builder: (context, _, __) {
+        final icone = Icon(
+          selecionado
+              ? Icons.account_balance_wallet
+              : Icons.account_balance_wallet_outlined,
+        );
 
-    if (totalItensCarteira <= 0) {
-      return icone;
-    }
+        if (totalItensCarteira <= 0) {
+          return icone;
+        }
 
-    return Badge(
-      backgroundColor: Colors.green,
-      label: Text(
-        totalItensCarteira > 99 ? '99+' : '$totalItensCarteira',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      child: icone,
+        return Badge(
+          backgroundColor: Colors.green,
+          label: Text(
+            totalItensCarteira > 99 ? '99+' : '$totalItensCarteira',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          child: icone,
+        );
+      },
     );
   }
 

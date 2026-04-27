@@ -60,15 +60,15 @@ class _HomeScreenState extends State<HomeScreen> {
       try {
         lojas = await apiService.buscarLojas();
 
-        for (final loja in lojas) {
-          debugPrint('--------------------------------');
-          debugPrint('id: ${loja.id}');
-          debugPrint('nome: ${loja.nome}');
-          debugPrint('bairro: ${loja.bairro}');
-          debugPrint('horario: ${loja.horario}');
-          debugPrint('instagram: ${loja.instagram}');
-          debugPrint('imagemUrl: ${loja.imagemUrl}');
-        }
+        //for (final loja in lojas) {
+        //  debugPrint('--------------------------------');
+        //  debugPrint('id: ${loja.id}');
+        //  debugPrint('nome: ${loja.nome}');
+        //  debugPrint('bairro: ${loja.bairro}');
+        //  debugPrint('horario: ${loja.horario}');
+        //  debugPrint('instagram: ${loja.instagram}');
+        //  debugPrint('imagemUrl: ${loja.imagemUrl}');
+        //}
       } catch (e) {
         lojas = [];
         debugPrint('Erro ao buscar bares: $e');
