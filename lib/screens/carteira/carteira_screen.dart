@@ -187,12 +187,12 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Retire seus itens adquiridos nos bares participantes',
+                Text(
+                  'Itens comprados por local.',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    color: Colors.grey.shade300,
+                    fontSize: 14,
+                    height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 6),

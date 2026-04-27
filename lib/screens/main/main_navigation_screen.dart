@@ -214,14 +214,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         return;
       }
 
-      if (index == 1 && CartBadgeNotifier.totalItens.value == 0) {
-        if (!mounted) return;
+      //if (index == 1 && CartBadgeNotifier.totalItens.value == 0) {
+      //  if (!mounted) return;
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Seu carrinho está vazio')),
-        );
-        return;
-      }
+      //    ScaffoldMessenger.of(context).showSnackBar(
+      //      const SnackBar(content: Text('Seu carrinho está vazio')),
+      //    );
+      //    return;
+      //}
     }
 
     if (!mounted) return;
