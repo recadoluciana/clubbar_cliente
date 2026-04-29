@@ -186,6 +186,9 @@ class ApiService {
             data: evento.data,
             local: evento.local,
             bannerUrl: banner,
+            lojaId: evento.lojaId,
+            organizacaoId: evento.organizacaoId,
+            nomeLoja: evento.nomeLoja,
           );
         }).toList();
       }
@@ -749,6 +752,9 @@ class ApiService {
             data: evento.data,
             local: evento.local,
             bannerUrl: banner,
+            lojaId: evento.lojaId,
+            organizacaoId: evento.organizacaoId,
+            nomeLoja: evento.nomeLoja,
           );
         }).toList();
       }

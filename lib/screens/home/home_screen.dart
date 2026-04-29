@@ -479,9 +479,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           return GestureDetector(
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Este será o próximo passo.'),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => DetalheEventoScreen(
+                                    eventoId: evento.id,
+                                    loja: Loja(
+                                      id: evento.lojaId,
+                                      organizacaoId: evento.organizacaoId,
+                                      nome: evento.nomeLoja,
+                                      bairro: '',
+                                      horario: '',
+                                      imagemUrl: '',
+                                      instagram: '',
+                                    ),
+                                  ),
                                 ),
                               );
                             },
