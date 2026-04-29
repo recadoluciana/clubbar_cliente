@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/carrinho_item.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import '../pagamento/cartao_pagamento_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
-
-enum FormaPagamento { pix, credito, debito }
+import '../pagamento/escolha_pagamento_screen.dart';
 
 class ItemCarrinhoAgrupado {
   final int produtoId;
@@ -53,8 +50,6 @@ class CarrinhoScreen extends StatefulWidget {
 class _CarrinhoScreenState extends State<CarrinhoScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
-
-  FormaPagamento formaPagamento = FormaPagamento.pix;
 
   bool carregando = true;
   String? erro;
@@ -109,6 +104,10 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return mapa.values.toList();
   }
 
+  double get total {
+    return itensAgrupados.fold<double>(0, (soma, item) => soma + item.subtotal);
+  }
+
   Future<void> carregarCarrinho() async {
     setState(() {
       carregando = true;
@@ -134,11 +133,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           .map((e) => ItemCarrinho.fromJson(e as Map<String, dynamic>))
           .toList();
 
-      for (final item in lista) {
-        debugPrint(
-          'CARRINHO -> ${item.nome} | original=${item.precoOriginal} | final=${item.precoFinal} | ativo=${item.descontoAtivo} | tipo=${item.tipodesconto} | desconto=${item.vrdesconto}',
-        );
-      }
       setState(() {
         itensCarrinho = lista;
         carregando = false;
@@ -150,10 +144,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         carregando = false;
       });
     }
-  }
-
-  double get total {
-    return itensAgrupados.fold<double>(0, (soma, item) => soma + item.subtotal);
   }
 
   Future<void> removerItemAgrupado(ItemCarrinhoAgrupado item) async {
@@ -181,10 +171,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
       await carregarCarrinho();
 
-      final total = await apiService.buscarQuantidadeCarrinho(
-        clienteId: clienteId!,
-      );
-      CartBadgeNotifier.atualizar(total);
+      if (clienteId != null && clienteId != 0) {
+        final total = await apiService.buscarQuantidadeCarrinho(
+          clienteId: clienteId!,
+        );
+        CartBadgeNotifier.atualizar(total);
+      }
     } catch (e) {
       if (!mounted) return;
 
@@ -194,71 +186,25 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     }
   }
 
-  Future<void> finalizarPagamento() async {
-    if (clienteId == null || clienteId == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Faça login para continuar')),
-      );
-      return;
-    }
-
-    if (formaPagamento == FormaPagamento.pix) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tela PIX ainda está em ajuste.')),
-      );
-      return;
-    }
-
-    if (formaPagamento == FormaPagamento.credito ||
-        formaPagamento == FormaPagamento.debito) {
-      final tipo = formaPagamento == FormaPagamento.debito
-          ? 'DEBIT_CARD'
-          : 'CREDIT_CARD';
-
-      final sucesso = await Navigator.push(
+  void abrirEscolhaPagamento() {
+    if (itensAgrupados.isEmpty) {
+      ScaffoldMessenger.of(
         context,
-        MaterialPageRoute(
-          builder: (_) => CartaoPagamentoScreen(
-            loja: widget.loja,
-            tipoPagamento: tipo,
-            totalProdutos: total,
-            taxaConveniencia: 0,
-            totalPagar: total,
-          ),
-        ),
-      );
-
-      if (sucesso == true) {
-        await carregarCarrinho();
-
-        if (!mounted) return;
-
-        if (itensCarrinho.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Pagamento concluído com sucesso')),
-          );
-        }
-      }
-
+      ).showSnackBar(const SnackBar(content: Text('Seu carrinho está vazio')));
       return;
     }
 
-    final url = apiService.montarUrlCartaoWeb(
-      clienteId: clienteId!,
-      organizacaoId: widget.loja.organizacaoId,
-      lojaId: widget.loja.id,
-    );
-
-    final uri = Uri.parse(url);
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-
-    if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Não foi possível abrir a página de pagamento'),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EscolhaPagamentoScreen(
+          loja: widget.loja,
+          totalProdutos: total,
+          taxaConveniencia: 0,
+          totalPagar: total,
         ),
-      );
-    }
+      ),
+    );
   }
 
   Widget _imagemProduto(String url) {
@@ -289,70 +235,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(Icons.image_not_supported, color: Colors.amber.shade800),
-        ),
-      ),
-    );
-  }
-
-  Widget _cardPagamento({
-    required FormaPagamento valor,
-    required String titulo,
-    required String subtitulo,
-    required IconData icone,
-    required Color cor,
-  }) {
-    final selecionado = formaPagamento == valor;
-
-    return InkWell(
-      onTap: () {
-        setState(() {
-          formaPagamento = valor;
-        });
-      },
-      borderRadius: BorderRadius.circular(20),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: selecionado ? cor.withOpacity(0.12) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selecionado ? cor : Colors.grey.shade300,
-            width: selecionado ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: cor.withOpacity(0.14),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icone, color: cor),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    titulo,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                ],
-              ),
-            ),
-            Icon(
-              selecionado ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: selecionado ? cor : Colors.grey,
-            ),
-          ],
         ),
       ),
     );
@@ -448,7 +330,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 children: [
                   if (temDesconto) ...[
                     Text(
-                      '${ValueFormatters.moeda(item.precoOriginal)}',
+                      ValueFormatters.moeda(item.precoOriginal),
                       style: const TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 13,
@@ -458,7 +340,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${ValueFormatters.moeda(item.precoFinal)}',
+                      ValueFormatters.moeda(item.precoFinal),
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
@@ -467,7 +349,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     ),
                   ] else
                     Text(
-                      '${ValueFormatters.moeda(item.precoFinal)}',
+                      ValueFormatters.moeda(item.precoFinal),
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
@@ -479,7 +361,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   ),
                   Text(
-                    '${item.subtotal}',
+                    ValueFormatters.moeda(item.subtotal),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
@@ -548,6 +430,51 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
   }
 
+  Widget _resumoTotal() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Total',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Text(
+            ValueFormatters.moeda(total),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _botaoPagar() {
+    return SizedBox(
+      height: 54,
+      child: ElevatedButton.icon(
+        onPressed: abrirEscolhaPagamento,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber,
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+        icon: const Icon(Icons.lock_outline),
+        label: const Text(
+          'Pagar',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final vazio = itensAgrupados.isEmpty;
@@ -571,91 +498,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   const SizedBox(height: 14),
                   if (vazio)
                     _estadoVazio()
-                  else
+                  else ...[
                     ...itensAgrupados.map(_itemCarrinho),
-                  const SizedBox(height: 14),
-                  if (!vazio) ...[
-                    const Text(
-                      'Forma de pagamento',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                     const SizedBox(height: 14),
-                    _cardPagamento(
-                      valor: FormaPagamento.pix,
-                      titulo: 'PIX',
-                      subtitulo: '',
-                      icone: Icons.pix,
-                      cor: Colors.green,
-                    ),
-                    const SizedBox(height: 12),
-                    _cardPagamento(
-                      valor: FormaPagamento.credito,
-                      titulo: 'Cartão de Crédito',
-                      subtitulo: '',
-                      icone: Icons.credit_card,
-                      cor: Colors.blue,
-                    ),
-                    const SizedBox(height: 12),
-                    _cardPagamento(
-                      valor: FormaPagamento.debito,
-                      titulo: 'Cartão de Débito',
-                      subtitulo: '',
-                      icone: Icons.payment,
-                      cor: Colors.deepPurple,
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      child: Row(
-                        children: [
-                          const Expanded(
-                            child: Text(
-                              'Total',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${ValueFormatters.moeda(total)}',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    _resumoTotal(),
                     const SizedBox(height: 18),
-                    SizedBox(
-                      height: 54,
-                      child: ElevatedButton.icon(
-                        onPressed: finalizarPagamento,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                        ),
-                        icon: const Icon(Icons.lock_outline),
-                        label: const Text(
-                          'Efetuar pagamento',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
+                    _botaoPagar(),
                   ],
                 ],
               ),
