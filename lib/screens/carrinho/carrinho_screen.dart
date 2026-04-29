@@ -479,7 +479,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   ),
                   Text(
-                    '${ValueFormatters.moeda(item.subtotal)}',
+                    '${item.subtotal}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,

@@ -379,9 +379,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        produto.dsproduto.isEmpty
-                            ? 'Sem descrição'
-                            : produto.dsproduto,
+                        produto.dsproduto.isEmpty ? '' : produto.dsproduto,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -392,7 +390,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       const SizedBox(height: 10),
                       if (temDesconto) ...[
                         Text(
-                          'R\$ ${ValueFormatters.moeda(produto.vrprecoprod)}',
+                          ValueFormatters.moeda(produto.vrprecoprod),
                           style: const TextStyle(
                             fontSize: 13,
                             color: Colors.grey,
@@ -402,7 +400,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'R\$ ${ValueFormatters.moeda(produto.vrprecofinal)}',
+                          ValueFormatters.moeda(produto.vrprecofinal),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
@@ -411,7 +409,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         ),
                       ] else
                         Text(
-                          'R\$ ${ValueFormatters.moeda(produto.vrprecoprod)}',
+                          ValueFormatters.moeda(produto.vrprecoprod),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,

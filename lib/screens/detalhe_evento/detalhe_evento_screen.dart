@@ -122,8 +122,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     });
 
     try {
-      final clienteId = await _obterClienteIdLogado();
+      final clienteId = await authStorage.obterClienteId();
 
+      if (clienteId == null || clienteId == 0) {
+        throw Exception('Faça login para comprar');
+      }
+
+      // 🔥 1. adiciona ao carrinho (obrigatório)
       await apiService.adicionarAoCarrinho(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
@@ -137,6 +142,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
       if (!mounted) return;
 
+      // 🔥 2. abre direto pagamento
       Navigator.push(
         context,
         MaterialPageRoute(
