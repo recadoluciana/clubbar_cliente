@@ -6,7 +6,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/date_formatters.dart';
-import '../pagamento/cartao_pagamento_screen.dart';
+import '../pagamento/escolha_pagamento_screen.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -146,9 +146,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => CartaoPagamentoScreen(
+          builder: (_) => EscolhaPagamentoScreen(
             loja: widget.loja,
-            tipoPagamento: 'CREDIT_CARD',
             totalProdutos: lote.preco,
             taxaConveniencia: 0,
             totalPagar: lote.preco,

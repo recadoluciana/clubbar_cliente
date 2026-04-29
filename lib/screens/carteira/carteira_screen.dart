@@ -680,22 +680,6 @@ class CarteiraLojaScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       children: [
-        Row(
-          children: [
-            IconButton(onPressed: onVoltar, icon: const Icon(Icons.arrow_back)),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Text(
-                nomeLoja,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(18),
