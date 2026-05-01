@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../models/evento.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
+import '../carrinho/carrinho_screen.dart';
 import '../../utils/date_formatters.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
@@ -22,6 +22,9 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   bool carregando = true;
   String? erro;
   List<Evento> eventos = [];
+
+  // Depois ligamos isso no /carrinho/qt
+  int quantidadeCarrinho = 3;
 
   @override
   void initState() {
@@ -56,6 +59,32 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
 
   String formatarLocal(Evento evento) {
     return evento.local.trim().isEmpty ? widget.loja.nome : evento.local;
+  }
+
+  Widget _badgeCarrinho() {
+    if (quantidadeCarrinho <= 0) return const SizedBox();
+
+    return Positioned(
+      right: 4,
+      top: 5,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+        child: Text(
+          quantidadeCarrinho > 99 ? '99+' : '$quantidadeCarrinho',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget imagemEvento(String url) {
@@ -187,7 +216,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                 'Nenhum evento encontrado',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              
             ],
           ),
         ),
@@ -219,106 +247,171 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
     );
   }
 
+  SliverAppBar topBarLoja() {
+    return SliverAppBar(
+      pinned: true,
+      floating: false,
+      backgroundColor: const Color(0xFF050505),
+      elevation: 0,
+      centerTitle: true,
+      title: Text(
+        widget.loja.nome,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 17,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.3,
+        ),
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CarrinhoScreen(loja: widget.loja),
+                    ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Colors.white,
+                  size: 27,
+                ),
+              ),
+              _badgeCarrinho(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      body: RefreshIndicator(
-        onRefresh: carregarEventos,
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              expandedHeight: 260,
-              pinned: true,
-              backgroundColor: const Color(0xFF111111),
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                title: Text(
-                  widget.loja.nome,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF050505),
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          widget.loja.nome,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CarrinhoScreen(loja: widget.loja),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.shopping_cart_outlined,
+                    color: Colors.white,
+                    size: 27,
                   ),
                 ),
-                background: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    widget.loja.imagemUrl.isNotEmpty
-                        ? Image.network(
-                            widget.loja.imagemUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) =>
-                                Container(color: Colors.grey.shade300),
-                          )
-                        : Container(color: Colors.grey.shade300),
-                    Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black54,
-                            Colors.black87,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                _badgeCarrinho(),
+              ],
             ),
+          ),
+        ],
+      ),
 
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Agenda - ${widget.loja.nome}',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                      ),
+      body: RefreshIndicator(
+        onRefresh: carregarEventos,
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Agenda - ${widget.loja.nome}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Próximos eventos',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Próximos eventos',
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+                  ),
+                ],
               ),
             ),
 
             if (carregando)
-              const SliverFillRemaining(
-                hasScrollBody: false,
+              const Padding(
+                padding: EdgeInsets.all(40),
                 child: Center(child: CircularProgressIndicator()),
               )
             else if (erro != null)
-              erroWidget()
-            else if (eventos.isEmpty)
-              estadoVazio()
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => itemEvento(eventos[index]),
-                    childCount: eventos.length,
-                  ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    const Icon(Icons.cloud_off, size: 56),
+                    const SizedBox(height: 14),
+                    Text(erro!, textAlign: TextAlign.center),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: carregarEventos,
+                      child: const Text('Tentar novamente'),
+                    ),
+                  ],
                 ),
-              ),
+              )
+            else if (eventos.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.event_busy_outlined,
+                      size: 60,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Nenhum evento encontrado',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              ...eventos.map(itemEvento).toList(),
+
+            const SizedBox(height: 24),
           ],
         ),
       ),

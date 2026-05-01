@@ -286,7 +286,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   ),
                 ],
               ),
-              child: const Icon(Icons.shopping_cart_outlined, size: 22),
+              child: const Icon(
+                Icons.shopping_cart_outlined,
+                size: 22,
+                color: Colors.black,
+              ),
             ),
             if (quantidadeCarrinho > 0)
               Positioned(
@@ -491,7 +495,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: Text('Produtos - ${widget.loja.nome}')),
+      appBar: AppBar(
+        title: Text('${widget.loja.nome}'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(child: _iconeCarrinhoComBadge()),
+          ),
+        ],
+      ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -510,8 +522,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Spacer(),
-                      _iconeCarrinhoComBadge(),
                     ],
                   ),
                   const SizedBox(height: 14),

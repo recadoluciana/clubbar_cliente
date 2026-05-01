@@ -11,16 +11,6 @@ class DetalheLojaScreen extends StatelessWidget {
 
   const DetalheLojaScreen({super.key, required this.loja});
 
-  void printLojaJson() {
-    debugPrint(
-      '{'
-      '"id": ${loja.id}, '
-      '"nome": "${loja.nome}", '
-      '"instagram": "${loja.instagram}"'
-      '}',
-    );
-  }
-
   Future<void> abrirInstagram(BuildContext context) async {
     final handle = loja.instagram.replaceAll('@', '').trim();
 
@@ -51,163 +41,164 @@ class DetalheLojaScreen extends StatelessWidget {
     }
   }
 
+  // 🔥 IMAGEM COM ANIMAÇÃO + FULL WIDTH
+  Widget _fotoFachada() {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 700),
+      tween: Tween<double>(begin: 0.95, end: 1.0),
+      curve: Curves.easeOut,
+      builder: (context, scale, child) {
+        return Opacity(
+          opacity: scale,
+          child: Transform.scale(scale: scale, child: child),
+        );
+      },
+      child: SizedBox(
+        height: 200,
+        width: double.infinity,
+        child: loja.imagemUrl.isNotEmpty
+            ? Image.network(loja.imagemUrl, fit: BoxFit.cover)
+            : Container(
+                color: Colors.grey.shade300,
+                child: const Icon(Icons.image_not_supported, size: 48),
+              ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    printLojaJson();
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 280,
-            pinned: true,
-            backgroundColor: const Color(0xFF111111),
-            actions: [
-              CartBadgeAction(loja: loja),
-              const SizedBox(width: 6),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  loja.imagemUrl.isNotEmpty
-                      ? Image.network(
-                          loja.imagemUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) =>
-                              Container(color: Colors.grey.shade300),
-                        )
-                      : Container(color: Colors.grey.shade300),
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black54,
-                          Colors.black87,
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+
+      // 🔥 TOP BAR PRETA
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF111111),
+        foregroundColor: Colors.white,
+        title: Text(
+          loja.nome,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: CartBadgeAction(loja: loja),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    loja.nome,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                    ),
+        ],
+      ),
+
+      // 🔥 BODY SEM PADDING GLOBAL
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          _fotoFachada(),
+
+          // 🔥 CONTEÚDO COM PADDING
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  loja.nome,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    const Icon(Icons.location_on_outlined),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        loja.bairro.isEmpty
+                            ? 'Endereço não informado'
+                            : loja.bairro,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                Row(
+                  children: [
+                    const Icon(Icons.access_time),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        loja.horario.isEmpty
+                            ? 'Horário não informado'
+                            : loja.horario,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                InkWell(
+                  onTap: () => abrirInstagram(context),
+                  child: Row(
                     children: [
-                      const Icon(Icons.location_on_outlined, size: 20),
+                      const Icon(Icons.alternate_email),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          loja.bairro.isEmpty
-                              ? 'Endereço não informado'
-                              : loja.bairro,
+                          loja.instagram.isEmpty
+                              ? 'Instagram não informado'
+                              : loja.instagram,
                           style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 15,
+                            color: loja.instagram.isEmpty
+                                ? Colors.grey
+                                : Colors.blue,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      const Icon(Icons.access_time, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          loja.horario.isEmpty
-                              ? 'Horário não informado'
-                              : loja.horario,
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 15,
-                          ),
-                        ),
+                ),
+
+                const SizedBox(height: 20),
+
+                _menuCard(
+                  context: context,
+                  titulo: 'Agenda',
+                  icone: Icons.confirmation_number_rounded,
+                  cor: Colors.blue,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AgendaEventosScreen(loja: loja),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  InkWell(
-                    onTap: () => abrirInstagram(context),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.alternate_email, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              loja.instagram.isEmpty
-                                  ? 'Instagram não informado'
-                                  : loja.instagram,
-                              style: TextStyle(
-                                color: loja.instagram.isEmpty
-                                    ? Colors.grey.shade700
-                                    : Colors.blue.shade700,
-                                fontSize: 15,
-                                decoration: loja.instagram.isEmpty
-                                    ? TextDecoration.none
-                                    : TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                _menuCard(
+                  context: context,
+                  titulo: 'Produtos',
+                  icone: Icons.restaurant_menu_rounded,
+                  cor: Colors.amber,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProdutosLojaScreen(loja: loja),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _menuCard(
-                    context: context,
-                    titulo: 'Agenda',
-                    icone: Icons.confirmation_number_rounded,
-                    cor: Colors.blue,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AgendaEventosScreen(loja: loja),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _menuCard(
-                    context: context,
-                    titulo: 'Produtos',
-                    icone: Icons.restaurant_menu_rounded,
-                    cor: Colors.amber,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProdutosLojaScreen(loja: loja),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -252,8 +243,7 @@ class DetalheLojaScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded, size: 32),
+              const Icon(Icons.chevron_right_rounded),
             ],
           ),
         ),
