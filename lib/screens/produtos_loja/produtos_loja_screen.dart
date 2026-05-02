@@ -5,7 +5,6 @@ import '../../models/loja.dart';
 import '../../models/produto.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import '../carrinho/carrinho_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 
@@ -256,76 +255,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
-  Widget _iconeCarrinhoComBadge() {
-    return InkWell(
-      borderRadius: BorderRadius.circular(20),
-      onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: widget.loja)),
-        );
-
-        if (!mounted) return;
-        await carregarQuantidadeCarrinho();
-      },
-      child: Padding(
-        padding: EdgeInsets.zero,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: const [
-                  BoxShadow(
-                    blurRadius: 6,
-                    color: Colors.black12,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.shopping_cart_outlined,
-                size: 22,
-                color: Colors.black,
-              ),
-            ),
-            if (quantidadeCarrinho > 0)
-              Positioned(
-                right: -6,
-                top: -6,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 20,
-                    minHeight: 20,
-                  ),
-                  child: Text(
-                    quantidadeCarrinho > 99 ? '99+' : '$quantidadeCarrinho',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _cardProduto(Produto produto) {
     final bool temDesconto = produto.descontoativo;
 
@@ -495,15 +424,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(
-        title: Text('${widget.loja.nome}'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(child: _iconeCarrinhoComBadge()),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: Text(widget.loja.nome)),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
