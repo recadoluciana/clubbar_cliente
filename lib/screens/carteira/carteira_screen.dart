@@ -4,6 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/value_formatters.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class CarteiraScreen extends StatefulWidget {
   const CarteiraScreen({super.key});
@@ -367,7 +368,13 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       );
     }
 
-    return _listaCarteira();
+    return Scaffold(
+      appBar: const ClubbarAppBar(
+        mostrarVoltar: true,
+        logoPath: 'assets/images/logo_copa.png',
+      ),
+      body: _listaCarteira(),
+    );
   }
 }
 

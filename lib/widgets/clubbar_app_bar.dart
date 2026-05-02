@@ -8,6 +8,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onCarrinhoTap;
   final bool mostrarVersao;
   final bool mostrarVoltar;
+  final String logoPath;
 
   const ClubbarAppBar({
     super.key,
@@ -17,6 +18,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onCarrinhoTap,
     this.mostrarVersao = false,
     this.mostrarVoltar = false,
+    this.logoPath = 'assets/images/logo_copa.png',
   });
 
   @override
@@ -80,7 +82,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             )
           : Image.asset(
-              'assets/images/logo_branca.png', // 🔥 use a branca
+              logoPath, // 🔥 use a branca
               height: 70,
             ),
 
