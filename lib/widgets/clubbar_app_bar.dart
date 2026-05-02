@@ -21,8 +21,9 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.logoPath = 'assets/images/logo_copa.png',
   });
 
+  // 🔥 AQUI ESTÁ O SEGREDO
   @override
-  Size get preferredSize => const Size.fromHeight(60);
+  Size get preferredSize => const Size.fromHeight(80); // 🔥 AUMENTADO
 
   Widget _badgeCarrinho() {
     if (quantidadeCarrinho <= 0) return const SizedBox();
@@ -56,16 +57,16 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       elevation: 0,
-      backgroundColor: const Color(0xFF000000), // 🔥 SEMPRE PRETO
+      backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,
       centerTitle: true,
+      toolbarHeight: 80,
 
-      // 🔥 BOTÃO VOLTAR
       leading: mostrarVoltar
           ? IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                MainNavigationController.fecharTelaInterna();
+                MainNavigationController.irParaHome();
               },
             )
           : null,
@@ -82,8 +83,9 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             )
           : Image.asset(
-              logoPath, // 🔥 use a branca
-              height: 70,
+              logoPath,
+              height: 80, // 🔥 AGORA FUNCIONA
+              fit: BoxFit.contain,
             ),
 
       actions: [
