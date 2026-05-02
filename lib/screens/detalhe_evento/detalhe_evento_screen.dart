@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/date_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
+import '../../services/main_navigation_controller.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -143,15 +144,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       if (!mounted) return;
 
       // 🔥 2. abre direto pagamento
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => EscolhaPagamentoScreen(
-            loja: widget.loja,
-            totalProdutos: lote.preco,
-            taxaConveniencia: 0,
-            totalPagar: lote.preco,
-          ),
+      MainNavigationController.abrirTela(
+        EscolhaPagamentoScreen(
+          loja: widget.loja,
+          totalProdutos: lote.preco,
+          taxaConveniencia: 0,
+          totalPagar: lote.preco,
         ),
       );
     } catch (e) {

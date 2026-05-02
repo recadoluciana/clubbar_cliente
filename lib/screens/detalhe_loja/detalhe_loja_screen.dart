@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/loja.dart';
-import '../../widgets/cart_badge_action.dart';
 import '../agenda/agenda_eventos_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
+import '../../services/main_navigation_controller.dart';
 
 class DetalheLojaScreen extends StatelessWidget {
   final Loja loja;
@@ -81,12 +81,6 @@ class DetalheLojaScreen extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CartBadgeAction(loja: loja),
-          ),
-        ],
       ),
 
       // 🔥 BODY SEM PADDING GLOBAL
@@ -173,11 +167,8 @@ class DetalheLojaScreen extends StatelessWidget {
                   icone: Icons.confirmation_number_rounded,
                   cor: Colors.blue,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AgendaEventosScreen(loja: loja),
-                      ),
+                    MainNavigationController.abrirTela(
+                      AgendaEventosScreen(loja: loja),
                     );
                   },
                 ),
@@ -190,11 +181,8 @@ class DetalheLojaScreen extends StatelessWidget {
                   icone: Icons.restaurant_menu_rounded,
                   cor: Colors.amber,
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ProdutosLojaScreen(loja: loja),
-                      ),
+                    MainNavigationController.abrirTela(
+                      ProdutosLojaScreen(loja: loja),
                     );
                   },
                 ),

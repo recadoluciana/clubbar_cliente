@@ -9,6 +9,7 @@ import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
+import '../../services/main_navigation_controller.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -245,10 +246,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildPage(),
+      body: ValueListenableBuilder<Widget?>(
+        valueListenable: MainNavigationController.telaInterna,
+        builder: (context, telaInterna, _) {
+          return telaInterna ?? _buildPage();
+        },
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
-        onDestinationSelected: _selecionarAba,
+        onDestinationSelected: (index) {
+          MainNavigationController.fecharTelaInterna();
+          _selecionarAba(index);
+        },
         height: 72,
         destinations: [
           const NavigationDestination(

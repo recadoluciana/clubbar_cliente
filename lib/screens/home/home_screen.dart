@@ -10,6 +10,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../login/login_screen.dart';
+import '../../services/main_navigation_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -476,24 +477,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         itemBuilder: (context, index) {
                           final evento = eventosFiltrados[index];
+                          final loja = lojas[index];
 
                           return GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => DetalheEventoScreen(
-                                    eventoId: evento.id,
-                                    loja: Loja(
-                                      id: evento.lojaId,
-                                      organizacaoId: evento.organizacaoId,
-                                      nome: evento.nomeLoja,
-                                      bairro: '',
-                                      horario: '',
-                                      imagemUrl: '',
-                                      instagram: '',
-                                    ),
-                                  ),
+                              MainNavigationController.abrirTela(
+                                DetalheEventoScreen(
+                                  eventoId: evento.id,
+                                  loja: loja,
                                 ),
                               );
                             },
@@ -655,12 +646,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(24),
                               onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        DetalheLojaScreen(loja: loja),
-                                  ),
+                                MainNavigationController.abrirTela(
+                                  DetalheLojaScreen(loja: loja),
                                 );
                               },
                               child: Padding(
