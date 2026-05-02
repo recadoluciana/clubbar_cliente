@@ -84,7 +84,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Image.asset(
               logoPath,
-              height: 80, // 🔥 AGORA FUNCIONA
+              height: 70, // 🔥 AGORA FUNCIONA
               fit: BoxFit.contain,
             ),
 

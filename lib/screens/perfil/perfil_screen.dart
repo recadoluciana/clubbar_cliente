@@ -5,6 +5,7 @@ import '../login/login_screen.dart';
 import '../esqueceu_senha/alterar_senha_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../pedidos/meus_pedidos_screen.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -119,6 +120,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+      appBar: const ClubbarAppBar(
+        logoPath: 'assets/images/logo_copa.png',
+        mostrarVoltar: true,
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
         children: [
@@ -148,14 +153,28 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 Container(
                   width: 72,
                   height: 72,
-                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: Image.asset(
-                    'assets/images/logo.png',
-                    fit: BoxFit.contain,
+                  child: Center(
+                    child: Text(
+                      nomeCliente.isNotEmpty
+                          ? nomeCliente[0].toUpperCase()
+                          : 'C',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),

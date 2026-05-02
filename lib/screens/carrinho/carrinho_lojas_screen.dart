@@ -4,7 +4,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
-import '../../services/main_navigation_controller.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class CarrinhoLojasScreen extends StatefulWidget {
   const CarrinhoLojasScreen({super.key});
@@ -308,22 +308,9 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
-        foregroundColor: Colors.white,
-        centerTitle: true,
-
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            MainNavigationController.irParaHome();
-          },
-        ),
-
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [Image.asset('assets/images/logo_copa.png', height: 70)],
-        ),
+      appBar: const ClubbarAppBar(
+        mostrarVoltar: true,
+        logoPath: 'assets/images/logo_copa.png',
       ),
 
       body: carregando
