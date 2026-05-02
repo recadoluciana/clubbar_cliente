@@ -6,6 +6,8 @@ class Loja {
   final String horario;
   final String imagemUrl;
   final String instagram;
+  final double vrtaxaprod;
+  final double vrtaxaing;
 
   Loja({
     required this.id,
@@ -15,6 +17,8 @@ class Loja {
     required this.horario,
     required this.imagemUrl,
     required this.instagram,
+    required this.vrtaxaprod,
+    required this.vrtaxaing,
   });
 
   static const String baseUrl = "https://bitbeer-production.up.railway.app";
@@ -36,6 +40,8 @@ class Loja {
       horario: (json['dshorarioloja'] ?? '').toString(),
       imagemUrl: buildUrl(path),
       instagram: (json['dsinstaloja'] ?? '').toString(),
+      vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '3') ?? 3,
+      vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '10') ?? 10,
     );
   }
 

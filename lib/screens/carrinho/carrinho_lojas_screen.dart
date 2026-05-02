@@ -177,6 +177,10 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
       horario: '',
       imagemUrl: _buildImageUrl((lojaData['urllogoloja'] ?? '').toString()),
       instagram: '',
+
+      // 👇 NOVO
+      vrtaxaprod: double.tryParse('${lojaData['vrtaxaprod']}') ?? 3,
+      vrtaxaing: double.tryParse('${lojaData['vrtaxaing']}') ?? 10,
     );
 
     final qtItens = int.tryParse('${lojaData['total_itens'] ?? 0}') ?? 0;

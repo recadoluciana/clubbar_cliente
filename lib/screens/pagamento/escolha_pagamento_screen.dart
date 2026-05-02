@@ -8,16 +8,24 @@ import 'pagamento_sucesso_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
+
+  /// Soma apenas dos itens com idtipoproduto = P
   final double totalProdutos;
-  final double taxaConveniencia;
-  final double totalPagar;
+
+  /// Soma apenas dos itens com idtipoproduto = I
+  final double totalIngressos;
+
+  // mantém para não quebrar chamadas antigas
+  final double? taxaConveniencia;
+  final double? totalPagar;
 
   const EscolhaPagamentoScreen({
     super.key,
     required this.loja,
     required this.totalProdutos,
-    required this.taxaConveniencia,
-    required this.totalPagar,
+    this.totalIngressos = 0,
+    this.taxaConveniencia,
+    this.totalPagar,
   });
 
   @override
@@ -29,6 +37,23 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   final authStorage = AuthStorage();
 
   bool carregandoPix = false;
+
+  double get percentualTaxaProduto => widget.loja.vrtaxaprod;
+  double get percentualTaxaIngresso => widget.loja.vrtaxaing;
+
+  double get taxaProdutos =>
+      widget.totalProdutos * (percentualTaxaProduto / 100);
+  double get taxaIngressos =>
+      widget.totalIngressos * (percentualTaxaIngresso / 100);
+
+  double get taxaConveniencia => taxaProdutos + taxaIngressos;
+
+  double get totalPagar =>
+      widget.totalProdutos + widget.totalIngressos + taxaConveniencia;
+
+  String _moeda(double valor) {
+    return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
+  }
 
   Future<void> pagarPix() async {
     setState(() => carregandoPix = true);
@@ -72,9 +97,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         builder: (_) => CartaoPagamentoScreen(
           loja: widget.loja,
           tipoPagamento: tipoPagamento,
-          totalProdutos: widget.totalProdutos,
-          taxaConveniencia: widget.taxaConveniencia,
-          totalPagar: widget.totalPagar,
+          totalProdutos: widget.totalProdutos + widget.totalIngressos,
+          taxaConveniencia: taxaConveniencia,
+          totalPagar: totalPagar,
         ),
       ),
     );
@@ -93,7 +118,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ),
         ),
         Text(
-          'R\$ ${valor.toStringAsFixed(2)}',
+          _moeda(valor),
           style: TextStyle(
             fontSize: destaque ? 18 : 15,
             fontWeight: destaque ? FontWeight.bold : FontWeight.w500,
@@ -121,16 +146,21 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               children: [
                 _linhaResumo('Total produtos', widget.totalProdutos),
                 const SizedBox(height: 8),
-                _linhaResumo('Taxa de conveniência', widget.taxaConveniencia),
+                _linhaResumo('Taxa produtos 3%', taxaProdutos),
                 const Divider(height: 24),
-                _linhaResumo(
-                  'Total a pagar',
-                  widget.totalPagar,
-                  destaque: true,
-                ),
+
+                _linhaResumo('Total ingressos', widget.totalIngressos),
+                const SizedBox(height: 8),
+                _linhaResumo('Taxa ingressos 10%', taxaIngressos),
+                const Divider(height: 24),
+
+                _linhaResumo('Taxa de conveniência', taxaConveniencia),
+                const SizedBox(height: 8),
+                _linhaResumo('Total a pagar', totalPagar, destaque: true),
               ],
             ),
           ),
+
           const SizedBox(height: 24),
 
           SizedBox(
