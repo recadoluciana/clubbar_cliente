@@ -4,7 +4,6 @@ import '../../models/evento.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
-import '../carrinho/carrinho_screen.dart';
 import '../../utils/date_formatters.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
@@ -59,32 +58,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
 
   String formatarLocal(Evento evento) {
     return evento.local.trim().isEmpty ? widget.loja.nome : evento.local;
-  }
-
-  Widget _badgeCarrinho() {
-    if (quantidadeCarrinho <= 0) return const SizedBox();
-
-    return Positioned(
-      right: 4,
-      top: 5,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
-        child: Text(
-          quantidadeCarrinho > 99 ? '99+' : '$quantidadeCarrinho',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
   }
 
   Widget imagemEvento(String url) {
@@ -265,32 +238,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
           letterSpacing: 0.3,
         ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 10),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CarrinhoScreen(loja: widget.loja),
-                    ),
-                  );
-                },
-                icon: const Icon(
-                  Icons.shopping_cart_outlined,
-                  color: Colors.white,
-                  size: 27,
-                ),
-              ),
-              _badgeCarrinho(),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -313,32 +260,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => CarrinhoScreen(loja: widget.loja),
-                      ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.shopping_cart_outlined,
-                    color: Colors.white,
-                    size: 27,
-                  ),
-                ),
-                _badgeCarrinho(),
-              ],
-            ),
-          ),
-        ],
       ),
 
       body: RefreshIndicator(
