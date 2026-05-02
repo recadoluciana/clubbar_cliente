@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/main_navigation_controller.dart';
 
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titulo;
@@ -6,6 +7,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final int quantidadeCarrinho;
   final VoidCallback? onCarrinhoTap;
   final bool mostrarVersao;
+  final bool mostrarVoltar;
 
   const ClubbarAppBar({
     super.key,
@@ -13,7 +15,8 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.mostrarCarrinho = false,
     this.quantidadeCarrinho = 0,
     this.onCarrinhoTap,
-    this.mostrarVersao = true,
+    this.mostrarVersao = false,
+    this.mostrarVoltar = false,
   });
 
   @override
@@ -51,8 +54,20 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       elevation: 0,
-      backgroundColor: temTitulo ? const Color(0xFF050505) : Colors.white,
+      backgroundColor: const Color(0xFF000000), // 🔥 SEMPRE PRETO
+      foregroundColor: Colors.white,
       centerTitle: true,
+
+      // 🔥 BOTÃO VOLTAR
+      leading: mostrarVoltar
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                MainNavigationController.fecharTelaInterna();
+              },
+            )
+          : null,
+
       title: temTitulo
           ? Text(
               titulo!,
@@ -64,10 +79,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                 fontWeight: FontWeight.w800,
               ),
             )
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [Image.asset('assets/images/logo.png', height: 120)],
+          : Image.asset(
+              'assets/images/logo_branca.png', // 🔥 use a branca
+              height: 70,
             ),
+
       actions: [
         if (mostrarCarrinho)
           Padding(
@@ -94,7 +110,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: Text(
                 "v1.0.7",
                 style: TextStyle(
-                  color: Colors.black54,
+                  color: Colors.white54,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),

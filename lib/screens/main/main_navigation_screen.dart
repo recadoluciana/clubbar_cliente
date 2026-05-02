@@ -35,7 +35,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     carregarBadgeCarrinho();
     carregarBadgeCarteira();
 
-    // 🔥 ATUALIZA AUTOMATICAMENTE
     CarteiraBadgeNotifier.refresh.addListener(() {
       carregarBadgeCarteira();
     });
@@ -225,15 +224,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
         return;
       }
-
-      //if (index == 1 && CartBadgeNotifier.totalItens.value == 0) {
-      //  if (!mounted) return;
-
-      //    ScaffoldMessenger.of(context).showSnackBar(
-      //      const SnackBar(content: Text('Seu carrinho está vazio')),
-      //    );
-      //    return;
-      //}
     }
 
     if (!mounted) return;
@@ -245,45 +235,53 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: ValueListenableBuilder<Widget?>(
-        valueListenable: MainNavigationController.telaInterna,
-        builder: (context, telaInterna, _) {
-          return telaInterna ?? _buildPage();
-        },
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          MainNavigationController.fecharTelaInterna();
-          _selecionarAba(index);
-        },
-        height: 72,
-        destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+    return ValueListenableBuilder<int>(
+      valueListenable: MainNavigationController.abaIndex,
+      builder: (context, abaAtual, _) {
+        currentIndex = abaAtual;
+
+        return Scaffold(
+          body: ValueListenableBuilder<Widget?>(
+            valueListenable: MainNavigationController.telaInterna,
+            builder: (context, telaInterna, _) {
+              return telaInterna ?? _buildPage();
+            },
           ),
-          NavigationDestination(
-            icon: _iconeCarrinhoComBadge(selecionado: false),
-            selectedIcon: _iconeCarrinhoComBadge(selecionado: true),
-            label: 'Carrinho',
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: currentIndex,
+            onDestinationSelected: (index) {
+              MainNavigationController.fecharTelaInterna();
+              MainNavigationController.abaIndex.value = index;
+              _selecionarAba(index);
+            },
+            height: 72,
+            destinations: [
+              const NavigationDestination(
+                icon: Icon(Icons.home_outlined),
+                selectedIcon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: _iconeCarrinhoComBadge(selecionado: false),
+                selectedIcon: _iconeCarrinhoComBadge(selecionado: true),
+                label: 'Carrinho',
+              ),
+              NavigationDestination(
+                icon: _iconeCarteiraComBadge(selecionado: false),
+                selectedIcon: _iconeCarteiraComBadge(selecionado: true),
+                label: 'Carteira',
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.person_outline),
+                selectedIcon: const Icon(Icons.person),
+                label: logado && nomeCliente.trim().isNotEmpty
+                    ? _primeiroNome(nomeCliente)
+                    : 'Perfil',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: _iconeCarteiraComBadge(selecionado: false),
-            selectedIcon: _iconeCarteiraComBadge(selecionado: true),
-            label: 'Carteira',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: logado && nomeCliente.trim().isNotEmpty
-                ? _primeiroNome(nomeCliente)
-                : 'Perfil',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
