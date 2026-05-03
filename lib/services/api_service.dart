@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import 'auth_storage.dart';
@@ -395,29 +396,36 @@ class ApiService {
     required int organizacaoId,
     required int lojaId,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/pagamentos/pagar-pix'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'cliente_id': clienteId,
-          'organizacao_id': organizacaoId,
-          'loja_id': lojaId,
-        }),
-      );
+    final url = Uri.parse('$baseUrl/pagamentos/pagar-pix');
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = jsonDecode(response.body);
-        if (data is Map<String, dynamic>) {
-          return data;
-        }
-        throw Exception('Resposta inválida do pagamento PIX');
-      }
+    final body = {
+      'cliente_id': clienteId,
+      'organizacao_id': organizacaoId,
+      'loja_id': lojaId,
+    };
 
-      throw Exception(_extrairMensagemHttp(response));
-    } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+    debugPrint('POST PIX => $url');
+    debugPrint('BODY PIX => ${jsonEncode(body)}');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    debugPrint('STATUS PIX => ${response.statusCode}');
+    debugPrint('RESPOSTA PIX => ${response.body}');
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(data['detail'] ?? 'Erro ao gerar PIX');
     }
+
+    return Map<String, dynamic>.from(data);
   }
 
   Future<void> cadastrarCliente({
