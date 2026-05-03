@@ -397,7 +397,7 @@ class ApiService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/pagamentos/pix'),
+        Uri.parse('$baseUrl/pagamentos/pagar-pix'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'cliente_id': clienteId,

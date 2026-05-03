@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'cartao_pagamento_screen.dart';
 import 'pagamento_sucesso_screen.dart';
+import 'pix_pagamento_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -65,7 +66,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         throw Exception('Cliente não identificado');
       }
 
-      await apiService.pagarCarrinhoPix(
+      final resposta = await apiService.pagarCarrinhoPix(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
@@ -75,7 +76,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
       await Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const PagamentoSucessoScreen()),
+        MaterialPageRoute(
+          builder: (_) =>
+              PixPagamentoScreen(loja: widget.loja, pagamento: resposta),
+        ),
       );
     } catch (e) {
       if (!mounted) return;

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import '../../models/loja.dart';
 import '../main/main_navigation_screen.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class PixPagamentoScreen extends StatelessWidget {
   final Loja loja;
@@ -68,7 +69,7 @@ class PixPagamentoScreen extends StatelessWidget {
   }
 
   Widget _qrCodeWidget() {
-    if (qrCodeBase64.trim().isEmpty) {
+    if (codigoPix.trim().isEmpty) {
       return Container(
         width: 220,
         height: 220,
@@ -85,28 +86,29 @@ class PixPagamentoScreen extends StatelessWidget {
       );
     }
 
-    try {
-      final bytes = base64Decode(qrCodeBase64);
-      return ClipRRect(
+    return Container(
+      width: 240,
+      height: 240,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        child: Image.memory(bytes, width: 220, height: 220, fit: BoxFit.cover),
-      );
-    } catch (_) {
-      return Container(
-        width: 220,
-        height: 220,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        alignment: Alignment.center,
-        child: const Icon(
-          Icons.broken_image_outlined,
-          size: 70,
-          color: Colors.black54,
-        ),
-      );
-    }
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: QrImageView(
+        data: codigoPix,
+        version: QrVersions.auto,
+        size: 210,
+        backgroundColor: Colors.white,
+        errorCorrectionLevel: QrErrorCorrectLevel.M,
+      ),
+    );
   }
 
   @override
