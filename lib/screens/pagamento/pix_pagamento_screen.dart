@@ -1,20 +1,19 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../models/loja.dart';
+import '../../services/api_service.dart';
 import '../main/main_navigation_screen.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'pagamento_sucesso_screen.dart';
 
 class PixPagamentoScreen extends StatelessWidget {
   final Loja loja;
   final Map<String, dynamic> pagamento;
 
-  const PixPagamentoScreen({
-    super.key,
-    required this.loja,
-    required this.pagamento,
-  });
+  PixPagamentoScreen({super.key, required this.loja, required this.pagamento});
+
+  final apiService = ApiService();
 
   String get status {
     return (pagamento['status'] ?? 'PENDENTE').toString();
@@ -32,10 +31,6 @@ class PixPagamentoScreen extends StatelessWidget {
         .toString();
   }
 
-  String get qrCodeBase64 {
-    return (pagamento['qr_code_base64'] ?? '').toString();
-  }
-
   void copiarCodigoPix(BuildContext context) {
     if (codigoPix.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -44,9 +39,6 @@ class PixPagamentoScreen extends StatelessWidget {
       return;
     }
 
-    // sem usar plugin extra por enquanto
-    // vamos usar o Clipboard do Flutter
-    // ignore: deprecated_member_use
     Clipboard.setData(ClipboardData(text: codigoPix));
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -54,10 +46,29 @@ class PixPagamentoScreen extends StatelessWidget {
     );
   }
 
-  void atualizarStatus(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Consulta de status será a próxima etapa')),
-    );
+  Future<void> confirmarPix(BuildContext context) async {
+    try {
+      final vendaIdInt = int.tryParse(vendaId);
+
+      if (vendaIdInt == null || vendaIdInt <= 0) {
+        throw Exception('Venda inválida');
+      }
+
+      await apiService.simularPixPago(vendaId: vendaIdInt);
+
+      if (!context.mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const PagamentoSucessoScreen()),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   void voltarParaHome(BuildContext context) {
@@ -190,7 +201,9 @@ class PixPagamentoScreen extends StatelessWidget {
               ],
             ),
           ),
+
           const SizedBox(height: 22),
+
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
@@ -222,19 +235,27 @@ class PixPagamentoScreen extends StatelessWidget {
               ],
             ),
           ),
+
           const SizedBox(height: 24),
+
           const Text(
             'Escaneie o QR Code',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
+
           const SizedBox(height: 14),
+
           Center(child: _qrCodeWidget()),
+
           const SizedBox(height: 24),
+
           const Text(
             'Ou copie o código PIX',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
+
           const SizedBox(height: 14),
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -248,7 +269,9 @@ class PixPagamentoScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey.shade800, height: 1.4),
             ),
           ),
+
           const SizedBox(height: 18),
+
           SizedBox(
             height: 52,
             child: ElevatedButton.icon(
@@ -267,24 +290,30 @@ class PixPagamentoScreen extends StatelessWidget {
               ),
             ),
           ),
+
           const SizedBox(height: 14),
+
           SizedBox(
             height: 52,
-            child: OutlinedButton.icon(
-              onPressed: () => atualizarStatus(context),
-              style: OutlinedButton.styleFrom(
+            child: ElevatedButton.icon(
+              onPressed: () => confirmarPix(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(Icons.check_circle_outline),
               label: const Text(
-                'Atualizar status',
+                'Confirmar pagamento (sandbox)',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),
+
           const SizedBox(height: 14),
+
           SizedBox(
             height: 52,
             child: TextButton(

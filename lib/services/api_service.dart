@@ -396,12 +396,15 @@ class ApiService {
     required int organizacaoId,
     required int lojaId,
   }) async {
-    final url = Uri.parse('$baseUrl/pagamentos/pagar-pix');
+    final url = Uri.parse('$baseUrl/pagamentos/pagar-novo');
 
     final body = {
       'cliente_id': clienteId,
       'organizacao_id': organizacaoId,
       'loja_id': lojaId,
+
+      // 🔥 ESSENCIAL
+      'dsmetodopag': 'PIX',
     };
 
     debugPrint('POST PIX => $url');
@@ -835,4 +838,26 @@ class ApiService {
       throw Exception(_mensagemErroAmigavel(e));
     }
   }
+}
+
+Future<Map<String, dynamic>> simularPixPago({required int vendaId}) async {
+  final url = Uri.parse('$baseUrl/pagamentos/pix/sandbox-pay/$vendaId');
+
+  debugPrint('POST PIX SANDBOX PAY => $url');
+
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+  );
+
+  debugPrint('STATUS PIX SANDBOX PAY => ${response.statusCode}');
+  debugPrint('RESPOSTA PIX SANDBOX PAY => ${response.body}');
+
+  final data = jsonDecode(response.body);
+
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw Exception(data['detail'] ?? 'Erro ao confirmar PIX');
+  }
+
+  return Map<String, dynamic>.from(data);
 }
