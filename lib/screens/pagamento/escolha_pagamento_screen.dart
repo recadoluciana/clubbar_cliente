@@ -4,7 +4,6 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'cartao_pagamento_screen.dart';
-import 'pagamento_sucesso_screen.dart';
 import 'pix_pagamento_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {

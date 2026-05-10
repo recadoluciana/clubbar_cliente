@@ -1,8 +1,8 @@
-import 'dart:js_interop';
-import 'dart:js_util' as js_util;
+import 'package:js/js.dart';
+import 'package:js/js_util.dart' as js_util;
 
 @JS('pagbankEncryptCard')
-external JSAny? _pagbankEncryptCard(JSAny payload);
+external Object? _pagbankEncryptCard(Object? payload);
 
 class PagBankEncryptResult {
   final String encryptedCard;
