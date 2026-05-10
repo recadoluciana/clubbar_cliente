@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import '../../services/pagbank_web_service.dart';
 import 'pagamento_sucesso_screen.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../main/main_navigation_screen.dart';
@@ -219,28 +218,28 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
         throw Exception('Cliente não identificado');
       }
 
-      final result = PagBankWebService.encryptCard(
-        publicKey: publicKey,
-        holder: _nomeCtrl.text.trim(),
-        number: _somenteNumeros(_numeroCtrl.text),
-        expMonth: _mesCtrl.text.trim(),
-        expYear: _anoCtrl.text.trim(),
-        securityCode: _somenteNumeros(_cvvCtrl.text),
-      );
+      //final result = PagBankWebService.encryptCard(
+      //  publicKey: publicKey,
+      //  holder: _nomeCtrl.text.trim(),
+      //  number: _somenteNumeros(_numeroCtrl.text),
+      //  expMonth: _mesCtrl.text.trim(),
+      //  expYear: _anoCtrl.text.trim(),
+      //  securityCode: _somenteNumeros(_cvvCtrl.text),
+      //);
 
-      if (result.hasErrors || result.encryptedCard.isEmpty) {
-        throw Exception(
-          result.errors.isNotEmpty
-              ? result.errors.join(', ')
-              : 'Não foi possível criptografar o cartão',
-        );
-      }
+      //if (result.hasErrors || result.encryptedCard.isEmpty) {
+      //  throw Exception(
+      //    result.errors.isNotEmpty
+      //        ? result.errors.join(', ')
+      //        : 'Não foi possível criptografar o cartão',
+      //  );
+      // }
 
       await apiService.pagarComCartao(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
-        encryptedCard: result.encryptedCard,
+        encryptedCard: '', //result.encryptedCard,
         securityCode: _somenteNumeros(_cvvCtrl.text),
         tipoPagamento: widget.tipoPagamento,
       );
