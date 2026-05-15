@@ -879,4 +879,25 @@ class ApiService {
 
     return Map<String, dynamic>.from(data);
   }
+
+  Future<Map<String, dynamic>> mockAprovarPagamento({
+    required int vendaId,
+  }) async {
+    final url = Uri.parse('$baseUrl/pagamentos/mock-aprovar/$vendaId');
+
+    debugPrint('POST MOCK APROVAR => $url');
+
+    final response = await http.post(url);
+
+    debugPrint('STATUS MOCK APROVAR => ${response.statusCode}');
+    debugPrint('RESPOSTA MOCK APROVAR => ${response.body}');
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode >= 400) {
+      throw Exception(data['detail'] ?? 'Erro ao aprovar pagamento');
+    }
+
+    return Map<String, dynamic>.from(data);
+  }
 }

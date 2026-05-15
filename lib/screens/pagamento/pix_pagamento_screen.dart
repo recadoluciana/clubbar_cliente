@@ -273,7 +273,7 @@ class PixPagamentoScreen extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () async {
                 try {
-                  final response = await apiService.consultarPixMercadoPago(
+                  final response = await apiService.mockAprovarPagamento(
                     vendaId: int.parse(vendaId),
                   );
 
@@ -290,29 +290,25 @@ class PixPagamentoScreen extends StatelessWidget {
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Pagamento ainda não confirmado. Status: $status',
-                        ),
-                      ),
+                      SnackBar(content: Text('Pagamento não aprovado.')),
                     );
                   }
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao consultar pagamento: $e')),
+                    SnackBar(content: Text('Erro ao aprovar pagamento: $e')),
                   );
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
+                backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.check_circle),
               label: const Text(
-                'Atualizar status do pagamento',
+                'Simular pagamento aprovado',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
