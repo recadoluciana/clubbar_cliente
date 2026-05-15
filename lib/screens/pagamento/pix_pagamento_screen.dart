@@ -46,31 +46,6 @@ class PixPagamentoScreen extends StatelessWidget {
     );
   }
 
-  Future<void> confirmarPix(BuildContext context) async {
-    try {
-      final vendaIdInt = int.tryParse(vendaId);
-
-      if (vendaIdInt == null || vendaIdInt <= 0) {
-        throw Exception('Venda inválida');
-      }
-
-      await apiService.simularPixPago(vendaId: vendaIdInt);
-
-      if (!context.mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const PagamentoSucessoScreen()),
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
-    }
-  }
-
   void voltarParaHome(BuildContext context) {
     Navigator.pushAndRemoveUntil(
       context,
@@ -296,24 +271,52 @@ class PixPagamentoScreen extends StatelessWidget {
           SizedBox(
             height: 52,
             child: ElevatedButton.icon(
-              onPressed: () => confirmarPix(context),
+              onPressed: () async {
+                try {
+                  final response = await apiService.consultarPixMercadoPago(
+                    vendaId: int.parse(vendaId),
+                  );
+
+                  final status = (response['status'] ?? '').toString();
+
+                  if (status.toUpperCase() == 'PAGO') {
+                    if (!context.mounted) return;
+
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PagamentoSucessoScreen(),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Pagamento ainda não confirmado. Status: $status',
+                        ),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao consultar pagamento: $e')),
+                  );
+                }
+              },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                foregroundColor: Colors.black,
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              icon: const Icon(Icons.check_circle_outline),
+              icon: const Icon(Icons.refresh),
               label: const Text(
-                'Confirmar pagamento (sandbox)',
+                'Atualizar status do pagamento',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ),
-
-          const SizedBox(height: 14),
-
           SizedBox(
             height: 52,
             child: TextButton(

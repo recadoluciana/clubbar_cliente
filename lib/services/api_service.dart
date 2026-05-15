@@ -863,4 +863,20 @@ class ApiService {
 
     return Map<String, dynamic>.from(data);
   }
+
+  Future<Map<String, dynamic>> consultarPixMercadoPago({
+    required int vendaId,
+  }) async {
+    final url = Uri.parse('$baseUrl/pagamentos/mercadopago/consultar/$vendaId');
+
+    final response = await http.post(url);
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode >= 400) {
+      throw Exception(data['detail'] ?? 'Erro ao consultar pagamento');
+    }
+
+    return Map<String, dynamic>.from(data);
+  }
 }
