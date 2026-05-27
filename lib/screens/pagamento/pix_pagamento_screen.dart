@@ -6,6 +6,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../main/main_navigation_screen.dart';
 import 'pagamento_sucesso_screen.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class PixPagamentoScreen extends StatelessWidget {
   final Loja loja;
@@ -103,10 +104,38 @@ class PixPagamentoScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Pagamento PIX')),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Text(
+            'PIX - ${loja.nome}',
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+          ),
+
+          const SizedBox(height: 14),
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(

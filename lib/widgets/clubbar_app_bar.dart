@@ -56,6 +56,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     final bool temTitulo = titulo != null && titulo!.trim().isNotEmpty;
 
     return AppBar(
+      automaticallyImplyLeading: false,
       elevation: 0,
       backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,

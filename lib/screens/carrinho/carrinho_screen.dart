@@ -7,6 +7,7 @@ import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class ItemCarrinhoAgrupado {
   final int produtoId;
@@ -481,7 +482,29 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: Text('Carrinho - ${widget.loja.nome}')),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -491,9 +514,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  const Text(
-                    'Itens',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  Text(
+                    'Carrinho - ${widget.loja.nome}',
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   if (vazio)

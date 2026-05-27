@@ -420,7 +420,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: const ClubbarAppBar(),
+      ),
       body: RefreshIndicator(
         onRefresh: carregarHome,
         child: carregando

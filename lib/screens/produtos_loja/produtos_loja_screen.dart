@@ -7,6 +7,9 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
+import '../../widgets/clubbar_app_bar.dart';
+import '../../services/main_navigation_controller.dart';
+import '../detalhe_loja/detalhe_loja_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -424,7 +427,31 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: Text(widget.loja.nome)),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  MainNavigationController.abrirTela(
+                    DetalheLojaScreen(loja: widget.loja),
+                  );
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -434,13 +461,25 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
+                        'Produtos - ${widget.loja.nome}',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
                         'Categorias',
                         style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

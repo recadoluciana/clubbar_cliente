@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'cartao_pagamento_screen.dart';
 import 'pix_pagamento_screen.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -135,10 +136,36 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Escolha o pagamento')),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Text(
+            'Pagamento - ${widget.loja.nome}',
+            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+          ),
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(

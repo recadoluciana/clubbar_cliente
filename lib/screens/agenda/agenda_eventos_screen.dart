@@ -5,6 +5,9 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../../utils/date_formatters.dart';
+import '../../widgets/clubbar_app_bar.dart';
+import '../../services/main_navigation_controller.dart';
+import '../detalhe_loja/detalhe_loja_screen.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
   final Loja loja;
@@ -246,19 +249,29 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF050505),
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          widget.loja.nome,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-          ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  MainNavigationController.abrirTela(
+                    DetalheLojaScreen(loja: widget.loja),
+                  );
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
 

@@ -5,6 +5,7 @@ import '../../models/loja.dart';
 import '../agenda/agenda_eventos_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class DetalheLojaScreen extends StatelessWidget {
   final Loja loja;
@@ -72,14 +73,27 @@ class DetalheLojaScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF6F6F6),
 
       // 🔥 TOP BAR PRETA
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF111111),
-        foregroundColor: Colors.white,
-        title: Text(
-          loja.nome,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  MainNavigationController.fecharTelaInterna();
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
 

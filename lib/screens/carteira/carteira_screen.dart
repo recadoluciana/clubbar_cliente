@@ -5,6 +5,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/value_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../services/main_navigation_controller.dart';
 
 class CarteiraScreen extends StatefulWidget {
   const CarteiraScreen({super.key});
@@ -351,29 +352,51 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (carregando) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (lojaSelecionada != null) {
-      return CarteiraLojaScreen(
-        nomeLoja: lojaSelecionada!['nomeLoja'],
-        logoLoja: lojaSelecionada!['logoLoja'],
-        itens: List<Map<String, dynamic>>.from(lojaSelecionada!['itens']),
-        onVoltar: () {
-          setState(() {
-            lojaSelecionada = null;
-          });
-        },
-      );
-    }
-
     return Scaffold(
-      appBar: const ClubbarAppBar(
-        mostrarVoltar: true,
-        logoPath: 'assets/images/logo_copa.png',
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  if (lojaSelecionada != null) {
+                    setState(() {
+                      lojaSelecionada = null;
+                    });
+                  } else {
+                    MainNavigationController.irParaHome();
+                  }
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      body: _listaCarteira(),
+
+      body: carregando
+          ? const Center(child: CircularProgressIndicator())
+          : lojaSelecionada != null
+          ? CarteiraLojaScreen(
+              nomeLoja: lojaSelecionada!['nomeLoja'],
+              logoLoja: lojaSelecionada!['logoLoja'],
+              itens: List<Map<String, dynamic>>.from(lojaSelecionada!['itens']),
+              onVoltar: () {
+                setState(() {
+                  lojaSelecionada = null;
+                });
+              },
+            )
+          : _listaCarteira(),
     );
   }
 }
@@ -703,16 +726,22 @@ class CarteiraLojaScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      nomeLoja,
+                      'Carteira - $nomeLoja',
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
+
                     const SizedBox(height: 6),
+
                     Text(
                       '$totalUnidades item(ns) disponível(is) para retirada',
-                      style: TextStyle(color: Colors.grey.shade700),
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                        height: 1.3,
+                      ),
                     ),
                   ],
                 ),
