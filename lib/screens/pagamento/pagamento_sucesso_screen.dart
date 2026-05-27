@@ -1,7 +1,43 @@
 import 'package:flutter/material.dart';
 
-class PagamentoSucessoScreen extends StatelessWidget {
+import '../../services/api_service.dart';
+import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
+import '../../services/auth_storage.dart';
+import '../../services/main_navigation_controller.dart';
+
+class PagamentoSucessoScreen extends StatefulWidget {
   const PagamentoSucessoScreen({super.key});
+
+  @override
+  State<PagamentoSucessoScreen> createState() => _PagamentoSucessoScreenState();
+}
+
+class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _atualizarBadges();
+  }
+
+  Future<void> _atualizarBadges() async {
+    try {
+      final clienteId = await AuthStorage().obterClienteId();
+
+      if (clienteId == null || clienteId == 0) return;
+
+      final qtdCarrinho = await ApiService().buscarQuantidadeCarrinho(
+        clienteId: clienteId,
+      );
+
+      CartBadgeNotifier.atualizar(qtdCarrinho);
+
+      // força atualização da carteira
+      CarteiraBadgeNotifier.atualizar();
+    } catch (e) {
+      debugPrint('Erro ao atualizar badges: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,12 +77,15 @@ class PagamentoSucessoScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
+
                 const Text(
                   'Pagamento realizado com sucesso',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
                 ),
+
                 const SizedBox(height: 10),
+
                 Text(
                   'Sua compra foi confirmada. Você já pode acompanhar pela sua carteira.',
                   textAlign: TextAlign.center,
@@ -56,13 +95,20 @@ class PagamentoSucessoScreen extends StatelessWidget {
                     height: 1.4,
                   ),
                 ),
+
                 const SizedBox(height: 26),
+
                 SizedBox(
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context, true);
+                      MainNavigationController.irParaHome();
+
+                      Navigator.of(
+                        context,
+                        rootNavigator: true,
+                      ).popUntil((route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
