@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -25,6 +26,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   bool carregando = true;
   String? erro;
   int? clienteId;
+  String nomeCliente = '';
 
   List<Map<String, dynamic>> itensPendentes = [];
   List<Map<String, dynamic>> lojasResumo = [];
@@ -50,6 +52,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       }
 
       clienteId = idCliente;
+      nomeCliente = await authStorage.obterNmcliente() ?? 'não identificado';
 
       final itens = await apiService.buscarPendentes(
         clienteId: idCliente,
@@ -389,6 +392,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           ? CarteiraLojaScreen(
               nomeLoja: lojaSelecionada!['nomeLoja'],
               logoLoja: lojaSelecionada!['logoLoja'],
+              nomeCliente: nomeCliente,
               itens: List<Map<String, dynamic>>.from(lojaSelecionada!['itens']),
               onVoltar: () {
                 setState(() {
@@ -404,6 +408,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 class CarteiraLojaScreen extends StatelessWidget {
   final String nomeLoja;
   final String logoLoja;
+  final String nomeCliente;
   final List<Map<String, dynamic>> itens;
   final VoidCallback onVoltar;
 
@@ -411,6 +416,7 @@ class CarteiraLojaScreen extends StatelessWidget {
     super.key,
     required this.nomeLoja,
     required this.logoLoja,
+    required this.nomeCliente,
     required this.itens,
     required this.onVoltar,
   });
@@ -455,6 +461,14 @@ class CarteiraLojaScreen extends StatelessWidget {
   void _abrirQrOuRetirada(BuildContext context, Map<String, dynamic> item) {
     final codigo = (item['itvenda_id'] ?? '').toString();
 
+    final qrData = jsonEncode({
+      'itvenda_id': codigo,
+      'nmloja': nomeLoja,
+      'nmcliente': (item['nmcliente'] ?? '').toString(),
+      'nmproduto': (item['nmproduto'] ?? '').toString(),
+      'dsobsitvenda': (item['dsobsitvenda'] ?? '').toString(),
+    });
+
     if (codigo.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('QR Code não disponível para este item')),
@@ -479,26 +493,52 @@ class CarteiraLojaScreen extends StatelessWidget {
                   'Retirada do produto',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
+                const SizedBox(height: 10),
+                Text(
+                  (item['nmproduto'] ?? '').toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                if ((item['dsobsitvenda'] ?? '')
+                    .toString()
+                    .trim()
+                    .isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      border: Border.all(color: Colors.red),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      (item['dsobsitvenda'] ?? '').toString(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 const Text(
-                  'Apresente este QR Code no balcão',
+                  'Apresente este QR Code para o atendente.',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
                 QrImageView(
-                  data: codigo,
+                  data: qrData,
                   size: 220,
                   backgroundColor: Colors.white,
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  codigo,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,

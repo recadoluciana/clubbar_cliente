@@ -345,7 +345,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       );
                                     }
                                   },
-                                  child: const Text('Novo por aqui?'),
+                                  child: const Text('Cadastre-se aqui'),
                                 ),
                                 const Text(' | '),
                                 TextButton(
