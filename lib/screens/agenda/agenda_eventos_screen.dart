@@ -8,6 +8,7 @@ import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
+import '../../services/main_navigation_controller.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
   final Loja loja;
@@ -108,12 +109,8 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    DetalheEventoScreen(eventoId: evento.id, loja: widget.loja),
-              ),
+            MainNavigationController.abrirTela(
+              DetalheEventoScreen(eventoId: evento.id, loja: widget.loja),
             );
           },
           child: Padding(

@@ -8,6 +8,9 @@ import '../../services/auth_storage.dart';
 import '../../utils/date_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../widgets/clubbar_app_bar.dart';
+import '../detalhe_loja/detalhe_loja_screen.dart';
+import '../../services/cart_badge_notifier.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -101,6 +104,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         observacao: 'Ingresso ${lote.nome}',
       );
 
+      final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
+        clienteId: clienteId,
+      );
+
+      CartBadgeNotifier.atualizar(totalCarrinho);
+
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -147,8 +156,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       MainNavigationController.abrirTela(
         EscolhaPagamentoScreen(
           loja: widget.loja,
-          totalProdutos: lote.preco,
-          taxaConveniencia: 0,
+          totalProdutos: 0,
+          totalIngressos: lote.preco,
+          taxaConveniencia: 10,
           totalPagar: lote.preco,
         ),
       );
@@ -412,6 +422,36 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
+
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.pop(context);
+                  } else {
+                    MainNavigationController.abrirTela(
+                      DetalheLojaScreen(loja: widget.loja),
+                    );
+                  }
+                },
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null
@@ -420,71 +460,31 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               onRefresh: carregarDados,
               child: CustomScrollView(
                 slivers: [
-                  SliverAppBar(
-                    expandedHeight: 290,
-                    pinned: true,
-                    backgroundColor: const Color(0xFF111111),
-                    flexibleSpace: FlexibleSpaceBar(
-                      titlePadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      title: Text(
-                        ev.titulo,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      background: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          ev.bannerUrl.trim().isNotEmpty
-                              ? Image.network(
-                                  ev.bannerUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => Container(
-                                    color: Colors.grey.shade300,
-                                    alignment: Alignment.center,
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                      size: 48,
-                                    ),
-                                  ),
-                                )
-                              : Container(
-                                  color: Colors.grey.shade300,
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.image_not_supported,
-                                    size: 48,
-                                  ),
-                                ),
-                          Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black54,
-                                  Colors.black87,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Container(
+                            height: 260,
+                            width: double.infinity,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: ev.bannerUrl.trim().isNotEmpty
+                                ? Image.network(ev.bannerUrl, fit: BoxFit.cover)
+                                : Container(
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      size: 48,
+                                    ),
+                                  ),
+                          ),
+
+                          const SizedBox(height: 18),
                           Text(
                             ev.titulo,
                             style: const TextStyle(
@@ -495,13 +495,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           const SizedBox(height: 16),
                           linhaInfo(
                             icone: Icons.calendar_month_outlined,
-                            titulo: 'Início',
+                            titulo: 'Data',
                             valor: formatarDataHora(ev.dataInicio),
-                          ),
-                          linhaInfo(
-                            icone: Icons.event_outlined,
-                            titulo: 'Fim',
-                            valor: formatarDataHora(ev.dataFim),
                           ),
                           linhaInfo(
                             icone: Icons.location_on_outlined,
