@@ -480,7 +480,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         },
                         itemBuilder: (context, index) {
                           final evento = eventosFiltrados[index];
-                          final loja = lojas[index];
+
+                          final loja = lojas.firstWhere(
+                            (l) => l.id == evento.lojaId,
+                            orElse: () => Loja(
+                              id: evento.lojaId,
+                              organizacaoId: evento.organizacaoId,
+                              nome: evento.nomeLoja,
+                              bairro: '',
+                              horario: '',
+                              imagemUrl: '',
+                              instagram: '',
+                              vrtaxaprod: 3,
+                              vrtaxaing: 10,
+                            ),
+                          );
 
                           return GestureDetector(
                             onTap: () {
