@@ -467,6 +467,7 @@ class CarteiraLojaScreen extends StatelessWidget {
       'nmcliente': (item['nmcliente'] ?? '').toString(),
       'nmproduto': (item['nmproduto'] ?? '').toString(),
       'dsobsitvenda': (item['dsobsitvenda'] ?? '').toString(),
+      'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
     });
 
     if (codigo.isEmpty) {
