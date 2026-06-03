@@ -394,6 +394,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               logoLoja: lojaSelecionada!['logoLoja'],
               nomeCliente: nomeCliente,
               itens: List<Map<String, dynamic>>.from(lojaSelecionada!['itens']),
+              onAtualizar: carregarTela,
               onVoltar: () {
                 setState(() {
                   lojaSelecionada = null;
@@ -410,6 +411,7 @@ class CarteiraLojaScreen extends StatelessWidget {
   final String logoLoja;
   final String nomeCliente;
   final List<Map<String, dynamic>> itens;
+  final Future<void> Function()? onAtualizar;
   final VoidCallback onVoltar;
 
   const CarteiraLojaScreen({
@@ -418,6 +420,7 @@ class CarteiraLojaScreen extends StatelessWidget {
     required this.logoLoja,
     required this.nomeCliente,
     required this.itens,
+    required this.onAtualizar,
     required this.onVoltar,
   });
 
@@ -458,7 +461,10 @@ class CarteiraLojaScreen extends StatelessWidget {
     );
   }
 
-  void _abrirQrOuRetirada(BuildContext context, Map<String, dynamic> item) {
+  Future<void> _abrirQrOuRetirada(
+    BuildContext context,
+    Map<String, dynamic> item,
+  ) async {
     final codigo = (item['itvenda_id'] ?? '').toString();
 
     final qrData = jsonEncode({
@@ -477,7 +483,7 @@ class CarteiraLojaScreen extends StatelessWidget {
       return;
     }
 
-    showDialog(
+    await showDialog(
       context: context,
       barrierDismissible: true,
       builder: (_) {
@@ -561,6 +567,9 @@ class CarteiraLojaScreen extends StatelessWidget {
         );
       },
     );
+    if (onAtualizar != null) {
+      await onAtualizar!();
+    }
   }
 
   Widget _chip(String texto) {
