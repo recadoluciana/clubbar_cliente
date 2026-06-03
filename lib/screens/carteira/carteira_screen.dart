@@ -37,6 +37,44 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     carregarTela();
   }
 
+  Future<void> atualizarMantendoLoja() async {
+    if (clienteId == null || lojaSelecionada == null) {
+      await carregarTela();
+      return;
+    }
+
+    final nomeLojaAtual = lojaSelecionada!['nomeLoja'];
+
+    final itens = await apiService.buscarPendentes(
+      clienteId: clienteId!,
+      lojaId: 0,
+    );
+
+    final resumo = _agruparPorLoja(itens);
+
+    final lojaAtualizada = resumo
+        .where((l) => l['nmloja'] == nomeLojaAtual)
+        .cast<Map<String, dynamic>>()
+        .toList();
+
+    setState(() {
+      itensPendentes = itens;
+      lojasResumo = resumo;
+
+      if (lojaAtualizada.isNotEmpty) {
+        lojaSelecionada = {
+          'nomeLoja': lojaAtualizada.first['nmloja'],
+          'logoLoja': _buildImageUrl(
+            (lojaAtualizada.first['urllogoloja'] ?? '').toString(),
+          ),
+          'itens': lojaAtualizada.first['itens'],
+        };
+      } else {
+        lojaSelecionada = null;
+      }
+    });
+  }
+
   Future<void> carregarTela() async {
     setState(() {
       carregando = true;
@@ -394,7 +432,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               logoLoja: lojaSelecionada!['logoLoja'],
               nomeCliente: nomeCliente,
               itens: List<Map<String, dynamic>>.from(lojaSelecionada!['itens']),
-              onAtualizar: carregarTela,
+              onAtualizar: atualizarMantendoLoja,
               onVoltar: () {
                 setState(() {
                   lojaSelecionada = null;
