@@ -7,6 +7,7 @@ import '../../services/auth_storage.dart';
 import '../../utils/value_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../services/carteira_badge_notifier.dart';
 
 class CarteiraScreen extends StatefulWidget {
   const CarteiraScreen({super.key});
@@ -73,6 +74,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         lojaSelecionada = null;
       }
     });
+    CarteiraBadgeNotifier.atualizar();
   }
 
   Future<void> carregarTela() async {
