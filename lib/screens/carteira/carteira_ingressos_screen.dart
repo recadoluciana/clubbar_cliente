@@ -4,7 +4,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 
-class CarteiraLojaScreen extends StatefulWidget {
+class CarteiraIngressosScreen extends StatefulWidget {
   final String nomeLoja;
   final String logoLoja;
   final String nomeCliente;
@@ -12,7 +12,7 @@ class CarteiraLojaScreen extends StatefulWidget {
   final Future<List<Map<String, dynamic>>> Function()? onAtualizar;
   final VoidCallback onVoltar;
 
-  const CarteiraLojaScreen({
+  const CarteiraIngressosScreen({
     super.key,
     required this.nomeLoja,
     required this.logoLoja,
@@ -23,10 +23,11 @@ class CarteiraLojaScreen extends StatefulWidget {
   });
 
   @override
-  State<CarteiraLojaScreen> createState() => _CarteiraLojaScreenState();
+  State<CarteiraIngressosScreen> createState() =>
+      _CarteiraIngressosScreenState();
 }
 
-class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
+class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   late List<Map<String, dynamic>> itensTela;
 
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
@@ -88,7 +89,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Retirada do produto',
+                  'Validação do ingresso',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 10),
@@ -126,7 +127,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                 ],
                 const SizedBox(height: 16),
                 const Text(
-                  'Apresente este QR Code para o atendente.',
+                  'Apresente este QR Code na portaria.',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
@@ -347,7 +348,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Carteira - Produtos',
+                  'Carteira - Ingressos',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 25,
@@ -369,7 +370,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                 const SizedBox(height: 6),
 
                 Text(
-                  '$totalUnidades item(ns) disponível(is) para retirada',
+                  '$totalUnidades ingresso(s) disponível(is) para retirada',
                   style: TextStyle(
                     color: Colors.grey.shade300,
                     fontSize: 14,
@@ -461,7 +462,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
               child: Padding(
                 padding: EdgeInsets.only(top: 40),
                 child: Text(
-                  'Nenhum item disponível para retirada nesta loja.',
+                  'Nenhum ingresso disponível para uso neste estabelecimento',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),

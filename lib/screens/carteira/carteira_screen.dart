@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import '../../utils/value_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../services/carteira_badge_notifier.dart';
 import 'carteira_loja_screen.dart';
+import 'carteira_ingressos_screen.dart';
 
 class CarteiraScreen extends StatefulWidget {
   const CarteiraScreen({super.key});
@@ -74,7 +75,10 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> recarregarItensDaLoja(int lojaId) async {
+  Future<List<Map<String, dynamic>>> recarregarItensDaLoja(
+    int lojaId, {
+    String? tipo,
+  }) async {
     if (clienteId == null) return [];
 
     final itens = await apiService.buscarPendentes(
@@ -99,7 +103,23 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       return [];
     }
 
-    return List<Map<String, dynamic>>.from(lojaAtualizada.first['itens']);
+    final itensLoja = List<Map<String, dynamic>>.from(
+      lojaAtualizada.first['itens'],
+    );
+
+    if (tipo == 'I') {
+      return itensLoja.where((item) {
+        return (item['idtipoproduto'] ?? '').toString().toUpperCase() == 'I';
+      }).toList();
+    }
+
+    if (tipo == 'P') {
+      return itensLoja.where((item) {
+        return (item['idtipoproduto'] ?? '').toString().toUpperCase() != 'I';
+      }).toList();
+    }
+
+    return itensLoja;
   }
 
   List<Map<String, dynamic>> _agruparPorLoja(List<Map<String, dynamic>> itens) {
@@ -118,11 +138,23 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           'urllogoloja': logoLoja,
           'total_itens': 0,
           'itens': <Map<String, dynamic>>[],
+          'total_produtos': 0,
+          'total_ingressos': 0,
         };
       }
 
       agrupado[lojaId]!['total_itens'] =
           (agrupado[lojaId]!['total_itens'] as int) + qtd;
+
+      final tipo = (item['idtipoproduto'] ?? '').toString().toUpperCase();
+
+      if (tipo == 'I') {
+        agrupado[lojaId]!['total_ingressos'] =
+            (agrupado[lojaId]!['total_ingressos'] as int) + qtd;
+      } else {
+        agrupado[lojaId]!['total_produtos'] =
+            (agrupado[lojaId]!['total_produtos'] as int) + qtd;
+      }
 
       (agrupado[lojaId]!['itens'] as List<Map<String, dynamic>>).add(item);
     }
@@ -240,9 +272,19 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   Widget _cardLoja(Map<String, dynamic> loja) {
     final nome = (loja['nmloja'] ?? 'Loja').toString();
     final logo = _buildImageUrl((loja['urllogoloja'] ?? '').toString());
-    final totalItens = int.tryParse('${loja['total_itens'] ?? 0}') ?? 0;
     final itens = List<Map<String, dynamic>>.from(loja['itens'] as List);
     final lojaId = int.tryParse('${loja['loja_id'] ?? 0}') ?? 0;
+
+    final produtos = itens.where((item) {
+      return (item['idtipoproduto'] ?? '').toString().toUpperCase() != 'I';
+    }).toList();
+
+    final ingressos = itens.where((item) {
+      return (item['idtipoproduto'] ?? '').toString().toUpperCase() == 'I';
+    }).toList();
+
+    final totalProdutos = int.tryParse('${loja['total_produtos'] ?? 0}') ?? 0;
+    final totalIngressos = int.tryParse('${loja['total_ingressos'] ?? 0}') ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -250,65 +292,91 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         elevation: 2,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: () {
-            MainNavigationController.abrirTela(
-              CarteiraLojaScreen(
-                nomeLoja: nome,
-                logoLoja: logo,
-                nomeCliente: nomeCliente,
-                itens: itens,
-                onAtualizar: () => recarregarItensDaLoja(lojaId),
-                onVoltar: () {
-                  MainNavigationController.fecharTelaInterna();
-                },
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(18),
-            child: Row(
-              children: [
-                _logoLoja(logo),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        nome,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              _logoLoja(logo),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nome,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          '${ValueFormatters.numero(totalItens)} item(ns) para retirar',
-                          style: TextStyle(
-                            color: Colors.amber.shade900,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: produtos.isEmpty
+                                ? null
+                                : () {
+                                    MainNavigationController.abrirTela(
+                                      CarteiraLojaScreen(
+                                        nomeLoja: nome,
+                                        logoLoja: logo,
+                                        nomeCliente: nomeCliente,
+                                        itens: produtos,
+                                        onAtualizar: () =>
+                                            recarregarItensDaLoja(
+                                              lojaId,
+                                              tipo: 'P',
+                                            ),
+                                        onVoltar: () {
+                                          MainNavigationController.fecharTelaInterna();
+                                        },
+                                      ),
+                                    );
+                                  },
+                            icon: const Icon(Icons.local_bar_outlined),
+                            label: Text('Produtos ($totalProdutos)'),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+
+                        const SizedBox(width: 8),
+
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: ingressos.isEmpty
+                                ? null
+                                : () {
+                                    MainNavigationController.abrirTela(
+                                      CarteiraIngressosScreen(
+                                        nomeLoja: nome,
+                                        logoLoja: logo,
+                                        nomeCliente: nomeCliente,
+                                        itens: ingressos,
+                                        onAtualizar: () =>
+                                            recarregarItensDaLoja(
+                                              lojaId,
+                                              tipo: 'I',
+                                            ),
+                                        onVoltar: () {
+                                          MainNavigationController.fecharTelaInterna();
+                                        },
+                                      ),
+                                    );
+                                  },
+                            icon: const Icon(
+                              Icons.confirmation_number_outlined,
+                            ),
+                            label: Text('Ingressos ($totalIngressos)'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.chevron_right_rounded, size: 32),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -411,7 +479,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           ],
         ),
       ),
-
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : _listaCarteira(),
