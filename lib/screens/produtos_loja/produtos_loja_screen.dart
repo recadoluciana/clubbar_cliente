@@ -226,7 +226,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         width: 86,
         height: 86,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => Container(
+        errorBuilder: (_, _, _) => Container(
           width: 86,
           height: 86,
           color: Colors.grey.shade200,

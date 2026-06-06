@@ -339,7 +339,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                 ),
               )
             else
-              ...eventos.map(itemEvento).toList(),
+              ...eventos.map(itemEvento),
 
             const SizedBox(height: 24),
           ],

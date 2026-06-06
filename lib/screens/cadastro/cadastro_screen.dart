@@ -108,15 +108,15 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
     final e = original.toLowerCase();
 
     if (e.endsWith('.con')) {
-      return original.substring(0, original.length - 4) + '.com';
+      return '${original.substring(0, original.length - 4)}.com';
     }
 
     if (e.endsWith('.ccom')) {
-      return original.substring(0, original.length - 5) + '.com';
+      return '${original.substring(0, original.length - 5)}.com';
     }
 
     if (e.endsWith('.comm')) {
-      return original.substring(0, original.length - 5) + '.com';
+      return '${original.substring(0, original.length - 5)}.com';
     }
 
     if (e.contains('@gmai.com')) {

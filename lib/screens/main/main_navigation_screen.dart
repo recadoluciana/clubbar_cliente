@@ -155,7 +155,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget _iconeCarteiraComBadge({required bool selecionado}) {
     return ValueListenableBuilder<int>(
       valueListenable: CarteiraBadgeNotifier.refresh,
-      builder: (context, _, __) {
+      builder: (context, _, _) {
         final icone = Icon(
           selecionado
               ? Icons.account_balance_wallet
@@ -250,6 +250,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           bottomNavigationBar: NavigationBar(
             selectedIndex: currentIndex,
             onDestinationSelected: (index) {
+              if (index == currentIndex) {
+                MainNavigationController.fecharTelaInterna();
+                return;
+              }
+
               MainNavigationController.fecharTelaInterna();
               MainNavigationController.abaIndex.value = index;
               _selecionarAba(index);

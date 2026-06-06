@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/value_formatters.dart';
@@ -21,8 +18,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
-  Map<String, dynamic>? lojaSelecionada;
-
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
   bool carregando = true;
@@ -39,50 +34,10 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     carregarTela();
   }
 
-  Future<void> atualizarMantendoLoja() async {
-    if (clienteId == null || lojaSelecionada == null) {
-      await carregarTela();
-      return;
-    }
-
-    final nomeLojaAtual = lojaSelecionada!['nomeLoja'];
-
-    final itens = await apiService.buscarPendentes(
-      clienteId: clienteId!,
-      lojaId: 0,
-    );
-
-    final resumo = _agruparPorLoja(itens);
-
-    final lojaAtualizada = resumo
-        .where((l) => l['nmloja'] == nomeLojaAtual)
-        .cast<Map<String, dynamic>>()
-        .toList();
-
-    setState(() {
-      itensPendentes = itens;
-      lojasResumo = resumo;
-
-      if (lojaAtualizada.isNotEmpty) {
-        lojaSelecionada = {
-          'nomeLoja': lojaAtualizada.first['nmloja'],
-          'logoLoja': _buildImageUrl(
-            (lojaAtualizada.first['urllogoloja'] ?? '').toString(),
-          ),
-          'itens': lojaAtualizada.first['itens'],
-        };
-      } else {
-        lojaSelecionada = null;
-      }
-    });
-    CarteiraBadgeNotifier.atualizar();
-  }
-
   Future<void> carregarTela() async {
     setState(() {
       carregando = true;
       erro = null;
-      lojaSelecionada = null;
     });
 
     try {
@@ -107,6 +62,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         lojasResumo = resumo;
         carregando = false;
       });
+
+      CarteiraBadgeNotifier.atualizar();
     } catch (e) {
       setState(() {
         erro = e.toString().replaceFirst('Exception: ', '');
@@ -115,6 +72,34 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         carregando = false;
       });
     }
+  }
+
+  Future<List<Map<String, dynamic>>> recarregarItensDaLoja(int lojaId) async {
+    if (clienteId == null) return [];
+
+    final itens = await apiService.buscarPendentes(
+      clienteId: clienteId!,
+      lojaId: 0,
+    );
+
+    final resumo = _agruparPorLoja(itens);
+
+    if (mounted) {
+      setState(() {
+        itensPendentes = itens;
+        lojasResumo = resumo;
+      });
+    }
+
+    CarteiraBadgeNotifier.atualizar();
+
+    final lojaAtualizada = resumo.where((l) => l['loja_id'] == lojaId).toList();
+
+    if (lojaAtualizada.isEmpty) {
+      return [];
+    }
+
+    return List<Map<String, dynamic>>.from(lojaAtualizada.first['itens']);
   }
 
   List<Map<String, dynamic>> _agruparPorLoja(List<Map<String, dynamic>> itens) {
@@ -171,7 +156,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         width: 58,
         height: 58,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
+        errorBuilder: (_, _, _) {
           return Container(
             width: 58,
             height: 58,
@@ -257,6 +242,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     final logo = _buildImageUrl((loja['urllogoloja'] ?? '').toString());
     final totalItens = int.tryParse('${loja['total_itens'] ?? 0}') ?? 0;
     final itens = List<Map<String, dynamic>>.from(loja['itens'] as List);
+    final lojaId = int.tryParse('${loja['loja_id'] ?? 0}') ?? 0;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -267,13 +253,18 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
           onTap: () {
-            setState(() {
-              lojaSelecionada = {
-                'nomeLoja': nome,
-                'logoLoja': logo,
-                'itens': itens,
-              };
-            });
+            MainNavigationController.abrirTela(
+              CarteiraLojaScreen(
+                nomeLoja: nome,
+                logoLoja: logo,
+                nomeCliente: nomeCliente,
+                itens: itens,
+                onAtualizar: () => recarregarItensDaLoja(lojaId),
+                onVoltar: () {
+                  MainNavigationController.fecharTelaInterna();
+                },
+              ),
+            );
           },
           child: Padding(
             padding: const EdgeInsets.all(18),
@@ -409,13 +400,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               bottom: 8,
               child: IconButton(
                 onPressed: () {
-                  if (lojaSelecionada != null) {
-                    setState(() {
-                      lojaSelecionada = null;
-                    });
-                  } else {
-                    MainNavigationController.irParaHome();
-                  }
+                  MainNavigationController.irParaHome();
                 },
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
@@ -429,19 +414,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
-          : lojaSelecionada != null
-          ? CarteiraLojaScreen(
-              nomeLoja: lojaSelecionada!['nomeLoja'],
-              logoLoja: lojaSelecionada!['logoLoja'],
-              nomeCliente: nomeCliente,
-              itens: List<Map<String, dynamic>>.from(lojaSelecionada!['itens']),
-              onAtualizar: atualizarMantendoLoja,
-              onVoltar: () {
-                setState(() {
-                  lojaSelecionada = null;
-                });
-              },
-            )
           : _listaCarteira(),
     );
   }

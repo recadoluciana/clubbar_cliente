@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../services/carteira_badge_notifier.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
-class CarteiraLojaScreen extends StatelessWidget {
+class CarteiraLojaScreen extends StatefulWidget {
   final String nomeLoja;
   final String logoLoja;
   final String nomeCliente;
   final List<Map<String, dynamic>> itens;
-  final Future<void> Function()? onAtualizar;
+  final Future<List<Map<String, dynamic>>> Function()? onAtualizar;
   final VoidCallback onVoltar;
 
   const CarteiraLojaScreen({
@@ -20,6 +22,21 @@ class CarteiraLojaScreen extends StatelessWidget {
     required this.onVoltar,
   });
 
+  @override
+  State<CarteiraLojaScreen> createState() => _CarteiraLojaScreenState();
+}
+
+class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
+  late List<Map<String, dynamic>> itensTela;
+
+  static const String baseUrl = 'https://bitbeer-production.up.railway.app';
+
+  @override
+  void initState() {
+    super.initState();
+    itensTela = List<Map<String, dynamic>>.from(widget.itens);
+  }
+
   bool _isIngresso(Map<String, dynamic> item) {
     return (item['idtipoproduto'] ?? '').toString().toUpperCase() == 'I';
   }
@@ -29,32 +46,10 @@ class CarteiraLojaScreen extends StatelessWidget {
     return 'R\$ ${n.toStringAsFixed(2)}';
   }
 
-  static const String baseUrl = 'https://bitbeer-production.up.railway.app';
-
   String _buildImageUrl(String path) {
     if (path.isEmpty) return '';
     if (path.startsWith('http')) return path;
     return '$baseUrl$path';
-  }
-
-  Widget _badgeTipo(Map<String, dynamic> item) {
-    final ingresso = _isIngresso(item);
-    final cor = ingresso ? Colors.blue : Colors.amber.shade800;
-    final fundo = ingresso
-        ? Colors.blue.withOpacity(0.10)
-        : Colors.amber.withOpacity(0.15);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: fundo,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        ingresso ? 'Ingresso' : 'Produto',
-        style: TextStyle(color: cor, fontSize: 12, fontWeight: FontWeight.w700),
-      ),
-    );
   }
 
   Future<void> _abrirQrOuRetirada(
@@ -65,7 +60,7 @@ class CarteiraLojaScreen extends StatelessWidget {
 
     final qrData = jsonEncode({
       'itvenda_id': codigo,
-      'nmloja': nomeLoja,
+      'nmloja': widget.nomeLoja,
       'nmcliente': (item['nmcliente'] ?? '').toString(),
       'nmproduto': (item['nmproduto'] ?? '').toString(),
       'dsobsitvenda': (item['dsobsitvenda'] ?? '').toString(),
@@ -105,7 +100,6 @@ class CarteiraLojaScreen extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 if ((item['dsobsitvenda'] ?? '')
                     .toString()
                     .trim()
@@ -141,7 +135,6 @@ class CarteiraLojaScreen extends StatelessWidget {
                   size: 220,
                   backgroundColor: Colors.white,
                 ),
-
                 const SizedBox(height: 20),
                 SizedBox(
                   width: double.infinity,
@@ -163,9 +156,39 @@ class CarteiraLojaScreen extends StatelessWidget {
         );
       },
     );
-    if (onAtualizar != null) {
-      await onAtualizar!();
+
+    // atualizar itens e badge após retirada ou fechamento do qr
+    if (widget.onAtualizar != null) {
+      final novosItens = await widget.onAtualizar!();
+
+      CarteiraBadgeNotifier.atualizar();
+
+      if (!mounted) return;
+
+      setState(() {
+        itensTela = novosItens;
+      });
     }
+  }
+
+  Widget _badgeTipo(Map<String, dynamic> item) {
+    final ingresso = _isIngresso(item);
+    final cor = ingresso ? Colors.blue : Colors.amber.shade800;
+    final fundo = ingresso
+        ? Colors.blue.withOpacity(0.10)
+        : Colors.amber.withOpacity(0.15);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: fundo,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        ingresso ? 'Ingresso' : 'Produto',
+        style: TextStyle(color: cor, fontSize: 12, fontWeight: FontWeight.w700),
+      ),
+    );
   }
 
   Widget _chip(String texto) {
@@ -200,57 +223,7 @@ class CarteiraLojaScreen extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Builder(
-                  builder: (_) {
-                    final path = (item['urlfotoproduto'] ?? '').toString();
-                    final url = _buildImageUrl(path);
-
-                    if (url.isEmpty) {
-                      return Container(
-                        width: 58,
-                        height: 58,
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Icon(
-                          _isIngresso(item)
-                              ? Icons.confirmation_number_outlined
-                              : Icons.local_bar_outlined,
-                          color: Colors.amber.shade800,
-                          size: 30,
-                        ),
-                      );
-                    }
-
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.network(
-                        url,
-                        width: 58,
-                        height: 58,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) {
-                          return Container(
-                            width: 58,
-                            height: 58,
-                            decoration: BoxDecoration(
-                              color: Colors.amber.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Icon(
-                              _isIngresso(item)
-                                  ? Icons.confirmation_number_outlined
-                                  : Icons.local_bar_outlined,
-                              color: Colors.amber.shade800,
-                              size: 30,
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
+                _imagemItem(item),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -308,8 +281,111 @@ class CarteiraLojaScreen extends StatelessWidget {
     );
   }
 
+  Widget _imagemItem(Map<String, dynamic> item) {
+    final url = _buildImageUrl((item['urlfotoproduto'] ?? '').toString());
+
+    if (url.isEmpty) {
+      return _placeholderItem(item);
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Image.network(
+        url,
+        width: 58,
+        height: 58,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => _placeholderItem(item),
+      ),
+    );
+  }
+
+  Widget _placeholderItem(Map<String, dynamic> item) {
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        color: Colors.amber.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Icon(
+        _isIngresso(item)
+            ? Icons.confirmation_number_outlined
+            : Icons.local_bar_outlined,
+        color: Colors.amber.shade800,
+        size: 30,
+      ),
+    );
+  }
+
+  Widget _cabecalho(int totalUnidades) {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF111111), Color(0xFF1E1E1E), Color(0xFF2A2A2A)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          _logoLoja(),
+
+          const SizedBox(width: 16),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Carteira',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 25,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  widget.nomeLoja,
+                  style: TextStyle(
+                    color: Colors.grey.shade300,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                Text(
+                  '$totalUnidades item(ns) disponível(is) para retirada',
+                  style: TextStyle(
+                    color: Colors.grey.shade300,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _logoLoja() {
-    if (logoLoja.isEmpty) {
+    if (widget.logoLoja.isEmpty) {
       return Container(
         width: 58,
         height: 58,
@@ -324,11 +400,11 @@ class CarteiraLojaScreen extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: Image.network(
-        logoLoja,
+        widget.logoLoja,
         width: 58,
         height: 58,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) {
+        errorBuilder: (_, _, _) {
           return Container(
             width: 58,
             height: 58,
@@ -348,56 +424,53 @@ class CarteiraLojaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalUnidades = itens.fold<int>(
+    final totalUnidades = itensTela.fold<int>(
       0,
       (total, item) => total + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
     );
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      children: [
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            children: [
-              _logoLoja(),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Carteira - $nomeLoja',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(60),
+        child: Stack(
+          children: [
+            const ClubbarAppBar(),
 
-                    const SizedBox(height: 6),
-
-                    Text(
-                      '$totalUnidades item(ns) disponível(is) para retirada',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 14,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
+            Positioned(
+              left: 8,
+              top: 8,
+              bottom: 8,
+              child: IconButton(
+                onPressed: widget.onVoltar,
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        const SizedBox(height: 20),
-        ...itens.map((item) => _itemCard(context, item)),
-      ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        children: [
+          _cabecalho(totalUnidades),
+          const SizedBox(height: 22),
+          if (itensTela.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.only(top: 40),
+                child: Text(
+                  'Nenhum item disponível para retirada nesta loja.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            )
+          else
+            ...itensTela.map((item) => _itemCard(context, item)),
+        ],
+      ),
     );
   }
 }
