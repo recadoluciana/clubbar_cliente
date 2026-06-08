@@ -313,29 +313,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  MainNavigationController.irParaHome();
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())

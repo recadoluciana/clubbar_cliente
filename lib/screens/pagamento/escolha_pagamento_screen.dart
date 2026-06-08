@@ -10,13 +10,9 @@ import '../../widgets/clubbar_app_bar.dart';
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
 
-  /// Soma apenas dos itens com idtipoproduto = P
   final double totalProdutos;
-
-  /// Soma apenas dos itens com idtipoproduto = I
   final double totalIngressos;
 
-  // mantém para não quebrar chamadas antigas
   final double? taxaConveniencia;
   final double? totalPagar;
 
@@ -34,23 +30,24 @@ class EscolhaPagamentoScreen extends StatefulWidget {
 }
 
 class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
-  final apiService = ApiService();
-  final authStorage = AuthStorage();
+  final ApiService apiService = ApiService();
+  final AuthStorage authStorage = AuthStorage();
 
   bool carregandoPix = false;
 
-  double get percentualTaxaProduto => widget.loja.vrtaxaprod;
   double get percentualTaxaIngresso => widget.loja.vrtaxaing;
 
-  double get taxaProdutos =>
-      widget.totalProdutos * (percentualTaxaProduto / 100);
-  double get taxaIngressos =>
-      widget.totalIngressos * (percentualTaxaIngresso / 100);
+  double get taxaIngressos {
+    return widget.totalIngressos * (percentualTaxaIngresso / 100);
+  }
 
-  double get taxaConveniencia => taxaProdutos + taxaIngressos;
+  double get taxaConveniencia {
+    return taxaIngressos;
+  }
 
-  double get totalPagar =>
-      widget.totalProdutos + widget.totalIngressos + taxaConveniencia;
+  double get totalPagar {
+    return widget.totalProdutos + widget.totalIngressos + taxaConveniencia;
+  }
 
   String _moeda(double valor) {
     return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
@@ -132,33 +129,36 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     );
   }
 
+  Widget _linhaResumoComIcone({
+    required IconData icon,
+    required String titulo,
+    required double valor,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, size: 24, color: Colors.black87),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            titulo,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+        ),
+        Text(
+          _moeda(valor),
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
 
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
+
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -166,26 +166,47 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             'Pagamento - ${widget.loja.nome}',
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
           ),
+
+          const SizedBox(height: 16),
+
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(22),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                _linhaResumo('Total produtos', widget.totalProdutos),
-                const SizedBox(height: 8),
-                _linhaResumo('Taxa produtos 3%', taxaProdutos),
-                const Divider(height: 24),
+                _linhaResumoComIcone(
+                  icon: Icons.shopping_bag_outlined,
+                  titulo: 'Produtos',
+                  valor: widget.totalProdutos,
+                ),
 
-                _linhaResumo('Total ingressos', widget.totalIngressos),
-                const SizedBox(height: 8),
-                _linhaResumo('Taxa ingressos 10%', taxaIngressos),
-                const Divider(height: 24),
+                const SizedBox(height: 16),
 
-                _linhaResumo('Taxa de conveniência', taxaConveniencia),
-                const SizedBox(height: 8),
+                _linhaResumoComIcone(
+                  icon: Icons.confirmation_number_outlined,
+                  titulo: 'Ingressos',
+                  valor: widget.totalIngressos,
+                ),
+
+                const SizedBox(height: 10),
+
+                _linhaResumo(
+                  'Taxa de conveniência ingressos (${percentualTaxaIngresso.toStringAsFixed(0)}%)',
+                  taxaConveniencia,
+                ),
+
+                const Divider(height: 28),
+
                 _linhaResumo('Total a pagar', totalPagar, destaque: true),
               ],
             ),

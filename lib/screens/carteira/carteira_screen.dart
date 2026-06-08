@@ -336,7 +336,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                                       ),
                                     );
                                   },
-                            icon: const Icon(Icons.local_bar_outlined),
                             label: Text('Produtos ($totalProdutos)'),
                           ),
                         ),
@@ -365,9 +364,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                                       ),
                                     );
                                   },
-                            icon: const Icon(
-                              Icons.confirmation_number_outlined,
-                            ),
                             label: Text('Ingressos ($totalIngressos)'),
                           ),
                         ),
@@ -456,29 +452,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  MainNavigationController.irParaHome();
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: ClubbarAppBar(mostrarVoltar: true),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : _listaCarteira(),

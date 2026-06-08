@@ -12,6 +12,7 @@ class ItemCarrinho {
   final bool descontoAtivo;
   final String tipodesconto;
   final double vrdesconto;
+  final String idtipoproduto;
 
   ItemCarrinho({
     required this.produtoId,
@@ -24,6 +25,7 @@ class ItemCarrinho {
     required this.descontoAtivo,
     required this.tipodesconto,
     required this.vrdesconto,
+    required this.idtipoproduto,
   });
 
   factory ItemCarrinho.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class ItemCarrinho {
       descontoAtivo: json['descontoativo'] == true,
       tipodesconto: (json['tipodesconto'] ?? 'NENHUM').toString(),
       vrdesconto: _toDouble(json['vrdesconto']),
+      idtipoproduto: (json['idtipoproduto'] ?? 'P').toString(),
     );
   }
 

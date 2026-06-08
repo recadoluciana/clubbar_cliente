@@ -9,6 +9,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool mostrarVersao;
   final bool mostrarVoltar;
   final String logoPath;
+  final VoidCallback? onVoltar;
 
   const ClubbarAppBar({
     super.key,
@@ -19,6 +20,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.mostrarVersao = false,
     this.mostrarVoltar = false,
     this.logoPath = 'assets/images/logo_copa.png',
+    this.onVoltar,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -67,7 +69,16 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                MainNavigationController.irParaHome();
+                if (onVoltar != null) {
+                  onVoltar!();
+                  return;
+                }
+
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  MainNavigationController.irParaHome();
+                }
               },
             )
           : null,

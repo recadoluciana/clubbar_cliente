@@ -430,27 +430,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: widget.onVoltar,
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
         children: [

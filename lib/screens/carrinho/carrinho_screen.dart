@@ -109,6 +109,30 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return itensAgrupados.fold<double>(0, (soma, item) => soma + item.subtotal);
   }
 
+  double get totalProdutos {
+    double total = 0;
+
+    for (final item in itensCarrinho) {
+      if (item.idtipoproduto == 'P') {
+        total += item.precoFinal * item.quantidade;
+      }
+    }
+
+    return total;
+  }
+
+  double get totalIngressos {
+    double total = 0;
+
+    for (final item in itensCarrinho) {
+      if (item.idtipoproduto == 'I') {
+        total += item.precoFinal * item.quantidade;
+      }
+    }
+
+    return total;
+  }
+
   Future<void> carregarCarrinho() async {
     setState(() {
       carregando = true;
@@ -188,11 +212,25 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   }
 
   void abrirEscolhaPagamento() {
-    if (itensAgrupados.isEmpty) {
+    if (itensCarrinho.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Seu carrinho está vazio')));
       return;
+    }
+
+    double totalProdutos = 0;
+    double totalIngressos = 0;
+
+    for (final item in itensCarrinho) {
+      final tipo = item.idtipoproduto.trim().toUpperCase();
+      final subtotal = item.precoFinal * item.quantidade;
+
+      if (tipo == 'I') {
+        totalIngressos += subtotal;
+      } else {
+        totalProdutos += subtotal;
+      }
     }
 
     Navigator.push(
@@ -200,9 +238,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       MaterialPageRoute(
         builder: (_) => EscolhaPagamentoScreen(
           loja: widget.loja,
-          totalProdutos: total,
-          taxaConveniencia: 0,
-          totalPagar: total,
+          totalProdutos: totalProdutos,
+          totalIngressos: totalIngressos,
         ),
       ),
     );
@@ -482,29 +519,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null

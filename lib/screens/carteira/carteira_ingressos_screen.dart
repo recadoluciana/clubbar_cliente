@@ -339,9 +339,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       ),
       child: Row(
         children: [
-          _logoLoja(),
+          SizedBox(width: 92, height: 92, child: _logoLoja()),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: 18),
 
           Expanded(
             child: Column(
@@ -351,7 +351,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   'Carteira - Ingressos',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 25,
+                    fontSize: 21,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -360,21 +360,33 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
                 Text(
                   widget.nomeLoja,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: Colors.grey.shade300,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
 
-                Text(
-                  '$totalUnidades ingresso(s) disponível(is) para retirada',
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 14,
-                    height: 1.4,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$totalUnidades ingresso(s) disponível(is)',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
               ],
@@ -388,8 +400,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   Widget _logoLoja() {
     if (widget.logoLoja.isEmpty) {
       return Container(
-        width: 58,
-        height: 58,
+        width: 92,
+        height: 92,
         decoration: BoxDecoration(
           color: Colors.amber.withOpacity(0.15),
           borderRadius: BorderRadius.circular(18),
@@ -431,27 +443,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
 
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: widget.onVoltar,
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
         children: [
