@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../cadastro/cadastro_screen.dart';
 import '../esqueceu_senha/esqueceu_senha_screen.dart';
 import '../main/main_navigation_screen.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,12 +24,30 @@ class _LoginScreenState extends State<LoginScreen> {
   bool carregando = false;
   bool obscureSenha = true;
   String? erro;
+  bool corujaOlhoFechado = false;
 
   @override
-  void dispose() {
-    emailController.dispose();
-    senhaController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+
+    Timer.periodic(const Duration(milliseconds: 1800), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      setState(() {
+        corujaOlhoFechado = true;
+      });
+
+      Future.delayed(const Duration(milliseconds: 180), () {
+        if (!mounted) return;
+
+        setState(() {
+          corujaOlhoFechado = false;
+        });
+      });
+    });
   }
 
   String traduzirErro(String erro) {
@@ -149,22 +169,12 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        title: const Text('Login'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
       extendBodyBehindAppBar: true,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF111111), Color(0xFF1E1E1E), Color(0xFF2A2A2A)],
-          ),
-        ),
+        decoration: const BoxDecoration(color: Color(0xFFF7F7F7)),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -173,16 +183,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 constraints: const BoxConstraints(maxWidth: 430),
                 child: Column(
                   children: [
-                    const SizedBox(height: 10),
-                    const SizedBox(height: 20),
-                    Column(
-                      children: [
-                        Image.asset('assets/images/logo.png', height: 70),
-                        const SizedBox(height: 8),
-                      ],
+                    Image.asset(
+                      corujaOlhoFechado
+                          ? 'assets/images/corujao_piscando.png'
+                          : 'assets/images/corujao.png',
+                      height: 100,
                     ),
-                    const SizedBox(height: 8),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -373,7 +380,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       'Ao continuar você concorda com os termos de uso do app.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.grey.shade400,
+                        color: Colors.grey.shade600,
                         fontSize: 12,
                       ),
                     ),

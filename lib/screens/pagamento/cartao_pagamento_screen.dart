@@ -42,25 +42,33 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
 
   bool carregando = false;
 
+  String _anoCompleto(String anoDoisDigitos) {
+    final prefixo = DateTime.now().year.toString().substring(0, 2);
+    return '$prefixo$anoDoisDigitos';
+  }
+
+  bool _mesAnoValido(String mesTexto, String anoTexto) {
+    final mes = int.tryParse(mesTexto);
+    final anoCurto = anoTexto.trim();
+
+    if (mes == null || mes < 1 || mes > 12) return false;
+    if (anoCurto.length != 2) return false;
+
+    final ano = int.tryParse(_anoCompleto(anoCurto));
+    if (ano == null) return false;
+
+    final agora = DateTime.now();
+    final validade = DateTime(ano, mes + 1, 0);
+
+    return validade.isAfter(agora);
+  }
+
   bool _anoValido(String valor) {
     final ano = int.tryParse(valor);
     if (ano == null) return false;
 
     final anoAtual = DateTime.now().year;
     return ano >= anoAtual;
-  }
-
-  bool _mesAnoValido(String mesTexto, String anoTexto) {
-    final mes = int.tryParse(mesTexto);
-    final ano = int.tryParse(anoTexto);
-
-    if (mes == null || ano == null) return false;
-    if (mes < 1 || mes > 12) return false;
-
-    final agora = DateTime.now();
-    final validade = DateTime(ano, mes + 1, 0);
-
-    return validade.isAfter(agora);
   }
 
   @override
@@ -196,10 +204,7 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
             controller: _numeroCtrl,
             keyboardType: TextInputType.number,
             maxLength: 19,
-            decoration: _decoracao(
-              'Número do cartão',
-              Icons.credit_card,
-            ).copyWith(counterText: ''),
+            decoration: _decoracao('Número do cartão', Icons.credit_card),
           ),
 
           const SizedBox(height: 14),
@@ -222,18 +227,19 @@ class _CartaoPagamentoScreenState extends State<CartaoPagamentoScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: TextFormField(
-                  controller: _mesCtrl,
+                  controller: _anoCtrl,
                   keyboardType: TextInputType.number,
                   maxLength: 2,
-                  decoration: _decoracao(
-                    'Mês',
-                    Icons.date_range,
-                  ).copyWith(counterText: ''),
+                  decoration: _decoracao('Ano', Icons.date_range),
                   validator: (value) {
-                    final v = int.tryParse(value ?? '');
+                    final v = (value ?? '').trim();
 
-                    if (v == null || v < 1 || v > 12) {
-                      return 'Mês inválido';
+                    if (v.length != 2) {
+                      return 'AA';
+                    }
+
+                    if (!_mesAnoValido(_mesCtrl.text.trim(), v)) {
+                      return 'Vencido';
                     }
 
                     return null;

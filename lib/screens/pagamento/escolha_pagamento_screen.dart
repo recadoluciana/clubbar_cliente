@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import 'cartao_pagamento_screen.dart';
+import 'checkout_cartao_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+
+import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -91,19 +94,46 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
   }
 
-  void abrirCartao(String tipoPagamento) {
-    Navigator.push(
+  Future<void> abrirCartao(String tipoPagamento) async {
+    final clienteId = await authStorage.obterClienteId();
+
+    if (clienteId == null || clienteId == 0) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Cliente não identificado')));
+      return;
+    }
+
+    final uri =
+        Uri.parse(
+          'https://bitbeer-production.up.railway.app/static/checkout_cartao.html',
+        ).replace(
+          queryParameters: {
+            'cliente_id': clienteId.toString(),
+            'organizacao_id': widget.loja.organizacaoId.toString(),
+            'loja_id': widget.loja.id.toString(),
+            'tipo_pagamento': tipoPagamento,
+            'amount': totalPagar.toStringAsFixed(2),
+          },
+        );
+
+    if (kIsWeb) {
+      await launchUrl(uri, webOnlyWindowName: '_self');
+      return;
+    }
+
+    final resultado = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CartaoPagamentoScreen(
-          loja: widget.loja,
-          tipoPagamento: tipoPagamento,
-          totalProdutos: widget.totalProdutos + widget.totalIngressos,
-          taxaConveniencia: taxaConveniencia,
-          totalPagar: totalPagar,
-        ),
+        builder: (_) => CheckoutCartaoScreen(url: uri.toString()),
       ),
     );
+
+    if (resultado == true && mounted) {
+      Navigator.pop(context, true);
+    }
   }
 
   Widget _linhaResumo(String titulo, double valor, {bool destaque = false}) {
