@@ -49,7 +49,7 @@ class _CheckoutCartaoScreenState extends State<CheckoutCartaoScreen> {
                 return NavigationDecision.prevent;
               }
 
-              if (url.startsWith('clubbar://pagamento-erro')) {
+              if (url.startsWith('clubbar://pagamento-cancelado')) {
                 Navigator.pop(context, false);
                 return NavigationDecision.prevent;
               }
