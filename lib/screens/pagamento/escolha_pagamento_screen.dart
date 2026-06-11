@@ -7,6 +7,8 @@ import 'checkout_cartao_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 
+import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
@@ -126,6 +128,13 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     );
 
     if (resultado == true && mounted) {
+      final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
+        clienteId: clienteId,
+      );
+
+      CartBadgeNotifier.atualizar(totalCarrinho);
+      CarteiraBadgeNotifier.atualizar();
+
       MainNavigationController.irParaHome();
     }
   }
