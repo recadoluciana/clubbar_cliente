@@ -135,6 +135,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       CartBadgeNotifier.atualizar(totalCarrinho);
       CarteiraBadgeNotifier.atualizar();
 
+      Navigator.pop(context, true);
       MainNavigationController.irParaHome();
     }
   }
