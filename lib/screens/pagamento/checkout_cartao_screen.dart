@@ -78,7 +78,7 @@ class _CheckoutCartaoScreenState extends State<CheckoutCartaoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      // appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: erro != null
           ? Center(
               child: Padding(
