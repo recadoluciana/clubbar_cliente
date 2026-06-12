@@ -427,31 +427,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
 
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  MainNavigationController.abrirTela(
-                    DetalheLojaScreen(loja: widget.loja),
-                  );
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
+      appBar: ClubbarAppBar(
+        mostrarVoltar: true,
+        onVoltar: () {
+          MainNavigationController.abrirTela(
+            DetalheLojaScreen(loja: widget.loja),
+          );
+        },
       ),
+
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null

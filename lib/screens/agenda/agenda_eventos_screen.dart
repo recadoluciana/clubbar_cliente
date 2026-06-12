@@ -7,7 +7,6 @@ import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
-import '../detalhe_loja/detalhe_loja_screen.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
   final Loja loja;
@@ -24,9 +23,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   bool carregando = true;
   String? erro;
   List<Evento> eventos = [];
-
-  // Depois ligamos isso no /carrinho/qt
-  int quantidadeCarrinho = 3;
 
   @override
   void initState() {
@@ -109,7 +105,15 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
           borderRadius: BorderRadius.circular(18),
           onTap: () {
             MainNavigationController.abrirTela(
-              DetalheEventoScreen(eventoId: evento.id, loja: widget.loja),
+              DetalheEventoScreen(
+                eventoId: evento.id,
+                loja: widget.loja,
+                onVoltar: () {
+                  MainNavigationController.abrirTela(
+                    AgendaEventosScreen(loja: widget.loja),
+                  );
+                },
+              ),
             );
           },
           child: Padding(
@@ -244,33 +248,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  MainNavigationController.abrirTela(
-                    DetalheLojaScreen(loja: widget.loja),
-                  );
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-
+      appBar: ClubbarAppBar(mostrarVoltar: true),
       body: RefreshIndicator(
         onRefresh: carregarEventos,
         child: ListView(

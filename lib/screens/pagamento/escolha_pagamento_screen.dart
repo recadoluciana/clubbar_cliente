@@ -20,6 +20,8 @@ class EscolhaPagamentoScreen extends StatefulWidget {
   final double? taxaConveniencia;
   final double? totalPagar;
 
+  final VoidCallback? onVoltar;
+
   const EscolhaPagamentoScreen({
     super.key,
     required this.loja,
@@ -27,6 +29,7 @@ class EscolhaPagamentoScreen extends StatefulWidget {
     this.totalIngressos = 0,
     this.taxaConveniencia,
     this.totalPagar,
+    this.onVoltar,
   });
 
   @override
@@ -191,7 +194,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
 
       body: ListView(
         padding: const EdgeInsets.all(20),

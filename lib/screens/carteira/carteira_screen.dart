@@ -169,41 +169,43 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   }
 
   Widget _logoLoja(String url) {
-    if (url.isEmpty) {
-      return Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: Colors.amber.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Icon(Icons.storefront_outlined, color: Colors.amber.shade800),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: Image.network(
-        url,
-        width: 58,
-        height: 58,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) {
-          return Container(
-            width: 58,
-            height: 58,
+    final imagem = url.isEmpty
+        ? Container(
+            width: 92,
+            height: 92,
             decoration: BoxDecoration(
               color: Colors.amber.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(18),
+              shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.storefront_outlined,
               color: Colors.amber.shade800,
             ),
+          )
+        : ClipOval(
+            child: Image.network(
+              url,
+              width: 92,
+              height: 92,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) {
+                return Container(
+                  width: 92,
+                  height: 92,
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withOpacity(0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.storefront_outlined,
+                    color: Colors.amber.shade800,
+                  ),
+                );
+              },
+            ),
           );
-        },
-      ),
-    );
+
+    return SizedBox(width: 120, child: Center(child: imagem));
   }
 
   Widget _cabecalho() {
@@ -287,84 +289,84 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     final totalIngressos = int.tryParse('${loja['total_ingressos'] ?? 0}') ?? 0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 18),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        elevation: 2,
+        borderRadius: BorderRadius.circular(26),
+        elevation: 3,
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
           child: Row(
             children: [
               _logoLoja(logo),
-              const SizedBox(width: 14),
+
+              Container(width: 1, height: 130, color: Colors.grey.shade300),
+
+              const SizedBox(width: 12),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       nome,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 23,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
 
                     const SizedBox(height: 12),
 
-                    Row(
+                    Column(
                       children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: produtos.isEmpty
-                                ? null
-                                : () {
-                                    MainNavigationController.abrirTela(
-                                      CarteiraLojaScreen(
-                                        nomeLoja: nome,
-                                        logoLoja: logo,
-                                        nomeCliente: nomeCliente,
-                                        itens: produtos,
-                                        onAtualizar: () =>
-                                            recarregarItensDaLoja(
-                                              lojaId,
-                                              tipo: 'P',
-                                            ),
-                                        onVoltar: () {
-                                          MainNavigationController.fecharTelaInterna();
-                                        },
-                                      ),
-                                    );
+                        SizedBox(
+                          width: double.infinity,
+                          child: _botaoCarteira(
+                            texto: 'Produtos ($totalProdutos)',
+                            ativo: produtos.isNotEmpty,
+                            onTap: () {
+                              MainNavigationController.abrirTela(
+                                CarteiraLojaScreen(
+                                  nomeLoja: nome,
+                                  logoLoja: logo,
+                                  nomeCliente: nomeCliente,
+                                  itens: produtos,
+                                  onAtualizar: () =>
+                                      recarregarItensDaLoja(lojaId, tipo: 'P'),
+                                  onVoltar: () {
+                                    MainNavigationController.fecharTelaInterna();
                                   },
-                            label: Text('Produtos ($totalProdutos)'),
+                                ),
+                              );
+                            },
                           ),
                         ),
 
-                        const SizedBox(width: 8),
+                        const SizedBox(height: 10),
 
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: ingressos.isEmpty
-                                ? null
-                                : () {
-                                    MainNavigationController.abrirTela(
-                                      CarteiraIngressosScreen(
-                                        nomeLoja: nome,
-                                        logoLoja: logo,
-                                        nomeCliente: nomeCliente,
-                                        itens: ingressos,
-                                        onAtualizar: () =>
-                                            recarregarItensDaLoja(
-                                              lojaId,
-                                              tipo: 'I',
-                                            ),
-                                        onVoltar: () {
-                                          MainNavigationController.fecharTelaInterna();
-                                        },
-                                      ),
-                                    );
+                        SizedBox(
+                          width: double.infinity,
+                          child: _botaoCarteira(
+                            texto: 'Ingressos ($totalIngressos)',
+                            ativo: ingressos.isNotEmpty,
+                            onTap: () {
+                              MainNavigationController.abrirTela(
+                                CarteiraIngressosScreen(
+                                  nomeLoja: nome,
+                                  logoLoja: logo,
+                                  nomeCliente: nomeCliente,
+                                  itens: ingressos,
+                                  onAtualizar: () =>
+                                      recarregarItensDaLoja(lojaId, tipo: 'I'),
+                                  onVoltar: () {
+                                    MainNavigationController.fecharTelaInterna();
                                   },
-                            label: Text('Ingressos ($totalIngressos)'),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -374,6 +376,56 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _botaoCarteira({
+    required String texto,
+    required bool ativo,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: ativo ? onTap : null,
+      borderRadius: BorderRadius.circular(28),
+      child: Container(
+        height: 54,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: ativo ? const Color(0xFFFFF4E3) : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: ativo
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                texto,
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  color: ativo ? const Color(0xFF7A5A00) : Colors.grey.shade600,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+
+            if (ativo)
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF7A5A00),
+                size: 24,
+              ),
+          ],
         ),
       ),
     );

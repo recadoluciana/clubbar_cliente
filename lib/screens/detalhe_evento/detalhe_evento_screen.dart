@@ -9,17 +9,18 @@ import '../../utils/date_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
   final Loja loja;
+  final VoidCallback? onVoltar;
 
   const DetalheEventoScreen({
     super.key,
     required this.eventoId,
     required this.loja,
+    this.onVoltar,
   });
 
   @override
@@ -160,6 +161,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           totalIngressos: lote.preco,
           taxaConveniencia: 10,
           totalPagar: lote.preco,
+          onVoltar: () {
+            MainNavigationController.abrirTela(
+              DetalheEventoScreen(eventoId: widget.eventoId, loja: widget.loja),
+            );
+          },
         ),
       );
     } catch (e) {
@@ -422,35 +428,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  if (Navigator.of(context).canPop()) {
-                    Navigator.pop(context);
-                  } else {
-                    MainNavigationController.abrirTela(
-                      DetalheLojaScreen(loja: widget.loja),
-                    );
-                  }
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())

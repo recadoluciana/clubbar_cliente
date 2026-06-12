@@ -72,30 +72,7 @@ class DetalheLojaScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      // 🔥 TOP BAR PRETA
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  MainNavigationController.fecharTelaInterna();
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      appBar: ClubbarAppBar(mostrarVoltar: true),
 
       // 🔥 BODY SEM PADDING GLOBAL
       body: ListView(
