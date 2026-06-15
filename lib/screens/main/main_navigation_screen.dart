@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
@@ -10,6 +11,7 @@ import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
+import '../pagamento/pagamento_sucesso_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -38,6 +40,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     CarteiraBadgeNotifier.refresh.addListener(() {
       carregarBadgeCarteira();
     });
+    _verificarRetornoPagamentoWeb();
   }
 
   Widget _buildPage() {
@@ -63,6 +66,42 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Future<bool> _estaLogado() async {
     final token = await authStorage.obterToken();
     return token != null && token.isNotEmpty;
+  }
+
+  Future<void> _verificarRetornoPagamentoWeb() async {
+    if (!kIsWeb) return;
+
+    final vendaIdTexto = Uri.base.queryParameters['ultima_venda'];
+
+    if (vendaIdTexto == null || vendaIdTexto.isEmpty) return;
+
+    final vendaId = int.tryParse(vendaIdTexto);
+    if (vendaId == null) return;
+
+    try {
+      final api = ApiService();
+
+      final response = await api.consultarPixMercadoPago(vendaId: vendaId);
+
+      final status = (response['status'] ?? '').toString().toUpperCase();
+
+      final clienteId = await AuthStorage().obterClienteId();
+
+      if (clienteId != null && clienteId > 0) {
+        final totalCarrinho = await api.buscarQuantidadeCarrinho(
+          clienteId: clienteId,
+        );
+
+        CartBadgeNotifier.atualizar(totalCarrinho);
+        CarteiraBadgeNotifier.atualizar();
+      }
+
+      if (!mounted) return;
+
+      MainNavigationController.abrirTela(
+        PagamentoSucessoScreen(sucesso: status == 'PAGO'),
+      );
+    } catch (_) {}
   }
 
   Future<void> carregarUsuario() async {

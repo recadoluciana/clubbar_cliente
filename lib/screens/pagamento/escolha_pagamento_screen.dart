@@ -125,7 +125,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         );
 
     if (kIsWeb) {
-      await launchUrl(uri, webOnlyWindowName: '_blank');
+      await launchUrl(uri, webOnlyWindowName: '_self');
       return;
     }
 
