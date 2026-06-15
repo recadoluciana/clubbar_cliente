@@ -132,8 +132,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
     if (!mounted) return;
 
-    MainNavigationController.abrirTela(
-      PagamentoSucessoScreen(sucesso: resultado == true),
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => PagamentoSucessoScreen(sucesso: resultado == true),
+      ),
     );
   }
 
