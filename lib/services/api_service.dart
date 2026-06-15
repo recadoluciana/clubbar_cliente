@@ -395,40 +395,13 @@ class ApiService {
     required int clienteId,
     required int organizacaoId,
     required int lojaId,
-  }) async {
-    final url = Uri.parse('$baseUrl/pagamentos/pagar-novo');
-
-    final body = {
-      'cliente_id': clienteId,
-      'organizacao_id': organizacaoId,
-      'loja_id': lojaId,
-
-      // 🔥 ESSENCIAL
-      'dsmetodopag': 'PIX',
-    };
-
-    debugPrint('POST PIX => $url');
-    debugPrint('BODY PIX => ${jsonEncode(body)}');
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(body),
+  }) {
+    return pagarNovo(
+      clienteId: clienteId,
+      organizacaoId: organizacaoId,
+      lojaId: lojaId,
+      dsmetodopag: 'PIX',
     );
-
-    debugPrint('STATUS PIX => ${response.statusCode}');
-    debugPrint('RESPOSTA PIX => ${response.body}');
-
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception(data['detail'] ?? 'Erro ao gerar PIX');
-    }
-
-    return Map<String, dynamic>.from(data);
   }
 
   Future<void> cadastrarCliente({
@@ -574,36 +547,71 @@ class ApiService {
     }
   }
 
-  Future<void> pagarComCartao({
+  Future<Map<String, dynamic>> pagarNovo({
     required int clienteId,
     required int organizacaoId,
     required int lojaId,
-    required String encryptedCard,
-    required String securityCode,
-    required String tipoPagamento,
+    required String dsmetodopag, // PIX, CREDIT_CARD ou DEBIT_CARD
+
+    String? cardToken,
+    String? paymentMethodId,
+    String? issuerId,
+    int installments = 1,
+    String? deviceId,
+    String? idempotencyKey,
   }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/pagamentos/pagar-novo'),
-        headers: await _headersAutenticado(),
-        body: jsonEncode({
-          'cliente_id': clienteId,
-          'organizacao_id': organizacaoId,
-          'loja_id': lojaId,
-          'encrypted_card': encryptedCard,
-          'security_code': securityCode,
-          'payment_method': tipoPagamento,
-        }),
-      );
+    final url = Uri.parse('$baseUrl/pagamentos/pagar-novo');
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return;
-      }
+    final body = <String, dynamic>{
+      'cliente_id': clienteId,
+      'organizacao_id': organizacaoId,
+      'loja_id': lojaId,
+      'dsmetodopag': dsmetodopag,
+    };
 
-      throw Exception(_extrairMensagemHttp(response));
-    } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+    if (cardToken != null && cardToken.isNotEmpty) {
+      body['card_token'] = cardToken;
     }
+
+    if (paymentMethodId != null && paymentMethodId.isNotEmpty) {
+      body['payment_method_id'] = paymentMethodId;
+    }
+
+    if (issuerId != null && issuerId.isNotEmpty) {
+      body['issuer_id'] = issuerId;
+    }
+
+    if (dsmetodopag != 'PIX') {
+      body['installments'] = installments;
+    }
+
+    if (deviceId != null && deviceId.isNotEmpty) {
+      body['device_id'] = deviceId;
+    }
+
+    if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
+      body['idempotency_key'] = idempotencyKey;
+    }
+
+    debugPrint('POST PAGAR NOVO => $url');
+    debugPrint('BODY PAGAR NOVO => ${jsonEncode(body)}');
+
+    final response = await http.post(
+      url,
+      headers: await _headersAutenticado(),
+      body: jsonEncode(body),
+    );
+
+    debugPrint('STATUS PAGAR NOVO => ${response.statusCode}');
+    debugPrint('RESPOSTA PAGAR NOVO => ${response.body}');
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(data['detail'] ?? 'Erro ao gerar pagamento');
+    }
+
+    return Map<String, dynamic>.from(data);
   }
 
   Future<List<Map<String, dynamic>>> buscarCompras({
