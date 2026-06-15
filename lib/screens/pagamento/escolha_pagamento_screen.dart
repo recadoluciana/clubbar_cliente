@@ -119,6 +119,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             'loja_id': widget.loja.id.toString(),
             'tipo_pagamento': tipoPagamento,
             'amount': totalPagar.toStringAsFixed(2),
+            // NOVO
+            'origem': kIsWeb ? 'web' : 'app',
           },
         );
 
