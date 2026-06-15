@@ -130,20 +130,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       ),
     );
 
-    if (resultado == true && mounted) {
-      final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
-        clienteId: clienteId,
-      );
+    if (!mounted) return;
 
-      CartBadgeNotifier.atualizar(totalCarrinho);
-      CarteiraBadgeNotifier.atualizar();
-
-      if (!mounted) return;
-
-      MainNavigationController.abrirTela(
-        PagamentoSucessoScreen(sucesso: resultado == true),
-      );
-    }
+    MainNavigationController.abrirTela(
+      PagamentoSucessoScreen(sucesso: resultado == true),
+    );
   }
 
   Widget _linhaResumo(String titulo, double valor, {bool destaque = false}) {

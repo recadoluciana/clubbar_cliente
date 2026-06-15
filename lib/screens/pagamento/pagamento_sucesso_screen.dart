@@ -7,7 +7,9 @@ import '../../services/auth_storage.dart';
 import '../../services/main_navigation_controller.dart';
 
 class PagamentoSucessoScreen extends StatefulWidget {
-  const PagamentoSucessoScreen({super.key});
+  final bool sucesso;
+
+  const PagamentoSucessoScreen({super.key, this.sucesso = true});
 
   @override
   State<PagamentoSucessoScreen> createState() => _PagamentoSucessoScreenState();
@@ -41,6 +43,8 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final sucesso = widget.sucesso;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       body: Center(
@@ -67,27 +71,33 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                   width: 92,
                   height: 92,
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.12),
+                    color: (sucesso ? Colors.green : Colors.red).withOpacity(
+                      0.12,
+                    ),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.check_circle,
-                    color: Colors.green,
+                  child: Icon(
+                    sucesso ? Icons.check_circle : Icons.error_outline,
+                    color: sucesso ? Colors.green : Colors.red,
                     size: 64,
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                const Text(
-                  'Pagamento realizado com sucesso',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
-                ),
-
-                const SizedBox(height: 10),
-
                 Text(
-                  'Sua compra foi confirmada. Você já pode acompanhar pela sua carteira.',
+                  sucesso
+                      ? 'Pagamento realizado com sucesso'
+                      : 'Pagamento não aprovado',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  sucesso
+                      ? 'Sua compra foi confirmada. Você já pode acompanhar pela sua carteira.'
+                      : 'Não foi possível concluir o pagamento. Você pode tentar novamente pelo carrinho.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
@@ -95,9 +105,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                     height: 1.4,
                   ),
                 ),
-
                 const SizedBox(height: 26),
-
                 SizedBox(
                   width: double.infinity,
                   height: 54,
