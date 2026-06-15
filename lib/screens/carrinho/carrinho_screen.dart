@@ -504,9 +504,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
             borderRadius: BorderRadius.circular(18),
           ),
         ),
-        icon: const Icon(Icons.lock_outline),
         label: const Text(
-          'Pagar',
+          'Escolher forma de pagamento',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
