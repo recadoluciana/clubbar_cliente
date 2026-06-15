@@ -5,6 +5,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/auth_storage.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class PagamentoSucessoScreen extends StatefulWidget {
   final bool sucesso;
@@ -47,6 +48,9 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+
+      appBar: ClubbarAppBar(mostrarVoltar: false),
+
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -82,7 +86,9 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                     size: 64,
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 Text(
                   sucesso
                       ? 'Pagamento realizado com sucesso'
@@ -93,7 +99,9 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
+
                 const SizedBox(height: 10),
+
                 Text(
                   sucesso
                       ? 'Sua compra foi confirmada. Você já pode acompanhar pela sua carteira.'
@@ -105,11 +113,13 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                     height: 1.4,
                   ),
                 ),
+
                 const SizedBox(height: 26),
+
                 SizedBox(
                   width: double.infinity,
                   height: 54,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: () {
                       MainNavigationController.irParaHome();
 
@@ -118,18 +128,19 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                         rootNavigator: true,
                       ).popUntil((route) => route.isFirst);
                     },
+                    icon: const Icon(Icons.home),
+                    label: const Text(
+                      'Ir para Home',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'Home',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
