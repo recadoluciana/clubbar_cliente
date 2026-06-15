@@ -7,9 +7,8 @@ import 'checkout_cartao_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import 'pagamento_sucesso_screen.dart';
-import '../../services/cart_badge_notifier.dart';
-import '../../services/carteira_badge_notifier.dart';
-import '../../services/main_navigation_controller.dart';
+import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -122,6 +121,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             'amount': totalPagar.toStringAsFixed(2),
           },
         );
+
+    if (kIsWeb) {
+      await launchUrl(uri, webOnlyWindowName: '_self');
+      return;
+    }
 
     final resultado = await Navigator.push(
       context,

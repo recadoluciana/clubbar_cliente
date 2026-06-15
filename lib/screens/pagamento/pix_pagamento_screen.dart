@@ -1,35 +1,89 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
-import '../main/main_navigation_screen.dart';
-import 'pagamento_sucesso_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import 'pagamento_sucesso_screen.dart';
 
-class PixPagamentoScreen extends StatelessWidget {
+class PixPagamentoScreen extends StatefulWidget {
   final Loja loja;
   final Map<String, dynamic> pagamento;
 
-  PixPagamentoScreen({super.key, required this.loja, required this.pagamento});
+  const PixPagamentoScreen({
+    super.key,
+    required this.loja,
+    required this.pagamento,
+  });
 
+  @override
+  State<PixPagamentoScreen> createState() => _PixPagamentoScreenState();
+}
+
+class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   final apiService = ApiService();
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _timer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) => _consultarPagamento(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
 
   String get status {
-    return (pagamento['status'] ?? 'PENDENTE').toString();
+    return (widget.pagamento['status'] ?? 'PENDENTE').toString();
   }
 
   String get vendaId {
-    return (pagamento['venda_id'] ?? '').toString();
+    return (widget.pagamento['venda_id'] ?? '').toString();
   }
 
   String get codigoPix {
-    return (pagamento['pix_copia_cola'] ??
-            pagamento['qr_code_text'] ??
-            pagamento['copia_cola'] ??
+    return (widget.pagamento['pix_copia_cola'] ??
+            widget.pagamento['qr_code_text'] ??
+            widget.pagamento['copia_cola'] ??
             '')
         .toString();
+  }
+
+  Future<void> _consultarPagamento() async {
+    if (vendaId.isEmpty) return;
+
+    try {
+      final response = await apiService.consultarPixMercadoPago(
+        vendaId: int.parse(vendaId),
+      );
+
+      final statusAtual = (response['status'] ?? '').toString().toUpperCase();
+
+      if (statusAtual == 'PAGO') {
+        _timer?.cancel();
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const PagamentoSucessoScreen(sucesso: true),
+          ),
+        );
+      }
+    } catch (_) {
+      // Mantém a tela aberta e tenta novamente no próximo ciclo
+    }
   }
 
   void copiarCodigoPix(BuildContext context) {
@@ -44,14 +98,6 @@ class PixPagamentoScreen extends StatelessWidget {
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Código PIX copiado com sucesso')),
-    );
-  }
-
-  void voltarParaHome(BuildContext context) {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-      (route) => false,
     );
   }
 
@@ -104,38 +150,21 @@ class PixPagamentoScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: Stack(
-          children: [
-            const ClubbarAppBar(),
-
-            Positioned(
-              left: 8,
-              top: 8,
-              bottom: 8,
-              child: IconButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ),
+      appBar: ClubbarAppBar(
+        mostrarVoltar: true,
+        onVoltar: () {
+          Navigator.pop(context);
+        },
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            'PIX - ${loja.nome}',
+            'PIX - ${widget.loja.nome}',
             style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
           ),
-
           const SizedBox(height: 14),
+
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
@@ -183,7 +212,7 @@ class PixPagamentoScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        loja.nome,
+                        widget.loja.nome,
                         style: TextStyle(
                           color: Colors.grey.shade300,
                           fontSize: 14,
@@ -228,7 +257,9 @@ class PixPagamentoScreen extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Status do pagamento: $status',
+                    statusPago
+                        ? 'Pagamento confirmado'
+                        : 'Aguardando pagamento PIX...',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -290,64 +321,6 @@ class PixPagamentoScreen extends StatelessWidget {
               icon: const Icon(Icons.copy_all_rounded),
               label: const Text(
                 'Copiar código PIX',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          SizedBox(
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                try {
-                  final response = await apiService.mockAprovarPagamento(
-                    vendaId: int.parse(vendaId),
-                  );
-
-                  final status = (response['status'] ?? '').toString();
-
-                  if (status.toUpperCase() == 'PAGO') {
-                    if (!context.mounted) return;
-
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PagamentoSucessoScreen(),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Pagamento não aprovado.')),
-                    );
-                  }
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao aprovar pagamento: $e')),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              icon: const Icon(Icons.check_circle),
-              label: const Text(
-                'Simular pagamento aprovado',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 52,
-            child: TextButton(
-              onPressed: () => voltarParaHome(context),
-              child: const Text(
-                'Voltar para Home',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
