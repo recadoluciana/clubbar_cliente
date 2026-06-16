@@ -908,4 +908,22 @@ class ApiService {
 
     return Map<String, dynamic>.from(data);
   }
+
+  Future<Loja> buscarDadosLoja(int lojaId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/lojas/dados_loja/$lojaId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(data['detail'] ?? 'Erro ao buscar dados da loja');
+    }
+
+    return Loja.fromJson(Map<String, dynamic>.from(data));
+  }
 }

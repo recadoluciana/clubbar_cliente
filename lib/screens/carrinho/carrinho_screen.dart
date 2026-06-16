@@ -211,7 +211,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     }
   }
 
-  void abrirEscolhaPagamento() {
+  Future<void> abrirEscolhaPagamento() async {
     if (itensCarrinho.isEmpty) {
       ScaffoldMessenger.of(
         context,
@@ -233,16 +233,32 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       }
     }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => EscolhaPagamentoScreen(
-          loja: widget.loja,
-          totalProdutos: totalProdutos,
-          totalIngressos: totalIngressos,
+    try {
+      final lojaAtualizada = await apiService.buscarDadosLoja(widget.loja.id);
+
+      if (!mounted) return;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => EscolhaPagamentoScreen(
+            loja: lojaAtualizada,
+            totalProdutos: totalProdutos,
+            totalIngressos: totalIngressos,
+          ),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Erro ao buscar dados da loja: ${e.toString().replaceFirst('Exception: ', '')}',
+          ),
+        ),
+      );
+    }
   }
 
   Widget _imagemProduto(String url) {
@@ -496,7 +512,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return SizedBox(
       height: 54,
       child: ElevatedButton.icon(
-        onPressed: abrirEscolhaPagamento,
+        onPressed: () => abrirEscolhaPagamento(),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.amber,
           foregroundColor: Colors.black,

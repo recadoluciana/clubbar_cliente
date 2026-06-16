@@ -221,6 +221,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(
+      'ESCOLHA PAGAMENTO loja=${widget.loja.nome} taxaIng=${widget.loja.vrtaxaing} taxaProd=${widget.loja.vrtaxaprod}',
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
