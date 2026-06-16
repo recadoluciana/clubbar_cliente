@@ -121,6 +121,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             'amount': totalPagar.toStringAsFixed(2),
             // NOVO
             'origem': kIsWeb ? 'web' : 'app',
+            'app_url': Uri.base.origin,
           },
         );
 
@@ -265,7 +266,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           SizedBox(
             height: 54,
-            child: ElevatedButton.icon(
+            child: OutlinedButton.icon(
               onPressed: carregandoPix ? null : pagarPix,
               icon: carregandoPix
                   ? const SizedBox(
@@ -276,8 +277,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   : const Icon(Icons.pix),
               label: const Text('Pagar com PIX'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.green,
               ),
             ),
           ),
@@ -286,13 +287,13 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           SizedBox(
             height: 54,
-            child: ElevatedButton.icon(
+            child: OutlinedButton.icon(
               onPressed: () => abrirCartao('CREDIT_CARD'),
               icon: const Icon(Icons.credit_card),
               label: const Text('Cartão de crédito'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                foregroundColor: Colors.black,
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.red,
               ),
             ),
           ),
@@ -305,6 +306,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               onPressed: () => abrirCartao('DEBIT_CARD'),
               icon: const Icon(Icons.credit_card),
               label: const Text('Cartão de débito'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+              ),
             ),
           ),
         ],
