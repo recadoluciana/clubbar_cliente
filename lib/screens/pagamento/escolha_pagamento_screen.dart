@@ -201,9 +201,19 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+          Center(
+            child: Text(
+              widget.loja.nome,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
           Text(
-            'Pagamento - ${widget.loja.nome}',
-            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+            'Escolha a forma de pagamento',
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
           ),
 
           const SizedBox(height: 16),
