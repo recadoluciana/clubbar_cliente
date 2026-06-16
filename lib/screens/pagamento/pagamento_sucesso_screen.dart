@@ -92,7 +92,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                 Text(
                   sucesso
                       ? 'Pagamento realizado com sucesso'
-                      : 'Pagamento não aprovado',
+                      : 'Pagamento cancelado pelo cliente',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 24,

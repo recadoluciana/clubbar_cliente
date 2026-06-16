@@ -43,12 +43,17 @@ class _CheckoutCartaoScreenState extends State<CheckoutCartaoScreen> {
               final url = request.url;
 
               if (url.startsWith('clubbar://pagamento-sucesso')) {
-                Navigator.pop(context, true);
+                Navigator.pop(context, "sucesso");
                 return NavigationDecision.prevent;
               }
 
               if (url.startsWith('clubbar://pagamento-cancelado')) {
-                Navigator.pop(context, false);
+                Navigator.pop(context, "cancelado");
+                return NavigationDecision.prevent;
+              }
+
+              if (url.startsWith("clubbar://pagamento-erro")) {
+                Navigator.pop(context, "erro");
                 return NavigationDecision.prevent;
               }
 

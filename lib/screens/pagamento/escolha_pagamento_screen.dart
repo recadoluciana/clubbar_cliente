@@ -109,21 +109,22 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       return;
     }
 
-    final uri =
-        Uri.parse(
-          'https://bitbeer-production.up.railway.app/static/checkout_cartao.html',
-        ).replace(
-          queryParameters: {
-            'cliente_id': clienteId.toString(),
-            'organizacao_id': widget.loja.organizacaoId.toString(),
-            'loja_id': widget.loja.id.toString(),
-            'tipo_pagamento': tipoPagamento,
-            'amount': totalPagar.toStringAsFixed(2),
-            // NOVO
-            'origem': kIsWeb ? 'web' : 'app',
-            'app_url': Uri.base.origin,
-          },
-        );
+    final queryParams = <String, String>{
+      'cliente_id': clienteId.toString(),
+      'organizacao_id': widget.loja.organizacaoId.toString(),
+      'loja_id': widget.loja.id.toString(),
+      'tipo_pagamento': tipoPagamento,
+      'amount': totalPagar.toStringAsFixed(2),
+      'origem': kIsWeb ? 'web' : 'app',
+    };
+
+    if (kIsWeb) {
+      queryParams['app_url'] = Uri.base.origin;
+    }
+
+    final uri = Uri.parse(
+      'https://bitbeer-production.up.railway.app/static/checkout_cartao.html',
+    ).replace(queryParameters: queryParams);
 
     if (kIsWeb) {
       await launchUrl(uri, webOnlyWindowName: '_self');
@@ -139,11 +140,27 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
     if (!mounted) return;
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => PagamentoSucessoScreen(sucesso: resultado == true),
-      ),
-    );
+    switch (resultado) {
+      case "sucesso":
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const PagamentoSucessoScreen(sucesso: true),
+          ),
+        );
+        break;
+
+      case "erro":
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => const PagamentoSucessoScreen(sucesso: false),
+          ),
+        );
+        break;
+
+      case "cancelado":
+        // Apenas permanece na EscolhaPagamentoScreen
+        break;
+    }
   }
 
   Widget _linhaResumo(String titulo, double valor, {bool destaque = false}) {
@@ -293,7 +310,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               label: const Text('Cartão de crédito'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: Colors.red,
+                foregroundColor: Colors.blue,
               ),
             ),
           ),
