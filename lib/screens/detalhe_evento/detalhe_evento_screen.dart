@@ -159,8 +159,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           loja: widget.loja,
           totalProdutos: 0,
           totalIngressos: lote.preco,
-          taxaConveniencia: 10,
-          totalPagar: lote.preco,
           onVoltar: () {
             MainNavigationController.abrirTela(
               DetalheEventoScreen(eventoId: widget.eventoId, loja: widget.loja),

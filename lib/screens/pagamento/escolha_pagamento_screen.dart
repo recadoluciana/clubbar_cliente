@@ -7,6 +7,7 @@ import 'checkout_cartao_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import 'pagamento_sucesso_screen.dart';
+import 'politica_compra_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,18 +42,27 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   bool carregandoPix = false;
 
+  double get percentualTaxaProduto => widget.loja.vrtaxaprod;
   double get percentualTaxaIngresso => widget.loja.vrtaxaing;
 
-  double get taxaIngressos {
+  double get taxaProdutoSplit {
+    return widget.totalProdutos * (percentualTaxaProduto / 100);
+  }
+
+  double get taxaIngressoCliente {
     return widget.totalIngressos * (percentualTaxaIngresso / 100);
   }
 
-  double get taxaConveniencia {
-    return taxaIngressos;
+  double get taxaClubbarTotal {
+    return taxaProdutoSplit + taxaIngressoCliente;
   }
 
   double get totalPagar {
-    return widget.totalProdutos + widget.totalIngressos + taxaConveniencia;
+    return widget.totalProdutos + widget.totalIngressos + taxaIngressoCliente;
+  }
+
+  double get valorParceiro {
+    return totalPagar - taxaClubbarTotal;
   }
 
   String _moeda(double valor) {
@@ -269,7 +279,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
                 _linhaResumo(
                   'Taxa de conveniência ingressos (${percentualTaxaIngresso.toStringAsFixed(0)}%)',
-                  taxaConveniencia,
+                  taxaIngressoCliente,
                 ),
 
                 const Divider(height: 28),
@@ -327,6 +337,20 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
               ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          TextButton.icon(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PoliticaCompraScreen()),
+              );
+            },
+            icon: const Icon(Icons.policy_outlined),
+            label: const Text(
+              'Política de Compra',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],

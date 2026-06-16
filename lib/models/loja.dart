@@ -32,6 +32,10 @@ class Loja {
   factory Loja.fromJson(Map<String, dynamic> json) {
     final path = (json['urllogoloja'] ?? '').toString();
 
+    print(
+      'LOJA: ${json['nmloja']} | vrtaxaprod=${json['vrtaxaprod']} | vrtaxaing=${json['vrtaxaing']}',
+    );
+
     return Loja(
       id: _toInt(json['loja_id'] ?? 0),
       organizacaoId: _toInt(json['organizacao_id'] ?? 0),
@@ -40,8 +44,8 @@ class Loja {
       horario: (json['dshorarioloja'] ?? '').toString(),
       imagemUrl: buildUrl(path),
       instagram: (json['dsinstaloja'] ?? '').toString(),
-      vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '3') ?? 3,
-      vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '10') ?? 10,
+      vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '0') ?? 0,
+      vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '0') ?? 0,
     );
   }
 
