@@ -81,9 +81,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
           ),
         );
       }
-    } catch (_) {
-      // Mantém a tela aberta e tenta novamente no próximo ciclo
-    }
+    } catch (_) {}
   }
 
   void copiarCodigoPix(BuildContext context) {
@@ -104,40 +102,40 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   Widget _qrCodeWidget() {
     if (codigoPix.trim().isEmpty) {
       return Container(
-        width: 220,
-        height: 220,
+        width: 185,
+        height: 185,
         decoration: BoxDecoration(
           color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
         ),
         alignment: Alignment.center,
         child: const Icon(
           Icons.qr_code_2_rounded,
-          size: 90,
+          size: 72,
           color: Colors.black54,
         ),
       );
     }
 
     return Container(
-      width: 240,
-      height: 240,
-      padding: const EdgeInsets.all(14),
+      width: 200,
+      height: 200,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: QrImageView(
         data: codigoPix,
         version: QrVersions.auto,
-        size: 210,
+        size: 180,
         backgroundColor: Colors.white,
         errorCorrectionLevel: QrErrorCorrectLevel.M,
       ),
@@ -157,16 +155,10 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         },
       ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         children: [
-          Text(
-            'PIX - ${widget.loja.nome}',
-            style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 14),
-
           Container(
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
@@ -177,27 +169,27 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                   Color(0xFF2A2A2A),
                 ],
               ),
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 10),
+                  blurRadius: 12,
+                  offset: const Offset(0, 7),
                 ),
               ],
             ),
             child: Row(
               children: [
                 Container(
-                  width: 68,
-                  height: 68,
+                  width: 54,
+                  height: 54,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  child: const Icon(Icons.pix, size: 34, color: Colors.green),
+                  child: const Icon(Icons.pix, size: 28, color: Colors.green),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 13),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,25 +198,25 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                         'Pague com PIX',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 25,
+                          fontSize: 21,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         widget.loja.nome,
                         style: TextStyle(
                           color: Colors.grey.shade300,
-                          fontSize: 14,
+                          fontSize: 13,
                         ),
                       ),
                       if (vendaId.isNotEmpty) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           'Venda #$vendaId',
                           style: TextStyle(
                             color: Colors.grey.shade400,
-                            fontSize: 13,
+                            fontSize: 12,
                           ),
                         ),
                       ],
@@ -235,15 +227,15 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
             ),
           ),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 14),
 
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
               color: statusPago
                   ? Colors.green.withOpacity(0.10)
                   : Colors.amber.withOpacity(0.10),
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: statusPago ? Colors.green : Colors.amber.shade300,
               ),
@@ -252,16 +244,17 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
               children: [
                 Icon(
                   statusPago ? Icons.check_circle_outline : Icons.timelapse,
+                  size: 21,
                   color: statusPago ? Colors.green : Colors.amber.shade800,
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     statusPago
                         ? 'Pagamento confirmado'
                         : 'Aguardando pagamento PIX...',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: statusPago ? Colors.green : Colors.amber.shade900,
                     ),
@@ -271,54 +264,58 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           const Text(
             'Escaneie o QR Code',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           Center(child: _qrCodeWidget()),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           const Text(
             'Ou copie o código PIX',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 10),
 
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(18),
             ),
             child: SelectableText(
               codigoPix.trim().isEmpty
                   ? 'Código PIX não disponível'
                   : codigoPix,
-              style: TextStyle(color: Colors.grey.shade800, height: 1.4),
+              style: TextStyle(
+                color: Colors.grey.shade800,
+                height: 1.3,
+                fontSize: 13,
+              ),
             ),
           ),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
 
           SizedBox(
-            height: 52,
+            height: 46,
             child: ElevatedButton.icon(
               onPressed: () => copiarCodigoPix(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
-              icon: const Icon(Icons.copy_all_rounded),
+              icon: const Icon(Icons.copy_all_rounded, size: 20),
               label: const Text(
                 'Copiar código PIX',
                 style: TextStyle(fontWeight: FontWeight.bold),

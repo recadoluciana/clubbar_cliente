@@ -154,7 +154,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Itens pendentes de pagamento por local.',
+                  'Itens pendentes de pagamento por local',
                   style: TextStyle(
                     color: Colors.grey.shade300,
                     fontSize: 14,

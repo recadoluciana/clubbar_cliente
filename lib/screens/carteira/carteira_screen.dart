@@ -256,7 +256,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Itens comprados por local.',
+                  'Itens comprados por local',
                   style: TextStyle(
                     color: Colors.grey.shade300,
                     fontSize: 14,
