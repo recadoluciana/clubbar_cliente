@@ -47,6 +47,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return 'R\$ ${n.toStringAsFixed(2)}';
   }
 
+  String _formatarCpf(String cpf) {
+    final numeros = cpf.replaceAll(RegExp(r'[^0-9]'), '');
+
+    if (numeros.length != 11) return cpf;
+
+    return '${numeros.substring(0, 3)}.'
+        '${numeros.substring(3, 6)}.'
+        '${numeros.substring(6, 9)}-'
+        '${numeros.substring(9, 11)}';
+  }
+
   String _buildImageUrl(String path) {
     if (path.isEmpty) return '';
     if (path.startsWith('http')) return path;
@@ -65,7 +76,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       'nmcliente': (item['nmcliente'] ?? '').toString(),
       'nmproduto': (item['nmproduto'] ?? '').toString(),
       'nmparticipante': (item['nmparticipante'] ?? '').toString(),
-      'cpfparticipante': (item['cpfparticipante'] ?? '').toString(),
+      'cpfparticipante': _formatarCpf(
+        (item['cpfparticipante'] ?? '').toString(),
+      ),
       'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
     });
 
@@ -224,7 +237,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final nomeParticipante = (item['nmparticipante'] ?? '').toString();
-    final cpfParticipante = (item['cpfparticipante'] ?? '').toString();
+    final cpfParticipante = _formatarCpf(
+      (item['cpfparticipante'] ?? '').toString(),
+    );
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
 
     //debugPrint('ITEM CARTEIRA INGRESSO => $item');
@@ -268,7 +283,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _chip('Qtd: ${item['qtitvenda'] ?? 0}'),
                           _chip('Valor: ${_valor(item['vrunititvenda'])}'),
                           if (validade.isNotEmpty) _chip('Validade: $validade'),
                         ],
@@ -312,6 +326,26 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                   ),
                                 ),
                               ],
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: TextButton.icon(
+                                  onPressed: () {
+                                    // depois ligamos na tela/API de alteração
+                                  },
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
+                                  label: const Text('Alterar'),
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 32),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
