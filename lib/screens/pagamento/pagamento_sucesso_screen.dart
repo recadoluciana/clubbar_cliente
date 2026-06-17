@@ -121,12 +121,11 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                   height: 54,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      MainNavigationController.irParaHome();
+                      Navigator.of(context).popUntil((route) => route.isFirst);
 
-                      Navigator.of(
-                        context,
-                        rootNavigator: true,
-                      ).popUntil((route) => route.isFirst);
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        MainNavigationController.irParaHome();
+                      });
                     },
                     icon: const Icon(Icons.home),
                     label: const Text(
