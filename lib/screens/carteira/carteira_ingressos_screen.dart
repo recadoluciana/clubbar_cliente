@@ -64,7 +64,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       'nmloja': widget.nomeLoja,
       'nmcliente': (item['nmcliente'] ?? '').toString(),
       'nmproduto': (item['nmproduto'] ?? '').toString(),
-      'dsobsitvenda': (item['dsobsitvenda'] ?? '').toString(),
+      'nmparticipante': (item['nmparticipante'] ?? '').toString(),
+      'cpfparticipante': (item['cpfparticipante'] ?? '').toString(),
       'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
     });
 
@@ -101,27 +102,42 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                if ((item['dsobsitvenda'] ?? '')
+                if ((item['nmparticipante'] ?? '')
                     .toString()
                     .trim()
                     .isNotEmpty) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
+
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      border: Border.all(color: Colors.red),
+                      color: Colors.blue.shade50,
                       borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue.shade200),
                     ),
-                    child: Text(
-                      (item['dsobsitvenda'] ?? '').toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
+                    child: Column(
+                      children: [
+                        Text(
+                          (item['nmparticipante'] ?? '').toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          (item['cpfparticipante'] ?? '').toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -208,6 +224,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final obs = (item['dsobsitvenda'] ?? '').toString();
+    final nomeParticipante = (item['nmparticipante'] ?? '').toString();
+
+    final cpfParticipante = (item['cpfparticipante'] ?? '').toString();
+
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
 
     return Container(
@@ -254,18 +274,49 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           if (validade.isNotEmpty) _chip('Validade: $validade'),
                         ],
                       ),
-                      if (obs.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      if (nomeParticipante.isNotEmpty ||
+                          cpfParticipante.isNotEmpty) ...[
                         const SizedBox(height: 10),
-                        Text(
-                          'Observação: $obs',
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 13,
-                            height: 1.35,
+
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.blue.withOpacity(0.20),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (nomeParticipante.isNotEmpty)
+                                Text(
+                                  'Participante: $nomeParticipante',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+
+                              if (cpfParticipante.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  'CPF: $cpfParticipante',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       ],
-                      const SizedBox(height: 10),
                       TextButton.icon(
                         onPressed: () => _abrirQrOuRetirada(context, item),
                         icon: const Icon(Icons.qr_code_2_rounded),

@@ -355,15 +355,33 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    if (item.observacao.isNotEmpty)
-                      Text(
-                        item.observacao,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 13,
+                    if (item.nmparticipante.isNotEmpty) ...[
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Participante: ${item.nmparticipante}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                            if (item.cpfparticipante.isNotEmpty)
+                              Text(
+                                'CPF: ${item.cpfparticipante}',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                          ],
                         ),
                       ),
-                    const SizedBox(height: 8),
+                    ],
                     Text(
                       'Qtd: ${item.quantidade}',
                       style: const TextStyle(
