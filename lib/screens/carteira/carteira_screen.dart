@@ -345,7 +345,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 6),
 
                         SizedBox(
                           width: double.infinity,
@@ -390,11 +390,11 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       onTap: ativo ? onTap : null,
       borderRadius: BorderRadius.circular(28),
       child: Container(
-        height: 54,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        height: 42,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: ativo ? const Color(0xFFFFF4E3) : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(22),
           boxShadow: ativo
               ? [
                   BoxShadow(
@@ -413,7 +413,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                 textAlign: TextAlign.left,
                 style: TextStyle(
                   color: ativo ? const Color(0xFF7A5A00) : Colors.grey.shade600,
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -423,7 +423,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               const Icon(
                 Icons.chevron_right,
                 color: Color(0xFF7A5A00),
-                size: 24,
+                size: 20,
               ),
           ],
         ),
