@@ -154,7 +154,7 @@ class DetalheLojaScreen extends StatelessWidget {
 
                 _menuCard(
                   context: context,
-                  titulo: 'Agenda',
+                  titulo: 'Agenda - Ingressos',
                   icone: Icons.confirmation_number_rounded,
                   cor: Colors.blue,
                   onTap: () {
@@ -168,7 +168,7 @@ class DetalheLojaScreen extends StatelessWidget {
 
                 _menuCard(
                   context: context,
-                  titulo: 'Produtos',
+                  titulo: 'Cardápio -Produtos',
                   icone: Icons.restaurant_menu_rounded,
                   cor: Colors.amber,
                   onTap: () {
