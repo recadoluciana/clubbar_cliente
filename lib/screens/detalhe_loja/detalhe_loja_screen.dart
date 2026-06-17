@@ -168,7 +168,7 @@ class DetalheLojaScreen extends StatelessWidget {
 
                 _menuCard(
                   context: context,
-                  titulo: 'Cardápio -Produtos',
+                  titulo: 'Cardápio - Produtos',
                   icone: Icons.restaurant_menu_rounded,
                   cor: Colors.amber,
                   onTap: () {
