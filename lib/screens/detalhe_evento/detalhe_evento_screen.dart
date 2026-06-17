@@ -10,6 +10,7 @@ import '../pagamento/escolha_pagamento_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/cart_badge_notifier.dart';
+import '../../utils/cpf_utils.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -93,6 +94,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Future<void> adicionarAoCarrinho(EventoLote lote) async {
     try {
       final clienteId = await _obterClienteIdLogado();
+      final participante = await pedirParticipante();
+
+      if (participante == null) return;
+
+      final observacao =
+          'Participante: ${participante['nome']} | CPF: ${participante['cpf']}';
 
       await apiService.adicionarAoCarrinho(
         clienteId: clienteId,
@@ -103,6 +110,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         idtipoproduto: 'I',
         quantidade: 1,
         observacao: 'Ingresso ${lote.nome}',
+        nmparticipante: participante['nome'],
+        cpfparticipante: participante['cpf'],
       );
 
       final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
@@ -123,6 +132,72 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     }
+  }
+
+  Future<Map<String, String>?> pedirParticipante() async {
+    final nomeController = TextEditingController();
+    final cpfController = TextEditingController();
+
+    return showDialog<Map<String, String>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Dados do participante'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nomeController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome do participante',
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: cpfController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'CPF do participante',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final nome = nomeController.text.trim();
+                final cpf = cpfController.text.trim();
+
+                if (nome.isEmpty || cpf.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Informe nome e CPF do participante'),
+                    ),
+                  );
+                  return;
+                }
+                if (!CpfUtils.validar(cpfController.text)) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('CPF inválido')));
+                  return;
+                }
+
+                final cpfLimpo = CpfUtils.somenteNumeros(cpfController.text);
+
+                Navigator.pop(context, {'nome': nome, 'cpf': cpfLimpo});
+              },
+              child: const Text('Confirmar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> comprarAgora(EventoLote lote) async {
@@ -343,19 +418,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: esgotado || processandoCompra
-                          ? null
-                          : () => comprarAgora(lote),
-                      icon: const Icon(Icons.flash_on),
-                      label: const Text('Comprar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ],
@@ -526,9 +588,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ],
                           const SizedBox(height: 22),
                           const Text(
+                            'Comprar ingressos',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
                             'Lotes',
                             style: TextStyle(
-                              fontSize: 22,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),

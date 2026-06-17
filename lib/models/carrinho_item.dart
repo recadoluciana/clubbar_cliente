@@ -13,6 +13,8 @@ class ItemCarrinho {
   final String tipodesconto;
   final double vrdesconto;
   final String idtipoproduto;
+  final String nmparticipante;
+  final String cpfparticipante;
 
   ItemCarrinho({
     required this.produtoId,
@@ -26,6 +28,8 @@ class ItemCarrinho {
     required this.tipodesconto,
     required this.vrdesconto,
     required this.idtipoproduto,
+    required this.nmparticipante,
+    required this.cpfparticipante,
   });
 
   factory ItemCarrinho.fromJson(Map<String, dynamic> json) {
@@ -41,6 +45,8 @@ class ItemCarrinho {
       tipodesconto: (json['tipodesconto'] ?? 'NENHUM').toString(),
       vrdesconto: _toDouble(json['vrdesconto']),
       idtipoproduto: (json['idtipoproduto'] ?? 'P').toString(),
+      nmparticipante: (json['nmparticipante'] ?? '').toString(),
+      cpfparticipante: (json['cpfparticipante'] ?? '').toString(),
     );
   }
 

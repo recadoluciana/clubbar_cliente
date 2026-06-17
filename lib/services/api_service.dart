@@ -310,6 +310,8 @@ class ApiService {
     String idtipoproduto = 'P',
     int quantidade = 1,
     String? observacao,
+    String? nmparticipante,
+    String? cpfparticipante,
   }) async {
     try {
       final response = await http.post(
@@ -324,6 +326,8 @@ class ApiService {
           'idtipoproduto': idtipoproduto,
           'qt': quantidade,
           'obs': observacao,
+          'nmparticipante': nmparticipante,
+          'cpfparticipante': cpfparticipante,
         }),
       );
 

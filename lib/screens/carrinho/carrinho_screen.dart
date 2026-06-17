@@ -14,14 +14,14 @@ class ItemCarrinhoAgrupado {
   final String nome;
   final String observacao;
   final String fotoUrl;
-
   final double precoOriginal;
   final double precoFinal;
   final bool descontoAtivo;
   final String tipodesconto;
   final double vrdesconto;
-
   final int quantidade;
+  final String nmparticipante;
+  final String cpfparticipante;
 
   ItemCarrinhoAgrupado({
     required this.produtoId,
@@ -34,6 +34,8 @@ class ItemCarrinhoAgrupado {
     required this.tipodesconto,
     required this.vrdesconto,
     required this.quantidade,
+    required this.nmparticipante,
+    required this.cpfparticipante,
   });
 
   double get subtotal => precoFinal * quantidade;
@@ -70,7 +72,10 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
     for (final item in itensCarrinho) {
       final obs = item.observacao.trim();
-      final chave = '${item.produtoId}__${obs.toLowerCase()}';
+      final nome = item.nmparticipante.trim();
+      final cpf = item.cpfparticipante.trim();
+      final chave =
+          '${item.produtoId}__${obs.toLowerCase()}__${nome.toLowerCase()}__${cpf.toLowerCase()}';
 
       if (mapa.containsKey(chave)) {
         final atual = mapa[chave]!;
@@ -85,6 +90,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           tipodesconto: atual.tipodesconto,
           vrdesconto: atual.vrdesconto,
           quantidade: atual.quantidade + item.quantidade,
+          nmparticipante: atual.nmparticipante,
+          cpfparticipante: atual.cpfparticipante,
         );
       } else {
         mapa[chave] = ItemCarrinhoAgrupado(
@@ -98,6 +105,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           tipodesconto: item.tipodesconto,
           vrdesconto: item.vrdesconto,
           quantidade: item.quantidade,
+          nmparticipante: item.nmparticipante,
+          cpfparticipante: item.cpfparticipante,
         );
       }
     }
