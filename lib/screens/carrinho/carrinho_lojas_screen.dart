@@ -5,7 +5,6 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../services/main_navigation_controller.dart';
 
 class CarrinhoLojasScreen extends StatefulWidget {
   const CarrinhoLojasScreen({super.key});

@@ -223,12 +223,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   }
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
-    final obs = (item['dsobsitvenda'] ?? '').toString();
     final nomeParticipante = (item['nmparticipante'] ?? '').toString();
-
     final cpfParticipante = (item['cpfparticipante'] ?? '').toString();
-
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
+
+    //debugPrint('ITEM CARTEIRA INGRESSO => $item');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),

@@ -32,10 +32,6 @@ class Loja {
   factory Loja.fromJson(Map<String, dynamic> json) {
     final path = (json['urllogoloja'] ?? '').toString();
 
-    print(
-      'LOJA: ${json['nmloja']} | vrtaxaprod=${json['vrtaxaprod']} | vrtaxaing=${json['vrtaxaing']}',
-    );
-
     return Loja(
       id: _toInt(json['loja_id'] ?? 0),
       organizacaoId: _toInt(json['organizacao_id'] ?? 0),

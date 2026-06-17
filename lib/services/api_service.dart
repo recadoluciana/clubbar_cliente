@@ -597,8 +597,8 @@ class ApiService {
       body['idempotency_key'] = idempotencyKey;
     }
 
-    debugPrint('POST PAGAR NOVO => $url');
-    debugPrint('BODY PAGAR NOVO => ${jsonEncode(body)}');
+    //debugPrint('POST PAGAR NOVO => $url');
+    // debugPrint('BODY PAGAR NOVO => ${jsonEncode(body)}');
 
     final response = await http.post(
       url,
@@ -606,8 +606,8 @@ class ApiService {
       body: jsonEncode(body),
     );
 
-    debugPrint('STATUS PAGAR NOVO => ${response.statusCode}');
-    debugPrint('RESPOSTA PAGAR NOVO => ${response.body}');
+    //debugPrint('STATUS PAGAR NOVO => ${response.statusCode}');
+    //debugPrint('RESPOSTA PAGAR NOVO => ${response.body}');
 
     final data = jsonDecode(response.body);
 
@@ -854,7 +854,7 @@ class ApiService {
   Future<Map<String, dynamic>> simularPixPago({required int vendaId}) async {
     final url = Uri.parse('$baseUrl/pagamentos/pix/sandbox-pay/$vendaId');
 
-    debugPrint('POST PIX SANDBOX PAY => $url');
+    //debugPrint('POST PIX SANDBOX PAY => $url');
 
     final response = await http.post(
       url,
@@ -864,7 +864,7 @@ class ApiService {
       },
     );
 
-    debugPrint('STATUS PIX SANDBOX PAY => ${response.statusCode}');
+    //debugPrint('STATUS PIX SANDBOX PAY => ${response.statusCode}');
     debugPrint('RESPOSTA PIX SANDBOX PAY => ${response.body}');
 
     final data = jsonDecode(response.body);
@@ -887,27 +887,6 @@ class ApiService {
 
     if (response.statusCode >= 400) {
       throw Exception(data['detail'] ?? 'Erro ao consultar pagamento');
-    }
-
-    return Map<String, dynamic>.from(data);
-  }
-
-  Future<Map<String, dynamic>> mockAprovarPagamento({
-    required int vendaId,
-  }) async {
-    final url = Uri.parse('$baseUrl/pagamentos/mock-aprovar/$vendaId');
-
-    debugPrint('POST MOCK APROVAR => $url');
-
-    final response = await http.post(url);
-
-    debugPrint('STATUS MOCK APROVAR => ${response.statusCode}');
-    debugPrint('RESPOSTA MOCK APROVAR => ${response.body}');
-
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode >= 400) {
-      throw Exception(data['detail'] ?? 'Erro ao aprovar pagamento');
     }
 
     return Map<String, dynamic>.from(data);
