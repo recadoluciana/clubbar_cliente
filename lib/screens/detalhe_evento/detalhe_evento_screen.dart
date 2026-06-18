@@ -379,21 +379,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
               const SizedBox(height: 14),
               linhaInfo(
-                icone: Icons.confirmation_number_outlined,
-                titulo: 'Quantidade total',
-                valor: '${lote.qtTotal}',
-              ),
-              linhaInfo(
-                icone: Icons.shopping_bag_outlined,
-                titulo: 'Vendidos',
-                valor: '${lote.qtVendida}',
-              ),
-              linhaInfo(
-                icone: Icons.inventory_2_outlined,
-                titulo: 'Disponíveis',
-                valor: '$disponivel',
-              ),
-              linhaInfo(
                 icone: Icons.date_range_outlined,
                 titulo: 'Vendas',
                 valor: formatarPeriodoVenda(

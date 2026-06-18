@@ -13,7 +13,7 @@ class DateFormatters {
       final hora = DateFormat('HH:mm').format(data);
 
       final diaSemanaCapitalizado =
-          diaSemana[0].toUpperCase() + diaSemana.substring(1);
+          diaSemana[0].toLowerCase() + diaSemana.substring(1);
 
       return '$diaSemanaCapitalizado, $dataFormatada, $hora';
     } catch (_) {
@@ -26,7 +26,7 @@ class DateFormatters {
 
     try {
       final data = DateTime.parse(valor).toLocal();
-      return DateFormat('dd/MM/yyyy, HH:mm', 'pt_BR').format(data);
+      return DateFormat('dd/MM/yyyy às HHhmm', 'pt_BR').format(data);
     } catch (_) {
       return valor;
     }
@@ -37,7 +37,7 @@ class DateFormatters {
     final fimFmt = dataCompleta(fim);
 
     if (inicio.trim().isEmpty && fim.trim().isEmpty) {
-      return 'Período não informado';
+      return 'período não informado';
     }
 
     if (inicio.trim().isEmpty) {
