@@ -149,17 +149,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             children: [
               TextField(
                 controller: nomeController,
-                decoration: const InputDecoration(
-                  labelText: 'Nome do participante',
-                ),
+                decoration: const InputDecoration(labelText: 'Nome'),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: cpfController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'CPF do participante',
-                ),
+                decoration: const InputDecoration(labelText: 'CPF'),
               ),
             ],
           ),
@@ -588,16 +584,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ],
                           const SizedBox(height: 22),
                           const Text(
-                            'Comprar ingressos',
+                            'Comprar ingresso',
                             style: TextStyle(
                               fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Text(
-                            'Lotes',
-                            style: TextStyle(
-                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
