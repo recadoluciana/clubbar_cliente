@@ -1,8 +1,10 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../services/api_service.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
   final String nomeLoja;
@@ -29,6 +31,7 @@ class CarteiraIngressosScreen extends StatefulWidget {
 
 class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   late List<Map<String, dynamic>> itensTela;
+  final ApiService apiService = ApiService();
 
   static const String baseUrl = 'https://bitbeer-production.up.railway.app';
 
@@ -64,6 +67,120 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return '$baseUrl$path';
   }
 
+  Future<void> _abrirDialogAlterarParticipante(
+    Map<String, dynamic> item,
+  ) async {
+    final nomeController = TextEditingController(
+      text: (item['nmparticipante'] ?? '').toString(),
+    );
+
+    final cpfController = TextEditingController(
+      text: _formatarCpf((item['cpfparticipante'] ?? '').toString()),
+    );
+
+    final resultado = await showDialog<Map<String, String>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Alterar participante'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nomeController,
+                textCapitalization: TextCapitalization.words,
+                decoration: const InputDecoration(
+                  labelText: 'Nome do participante',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: cpfController,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'CPF do participante',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final nome = nomeController.text.trim();
+                final cpf = cpfController.text.replaceAll(
+                  RegExp(r'[^0-9]'),
+                  '',
+                );
+
+                if (nome.isEmpty || cpf.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Informe nome e CPF do participante.'),
+                    ),
+                  );
+                  return;
+                }
+
+                if (cpf.length != 11) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('CPF inválido.')),
+                  );
+                  return;
+                }
+
+                Navigator.pop(context, {'nome': nome, 'cpf': cpf});
+              },
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    nomeController.dispose();
+    cpfController.dispose();
+
+    if (resultado == null) return;
+
+    try {
+      final itvendaId = int.tryParse('${item['itvenda_id'] ?? 0}') ?? 0;
+
+      if (itvendaId == 0) {
+        throw Exception('Item da venda inválido');
+      }
+
+      await apiService.alterarParticipanteItVenda(
+        itvendaId: itvendaId,
+        nmparticipante: resultado['nome']!,
+        cpfparticipante: resultado['cpf']!,
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        item['nmparticipante'] = resultado['nome'];
+        item['cpfparticipante'] = resultado['cpf'];
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Participante alterado com sucesso.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
+  }
+
   Future<void> _abrirQrOuRetirada(
     BuildContext context,
     Map<String, dynamic> item,
@@ -76,9 +193,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       'nmcliente': (item['nmcliente'] ?? '').toString(),
       'nmproduto': (item['nmproduto'] ?? '').toString(),
       'nmparticipante': (item['nmparticipante'] ?? '').toString(),
-      'cpfparticipante': _formatarCpf(
-        (item['cpfparticipante'] ?? '').toString(),
-      ),
+      'cpfparticipante': (item['cpfparticipante'] ?? '').toString(),
       'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
     });
 
@@ -135,7 +250,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           (item['nmparticipante'] ?? '').toString(),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            fontSize: 17,
+                            fontSize: 19,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -143,10 +258,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         const SizedBox(height: 4),
 
                         Text(
-                          (item['cpfparticipante'] ?? '').toString(),
+                          _formatarCpf(
+                            item['cpfparticipante'] ?? '',
+                          ).toString(),
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -252,7 +369,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         elevation: 2,
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
-          onTap: () => _abrirQrOuRetirada(context, item),
+          onTap: null,
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -307,7 +424,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             children: [
                               if (nomeParticipante.isNotEmpty)
                                 Text(
-                                  'Participante: $nomeParticipante',
+                                  nomeParticipante,
                                   style: const TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
@@ -318,7 +435,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 const SizedBox(height: 4),
 
                                 Text(
-                                  'CPF: $cpfParticipante',
+                                  cpfParticipante,
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Colors.grey.shade700,
@@ -327,22 +444,31 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ],
                               const SizedBox(height: 8),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton.icon(
-                                  onPressed: () {
-                                    // depois ligamos na tela/API de alteração
-                                  },
-                                  icon: const Icon(
-                                    Icons.edit_outlined,
-                                    size: 18,
+                              InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () =>
+                                    _abrirDialogAlterarParticipante(item),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
                                   ),
-                                  label: const Text('Alterar'),
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: const Size(0, 32),
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.edit_outlined, size: 16),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Alterar',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -350,10 +476,22 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           ),
                         ),
                       ],
-                      TextButton.icon(
-                        onPressed: () => _abrirQrOuRetirada(context, item),
-                        icon: const Icon(Icons.qr_code_2_rounded),
-                        label: const Text('Retirar'),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 42,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _abrirQrOuRetirada(context, item),
+                          icon: const Icon(Icons.qr_code_2_rounded, size: 18),
+                          label: const Text('Retirar ingresso'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF7A5A00),
+                            side: const BorderSide(color: Color(0xFFE0C36A)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -377,8 +515,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       borderRadius: BorderRadius.circular(18),
       child: Image.network(
         url,
-        width: 58,
-        height: 58,
+        width: 72,
+        height: 72,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) => _placeholderItem(item),
       ),
@@ -387,8 +525,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
   Widget _placeholderItem(Map<String, dynamic> item) {
     return Container(
-      width: 58,
-      height: 58,
+      width: 72,
+      height: 72,
       decoration: BoxDecoration(
         color: Colors.amber.withOpacity(0.15),
         borderRadius: BorderRadius.circular(18),

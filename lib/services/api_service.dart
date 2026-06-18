@@ -909,4 +909,27 @@ class ApiService {
 
     return Loja.fromJson(Map<String, dynamic>.from(data));
   }
+
+  Future<void> alterarParticipanteItVenda({
+    required int itvendaId,
+    required String nmparticipante,
+    required String cpfparticipante,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/entregas/itvenda/$itvendaId/participante'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'nmparticipante': nmparticipante,
+        'cpfparticipante': cpfparticipante,
+      }),
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return;
+    }
+
+    final data = jsonDecode(response.body);
+
+    throw Exception(data['detail'] ?? 'Erro ao alterar participante');
+  }
 }

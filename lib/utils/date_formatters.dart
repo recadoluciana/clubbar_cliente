@@ -1,4 +1,5 @@
 // lib/utils/date_formatters.dart
+
 import 'package:intl/intl.dart';
 
 class DateFormatters {
@@ -10,12 +11,12 @@ class DateFormatters {
 
       final diaSemana = DateFormat('EEEE', 'pt_BR').format(data);
       final dataFormatada = DateFormat('dd/MM/yyyy').format(data);
-      final hora = DateFormat('HH:mm').format(data);
+      final hora = DateFormat('HH\'h\'mm').format(data);
 
-      final diaSemanaCapitalizado =
+      final diaSemanaFormatado =
           diaSemana[0].toLowerCase() + diaSemana.substring(1);
 
-      return '$diaSemanaCapitalizado, $dataFormatada, $hora';
+      return '$diaSemanaFormatado, $dataFormatada, às $hora';
     } catch (_) {
       return valor;
     }
@@ -26,7 +27,8 @@ class DateFormatters {
 
     try {
       final data = DateTime.parse(valor).toLocal();
-      return DateFormat('dd/MM/yyyy às HHhmm', 'pt_BR').format(data);
+
+      return DateFormat('dd/MM/yyyy \'às\' HH\'h\'mm', 'pt_BR').format(data);
     } catch (_) {
       return valor;
     }
@@ -37,7 +39,7 @@ class DateFormatters {
     final fimFmt = dataCompleta(fim);
 
     if (inicio.trim().isEmpty && fim.trim().isEmpty) {
-      return 'período não informado';
+      return 'Período não informado';
     }
 
     if (inicio.trim().isEmpty) {
