@@ -450,7 +450,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Produtos - ${widget.loja.nome}',
+                        widget.loja.nome,
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
@@ -460,7 +460,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       const SizedBox(height: 4),
 
                       Text(
-                        'Categorias',
+                        'Cardápio',
                         style: TextStyle(
                           fontSize: 15,
                           color: Colors.grey.shade700,
@@ -471,7 +471,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   ),
                   const SizedBox(height: 14),
                   if (categorias.isEmpty)
-                    const Text('Nenhuma categoria disponível.')
+                    const Text('Nenhum cardápio disponível.')
                   else
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
@@ -479,11 +479,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         children: categorias.map(_chipCategoria).toList(),
                       ),
                     ),
-                  const SizedBox(height: 22),
-                  const Text(
-                    'Produtos',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
                   const SizedBox(height: 14),
                   if (produtosFiltrados.isEmpty)
                     _estadoVazio()

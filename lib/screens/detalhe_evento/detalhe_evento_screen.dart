@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/date_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
+import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/cart_badge_notifier.dart';
@@ -568,12 +569,42 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ],
                           const SizedBox(height: 22),
-                          const Text(
-                            'Comprar ingresso',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  'Comprar ingresso',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  MainNavigationController.abrirTela(
+                                    ProdutosLojaScreen(loja: widget.loja),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.shopping_bag_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Comprar produto'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.amber,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 14),
                           if (lotes.isEmpty)

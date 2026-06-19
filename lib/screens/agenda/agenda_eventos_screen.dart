@@ -259,7 +259,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Agenda - ${widget.loja.nome}',
+                    widget.loja.nome,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
@@ -267,7 +267,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Próximos eventos',
+                    'Agenda',
                     style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
                   ),
                 ],
