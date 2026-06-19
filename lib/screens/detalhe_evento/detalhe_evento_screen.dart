@@ -550,33 +550,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               titulo: 'Cidade',
                               valor: ev.nomeCidade,
                             ),
-                          if (ev.descricao.trim().isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Descrição',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(22),
-                              ),
-                              child: Text(
-                                ev.descricao,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey.shade800,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
-                          ],
+
                           const SizedBox(height: 22),
                           Row(
                             children: [
@@ -615,6 +589,33 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ],
                           ),
                           const SizedBox(height: 14),
+                          if (ev.descricao.trim().isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Descrição',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                              child: Text(
+                                ev.descricao,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey.shade800,
+                                  height: 1.5,
+                                ),
+                              ),
+                            ),
+                          ],
                           if (lotes.isEmpty)
                             estadoVazioLotes()
                           else
