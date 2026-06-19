@@ -99,9 +99,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
       if (participante == null) return;
 
-      final observacao =
-          'Participante: ${participante['nome']} | CPF: ${participante['cpf']}';
-
       await apiService.adicionarAoCarrinho(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
@@ -168,9 +165,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             ElevatedButton(
               onPressed: () {
                 final nome = nomeController.text.trim();
-                final cpf = cpfController.text.trim();
 
-                if (nome.isEmpty || cpf.isEmpty) {
+                if (nome.isEmpty || cpfController.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Informe nome e CPF do participante'),
@@ -178,6 +174,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   );
                   return;
                 }
+
                 if (!CpfUtils.validar(cpfController.text)) {
                   ScaffoldMessenger.of(
                     context,
@@ -211,7 +208,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         throw Exception('Faça login para comprar');
       }
 
-      // 🔥 1. adiciona ao carrinho (obrigatório)
       await apiService.adicionarAoCarrinho(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
@@ -225,7 +221,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
       if (!mounted) return;
 
-      // 🔥 2. abre direto pagamento
       MainNavigationController.abrirTela(
         EscolhaPagamentoScreen(
           loja: widget.loja,
@@ -255,8 +250,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget miniGraficoLote({required int total, required int vendidos}) {
     final vendidosAjustado = vendidos.clamp(0, total);
-    final disponiveis = (total - vendidosAjustado).clamp(0, total);
     final percentualVendido = total <= 0 ? 0.0 : vendidosAjustado / total;
+
+    Color cor;
+    if (percentualVendido >= 0.9) {
+      cor = Colors.red;
+    } else if (percentualVendido >= 0.6) {
+      cor = Colors.orange;
+    } else {
+      cor = Colors.green;
+    }
 
     return SizedBox(
       width: 58,
@@ -267,11 +270,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           CircularProgressIndicator(
             value: percentualVendido,
             strokeWidth: 7,
-            backgroundColor: Colors.green.withOpacity(0.18),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.red),
+            backgroundColor: Colors.grey.withOpacity(0.18),
+            valueColor: AlwaysStoppedAnimation<Color>(cor),
           ),
           Text(
-            '$disponiveis',
+            '$vendidosAjustado',
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
           ),
         ],
@@ -336,9 +339,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             children: [
               Row(
                 children: [
-                  miniGraficoLote(
-                    total: lote.qtTotal,
-                    vendidos: lote.qtVendida,
+                  Column(
+                    children: [
+                      miniGraficoLote(
+                        total: lote.qtTotal,
+                        vendidos: lote.qtVendida,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${lote.qtVendida}/${lote.qtTotal}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -471,7 +487,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
-
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null
@@ -503,7 +518,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                     ),
                                   ),
                           ),
-
                           const SizedBox(height: 18),
                           Text(
                             ev.titulo,
@@ -536,6 +550,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               titulo: 'Cidade',
                               valor: ev.nomeCidade,
                             ),
+                          if (ev.descricao.trim().isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Descrição',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             const SizedBox(height: 10),
                             Container(
                               width: double.infinity,
@@ -566,7 +589,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   ),
                                 ),
                               ),
-
                               ElevatedButton.icon(
                                 onPressed: () {
                                   MainNavigationController.abrirTela(

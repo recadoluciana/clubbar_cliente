@@ -819,6 +819,7 @@ class ApiService {
           status: evento.status,
           nomeLoja: evento.nomeLoja,
           nomeCidade: evento.nomeCidade,
+          bairro: (data['dsbairroloja'] ?? '').toString(),
         );
       }
 
