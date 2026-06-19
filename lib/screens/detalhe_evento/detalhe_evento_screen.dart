@@ -526,29 +526,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           linhaInfo(
                             icone: Icons.map_outlined,
                             titulo: 'Endereço',
-                            valor: ev.endereco,
-                          ),
-                          linhaInfo(
-                            icone: Icons.storefront_outlined,
-                            titulo: 'Promovido por',
-                            valor: ev.nomeLoja.isEmpty
-                                ? widget.loja.nome
-                                : ev.nomeLoja,
+                            valor: ev.bairro.trim().isEmpty
+                                ? ev.endereco
+                                : '${ev.bairro} - ${ev.endereco}',
                           ),
                           if (ev.nomeCidade.trim().isNotEmpty)
                             linhaInfo(
                               icone: Icons.location_city_outlined,
                               titulo: 'Cidade',
                               valor: ev.nomeCidade,
-                            ),
-                          if (ev.descricao.trim().isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Descrição',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
                             ),
                             const SizedBox(height: 10),
                             Container(
