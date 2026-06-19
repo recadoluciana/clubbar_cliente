@@ -589,6 +589,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ],
                           ),
                           const SizedBox(height: 14),
+
+                          if (lotes.isEmpty)
+                            estadoVazioLotes()
+                          else
+                            ...lotes.map(cardLote),
+                          const SizedBox(height: 24),
                           if (ev.descricao.trim().isNotEmpty) ...[
                             const SizedBox(height: 8),
                             const Text(
@@ -616,11 +622,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
-                          if (lotes.isEmpty)
-                            estadoVazioLotes()
-                          else
-                            ...lotes.map(cardLote),
-                          const SizedBox(height: 24),
                         ],
                       ),
                     ),

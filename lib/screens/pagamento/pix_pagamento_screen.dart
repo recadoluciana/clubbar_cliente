@@ -51,6 +51,10 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     return (widget.pagamento['venda_id'] ?? '').toString();
   }
 
+  String get pagamentoId {
+    return (widget.pagamento['pagamento_id'] ?? '').toString();
+  }
+
   String get codigoPix {
     return (widget.pagamento['pix_copia_cola'] ??
             widget.pagamento['qr_code_text'] ??
@@ -60,11 +64,11 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   }
 
   Future<void> _consultarPagamento() async {
-    if (vendaId.isEmpty) return;
+    if (pagamentoId.isEmpty) return;
 
     try {
-      final response = await apiService.consultarPixMercadoPago(
-        vendaId: int.parse(vendaId),
+      final response = await apiService.consultarPixPorPagamentoId(
+        pagamentoId: pagamentoId,
       );
 
       final statusAtual = (response['status'] ?? '').toString().toUpperCase();

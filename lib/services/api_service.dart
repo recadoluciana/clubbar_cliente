@@ -933,4 +933,24 @@ class ApiService {
 
     throw Exception(data['detail'] ?? 'Erro ao alterar participante');
   }
+
+  Future<Map<String, dynamic>> consultarPixPorPagamentoId({
+    required String pagamentoId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/mercadopago/consultar-pagamento/$pagamentoId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(data['detail'] ?? 'Erro ao consultar PIX');
+    }
+
+    return Map<String, dynamic>.from(data);
+  }
 }
