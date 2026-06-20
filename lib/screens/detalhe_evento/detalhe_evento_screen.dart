@@ -53,14 +53,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     final texto =
         '''
-  ${ev.titulo}
+  🎟️ ${ev.titulo}
 
-  Data: ${formatarDataHora(ev.dataInicio)}
-  Local: ${ev.local}
-  Endereço: ${ev.endereco}
-  Cidade: ${ev.nomeCidade}${ev.sgEstado.trim().isEmpty ? '' : ' - ${ev.sgEstado}'}
+  📅 ${DateFormatters.dataHoraSimples(ev.dataInicio)}
 
-  Confira no Clubbar!
+  📍 ${ev.local}
+  🏙️ ${ev.nomeCidade}${ev.sgEstado.trim().isEmpty ? '' : ' - ${ev.sgEstado}'}
+
+  🍻 Garanta seu ingresso pelo Clubbar.
+
+  👉 Acesse:
+  https://clubbarcliente-production.up.railway.app
+
+  🦉 Clubbar
+  Compre seu ingresso e o que vai consumir.
   ''';
 
     await Share.share(texto);
