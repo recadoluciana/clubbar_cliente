@@ -610,7 +610,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ElevatedButton.icon(
                                 onPressed: () {
                                   MainNavigationController.abrirTela(
-                                    ProdutosLojaScreen(loja: widget.loja),
+                                    ProdutosLojaScreen(
+                                      loja: widget.loja,
+                                      onVoltar: () {
+                                        MainNavigationController.abrirTela(
+                                          DetalheEventoScreen(
+                                            eventoId: widget.eventoId,
+                                            loja: widget.loja,
+                                            onVoltar: widget.onVoltar,
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   );
                                 },
                                 icon: const Icon(

@@ -13,8 +13,9 @@ import '../detalhe_loja/detalhe_loja_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
+  final VoidCallback? onVoltar;
 
-  const ProdutosLojaScreen({super.key, required this.loja});
+  const ProdutosLojaScreen({super.key, required this.loja, this.onVoltar});
 
   @override
   State<ProdutosLojaScreen> createState() => _ProdutosLojaScreenState();
@@ -430,11 +431,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       appBar: ClubbarAppBar(
         mostrarVoltar: true,
-        onVoltar: () {
-          MainNavigationController.abrirTela(
-            DetalheLojaScreen(loja: widget.loja),
-          );
-        },
+        onVoltar:
+            widget.onVoltar ??
+            () {
+              MainNavigationController.abrirTela(
+                DetalheLojaScreen(loja: widget.loja),
+              );
+            },
       ),
 
       body: carregando
