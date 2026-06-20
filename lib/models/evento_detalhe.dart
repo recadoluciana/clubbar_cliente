@@ -11,6 +11,7 @@ class EventoDetalhe {
   final String status;
   final String nomeLoja;
   final String nomeCidade;
+  final String sgEstado;
 
   EventoDetalhe({
     required this.id,
@@ -25,6 +26,7 @@ class EventoDetalhe {
     required this.status,
     required this.nomeLoja,
     required this.nomeCidade,
+    required this.sgEstado,
   });
 
   factory EventoDetalhe.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class EventoDetalhe {
       status: (json['statusevento'] ?? '').toString(),
       nomeLoja: (json['nmloja'] ?? '').toString(),
       nomeCidade: (json['nmcidade'] ?? '').toString(),
+      sgEstado: (json['sgestado'] ?? '').toString(),
     );
   }
 

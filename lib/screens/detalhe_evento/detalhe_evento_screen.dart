@@ -12,6 +12,7 @@ import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/cpf_utils.dart';
+import 'package:share_plus/share_plus.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -44,6 +45,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   void initState() {
     super.initState();
     carregarDados();
+  }
+
+  Future<void> compartilharEvento() async {
+    final ev = evento;
+    if (ev == null) return;
+
+    final texto =
+        '''
+  ${ev.titulo}
+
+  Data: ${formatarDataHora(ev.dataInicio)}
+  Local: ${ev.local}
+  Endereço: ${ev.endereco}
+  Cidade: ${ev.nomeCidade}${ev.sgEstado.trim().isEmpty ? '' : ' - ${ev.sgEstado}'}
+
+  Confira no Clubbar!
+  ''';
+
+    await Share.share(texto);
   }
 
   Future<void> carregarDados() async {
@@ -518,6 +538,28 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                     ),
                                   ),
                           ),
+                          Transform.translate(
+                            offset: const Offset(0, -22),
+                            child: Center(
+                              child: ElevatedButton.icon(
+                                onPressed: compartilharEvento,
+                                icon: const Icon(Icons.ios_share, size: 18),
+                                label: const Text('COMPARTILHAR'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.blue,
+                                  elevation: 4,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                           const SizedBox(height: 18),
                           Text(
                             ev.titulo,
@@ -548,15 +590,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             linhaInfo(
                               icone: Icons.location_city_outlined,
                               titulo: 'Cidade',
-                              valor: ev.nomeCidade,
+                              valor: ev.sgEstado.trim().isEmpty
+                                  ? ev.nomeCidade
+                                  : '${ev.nomeCidade} - ${ev.sgEstado}',
                             ),
 
-                          const SizedBox(height: 22),
+                          const SizedBox(height: 12),
                           Row(
                             children: [
                               const Expanded(
                                 child: Text(
-                                  'Comprar ingresso',
+                                  'Lotes',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
