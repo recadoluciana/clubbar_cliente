@@ -60,13 +60,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   📍 ${ev.local}
   🏙️ ${ev.nomeCidade}${ev.sgEstado.trim().isEmpty ? '' : ' - ${ev.sgEstado}'}
 
-  🍻 Garanta seu ingresso pelo Clubbar.
+  🍻 Garanta seu ingresso pelo Clubbar
 
   👉 Acesse:
   https://clubbarcliente-production.up.railway.app
 
   🦉 Clubbar
-  Compre seu ingresso e o que vai consumir.
+  Compre seu ingresso e o que vai consumir
   ''';
 
     await Share.share(texto);

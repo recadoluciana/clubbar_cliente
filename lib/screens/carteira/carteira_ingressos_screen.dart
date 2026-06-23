@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/api_service.dart';
+import '../../utils/cpf_utils.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
   final String nomeLoja;
@@ -128,7 +129,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   return;
                 }
 
-                if (cpf.length != 11) {
+                if (!CpfUtils.validar(cpf)) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('CPF inválido.')),
                   );
@@ -195,6 +196,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       'nmparticipante': (item['nmparticipante'] ?? '').toString(),
       'cpfparticipante': (item['cpfparticipante'] ?? '').toString(),
       'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
+      'idtipoproduto': (item['idtipoproduto'] ?? '').toString(),
     });
 
     if (codigo.isEmpty) {
