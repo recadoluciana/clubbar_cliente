@@ -1,3 +1,5 @@
+import '../../config/app_config.dart';
+
 class Loja {
   final int id;
   final int organizacaoId;
@@ -21,7 +23,8 @@ class Loja {
     required this.vrtaxaing,
   });
 
-  static const String baseUrl = "https://bitbeer-production.up.railway.app";
+  static const String baseUrl =
+      AppConfig.apiBaseUrl; // Use the apiBaseUrl from AppConfig
 
   static String buildUrl(String path) {
     if (path.isEmpty) return '';

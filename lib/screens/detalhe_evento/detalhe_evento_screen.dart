@@ -13,6 +13,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/cpf_utils.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../config/app_config.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -63,7 +64,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   🍻 Garanta seu ingresso pelo Clubbar
 
   👉 Acesse:
-  https://clubbarcliente-production.up.railway.app
+  ${AppConfig.appWebUrl}
 
   🦉 Clubbar
   Compre seu ingresso e o que vai consumir

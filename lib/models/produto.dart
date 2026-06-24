@@ -1,3 +1,5 @@
+import '../../config/app_config.dart';
+
 class Produto {
   final int produtoId;
   final int organizacaoId;
@@ -36,7 +38,8 @@ class Produto {
     required this.descontoativo,
   });
 
-  static const String baseUrl = "https://bitbeer-production.up.railway.app";
+  static const String baseUrl =
+      AppConfig.apiBaseUrl; // Use the apiBaseUrl from AppConfig
 
   static String? buildUrl(String? path) {
     if (path == null || path.isEmpty) return null;

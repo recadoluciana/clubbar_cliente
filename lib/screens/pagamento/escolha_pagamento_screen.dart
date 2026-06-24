@@ -10,6 +10,7 @@ import 'pagamento_sucesso_screen.dart';
 import 'politica_compra_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../config/app_config.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -133,7 +134,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
 
     final uri = Uri.parse(
-      'https://bitbeer-production.up.railway.app/static/checkout_cartao.html',
+      AppConfig.checkoutCartaoUrl,
     ).replace(queryParameters: queryParams);
 
     if (kIsWeb) {
