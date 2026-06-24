@@ -14,7 +14,7 @@ import '../models/evento_detalhe.dart';
 import '../models/evento_lote.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://bitbeer-production.up.railway.app';
+  static const String baseUrl = 'https://api.clubbar.com.br';
 
   String _mensagemErroAmigavel(Object e) {
     final texto = e.toString().toLowerCase();

@@ -29,7 +29,7 @@ class CarteiraLojaScreen extends StatefulWidget {
 class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   late List<Map<String, dynamic>> itensTela;
 
-  static const String baseUrl = 'https://bitbeer-production.up.railway.app';
+  static const String baseUrl = 'https://api.clubbar.com.br';
 
   @override
   void initState() {

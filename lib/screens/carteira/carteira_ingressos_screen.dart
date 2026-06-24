@@ -34,7 +34,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   late List<Map<String, dynamic>> itensTela;
   final ApiService apiService = ApiService();
 
-  static const String baseUrl = 'https://bitbeer-production.up.railway.app';
+  static const String baseUrl = 'https://api.clubbar.com.br';
 
   @override
   void initState() {

@@ -14,7 +14,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
-  static const String baseUrl = 'https://bitbeer-production.up.railway.app';
+  static const String baseUrl = 'https://api.clubbar.com.br';
 
   bool carregando = true;
   String? erro;
