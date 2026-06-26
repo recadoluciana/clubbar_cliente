@@ -288,6 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
       child: Container(
+        width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
@@ -298,29 +299,44 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 🔥 Só mostra o botão se NÃO estiver logado
-            if (!logado) ...[
-              const SizedBox(height: 14),
-
+            if (logado) ...[
+              const Icon(Icons.person, color: Colors.amber, size: 32),
+              const SizedBox(height: 8),
+              const Text(
+                'Bem-vindo(a)',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                nomeCliente.isEmpty ? 'Cliente Clubbar' : nomeCliente,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ] else ...[
               InkWell(
                 onTap: abrirLogin,
                 borderRadius: BorderRadius.circular(30),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+                    horizontal: 26,
+                    vertical: 12,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.amber,
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(Icons.login, color: Colors.black, size: 20),
-                      SizedBox(width: 6),
+                      SizedBox(width: 8),
                       Text(
                         'Login',
                         style: TextStyle(
