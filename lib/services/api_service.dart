@@ -954,4 +954,27 @@ class ApiService {
 
     return Map<String, dynamic>.from(data);
   }
+
+  Future<Map<String, dynamic>> pagarCartaoStripe({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/pagar-cartao-stripe'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+        'dsmetodopag': 'CREDIT_CARD',
+      }),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(response.body);
+    }
+
+    return jsonDecode(response.body);
+  }
 }

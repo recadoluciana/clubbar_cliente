@@ -120,57 +120,29 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       return;
     }
 
-    final queryParams = <String, String>{
-      'cliente_id': clienteId.toString(),
-      'organizacao_id': widget.loja.organizacaoId.toString(),
-      'loja_id': widget.loja.id.toString(),
-      'tipo_pagamento': tipoPagamento,
-      'amount': totalPagar.toStringAsFixed(2),
-      'origem': kIsWeb ? 'web' : 'app',
-    };
+    try {
+      final resposta = await apiService.pagarCartaoStripe(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+      );
 
-    if (kIsWeb) {
-      queryParams['app_url'] = Uri.base.origin;
-    }
+      final checkoutUrl = resposta["checkout_url"];
 
-    final uri = Uri.parse(
-      AppConfig.checkoutCartaoUrl,
-    ).replace(queryParameters: queryParams);
+      if (checkoutUrl == null) {
+        throw Exception("Checkout não retornado pela API.");
+      }
 
-    if (kIsWeb) {
-      await launchUrl(uri, webOnlyWindowName: '_self');
-      return;
-    }
+      await launchUrl(
+        Uri.parse(checkoutUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      if (!mounted) return;
 
-    final resultado = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CheckoutCartaoScreen(url: uri.toString()),
-      ),
-    );
-
-    if (!mounted) return;
-
-    switch (resultado) {
-      case "sucesso":
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const PagamentoSucessoScreen(sucesso: true),
-          ),
-        );
-        break;
-
-      case "erro":
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => const PagamentoSucessoScreen(sucesso: false),
-          ),
-        );
-        break;
-
-      case "cancelado":
-        // Apenas permanece na EscolhaPagamentoScreen
-        break;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
+      );
     }
   }
 
