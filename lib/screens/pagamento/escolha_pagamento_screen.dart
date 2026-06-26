@@ -121,16 +121,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
 
     try {
-      final resposta = await apiService.pagarCartaoStripe(
+      final resposta = await apiService.pagarCartaoAsaas(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
       );
 
-      final checkoutUrl = resposta["checkout_url"];
+      final checkoutUrl = resposta['checkout_url'];
 
-      if (checkoutUrl == null) {
-        throw Exception("Checkout não retornado pela API.");
+      if (checkoutUrl == null || checkoutUrl.toString().isEmpty) {
+        throw Exception('Checkout Asaas não retornado.');
       }
 
       await launchUrl(
@@ -141,7 +141,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
     }
   }
