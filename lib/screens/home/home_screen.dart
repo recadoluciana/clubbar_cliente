@@ -300,17 +300,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Compre seu ingresso e o que vai consumir.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                height: 1.4,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-
             // 🔥 Só mostra o botão se NÃO estiver logado
             if (!logado) ...[
               const SizedBox(height: 14),
