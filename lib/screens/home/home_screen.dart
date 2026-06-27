@@ -460,7 +460,6 @@ class _HomeScreenState extends State<HomeScreen> {
             : ListView(
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                 children: [
-                  _bannerLogin(),
                   _campoBusca(),
                   const SizedBox(height: 22),
 
