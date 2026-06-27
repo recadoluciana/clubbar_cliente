@@ -3,14 +3,10 @@ import 'package:flutter/material.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import 'checkout_cartao_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import 'pagamento_sucesso_screen.dart';
 import 'politica_compra_screen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../config/app_config.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -121,7 +117,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
 
     try {
-      final resposta = await apiService.pagarCartaoAsaas(
+      final resposta = await apiService.pagarAsaas(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
@@ -217,7 +213,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           const SizedBox(height: 16),
 
           Text(
-            'Escolha a forma de pagamento',
+            'Resumo da compra',
             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
           ),
 
@@ -279,7 +275,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.pix),
-              label: const Text('Pagar com PIX'),
+              label: const Text('Continuar para pagamento'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.green,
@@ -287,35 +283,6 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             ),
           ),
 
-          const SizedBox(height: 14),
-
-          SizedBox(
-            height: 54,
-            child: OutlinedButton.icon(
-              onPressed: () => abrirCartao('CREDIT_CARD'),
-              icon: const Icon(Icons.credit_card),
-              label: const Text('Cartão de crédito'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.blue,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          SizedBox(
-            height: 54,
-            child: OutlinedButton.icon(
-              onPressed: () => abrirCartao('DEBIT_CARD'),
-              icon: const Icon(Icons.credit_card),
-              label: const Text('Cartão de débito'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-              ),
-            ),
-          ),
           const SizedBox(height: 20),
           TextButton.icon(
             onPressed: () {
@@ -326,7 +293,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             },
             icon: const Icon(Icons.policy_outlined),
             label: const Text(
-              'Política de Compra',
+              'Política de Compra - Clique aqui',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),

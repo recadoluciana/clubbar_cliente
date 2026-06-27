@@ -321,7 +321,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 selectedIcon: const Icon(Icons.person),
                 label: logado && nomeCliente.trim().isNotEmpty
                     ? _primeiroNome(nomeCliente)
-                    : 'Perfil',
+                    : 'Login',
               ),
             ],
           ),

@@ -955,13 +955,13 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
-  Future<Map<String, dynamic>> pagarCartaoAsaas({
+  Future<Map<String, dynamic>> pagarAsaas({
     required int clienteId,
     required int organizacaoId,
     required int lojaId,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/pagamentos/pagar-cartao-asaas'),
+      Uri.parse('$baseUrl/pagamentos/pagar-asaas'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'cliente_id': clienteId,
