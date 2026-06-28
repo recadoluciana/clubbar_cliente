@@ -67,6 +67,28 @@ class DetalheLojaScreen extends StatelessWidget {
     );
   }
 
+  String _enderecoCompleto() {
+    final partes = <String>[];
+
+    if (loja.endereco.trim().isNotEmpty) {
+      partes.add(loja.endereco.trim());
+    }
+
+    if (loja.bairro.trim().isNotEmpty) {
+      partes.add(loja.bairro.trim());
+    }
+
+    if (loja.cidade.trim().isNotEmpty) {
+      partes.add(loja.cidade.trim());
+    }
+
+    if (partes.isEmpty) {
+      return 'Endereço não informado';
+    }
+
+    return partes.join(' - ');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,13 +122,7 @@ class DetalheLojaScreen extends StatelessWidget {
                   children: [
                     const Icon(Icons.location_on_outlined),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        loja.bairro.isEmpty
-                            ? 'Endereço não informado'
-                            : loja.bairro,
-                      ),
-                    ),
+                    Expanded(child: Text(_enderecoCompleto())),
                   ],
                 ),
 

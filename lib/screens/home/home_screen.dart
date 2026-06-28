@@ -121,12 +121,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return lojas.where((loja) {
       final nome = _normalizar(loja.nome);
+      final endereco = _normalizar(loja.endereco);
       final bairro = _normalizar(loja.bairro);
+      final cidade = _normalizar(loja.cidade);
       final horario = _normalizar(loja.horario);
       final instagram = _normalizar(loja.instagram);
 
       return nome.contains(q) ||
+          endereco.contains(q) ||
           bairro.contains(q) ||
+          cidade.contains(q) ||
           horario.contains(q) ||
           instagram.contains(q);
     }).toList();
@@ -488,7 +492,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               id: evento.lojaId,
                               organizacaoId: evento.organizacaoId,
                               nome: evento.nomeLoja,
+                              endereco: '',
                               bairro: '',
+                              cidade: '',
                               horario: '',
                               imagemUrl: '',
                               instagram: '',
@@ -706,9 +712,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                               const SizedBox(width: 6),
                                               Expanded(
                                                 child: Text(
-                                                  loja.bairro.isEmpty
-                                                      ? 'Endereço não informado'
-                                                      : loja.bairro,
+                                                  loja.bairro.isEmpty &&
+                                                          loja.cidade.isEmpty
+                                                      ? 'Localização não informada'
+                                                      : [
+                                                          if (loja
+                                                              .bairro
+                                                              .isNotEmpty)
+                                                            loja.bairro,
+                                                          if (loja
+                                                              .cidade
+                                                              .isNotEmpty)
+                                                            loja.cidade,
+                                                        ].join(' - '),
                                                   style: TextStyle(
                                                     color: Colors.grey.shade700,
                                                   ),
@@ -740,11 +756,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Icon(
-                                      Icons.chevron_right_rounded,
-                                      size: 30,
                                     ),
                                   ],
                                 ),

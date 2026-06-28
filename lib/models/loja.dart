@@ -4,7 +4,9 @@ class Loja {
   final int id;
   final int organizacaoId;
   final String nome;
+  final String endereco;
   final String bairro;
+  final String cidade;
   final String horario;
   final String imagemUrl;
   final String instagram;
@@ -15,7 +17,9 @@ class Loja {
     required this.id,
     required this.organizacaoId,
     required this.nome,
+    required this.endereco,
     required this.bairro,
+    required this.cidade,
     required this.horario,
     required this.imagemUrl,
     required this.instagram,
@@ -39,7 +43,9 @@ class Loja {
       id: _toInt(json['loja_id'] ?? 0),
       organizacaoId: _toInt(json['organizacao_id'] ?? 0),
       nome: (json['nmloja'] ?? '').toString(),
-      bairro: (json['endloja'] ?? '').toString(),
+      endereco: (json['endloja'] ?? '').toString(),
+      bairro: (json['dsbairroloja'] ?? '').toString(),
+      cidade: (json['nmcidade'] ?? '').toString(),
       horario: (json['dshorarioloja'] ?? '').toString(),
       imagemUrl: buildUrl(path),
       instagram: (json['dsinstaloja'] ?? '').toString(),

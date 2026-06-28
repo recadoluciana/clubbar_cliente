@@ -173,6 +173,8 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
       id: int.tryParse('${lojaData['loja_id']}') ?? 0,
       organizacaoId: int.tryParse('${lojaData['organizacao_id']}') ?? 0,
       nome: (lojaData['nmloja'] ?? 'Loja').toString(),
+      endereco: '',
+      cidade: '',
       bairro: '',
       horario: '',
       imagemUrl: _buildImageUrl((lojaData['urllogoloja'] ?? '').toString()),
