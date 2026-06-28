@@ -293,7 +293,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           bottomNavigationBar: NavigationBarTheme(
             data: NavigationBarThemeData(
               backgroundColor: Colors.white,
-              indicatorColor: const Color(0xFFFFF3D6),
+              // Remova a cor bege
+              indicatorColor: Colors.transparent,
               surfaceTintColor: Colors.transparent,
               elevation: 6,
               iconTheme: WidgetStateProperty.resolveWith<IconThemeData>((
@@ -349,28 +350,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   label: 'Carteira',
                 ),
                 NavigationDestination(
-                  icon: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.person_outline, size: 22),
-                  ),
-                  selectedIcon: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: const BoxDecoration(
-                      color: Colors.black,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
+                  icon: const Icon(Icons.person_outline),
+                  selectedIcon: const Icon(Icons.person),
                   label: logado && nomeCliente.trim().isNotEmpty
                       ? _primeiroNome(nomeCliente)
                       : 'Login',
