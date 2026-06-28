@@ -60,7 +60,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   String _primeiroNome(String nomeCompleto) {
     final partes = nomeCompleto.trim().split(' ');
-    return partes.isNotEmpty ? partes.first : '';
+    if (partes.isEmpty) return '';
+
+    final nome = partes.first.toLowerCase();
+    return nome[0].toUpperCase() + nome.substring(1);
   }
 
   Future<bool> _estaLogado() async {
@@ -287,43 +290,93 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               return telaInterna ?? _buildPage();
             },
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: currentIndex,
-            onDestinationSelected: (index) {
-              if (index == currentIndex) {
-                MainNavigationController.fecharTelaInterna();
-                return;
-              }
+          bottomNavigationBar: NavigationBarTheme(
+            data: NavigationBarThemeData(
+              backgroundColor: Colors.white,
+              indicatorColor: const Color(0xFFFFF3D6),
+              surfaceTintColor: Colors.transparent,
+              elevation: 6,
+              iconTheme: WidgetStateProperty.resolveWith<IconThemeData>((
+                states,
+              ) {
+                if (states.contains(WidgetState.selected)) {
+                  return const IconThemeData(color: Colors.black, size: 26);
+                }
+                return const IconThemeData(color: Colors.grey, size: 24);
+              }),
+              labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
+                states,
+              ) {
+                if (states.contains(WidgetState.selected)) {
+                  return const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  );
+                }
+                return const TextStyle(color: Colors.grey, fontSize: 12);
+              }),
+            ),
+            child: NavigationBar(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              selectedIndex: currentIndex,
+              onDestinationSelected: (index) {
+                if (index == currentIndex) {
+                  MainNavigationController.fecharTelaInterna();
+                  return;
+                }
 
-              MainNavigationController.fecharTelaInterna();
-              MainNavigationController.abaIndex.value = index;
-              _selecionarAba(index);
-            },
-            height: 72,
-            destinations: [
-              const NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              NavigationDestination(
-                icon: _iconeCarrinhoComBadge(selecionado: false),
-                selectedIcon: _iconeCarrinhoComBadge(selecionado: true),
-                label: 'Carrinho',
-              ),
-              NavigationDestination(
-                icon: _iconeCarteiraComBadge(selecionado: false),
-                selectedIcon: _iconeCarteiraComBadge(selecionado: true),
-                label: 'Carteira',
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.person_outline),
-                selectedIcon: const Icon(Icons.person),
-                label: logado && nomeCliente.trim().isNotEmpty
-                    ? _primeiroNome(nomeCliente)
-                    : 'Login',
-              ),
-            ],
+                MainNavigationController.fecharTelaInterna();
+                MainNavigationController.abaIndex.value = index;
+                _selecionarAba(index);
+              },
+              height: 72,
+              destinations: [
+                const NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                NavigationDestination(
+                  icon: _iconeCarrinhoComBadge(selecionado: false),
+                  selectedIcon: _iconeCarrinhoComBadge(selecionado: true),
+                  label: 'Carrinho',
+                ),
+                NavigationDestination(
+                  icon: _iconeCarteiraComBadge(selecionado: false),
+                  selectedIcon: _iconeCarteiraComBadge(selecionado: true),
+                  label: 'Carteira',
+                ),
+                NavigationDestination(
+                  icon: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade200,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.person_outline, size: 22),
+                  ),
+                  selectedIcon: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      color: Colors.black,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  label: logado && nomeCliente.trim().isNotEmpty
+                      ? _primeiroNome(nomeCliente)
+                      : 'Login',
+                ),
+              ],
+            ),
           ),
         );
       },

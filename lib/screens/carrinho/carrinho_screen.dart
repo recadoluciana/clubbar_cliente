@@ -548,7 +548,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           ),
         ),
         label: const Text(
-          'Escolher forma de pagamento',
+          'Continuar para pagamento',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),

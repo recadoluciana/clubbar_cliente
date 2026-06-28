@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import 'pix_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import 'politica_compra_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -37,37 +36,30 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   final ApiService apiService = ApiService();
   final AuthStorage authStorage = AuthStorage();
 
-  bool carregandoPix = false;
+  bool carregandoPagamento = false;
 
   double get percentualTaxaProduto => widget.loja.vrtaxaprod;
   double get percentualTaxaIngresso => widget.loja.vrtaxaing;
 
-  double get taxaProdutoSplit {
-    return widget.totalProdutos * (percentualTaxaProduto / 100);
-  }
+  double get taxaProdutoSplit =>
+      widget.totalProdutos * (percentualTaxaProduto / 100);
 
-  double get taxaIngressoCliente {
-    return widget.totalIngressos * (percentualTaxaIngresso / 100);
-  }
+  double get taxaIngressoCliente =>
+      widget.totalIngressos * (percentualTaxaIngresso / 100);
 
-  double get taxaClubbarTotal {
-    return taxaProdutoSplit + taxaIngressoCliente;
-  }
+  double get taxaClubbarTotal => taxaProdutoSplit + taxaIngressoCliente;
 
-  double get totalPagar {
-    return widget.totalProdutos + widget.totalIngressos + taxaIngressoCliente;
-  }
+  double get totalPagar =>
+      widget.totalProdutos + widget.totalIngressos + taxaIngressoCliente;
 
-  double get valorParceiro {
-    return totalPagar - taxaClubbarTotal;
-  }
+  double get valorParceiro => totalPagar - taxaClubbarTotal;
 
   String _moeda(double valor) {
     return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
   }
 
-  Future<void> pagarPix() async {
-    setState(() => carregandoPix = true);
+  Future<void> abrirAsaas() async {
+    setState(() => carregandoPagamento = true);
 
     try {
       final clienteId = await authStorage.obterClienteId();
@@ -76,47 +68,6 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         throw Exception('Cliente não identificado');
       }
 
-      final resposta = await apiService.pagarCarrinhoPix(
-        clienteId: clienteId,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-      );
-
-      if (!mounted) return;
-
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              PixPagamentoScreen(loja: widget.loja, pagamento: resposta),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => carregandoPix = false);
-      }
-    }
-  }
-
-  Future<void> abrirCartao(String tipoPagamento) async {
-    final clienteId = await authStorage.obterClienteId();
-
-    if (clienteId == null || clienteId == 0) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Cliente não identificado')));
-      return;
-    }
-
-    try {
       final resposta = await apiService.pagarAsaas(
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
@@ -139,6 +90,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
+    } finally {
+      if (mounted) {
+        setState(() => carregandoPagamento = false);
+      }
     }
   }
 
@@ -190,15 +145,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(
-      'ESCOLHA PAGAMENTO loja=${widget.loja.nome} taxaIng=${widget.loja.vrtaxaing} taxaProd=${widget.loja.vrtaxaprod}',
-    );
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-
       appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
-
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -212,9 +161,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           const SizedBox(height: 16),
 
-          Text(
+          const Text(
             'Resumo da compra',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
           ),
 
           const SizedBox(height: 16),
@@ -251,7 +200,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                 const SizedBox(height: 10),
 
                 _linhaResumo(
-                  'Taxa de conveniência ingressos (${percentualTaxaIngresso.toStringAsFixed(0)}%)',
+                  'Taxa de conveniência (${percentualTaxaIngresso.toStringAsFixed(0)}%)',
                   taxaIngressoCliente,
                 ),
 
@@ -265,25 +214,35 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           const SizedBox(height: 24),
 
           SizedBox(
-            height: 54,
-            child: OutlinedButton.icon(
-              onPressed: carregandoPix ? null : pagarPix,
-              icon: carregandoPix
+            height: 56,
+            child: ElevatedButton.icon(
+              onPressed: carregandoPagamento ? null : abrirAsaas,
+              icon: carregandoPagamento
                   ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
-                  : const Icon(Icons.pix),
-              label: const Text('Continuar para pagamento'),
+                  : const Icon(Icons.payment),
+              label: const Text(
+                'Continuar para pagamento',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.green,
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
               ),
             ),
           ),
 
           const SizedBox(height: 20),
+
           TextButton.icon(
             onPressed: () {
               Navigator.push(
