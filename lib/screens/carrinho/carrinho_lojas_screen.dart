@@ -179,6 +179,8 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
       horario: '',
       imagemUrl: _buildImageUrl((lojaData['urllogoloja'] ?? '').toString()),
       instagram: '',
+      dsestiloloja: (lojaData['dsestiloloja'] ?? '').toString(),
+      nrtelloja: (lojaData['nrtelloja'] ?? '').toString(),
 
       // 👇 NOVO
       vrtaxaprod: double.tryParse('${lojaData['vrtaxaprod']}') ?? 3,

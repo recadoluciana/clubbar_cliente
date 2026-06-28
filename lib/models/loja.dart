@@ -12,6 +12,8 @@ class Loja {
   final String instagram;
   final double vrtaxaprod;
   final double vrtaxaing;
+  final String dsestiloloja;
+  final String nrtelloja;
 
   Loja({
     required this.id,
@@ -25,6 +27,8 @@ class Loja {
     required this.instagram,
     required this.vrtaxaprod,
     required this.vrtaxaing,
+    required this.dsestiloloja,
+    required this.nrtelloja,
   });
 
   static const String baseUrl =
@@ -51,6 +55,8 @@ class Loja {
       instagram: (json['dsinstaloja'] ?? '').toString(),
       vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '0') ?? 0,
       vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '0') ?? 0,
+      dsestiloloja: (json['dsestiloloja'] ?? '').toString(),
+      nrtelloja: (json['nrtelloja'] ?? '').toString(),
     );
   }
 

@@ -116,7 +116,7 @@ class DetalheLojaScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 Row(
                   children: [
@@ -126,7 +126,18 @@ class DetalheLojaScreen extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 10),
+                if (loja.nrtelloja.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.phone_outlined),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(loja.nrtelloja)),
+                    ],
+                  ),
+                ],
+
+                const SizedBox(height: 8),
 
                 Row(
                   children: [
@@ -142,7 +153,7 @@ class DetalheLojaScreen extends StatelessWidget {
                   ],
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
 
                 InkWell(
                   onTap: () => abrirInstagram(context),
@@ -166,7 +177,7 @@ class DetalheLojaScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
 
                 _menuCard(
                   context: context,

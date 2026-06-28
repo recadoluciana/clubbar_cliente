@@ -126,13 +126,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final cidade = _normalizar(loja.cidade);
       final horario = _normalizar(loja.horario);
       final instagram = _normalizar(loja.instagram);
+      final dsestiloloja = _normalizar(loja.dsestiloloja);
 
       return nome.contains(q) ||
           endereco.contains(q) ||
           bairro.contains(q) ||
           cidade.contains(q) ||
           horario.contains(q) ||
-          instagram.contains(q);
+          instagram.contains(q) ||
+          dsestiloloja.contains(q);
     }).toList();
   }
 
@@ -500,6 +502,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               instagram: '',
                               vrtaxaprod: 3,
                               vrtaxaing: 10,
+                              dsestiloloja: '',
+                              nrtelloja: '',
                             ),
                           );
 
