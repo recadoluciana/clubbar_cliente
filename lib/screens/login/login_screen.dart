@@ -6,6 +6,7 @@ import '../cadastro/cadastro_screen.dart';
 import '../esqueceu_senha/esqueceu_senha_screen.dart';
 import '../main/main_navigation_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../services/main_navigation_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -169,7 +170,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: ClubbarAppBar(
+        mostrarVoltar: true,
+        onVoltar: () {
+          MainNavigationController.irParaHome();
+          Navigator.of(context).maybePop();
+        },
+      ),
       extendBodyBehindAppBar: true,
       body: Container(
         width: double.infinity,

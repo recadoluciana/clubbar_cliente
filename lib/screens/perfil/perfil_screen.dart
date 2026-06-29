@@ -128,7 +128,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
         children: [
           Container(
-            padding: const EdgeInsets.all(22),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
@@ -139,30 +139,23 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   Color(0xFF2A2A2A),
                 ],
               ),
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
-                  blurRadius: 16,
-                  offset: const Offset(0, 10),
+                  color: Colors.black.withOpacity(0.10),
+                  blurRadius: 10,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
             child: Row(
               children: [
                 Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
+                  width: 52,
+                  height: 52,
+                  decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
                   ),
                   child: Center(
                     child: Text(
@@ -170,17 +163,20 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           ? nomeCliente[0].toUpperCase()
                           : 'C',
                       style: const TextStyle(
-                        fontSize: 28,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+
+                const SizedBox(width: 12),
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         nomeCliente.trim().isEmpty
@@ -188,16 +184,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
                             : nomeCliente.split(' ').first,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 2),
                       Text(
-                        'Veja e gerencie suas informações',
+                        'Gerencie sua conta',
                         style: TextStyle(
-                          color: Colors.grey.shade300,
-                          fontSize: 14,
+                          color: Colors.grey.shade400,
+                          fontSize: 12,
                         ),
                       ),
                     ],
