@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:flutter/foundation.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
@@ -80,10 +80,14 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         throw Exception('Checkout Asaas não retornado.');
       }
 
-      await launchUrl(
-        Uri.parse(checkoutUrl),
-        mode: LaunchMode.externalApplication,
-      );
+      if (kIsWeb) {
+        await launchUrl(Uri.parse(checkoutUrl), webOnlyWindowName: '_self');
+      } else {
+        await launchUrl(
+          Uri.parse(checkoutUrl),
+          mode: LaunchMode.externalApplication,
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
