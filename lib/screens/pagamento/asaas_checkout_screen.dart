@@ -52,7 +52,7 @@ class _AsaasCheckoutScreenState extends State<AsaasCheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ClubbarAppBar(mostrarVoltar: true, titulo: 'Pagamento'),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
