@@ -227,7 +227,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const AlterarSenhaScreen()),
+                MaterialPageRoute(
+                  builder: (_) => AlterarSenhaScreen(
+                    onVoltar: () => Navigator.pop(context),
+                  ),
+                ),
               );
             },
             iconColor: Colors.blue,
