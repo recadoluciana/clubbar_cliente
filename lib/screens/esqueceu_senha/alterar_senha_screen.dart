@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-
 import '../../services/api_service.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class AlterarSenhaScreen extends StatefulWidget {
-  const AlterarSenhaScreen({super.key});
+  final VoidCallback onVoltar;
+
+  const AlterarSenhaScreen({super.key, required this.onVoltar});
 
   @override
   State<AlterarSenhaScreen> createState() => _AlterarSenhaScreenState();
@@ -11,11 +13,9 @@ class AlterarSenhaScreen extends StatefulWidget {
 
 class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final _senhaAtualCtrl = TextEditingController();
   final _novaSenhaCtrl = TextEditingController();
   final _confirmarSenhaCtrl = TextEditingController();
-
   final apiService = ApiService();
 
   bool carregando = false;
@@ -106,7 +106,7 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Alterar senha')),
+      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
       body: SafeArea(
         child: Form(
           key: _formKey,
