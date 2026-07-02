@@ -9,7 +9,8 @@ import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
-import '../../services/main_navigation_controller.dart';
+import '../main/main_navigation_screen.dart';
+import 'pagamento_sucesso_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -110,15 +111,20 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           if (!mounted) return;
 
-          MainNavigationController.irParaHome();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Pagamento confirmado. Sua compra já está na carteira.',
-              ),
+          final retornoSucesso = await Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const PagamentoSucessoScreen(sucesso: true),
             ),
           );
+
+          if (retornoSucesso == true && context.mounted) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+              (route) => false,
+            );
+          }
         }
       }
     } catch (e) {
