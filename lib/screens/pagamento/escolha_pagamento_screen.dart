@@ -7,6 +7,9 @@ import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
+import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
+import '../../services/main_navigation_controller.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -92,13 +95,27 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         );
 
         if (resultado == true) {
-          // depois vamos atualizar carrinho/carteira aqui
           if (!mounted) return;
+
+          final clienteId = await authStorage.obterClienteId();
+
+          if (clienteId != null && clienteId > 0) {
+            final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
+              clienteId: clienteId,
+            );
+
+            CartBadgeNotifier.atualizar(totalCarrinho);
+            CarteiraBadgeNotifier.atualizar();
+          }
+
+          if (!mounted) return;
+
+          MainNavigationController.irParaHome();
 
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Pagamento em processamento. Aguarde a confirmação.',
+                'Pagamento confirmado. Sua compra já está na carteira.',
               ),
             ),
           );
