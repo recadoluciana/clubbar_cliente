@@ -40,6 +40,15 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
       carregando = true;
     });
 
+    if (_novaSenhaCtrl.text.trim().length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A nova senha deve conter pelo menos 6 caracteres.'),
+        ),
+      );
+      return;
+    }
+
     try {
       await apiService.alterarMinhaSenha(
         senhaAtual: _senhaAtualCtrl.text.trim(),
