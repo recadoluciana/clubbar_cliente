@@ -548,7 +548,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           ),
         ),
         label: const Text(
-          'Continuar para pagamento',
+          'Pagar',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
@@ -587,6 +587,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     _resumoTotal(),
                     const SizedBox(height: 18),
                     _botaoPagar(),
+                    const SizedBox(height: 90),
                   ],
                 ],
               ),
