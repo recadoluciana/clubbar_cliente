@@ -38,7 +38,15 @@ class _AsaasCheckoutScreenState extends State<AsaasCheckoutScreen> {
             final url = request.url;
 
             if (url.contains('/asaas/retorno')) {
-              Navigator.of(context).pop(true);
+              final uri = Uri.parse(url);
+              final acao = uri.queryParameters['acao'];
+
+              if (acao == 'cancelado' || acao == 'expirado') {
+                Navigator.pop(context, false);
+              } else {
+                Navigator.pop(context, true);
+              }
+
               return NavigationDecision.prevent;
             }
 
