@@ -163,6 +163,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Future<void> abrirDialogObservacao(Produto produto) async {
     final controller = TextEditingController();
 
+    if (clienteId == null || clienteId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Faça login para adicionar itens ao carrinho'),
+        ),
+      );
+      return;
+    }
+
     final resultado = await showDialog<String>(
       context: context,
       builder: (context) {

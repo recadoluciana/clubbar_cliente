@@ -113,6 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
+      MainNavigationController.irParaHome();
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
