@@ -17,25 +17,32 @@ class ApiService {
   static const String baseUrl = 'https://api.clubbar.com.br';
 
   String _mensagemErroAmigavel(Object e) {
-    final texto = e.toString().toLowerCase();
+    final texto = e.toString();
 
-    if (texto.contains('socketexception') ||
-        texto.contains('failed host lookup') ||
-        texto.contains('connection refused')) {
+    final textoLower = texto.toLowerCase();
+
+    if (textoLower.contains('socketexception') ||
+        textoLower.contains('failed host lookup') ||
+        textoLower.contains('connection refused')) {
       return 'Sem conexão com a internet ou servidor indisponível.';
     }
 
-    if (texto.contains('timeout')) {
+    if (textoLower.contains('timeout')) {
       return 'O servidor demorou para responder. Tente novamente.';
     }
 
-    if (texto.contains('502') ||
-        texto.contains('503') ||
-        texto.contains('500')) {
+    if (textoLower.contains('502') ||
+        textoLower.contains('503') ||
+        textoLower.contains('500')) {
       return 'Sistema em atualização. Tente novamente em instantes.';
     }
 
-    return 'Não foi possível concluir a operação. Tente novamente.';
+    // Preserva a mensagem amigável enviada pela API
+    if (texto.startsWith('Exception: ')) {
+      return texto.replaceFirst('Exception: ', '');
+    }
+
+    return texto;
   }
 
   String _extrairMensagemHttp(http.Response response) {
@@ -490,7 +497,7 @@ class ApiService {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/clientes/me/senha'),
+        Uri.parse('$baseUrl/clientes/me/alterar_senha'),
         headers: await _headersAutenticado(),
         body: jsonEncode({'senha_atual': senhaAtual, 'nova_senha': novaSenha}),
       );
