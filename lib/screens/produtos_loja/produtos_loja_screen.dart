@@ -176,7 +176,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Observação - ${produto.nmproduto}'),
+          title: Text(produto.nmproduto),
           content: TextField(
             controller: controller,
             maxLines: 3,
@@ -189,10 +189,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             TextButton(
               onPressed: () => Navigator.pop(context, null),
               child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, ''),
-              child: const Text('Sem observação'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
