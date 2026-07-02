@@ -6,6 +6,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import 'politica_compra_screen.dart';
+import 'asaas_checkout_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -83,10 +84,25 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (kIsWeb) {
         await launchUrl(Uri.parse(checkoutUrl), webOnlyWindowName: '_self');
       } else {
-        await launchUrl(
-          Uri.parse(checkoutUrl),
-          mode: LaunchMode.externalApplication,
+        final resultado = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => AsaasCheckoutScreen(url: checkoutUrl.toString()),
+          ),
         );
+
+        if (resultado == true) {
+          // depois vamos atualizar carrinho/carteira aqui
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Pagamento em processamento. Aguarde a confirmação.',
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
