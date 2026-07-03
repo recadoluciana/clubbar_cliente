@@ -34,16 +34,42 @@ class _EsqueceuSenhaScreenState extends State<EsqueceuSenhaScreen> {
       carregando = true;
     });
 
+    final email = _emailCtrl.text.trim();
+
     try {
-      await apiService.esqueceuSenha(email: _emailCtrl.text.trim());
+      await apiService.esqueceuSenha(email: email);
+
+      if (!mounted) return;
+
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.mark_email_read, color: Colors.green),
+              SizedBox(width: 8),
+              Text('E-mail enviado'),
+            ],
+          ),
+          content: const Text(
+            'Enviamos um código para recuperação da sua senha.\n\n'
+            'Verifique sua caixa de entrada e também a pasta Spam ou Lixo Eletrônico.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
 
       if (!mounted) return;
 
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => RedefinirSenhaScreen(email: _emailCtrl.text.trim()),
-        ),
+        MaterialPageRoute(builder: (_) => RedefinirSenhaScreen(email: email)),
       );
     } catch (e) {
       if (!mounted) return;
