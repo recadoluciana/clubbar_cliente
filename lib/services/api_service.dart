@@ -452,7 +452,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/clientes/esqueci-senha'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'emailcliente': email}),
+        body: jsonEncode({'email': email}),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
