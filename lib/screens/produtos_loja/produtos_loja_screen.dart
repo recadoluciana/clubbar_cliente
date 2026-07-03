@@ -293,7 +293,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         elevation: 2,
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
-          onTap: () => abrirDialogObservacao(produto),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
