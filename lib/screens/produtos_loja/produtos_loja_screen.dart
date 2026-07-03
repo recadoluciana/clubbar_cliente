@@ -45,11 +45,21 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final link =
         'https://app.clubbar.com.br/?loja_id=${widget.loja.id}&produto_id=${produto.produtoId}';
 
-    final texto =
-        'Olha esse produto no Clubbar:\n\n'
-        '${produto.nmproduto}\n'
-        '${ValueFormatters.moeda(produto.vrprecofinal)}\n\n'
-        '$link';
+    final temDesconto = produto.descontoativo;
+
+    final texto = temDesconto
+        ? '🔥 PROMOÇÃO NO CLUBBAR\n\n'
+              '🍽️ ${produto.nmproduto}\n\n'
+              '💲 De ${ValueFormatters.moeda(produto.vrprecoprod)}\n'
+              '✅ Por ${ValueFormatters.moeda(produto.vrprecofinal)}\n\n'
+              '📍 ${widget.loja.nome}\n\n'
+              'Peça agora pelo Clubbar 👇\n'
+              '$link'
+        : '🍽️ ${produto.nmproduto}\n\n'
+              '💰 ${ValueFormatters.moeda(produto.vrprecoprod)}\n\n'
+              '📍 ${widget.loja.nome}\n\n'
+              'Peça agora pelo Clubbar 👇\n'
+              '$link';
 
     await Share.share(texto);
   }
