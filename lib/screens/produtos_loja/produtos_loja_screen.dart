@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:share_plus/share_plus.dart';
 import '../../models/categoria.dart';
 import '../../models/loja.dart';
 import '../../models/produto.dart';
@@ -39,6 +39,19 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   void initState() {
     super.initState();
     carregarDados();
+  }
+
+  Future<void> compartilharProduto(Produto produto) async {
+    final link =
+        'https://app.clubbar.com.br/?loja_id=${widget.loja.id}&produto_id=${produto.produtoId}';
+
+    final texto =
+        'Olha esse produto no Clubbar:\n\n'
+        '${produto.nmproduto}\n'
+        '${ValueFormatters.moeda(produto.vrprecofinal)}\n\n'
+        '$link';
+
+    await Share.share(texto);
   }
 
   Future<void> carregarDados() async {
@@ -361,10 +374,19 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                IconButton(
-                  onPressed: () => abrirDialogObservacao(produto),
-                  icon: const Icon(Icons.add_shopping_cart_rounded),
-                  tooltip: 'Adicionar ao carrinho',
+                Column(
+                  children: [
+                    IconButton(
+                      onPressed: () => compartilharProduto(produto),
+                      icon: const Icon(Icons.share_outlined),
+                      tooltip: 'Compartilhar produto',
+                    ),
+                    IconButton(
+                      onPressed: () => abrirDialogObservacao(produto),
+                      icon: const Icon(Icons.add_shopping_cart_rounded),
+                      tooltip: 'Adicionar ao carrinho',
+                    ),
+                  ],
                 ),
               ],
             ),
