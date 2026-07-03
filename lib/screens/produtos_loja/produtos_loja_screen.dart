@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+
 import '../../models/categoria.dart';
 import '../../models/loja.dart';
 import '../../models/produto.dart';
@@ -41,27 +47,206 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     carregarDados();
   }
 
+  Future<File?> gerarArteCompartilhamento(Produto produto) async {
+    try {
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+      const size = Size(1080, 1350);
+
+      final paint = Paint();
+
+      paint.color = Colors.white;
+      canvas.drawRect(Offset.zero & size, paint);
+
+      paint.color = Colors.black;
+      canvas.drawRect(const Rect.fromLTWH(0, 0, 1080, 180), paint);
+
+      final tituloClubbar = TextPainter(
+        text: const TextSpan(
+          text: 'CLUBBAR',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 56,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 1000);
+
+      tituloClubbar.paint(canvas, Offset((1080 - tituloClubbar.width) / 2, 60));
+
+      final fotoUrl = produto.urlfotoproduto ?? '';
+
+      if (fotoUrl.isNotEmpty) {
+        final response = await http.get(Uri.parse(fotoUrl));
+
+        if (response.statusCode == 200) {
+          final codec = await ui.instantiateImageCodec(
+            response.bodyBytes,
+            targetWidth: 1080,
+            targetHeight: 650,
+          );
+
+          final frame = await codec.getNextFrame();
+
+          canvas.drawImageRect(
+            frame.image,
+            Rect.fromLTWH(
+              0,
+              0,
+              frame.image.width.toDouble(),
+              frame.image.height.toDouble(),
+            ),
+            const Rect.fromLTWH(0, 180, 1080, 650),
+            Paint(),
+          );
+        }
+      }
+
+      if (produto.descontoativo) {
+        paint.color = Colors.red;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(
+            const Rect.fromLTWH(60, 860, 310, 70),
+            const Radius.circular(18),
+          ),
+          paint,
+        );
+
+        final desconto = TextPainter(
+          text: const TextSpan(
+            text: 'PROMOÇÃO',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 34,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: 300);
+
+        desconto.paint(canvas, const Offset(92, 876));
+      }
+
+      final nomeProduto = TextPainter(
+        text: TextSpan(
+          text: produto.nmproduto,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 58,
+            fontWeight: FontWeight.w900,
+            height: 1.1,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        maxLines: 2,
+        ellipsis: '...',
+      )..layout(maxWidth: 960);
+
+      nomeProduto.paint(canvas, const Offset(60, 960));
+
+      final preco = produto.descontoativo
+          ? ValueFormatters.moeda(produto.vrprecofinal)
+          : ValueFormatters.moeda(produto.vrprecoprod);
+
+      final precoTexto = TextPainter(
+        text: TextSpan(
+          text: preco,
+          style: const TextStyle(
+            color: Colors.green,
+            fontSize: 64,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 960);
+
+      precoTexto.paint(canvas, const Offset(60, 1100));
+
+      final lojaTexto = TextPainter(
+        text: TextSpan(
+          text: '📍 ${widget.loja.nome}',
+          style: const TextStyle(
+            color: Colors.black87,
+            fontSize: 34,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+        ellipsis: '...',
+      )..layout(maxWidth: 960);
+
+      lojaTexto.paint(canvas, const Offset(60, 1200));
+
+      paint.color = Colors.amber;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTWH(60, 1265, 960, 55),
+          const Radius.circular(16),
+        ),
+        paint,
+      );
+
+      final chamada = TextPainter(
+        text: const TextSpan(
+          text: 'Peça agora pelo Clubbar',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: 900);
+
+      chamada.paint(canvas, Offset((1080 - chamada.width) / 2, 1278));
+
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(
+        size.width.toInt(),
+        size.height.toInt(),
+      );
+
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+
+      if (byteData == null) return null;
+
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/clubbar_produto_${produto.produtoId}.png');
+
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+
+      return file;
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> compartilharProduto(Produto produto) async {
     final link =
         'https://app.clubbar.com.br/?loja_id=${widget.loja.id}&produto_id=${produto.produtoId}';
 
-    final temDesconto = produto.descontoativo;
-
-    final texto = temDesconto
+    final texto = produto.descontoativo
         ? '🔥 PROMOÇÃO NO CLUBBAR\n\n'
               '🍽️ ${produto.nmproduto}\n\n'
               '💲 De ${ValueFormatters.moeda(produto.vrprecoprod)}\n'
               '✅ Por ${ValueFormatters.moeda(produto.vrprecofinal)}\n\n'
               '📍 ${widget.loja.nome}\n\n'
-              'Peça agora pelo Clubbar 👇\n'
-              '$link'
+              'Peça agora pelo Clubbar 👇\n$link'
         : '🍽️ ${produto.nmproduto}\n\n'
               '💰 ${ValueFormatters.moeda(produto.vrprecoprod)}\n\n'
               '📍 ${widget.loja.nome}\n\n'
-              'Peça agora pelo Clubbar 👇\n'
-              '$link';
+              'Peça agora pelo Clubbar 👇\n$link';
 
-    await Share.share(texto);
+    final arte = await gerarArteCompartilhamento(produto);
+
+    if (arte != null) {
+      await Share.shareXFiles([XFile(arte.path)], text: texto);
+    } else {
+      await Share.share(texto);
+    }
   }
 
   Future<void> carregarDados() async {
