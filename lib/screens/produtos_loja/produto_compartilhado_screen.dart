@@ -24,6 +24,7 @@ class _ProdutoCompartilhadoScreenState
 
   bool carregando = true;
   bool adicionando = false;
+  bool produtoAdicionado = false;
   String? erro;
 
   Map<String, dynamic>? produto;
@@ -65,6 +66,7 @@ class _ProdutoCompartilhadoScreenState
       final prod = await apiService.buscarProdutoCompartilhado(
         produtoId: widget.produtoId,
       );
+
       final lojaDados = await apiService.buscarDadosLoja(prod['loja_id']);
 
       if (!mounted) return;
@@ -113,9 +115,9 @@ class _ProdutoCompartilhadoScreenState
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Produto adicionado ao carrinho.')),
-      );
+      setState(() {
+        produtoAdicionado = true;
+      });
     } catch (e) {
       if (!mounted) return;
 
@@ -127,6 +129,107 @@ class _ProdutoCompartilhadoScreenState
         setState(() => adicionando = false);
       }
     }
+  }
+
+  Widget _botoesAposAdicionar() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.green.shade300),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Produto adicionado ao carrinho.',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+        SizedBox(
+          height: 54,
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.shopping_cart_checkout_rounded),
+            label: const Text(
+              'Finalizar compra',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.amber,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 52,
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.storefront_outlined),
+            label: const Text(
+              'Continuar comprando',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.black,
+              side: const BorderSide(color: Colors.black26),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _botaoAdicionar() {
+    return SizedBox(
+      height: 56,
+      child: ElevatedButton.icon(
+        onPressed: adicionando ? null : adicionarAoCarrinho,
+        icon: adicionando
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.black,
+                ),
+              )
+            : const Icon(Icons.add_shopping_cart_rounded),
+        label: const Text(
+          'Adicionar ao carrinho',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.amber,
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -180,9 +283,7 @@ class _ProdutoCompartilhadoScreenState
                       },
                     ),
                   ),
-
                 const SizedBox(height: 20),
-
                 Text(
                   p?['nmproduto']?.toString() ?? '',
                   style: const TextStyle(
@@ -190,9 +291,7 @@ class _ProdutoCompartilhadoScreenState
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 if (loja != null)
                   Text(
                     loja!.nome,
@@ -202,9 +301,7 @@ class _ProdutoCompartilhadoScreenState
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
                 const SizedBox(height: 16),
-
                 if ((p?['dsproduto'] ?? '').toString().isNotEmpty)
                   Text(
                     p?['dsproduto']?.toString() ?? '',
@@ -214,9 +311,7 @@ class _ProdutoCompartilhadoScreenState
                       height: 1.4,
                     ),
                   ),
-
                 const SizedBox(height: 24),
-
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
@@ -245,40 +340,8 @@ class _ProdutoCompartilhadoScreenState
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 26),
-
-                SizedBox(
-                  height: 56,
-                  child: ElevatedButton.icon(
-                    onPressed: adicionando ? null : adicionarAoCarrinho,
-                    icon: adicionando
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.black,
-                            ),
-                          )
-                        : const Icon(Icons.add_shopping_cart_rounded),
-                    label: const Text(
-                      'Adicionar ao carrinho',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                  ),
-                ),
-
+                produtoAdicionado ? _botoesAposAdicionar() : _botaoAdicionar(),
                 const SizedBox(height: 80),
               ],
             ),

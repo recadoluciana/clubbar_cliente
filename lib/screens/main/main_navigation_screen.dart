@@ -184,8 +184,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!mounted) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      MainNavigationController.abrirTela(
-        ProdutoCompartilhadoScreen(produtoId: produtoId),
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProdutoCompartilhadoScreen(produtoId: produtoId),
+        ),
       );
 
       limparUrlWeb();
