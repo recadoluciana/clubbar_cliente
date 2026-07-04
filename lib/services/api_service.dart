@@ -1007,4 +1007,18 @@ class ApiService {
 
     return jsonDecode(response.body);
   }
+
+  Future<List<dynamic>> buscarProdutoCompartilhado({
+    required int produtoId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/produtos/buscar_produto/$produtoId'),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+
+    return jsonDecode(response.body) as List<dynamic>;
+  }
 }

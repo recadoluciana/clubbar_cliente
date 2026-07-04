@@ -169,7 +169,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           text: '📍 ${widget.loja.nome}',
           style: const TextStyle(
             color: Colors.black87,
-            fontSize: 34,
+            fontSize: 38,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -188,20 +188,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         ),
         paint,
       );
-
-      final chamada = TextPainter(
-        text: const TextSpan(
-          text: 'Peça agora pelo Clubbar',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 28,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout(maxWidth: 900);
-
-      chamada.paint(canvas, Offset((1080 - chamada.width) / 2, 1278));
 
       final picture = recorder.endRecording();
       final image = await picture.toImage(
@@ -230,7 +216,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
     final texto = produto.descontoativo
         ? '🔥 PROMOÇÃO NO CLUBBAR\n\n'
-              '🍽️ ${produto.nmproduto}\n\n'
+              ' ${produto.nmproduto}\n\n'
               '💲 De ${ValueFormatters.moeda(produto.vrprecoprod)}\n'
               '✅ Por ${ValueFormatters.moeda(produto.vrprecofinal)}\n\n'
               '📍 ${widget.loja.nome}\n\n'

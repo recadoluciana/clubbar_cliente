@@ -12,6 +12,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
+import '../produtos_loja/produto_compartilhado_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -41,6 +42,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       carregarBadgeCarteira();
     });
     _verificarRetornoPagamentoWeb();
+    _verificarLinkProdutoCompartilhado();
   }
 
   Widget _buildPage() {
@@ -165,6 +167,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         totalItensCarteira = 0;
       });
     }
+  }
+
+  Future<void> _verificarLinkProdutoCompartilhado() async {
+    if (!kIsWeb) return;
+
+    final produtoIdTexto = Uri.base.queryParameters['produto_id'];
+
+    if (produtoIdTexto == null) return;
+
+    final produtoId = int.tryParse(produtoIdTexto);
+
+    if (produtoId == null) return;
+
+    if (!mounted) return;
+
+    MainNavigationController.abrirTela(
+      ProdutoCompartilhadoScreen(produtoId: produtoId),
+    );
   }
 
   Widget _iconeCarrinhoComBadge({required bool selecionado}) {
