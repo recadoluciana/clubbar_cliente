@@ -64,6 +64,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Future<void> abrirAsaas() async {
+    if (totalPagar < 5.00) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('O valor mínimo para pagamento é de R\$ 5,00.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     setState(() => carregandoPagamento = true);
 
     try {
@@ -268,7 +277,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                     )
                   : const Icon(Icons.account_balance_wallet_outlined, size: 24),
               label: const Text(
-                'Finalizar pagamento',
+                'Escolher tipo de pagamento',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
