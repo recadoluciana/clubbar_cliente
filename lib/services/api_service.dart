@@ -1020,12 +1020,6 @@ class ApiService {
       throw Exception(_extrairMensagemHttp(response));
     }
 
-    final decoded = jsonDecode(response.body);
-
-    if (decoded is Map<String, dynamic>) {
-      return decoded;
-    }
-
-    throw Exception('Resposta inválida da API.');
+    return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 }
