@@ -1011,14 +1011,40 @@ class ApiService {
   Future<List<dynamic>> buscarProdutoCompartilhado({
     required int produtoId,
   }) async {
+    final url = Uri.parse('$baseUrl/produtos/buscar_produto/$produtoId');
+
+    print('URL PRODUTO COMPARTILHADO: $url');
+
     final response = await http.get(
-      Uri.parse('$baseUrl/produtos/buscar_produto/$produtoId'),
+      url,
+      headers: {'Accept': 'application/json'},
     );
+
+    print('STATUS PRODUTO: ${response.statusCode}');
+    print('BODY PRODUTO: ${response.body}');
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
     }
 
-    return jsonDecode(response.body) as List<dynamic>;
+    final body = response.body.trim();
+
+    if (body.startsWith('<!DOCTYPE') || body.startsWith('<html')) {
+      throw Exception(
+        'A rota retornou HTML em vez de JSON. Verifique o baseUrl da API.',
+      );
+    }
+
+    final decoded = jsonDecode(body);
+
+    if (decoded is List) {
+      return decoded;
+    }
+
+    if (decoded is Map<String, dynamic>) {
+      return [decoded];
+    }
+
+    throw Exception('Resposta inválida da API.');
   }
 }
