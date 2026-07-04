@@ -1008,20 +1008,17 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  Future<List<dynamic>> buscarProdutoCompartilhado({
+  Future<Map<String, dynamic>> buscarProdutoCompartilhado({
     required int produtoId,
   }) async {
     final url = Uri.parse('$baseUrl/produtos/buscar_produto/$produtoId');
 
-    print('URL PRODUTO COMPARTILHADO: $url');
+    debugPrint('URL PRODUTO = $url');
 
     final response = await http.get(
       url,
       headers: {'Accept': 'application/json'},
     );
-
-    print('STATUS PRODUTO: ${response.statusCode}');
-    print('BODY PRODUTO: ${response.body}');
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
