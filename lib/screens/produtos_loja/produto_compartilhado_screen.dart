@@ -62,15 +62,9 @@ class _ProdutoCompartilhadoScreenState
     });
 
     try {
-      final lista = await apiService.buscarProdutoCompartilhado(
+      final prod = await apiService.buscarProdutoCompartilhado(
         produtoId: widget.produtoId,
       );
-
-      if (lista.isEmpty) {
-        throw Exception('Produto não encontrado.');
-      }
-
-      final prod = lista.first;
       final lojaDados = await apiService.buscarDadosLoja(prod['loja_id']);
 
       if (!mounted) return;
