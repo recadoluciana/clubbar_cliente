@@ -16,6 +16,7 @@ import '../../utils/value_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
+import 'produto_compartilhado_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -474,6 +475,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         elevation: 2,
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
+              ),
+            );
+          },
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
