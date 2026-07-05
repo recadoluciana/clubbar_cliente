@@ -14,6 +14,7 @@ import '../../services/main_navigation_controller.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../../utils/url_cleaner.dart';
+import '../../utils/app_snackbar.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -272,9 +273,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           mensagem = 'Faça login para acessar seu perfil';
         }
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(mensagem)));
+        AppSnackBar.sucesso(context, mensagem);
 
         final resultado = await Navigator.push(
           context,

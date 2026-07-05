@@ -270,7 +270,7 @@ class _ProdutoCompartilhadoScreenState
                       height: 260,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) {
+                      errorBuilder: (_, _, _) {
                         return Container(
                           height: 220,
                           width: double.infinity,

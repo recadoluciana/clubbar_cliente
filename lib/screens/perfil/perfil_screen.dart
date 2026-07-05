@@ -6,6 +6,7 @@ import '../esqueceu_senha/alterar_senha_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../pedidos/meus_pedidos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../utils/app_snackbar.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -45,9 +46,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logout realizado com sucesso')),
-    );
+    AppSnackBar.erro(context, 'Logout realizado com sucesso.');
 
     Navigator.pushAndRemoveUntil(
       context,

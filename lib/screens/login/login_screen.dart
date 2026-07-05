@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../cadastro/cadastro_screen.dart';
@@ -7,6 +8,7 @@ import '../esqueceu_senha/esqueceu_senha_screen.dart';
 import '../main/main_navigation_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../utils/app_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,14 +26,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool carregando = false;
   bool obscureSenha = true;
-  String? erro;
   bool corujaOlhoFechado = false;
+
+  Timer? _timerCoruja;
 
   @override
   void initState() {
     super.initState();
 
-    Timer.periodic(const Duration(milliseconds: 1800), (timer) {
+    _timerCoruja = Timer.periodic(const Duration(milliseconds: 1800), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -51,26 +54,36 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _timerCoruja?.cancel();
+    emailController.dispose();
+    senhaController.dispose();
+    super.dispose();
+  }
+
   String traduzirErro(String erro) {
     final msg = erro.toLowerCase();
 
     if (msg.contains('invalid credentials')) {
-      return "E-mail ou senha inválidos";
+      return 'E-mail ou senha inválidos.Verifique e tente novamente.';
     }
 
     if (msg.contains('senha')) {
-      return "Senha inválida. Verifique e tente novamente";
+      return 'Senha inválida. Verifique e tente novamente.';
     }
 
-    if (msg.contains('email')) {
-      return "E-mail inválido";
+    if (msg.contains('email') || msg.contains('e-mail')) {
+      return 'E-mail inválido. Verifique e tente novamente.';
     }
 
-    if (msg.contains('connection') || msg.contains('socket')) {
-      return "Erro de conexão com o servidor";
+    if (msg.contains('connection') ||
+        msg.contains('socket') ||
+        msg.contains('failed host lookup')) {
+      return 'Erro de conexão com o servidor.';
     }
 
-    return "Não foi possível fazer login. Tente novamente";
+    return 'Não foi possível fazer login. Tente novamente.';
   }
 
   Future<void> fazerLogin() async {
@@ -78,28 +91,27 @@ class _LoginScreenState extends State<LoginScreen> {
     final senha = senhaController.text;
 
     if (email.isEmpty) {
-      setState(() => erro = "Informe o e-mail");
+      AppSnackBar.erro(context, 'Informe o e-mail.');
       return;
     }
 
     if (!email.contains('@') || !email.contains('.')) {
-      setState(() => erro = "Informe um e-mail válido");
+      AppSnackBar.erro(context, 'Informe um e-mail válido.');
       return;
     }
 
     if (senha.isEmpty) {
-      setState(() => erro = "Informe a senha");
+      AppSnackBar.erro(context, 'Informe a senha.');
       return;
     }
 
     if (senha.length < 6) {
-      setState(() => erro = "A senha deve ter pelo menos 6 caracteres");
+      AppSnackBar.erro(context, 'A senha deve ter pelo menos 6 caracteres.');
       return;
     }
 
     setState(() {
       carregando = true;
-      erro = null;
     });
 
     try {
@@ -113,6 +125,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
+      AppSnackBar.sucesso(context, 'Login realizado com sucesso!');
+
       MainNavigationController.irParaHome();
 
       Navigator.pushAndRemoveUntil(
@@ -121,23 +135,15 @@ class _LoginScreenState extends State<LoginScreen> {
         (route) => false,
       );
     } catch (e) {
-      setState(() {
-        erro = traduzirErro(e.toString());
-      });
+      if (!mounted) return;
+
+      AppSnackBar.erro(context, traduzirErro(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
           carregando = false;
         });
       }
-    }
-  }
-
-  void limparErroAoDigitar() {
-    if (erro != null) {
-      setState(() {
-        erro = null;
-      });
     }
   }
 
@@ -230,7 +236,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextField(
                               controller: emailController,
                               keyboardType: TextInputType.emailAddress,
-                              onChanged: (_) => limparErroAoDigitar(),
                               decoration: campoDecoracao(
                                 label: 'E-mail',
                                 icon: Icons.email_outlined,
@@ -240,7 +245,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextField(
                               controller: senhaController,
                               obscureText: obscureSenha,
-                              onChanged: (_) => limparErroAoDigitar(),
                               decoration: campoDecoracao(
                                 label: 'Senha',
                                 icon: Icons.lock_outline,
@@ -259,50 +263,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               onSubmitted: (_) => fazerLogin(),
                             ),
-                            const SizedBox(height: 14),
-                            AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 220),
-                              child: erro == null
-                                  ? const SizedBox.shrink()
-                                  : Container(
-                                      key: ValueKey(erro),
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFFFFF4F4),
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: const Color(0xFFFFD0D0),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Icon(
-                                            Icons.error_outline,
-                                            color: Colors.red,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Text(
-                                              erro!,
-                                              style: const TextStyle(
-                                                color: Color(0xFFB3261E),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                            ),
-                            if (erro != null) const SizedBox(height: 18),
+                            const SizedBox(height: 18),
                             SizedBox(
                               width: double.infinity,
                               height: 54,
@@ -352,12 +313,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
 
                                     if (ok == true && mounted) {
-                                      ScaffoldMessenger.of(
+                                      AppSnackBar.aviso(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Agora faça seu login'),
-                                        ),
+                                        'Agora faça login para continuar.',
                                       );
                                     }
                                   },
