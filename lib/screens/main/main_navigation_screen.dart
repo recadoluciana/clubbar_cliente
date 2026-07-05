@@ -15,6 +15,7 @@ import '../pagamento/pagamento_sucesso_screen.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../../utils/url_cleaner.dart';
 import '../../utils/app_snackbar.dart';
+import '../../services/deep_link_service.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -40,11 +41,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     carregarBadgeCarrinho();
     carregarBadgeCarteira();
 
-    CarteiraBadgeNotifier.refresh.addListener(() {
-      carregarBadgeCarteira();
-    });
+    CarteiraBadgeNotifier.refresh.addListener(carregarBadgeCarteira);
     _verificarRetornoPagamentoWeb();
     _verificarLinkProdutoCompartilhado();
+    _iniciarDeepLinksAndroid();
   }
 
   Widget _buildPage() {
@@ -73,6 +73,45 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Future<bool> _estaLogado() async {
     final token = await authStorage.obterToken();
     return token != null && token.isNotEmpty;
+  }
+
+  Future<void> _iniciarDeepLinksAndroid() async {
+    if (kIsWeb) return;
+
+    final initialUri = await DeepLinkService.instance.getInitialLink();
+
+    if (initialUri != null) {
+      _abrirLinkCompartilhado(initialUri, limparUrl: false);
+    }
+
+    DeepLinkService.instance.start((uri) {
+      _abrirLinkCompartilhado(uri, limparUrl: false);
+    });
+  }
+
+  void _abrirLinkCompartilhado(Uri uri, {required bool limparUrl}) {
+    final produtoIdTexto = uri.queryParameters['produto_id'];
+
+    if (produtoIdTexto == null) return;
+
+    final produtoId = int.tryParse(produtoIdTexto);
+
+    if (produtoId == null) return;
+
+    if (!mounted) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ProdutoCompartilhadoScreen(produtoId: produtoId),
+        ),
+      );
+
+      if (limparUrl) {
+        limparUrlWeb();
+      }
+    });
   }
 
   Future<void> _verificarRetornoPagamentoWeb() async {
@@ -174,26 +213,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Future<void> _verificarLinkProdutoCompartilhado() async {
     if (!kIsWeb) return;
 
-    final produtoIdTexto = Uri.base.queryParameters['produto_id'];
+    _abrirLinkCompartilhado(Uri.base, limparUrl: true);
+  }
 
-    if (produtoIdTexto == null) return;
-
-    final produtoId = int.tryParse(produtoIdTexto);
-
-    if (produtoId == null) return;
-
-    if (!mounted) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProdutoCompartilhadoScreen(produtoId: produtoId),
-        ),
-      );
-
-      limparUrlWeb();
-    });
+  @override
+  void dispose() {
+    CarteiraBadgeNotifier.refresh.removeListener(carregarBadgeCarteira);
+    DeepLinkService.instance.dispose();
+    super.dispose();
   }
 
   Widget _iconeCarrinhoComBadge({required bool selecionado}) {
