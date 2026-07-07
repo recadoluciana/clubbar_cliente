@@ -325,7 +325,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           Text(
             '${(percentualVendido * 100).round()}%',
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 9,
               color: Colors.grey.shade700,
               fontWeight: FontWeight.w600,
             ),
@@ -384,8 +384,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final corBadge = esgotado ? Colors.red : Colors.green;
     final textoBadge = esgotado ? 'Esgotado' : 'Disponível';
 
-    print("total vendido: $vendidos");
-
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
@@ -431,26 +429,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: corBadge.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      textoBadge,
-                      style: TextStyle(
-                        color: corBadge,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
                 ],
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: corBadge.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  textoBadge,
+                  style: TextStyle(
+                    color: corBadge,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
               ),
               const SizedBox(height: 14),
               linhaInfo(
