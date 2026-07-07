@@ -1022,4 +1022,22 @@ class ApiService {
 
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
+
+  Future<Map<String, dynamic>> buscarQuantidadeVendidaLote({
+    required int loteId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/eventos/lotes/$loteId/quantidade-vendida'),
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
 }

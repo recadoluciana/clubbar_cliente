@@ -14,6 +14,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../utils/cpf_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
+import '../../utils/value_formatters.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -34,6 +35,7 @@ class DetalheEventoScreen extends StatefulWidget {
 class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
+  final Map<int, Map<String, dynamic>> _statusLotes = {};
 
   bool carregando = true;
   bool processandoCompra = false;
@@ -46,6 +48,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   void initState() {
     super.initState();
     carregarDados();
+  }
+
+  Future<void> carregarStatusLotes() async {
+    for (final lote in lotes) {
+      try {
+        final dados = await apiService.buscarQuantidadeVendidaLote(
+          loteId: lote.loteId,
+        );
+
+        _statusLotes[lote.loteId] = dados;
+      } catch (_) {}
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> compartilharEvento() async {
@@ -73,10 +91,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     await Share.share(texto);
   }
 
+  int _toInt(dynamic valor) {
+    if (valor == null) return 0;
+    if (valor is int) return valor;
+    if (valor is double) return valor.toInt();
+    return int.tryParse(valor.toString()) ?? 0;
+  }
+
   Future<void> carregarDados() async {
     setState(() {
       carregando = true;
       erro = null;
+      _statusLotes.clear();
     });
 
     try {
@@ -93,6 +119,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         lotes = listaLotes;
         carregando = false;
       });
+      await carregarStatusLotes();
     } catch (e) {
       setState(() {
         erro = e.toString().replaceFirst('Exception: ', '');
@@ -277,16 +304,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget miniGraficoLote({required int total, required int vendidos}) {
     final vendidosAjustado = vendidos.clamp(0, total);
-    final percentualVendido = total <= 0 ? 0.0 : vendidosAjustado / total;
+    final disponiveis = (total - vendidosAjustado).clamp(0, total);
 
-    Color cor;
-    if (percentualVendido >= 0.9) {
-      cor = Colors.red;
-    } else if (percentualVendido >= 0.6) {
-      cor = Colors.orange;
-    } else {
-      cor = Colors.green;
-    }
+    final percentualVendido = total <= 0 ? 0.0 : vendidosAjustado / total;
 
     return SizedBox(
       width: 58,
@@ -297,12 +317,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           CircularProgressIndicator(
             value: percentualVendido,
             strokeWidth: 7,
-            backgroundColor: Colors.grey.withOpacity(0.18),
-            valueColor: AlwaysStoppedAnimation<Color>(cor),
+            backgroundColor: Colors.green.withOpacity(0.25), // disponível
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              Colors.red, // vendido
+            ),
           ),
           Text(
-            '$vendidosAjustado',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+            '${(percentualVendido * 100).round()}%',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -347,11 +373,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   Widget cardLote(EventoLote lote) {
-    final disponivel = lote.qtDisponivel < 0 ? 0 : lote.qtDisponivel;
+    final status = _statusLotes[lote.loteId];
+
+    final vendidos = _toInt(status?['qt_vendida']);
+    final total = _toInt(status?['qt_total'] ?? lote.qtTotal);
+    final disponivel = _toInt(status?['qt_disponivel'] ?? lote.qtDisponivel);
+
     final esgotado = disponivel <= 0;
 
     final corBadge = esgotado ? Colors.red : Colors.green;
     final textoBadge = esgotado ? 'Esgotado' : 'Disponível';
+
+    print("total vendido: $vendidos");
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -368,15 +401,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 children: [
                   Column(
                     children: [
-                      miniGraficoLote(
-                        total: lote.qtTotal,
-                        vendidos: lote.qtVendida,
-                      ),
+                      miniGraficoLote(total: total, vendidos: vendidos),
                       const SizedBox(height: 4),
                       Text(
-                        '${lote.qtVendida}/${lote.qtTotal}',
+                        'Taxa Ocupação',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 10,
                           color: Colors.grey.shade700,
                           fontWeight: FontWeight.w600,
                         ),
@@ -393,6 +423,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Text(
+                    ValueFormatters.moeda(lote.preco),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -412,14 +451,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'R\$ ${lote.preco.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
               ),
               const SizedBox(height: 14),
               linhaInfo(
@@ -567,40 +598,50 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 6),
+                          Text(
+                            ev.nomeLoja,
+                            style: const TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
                           Text(
                             ev.titulo,
                             style: const TextStyle(
-                              fontSize: 28,
+                              fontSize: 20,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                           const SizedBox(height: 16),
                           linhaInfo(
-                            icone: Icons.calendar_month_outlined,
+                            icone: Icons.calendar_today_outlined,
                             titulo: 'Data',
                             valor: formatarDataHora(ev.dataInicio),
                           ),
                           linhaInfo(
-                            icone: Icons.location_on_outlined,
+                            icone: Icons.storefront_outlined,
                             titulo: 'Local',
                             valor: ev.local,
                           ),
                           linhaInfo(
-                            icone: Icons.map_outlined,
+                            icone: Icons.home_outlined,
                             titulo: 'Endereço',
-                            valor: ev.bairro.trim().isEmpty
-                                ? ev.endereco
-                                : '${ev.bairro} - ${ev.endereco}',
+                            valor: ev.endereco,
                           ),
-                          if (ev.nomeCidade.trim().isNotEmpty)
-                            linhaInfo(
-                              icone: Icons.location_city_outlined,
-                              titulo: 'Cidade',
-                              valor: ev.sgEstado.trim().isEmpty
-                                  ? ev.nomeCidade
-                                  : '${ev.nomeCidade} - ${ev.sgEstado}',
-                            ),
+                          linhaInfo(
+                            icone: Icons.map_outlined,
+                            titulo: 'Bairro',
+                            valor: ev.bairro,
+                          ),
+                          linhaInfo(
+                            icone: Icons.location_city_outlined,
+                            titulo: 'Cidade',
+                            valor: ev.sgEstado.trim().isEmpty
+                                ? ev.nomeCidade
+                                : '${ev.nomeCidade} - ${ev.sgEstado}',
+                          ),
 
                           const SizedBox(height: 12),
                           Row(
