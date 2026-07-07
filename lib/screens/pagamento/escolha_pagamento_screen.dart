@@ -86,6 +86,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         clienteId: clienteId,
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
+        percentualTaxaIngresso: percentualTaxaIngresso,
       );
 
       final checkoutUrl = resposta['checkout_url'];

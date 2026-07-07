@@ -966,6 +966,7 @@ class ApiService {
     required int clienteId,
     required int organizacaoId,
     required int lojaId,
+    required double percentualTaxaIngresso,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pagar-asaas'),
@@ -975,6 +976,7 @@ class ApiService {
         'organizacao_id': organizacaoId,
         'loja_id': lojaId,
         'dsmetodopag': 'CREDIT_CARD',
+        'percentual_taxa_ingresso': percentualTaxaIngresso,
       }),
     );
 
