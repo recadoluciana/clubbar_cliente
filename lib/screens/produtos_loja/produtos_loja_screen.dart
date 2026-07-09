@@ -17,6 +17,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import 'produto_compartilhado_screen.dart';
+import '../agenda/agenda_eventos_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -665,13 +666,21 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       appBar: ClubbarAppBar(
         mostrarVoltar: true,
-        onVoltar:
-            widget.onVoltar ??
-            () {
-              MainNavigationController.abrirTela(
-                DetalheLojaScreen(loja: widget.loja),
-              );
-            },
+        onVoltar: () {
+          if (widget.onVoltar != null) {
+            widget.onVoltar!();
+            return;
+          }
+
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+            return;
+          }
+
+          MainNavigationController.abrirTela(
+            DetalheLojaScreen(loja: widget.loja),
+          );
+        },
       ),
 
       body: carregando
@@ -686,12 +695,44 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        widget.loja.nome,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.loja.nome,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      AgendaEventosScreen(loja: widget.loja),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.event, size: 18),
+                            label: const Text('Agenda'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
 
                       const SizedBox(height: 4),

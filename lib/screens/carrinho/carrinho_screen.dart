@@ -8,6 +8,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../produtos_loja/produtos_loja_screen.dart';
 
 class ItemCarrinhoAgrupado {
   final int produtoId;
@@ -268,6 +269,34 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         ),
       );
     }
+  }
+
+  Widget _botaoContinuarComprando() {
+    return SizedBox(
+      height: 54,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProdutosLojaScreen(loja: widget.loja),
+            ),
+          );
+        },
+        icon: const Icon(Icons.storefront_outlined),
+        label: const Text(
+          'Continuar comprando',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.black,
+          side: const BorderSide(color: Colors.black26),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _imagemProduto(String url) {
@@ -537,8 +566,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
   Widget _botaoPagar() {
     return SizedBox(
-      height: 54,
-      child: ElevatedButton.icon(
+      height: 42,
+      child: ElevatedButton(
         onPressed: () => abrirEscolhaPagamento(),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.amber,
@@ -547,9 +576,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
             borderRadius: BorderRadius.circular(18),
           ),
         ),
-        label: const Text(
-          'Pagar',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        child: Text(
+          'Continuar para pagamento',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -562,6 +591,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: const ClubbarAppBar(mostrarVoltar: true),
+
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -571,25 +601,81 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.loja.nome,
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ProdutosLojaScreen(loja: widget.loja),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.storefront_outlined, size: 18),
+                        label: const Text('Comprar mais'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.black,
+                          side: const BorderSide(color: Colors.black26),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   Text(
-                    'Carrinho - ${widget.loja.nome}',
+                    'Carrinho',
                     style: const TextStyle(
-                      fontSize: 26,
+                      fontSize: 15,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+
                   const SizedBox(height: 14),
                   if (vazio)
                     _estadoVazio()
                   else ...[
                     ...itensAgrupados.map(_itemCarrinho),
                     const SizedBox(height: 14),
-                    _resumoTotal(),
-                    const SizedBox(height: 18),
-                    _botaoPagar(),
-                    const SizedBox(height: 90),
                   ],
                 ],
+              ),
+            ),
+
+      bottomNavigationBar: carregando || erro != null || vazio
+          ? null
+          : SafeArea(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF6F6F6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [_botaoPagar()],
+                ),
               ),
             ),
     );

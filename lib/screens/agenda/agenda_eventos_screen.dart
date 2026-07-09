@@ -104,15 +104,16 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: () {
-            MainNavigationController.abrirTela(
-              DetalheEventoScreen(
-                eventoId: evento.id,
-                loja: widget.loja,
-                onVoltar: () {
-                  MainNavigationController.abrirTela(
-                    AgendaEventosScreen(loja: widget.loja),
-                  );
-                },
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetalheEventoScreen(
+                  eventoId: evento.id,
+                  loja: widget.loja,
+                  onVoltar: () {
+                    Navigator.pop(context);
+                  },
+                ),
               ),
             );
           },
@@ -248,7 +249,17 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: ClubbarAppBar(mostrarVoltar: true),
+      appBar: ClubbarAppBar(
+        mostrarVoltar: true,
+        onVoltar: () {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+            return;
+          }
+
+          MainNavigationController.fecharTelaInterna();
+        },
+      ),
       body: RefreshIndicator(
         onRefresh: carregarEventos,
         child: ListView(

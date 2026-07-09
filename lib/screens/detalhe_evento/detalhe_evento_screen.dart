@@ -597,12 +597,49 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            ev.nomeLoja,
-                            style: const TextStyle(
-                              fontSize: 25,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  ev.nomeLoja,
+                                  style: const TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ProdutosLojaScreen(
+                                        loja: widget.loja,
+                                        onVoltar: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.shopping_bag_outlined,
+                                  size: 17,
+                                ),
+                                label: const Text('Comprar produto'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.amber,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 9,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -650,40 +687,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  MainNavigationController.abrirTela(
-                                    ProdutosLojaScreen(
-                                      loja: widget.loja,
-                                      onVoltar: () {
-                                        MainNavigationController.abrirTela(
-                                          DetalheEventoScreen(
-                                            eventoId: widget.eventoId,
-                                            loja: widget.loja,
-                                            onVoltar: widget.onVoltar,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 18,
-                                ),
-                                label: const Text('Comprar produto'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.amber,
-                                  foregroundColor: Colors.black,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 10,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
                               ),

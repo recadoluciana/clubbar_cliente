@@ -179,30 +179,36 @@ class DetalheLojaScreen extends StatelessWidget {
 
                 const SizedBox(height: 15),
 
-                _menuCard(
-                  context: context,
-                  titulo: 'Agenda - Ingressos',
-                  icone: Icons.confirmation_number_rounded,
-                  cor: Colors.blue,
-                  onTap: () {
-                    MainNavigationController.abrirTela(
-                      AgendaEventosScreen(loja: loja),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                _menuCard(
-                  context: context,
-                  titulo: 'Cardápio - Produtos',
-                  icone: Icons.restaurant_menu_rounded,
-                  cor: Colors.amber,
-                  onTap: () {
-                    MainNavigationController.abrirTela(
-                      ProdutosLojaScreen(loja: loja),
-                    );
-                  },
+                Row(
+                  children: [
+                    Expanded(
+                      child: _menuCard(
+                        context: context,
+                        titulo: 'Agenda\nIngressos',
+                        icone: Icons.confirmation_number_rounded,
+                        cor: Colors.blue,
+                        onTap: () {
+                          MainNavigationController.abrirTela(
+                            AgendaEventosScreen(loja: loja),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: _menuCard(
+                        context: context,
+                        titulo: 'Cardápio\nProdutos',
+                        icone: Icons.restaurant_menu_rounded,
+                        cor: Colors.amber,
+                        onTap: () {
+                          MainNavigationController.abrirTela(
+                            ProdutosLojaScreen(loja: loja),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -226,30 +232,32 @@ class DetalheLojaScreen extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
+        child: Container(
+          height: 145,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Container(
-                width: 62,
-                height: 62,
+                width: 54,
+                height: 54,
                 decoration: BoxDecoration(
                   color: cor.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icone, color: cor, size: 32),
+                child: Icon(icone, color: cor, size: 30),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  titulo,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+
+              Text(
+                titulo,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  height: 1.15,
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded),
             ],
           ),
         ),
