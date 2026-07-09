@@ -11,6 +11,8 @@ import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../login/login_screen.dart';
 import '../../services/main_navigation_controller.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../config/app_config.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -179,6 +181,27 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Logout realizado com sucesso')),
     );
+  }
+
+  Future<void> compartilharLoja(Loja loja) async {
+    final cidadeEstado = loja.sgEstado.isNotEmpty
+        ? '${loja.cidade} - ${loja.sgEstado}'
+        : loja.cidade;
+
+    final texto =
+        '''
+🍻 ${loja.nome}
+
+📍 ${loja.endereco}
+${loja.bairro}
+$cidadeEstado
+
+🍺 Conheça esta casa pelo Clubbar
+
+${AppConfig.appWebUrl}
+''';
+
+    await Share.share(texto);
   }
 
   Future<void> abrirLogin() async {
@@ -433,6 +456,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               vrtaxaing: 0,
                               dsestiloloja: '',
                               nrtelloja: '',
+                              sgEstado: '',
                             ),
                           );
 
@@ -657,6 +681,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               .cidade
                                                               .isNotEmpty)
                                                             loja.cidade,
+                                                          if (loja
+                                                              .sgEstado
+                                                              .isNotEmpty)
+                                                            loja.sgEstado,
                                                         ].join(' - '),
                                                   style: TextStyle(
                                                     color: Colors.grey.shade700,
@@ -666,6 +694,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                             ],
                                           ),
                                         ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    IconButton.filledTonal(
+                                      onPressed: () => compartilharLoja(loja),
+                                      icon: const Icon(Icons.ios_share_rounded),
+                                      tooltip: 'Compartilhar',
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: Colors.amber.shade100,
+                                        foregroundColor: Colors.black,
                                       ),
                                     ),
                                   ],
