@@ -240,7 +240,7 @@ class DetalheLojaScreen extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(24),
         child: Container(
-          height: 145,
+          height: 125,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

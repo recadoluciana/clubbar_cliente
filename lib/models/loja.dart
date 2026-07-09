@@ -14,6 +14,7 @@ class Loja {
   final double vrtaxaing;
   final String dsestiloloja;
   final String nrtelloja;
+  final String sgEstado;
 
   Loja({
     required this.id,
@@ -29,6 +30,7 @@ class Loja {
     required this.vrtaxaing,
     required this.dsestiloloja,
     required this.nrtelloja,
+    required this.sgEstado,
   });
 
   static const String baseUrl =
@@ -57,6 +59,7 @@ class Loja {
       vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '0') ?? 0,
       dsestiloloja: (json['dsestiloloja'] ?? '').toString(),
       nrtelloja: (json['nrtelloja'] ?? '').toString(),
+      sgEstado: (json['sgestado'] ?? '').toString(),
     );
   }
 
