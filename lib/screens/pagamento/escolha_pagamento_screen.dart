@@ -67,7 +67,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     if (totalPagar < 5.00) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('O valor mínimo para pagamento é de R\$ 5,00.'),
+          content: Text(
+            'O pagamento mínimo é R\$5,00. Adicione mais itens ao carrinho para prosseguir com o pagamento.',
+          ),
           backgroundColor: Colors.red,
         ),
       );

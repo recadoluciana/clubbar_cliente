@@ -371,7 +371,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(produto.nmproduto),
+          backgroundColor: const Color(0xFFF6F6F6), // mesmo fundo da tela
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            produto.nmproduto,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: controller,
             maxLines: 3,
@@ -381,12 +389,21 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ),
           ),
           actions: [
-            TextButton(
+            ElevatedButton(
               onPressed: () => Navigator.pop(context, null),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFFF6F6F6),
+                foregroundColor: Colors.black,
+              ),
               child: const Text('Cancelar'),
             ),
+
             ElevatedButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.black,
+              ),
               child: const Text('Adicionar'),
             ),
           ],
