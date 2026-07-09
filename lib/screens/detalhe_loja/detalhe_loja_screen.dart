@@ -68,25 +68,31 @@ class DetalheLojaScreen extends StatelessWidget {
   }
 
   String _enderecoCompleto() {
-    final partes = <String>[];
+    String endereco = '';
 
     if (loja.endereco.trim().isNotEmpty) {
-      partes.add(loja.endereco.trim());
+      endereco += loja.endereco.trim();
     }
 
     if (loja.bairro.trim().isNotEmpty) {
-      partes.add(loja.bairro.trim());
+      if (endereco.isNotEmpty) endereco += ' - ';
+      endereco += loja.bairro.trim();
     }
 
-    if (loja.cidade.trim().isNotEmpty) {
-      partes.add(loja.cidade.trim());
+    final cidadeEstado = [
+      if (loja.cidade.trim().isNotEmpty) loja.cidade.trim(),
+      if (loja.sgEstado.trim().isNotEmpty) loja.sgEstado.trim(),
+    ].join(' - ');
+
+    if (cidadeEstado.isNotEmpty) {
+      endereco += '\n$cidadeEstado';
     }
 
-    if (partes.isEmpty) {
+    if (endereco.isEmpty) {
       return 'Endereço não informado';
     }
 
-    return partes.join(' - ');
+    return endereco;
   }
 
   @override
@@ -110,6 +116,7 @@ class DetalheLojaScreen extends StatelessWidget {
               children: [
                 Text(
                   loja.nome,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w800,
