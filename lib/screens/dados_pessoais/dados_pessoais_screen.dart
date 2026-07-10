@@ -201,7 +201,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
             )
           : Form(
               key: _formKey,
-              child: ListView(
+              child: Column(
                 children: [
                   const ClubbarPageHeader(
                     titulo: 'Dados pessoais',
@@ -209,11 +209,9 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                     icone: Icons.badge_rounded,
                   ),
 
-                  const SizedBox(height: 22),
-
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
-                    child: Column(
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
                       children: [
                         TextFormField(
                           controller: _nomeCtrl,
