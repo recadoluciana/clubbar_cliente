@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../widgets/clubbar_app_bar.dart';
+import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class MeusPedidosScreen extends StatefulWidget {
   const MeusPedidosScreen({super.key});
@@ -19,6 +21,11 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   bool carregando = true;
   String? erro;
   int? clienteId;
+  String nomeCliente = '';
+
+  final TextEditingController _buscaController = TextEditingController();
+  String termoBusca = '';
+  String tipoSelecionado = 'P';
 
   List<Map<String, dynamic>> pedidos = [];
 
@@ -32,6 +39,12 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   void initState() {
     super.initState();
     carregarPedidos();
+  }
+
+  @override
+  void dispose() {
+    _buscaController.dispose();
+    super.dispose();
   }
 
   Future<void> carregarPedidos() async {
@@ -49,19 +62,180 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
 
       clienteId = id;
 
+      final nome = await authStorage.obterNmcliente();
       final data = await apiService.buscarCompras(clienteId: id);
 
       setState(() {
+        nomeCliente = nome ?? '';
         pedidos = data;
         carregando = false;
       });
     } catch (e) {
       setState(() {
-        erro = e.toString().replaceFirst('Exception: ', '');
+        erro = apiService.mensagemErroAmigavel(e);
         pedidos = [];
         carregando = false;
       });
     }
+  }
+
+  List<Map<String, dynamic>> get pedidosFiltrados {
+    final pesquisa = termoBusca.trim().toLowerCase();
+
+    final resultado = <Map<String, dynamic>>[];
+
+    for (final pedido in pedidos) {
+      final itensOriginais = (pedido['itens'] as List? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+
+      final itensFiltrados = itensOriginais.where((item) {
+        final tipo = (item['idtipoproduto'] ?? '')
+            .toString()
+            .trim()
+            .toUpperCase();
+
+        if (tipo != tipoSelecionado) {
+          return false;
+        }
+
+        if (pesquisa.isEmpty) {
+          return true;
+        }
+
+        final nomeProduto = (item['nmproduto'] ?? '').toString().toLowerCase();
+
+        final descricao = (item['dsproduto'] ?? '').toString().toLowerCase();
+
+        final observacao = (item['dsobsitvenda'] ?? '')
+            .toString()
+            .toLowerCase();
+
+        final participante = (item['nmparticipante'] ?? '')
+            .toString()
+            .toLowerCase();
+
+        final cpfParticipante = (item['cpfparticipante'] ?? '')
+            .toString()
+            .toLowerCase();
+
+        final nomeLoja = (pedido['nmloja'] ?? '').toString().toLowerCase();
+
+        return nomeProduto.contains(pesquisa) ||
+            descricao.contains(pesquisa) ||
+            observacao.contains(pesquisa) ||
+            participante.contains(pesquisa) ||
+            cpfParticipante.contains(pesquisa) ||
+            nomeLoja.contains(pesquisa);
+      }).toList();
+
+      if (itensFiltrados.isNotEmpty) {
+        resultado.add({...pedido, 'itens': itensFiltrados});
+      }
+    }
+
+    return resultado;
+  }
+
+  Widget _filtrosTipo() {
+    return Row(
+      children: [
+        Expanded(
+          child: _botaoTipo(
+            titulo: 'Produtos',
+            icone: Icons.shopping_bag_outlined,
+            tipo: 'P',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _botaoTipo(
+            titulo: 'Ingressos',
+            icone: Icons.confirmation_number_outlined,
+            tipo: 'I',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _botaoTipo({
+    required String titulo,
+    required IconData icone,
+    required String tipo,
+  }) {
+    final selecionado = tipoSelecionado == tipo;
+
+    return SizedBox(
+      height: 48,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          setState(() {
+            tipoSelecionado = tipo;
+          });
+        },
+        icon: Icon(icone, size: 20),
+        label: Text(
+          titulo,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: selecionado ? Colors.amber : Colors.white,
+          foregroundColor: Colors.black,
+          elevation: selecionado ? 2 : 0,
+          side: BorderSide(
+            color: selecionado ? Colors.amber.shade700 : Colors.grey.shade300,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _campoPesquisa() {
+    return TextField(
+      controller: _buscaController,
+      onChanged: (valor) {
+        setState(() {
+          termoBusca = valor;
+        });
+      },
+      decoration: InputDecoration(
+        hintText: tipoSelecionado == 'I'
+            ? 'Pesquisar ingresso, participante, CPF ou loja'
+            : 'Pesquisar produto, descrição, observação ou loja',
+        hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: termoBusca.isEmpty
+            ? null
+            : IconButton(
+                onPressed: () {
+                  _buscaController.clear();
+
+                  setState(() {
+                    termoBusca = '';
+                  });
+                },
+                icon: const Icon(Icons.close_rounded),
+              ),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.amber, width: 1.6),
+        ),
+      ),
+    );
   }
 
   String _valor(dynamic v) {
@@ -131,7 +305,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   }
 
   Widget _logoLoja(String url) {
-    print(url);
     if (url.isEmpty) {
       return Container(
         width: 52,
@@ -353,24 +526,89 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Minhas compras')),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
               onRefresh: carregarPedidos,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                padding: EdgeInsets.zero,
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
+                  ClubbarPageHeader(
+                    titulo: 'Minhas compras',
+                    subtitulo: nomeCliente,
+                    icone: Icons.receipt_long_rounded,
+                  ),
+
                   const SizedBox(height: 22),
-                  if (erro != null)
-                    _erroWidget()
-                  else if (pedidos.isEmpty)
-                    _estadoVazio()
-                  else
-                    ...pedidos.map(_cardPedido),
+
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                    child: Column(
+                      children: [
+                        _filtrosTipo(),
+
+                        const SizedBox(height: 14),
+
+                        _campoPesquisa(),
+
+                        const SizedBox(height: 20),
+
+                        if (erro != null)
+                          _erroWidget()
+                        else if (pedidosFiltrados.isEmpty)
+                          _estadoVazioPesquisa()
+                        else
+                          ...pedidosFiltrados.map(_cardPedido),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _estadoVazioPesquisa() {
+    final ingresso = tipoSelecionado == 'I';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            ingresso
+                ? Icons.confirmation_number_outlined
+                : Icons.shopping_bag_outlined,
+            size: 60,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 14),
+          Text(
+            termoBusca.trim().isNotEmpty
+                ? 'Nenhum resultado encontrado'
+                : ingresso
+                ? 'Nenhum ingresso encontrado'
+                : 'Nenhum produto encontrado',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          if (termoBusca.trim().isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Tente pesquisar usando outro nome ou termo.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

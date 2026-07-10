@@ -56,6 +56,26 @@ class _PerfilScreenState extends State<PerfilScreen> {
     );
   }
 
+  void abrirCashback() {
+    SnackBar(
+      content: Text(
+        'Funcionalidade de cashback ainda não implementada.',
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.red,
+    );
+  }
+
+  void faleConosco() {
+    SnackBar(
+      content: Text(
+        'Funcionalidade de fale conosco ainda não implementada.',
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: const Color.fromARGB(255, 134, 96, 194),
+    );
+  }
+
   void abrirPedidos() {
     Navigator.push(
       context,
@@ -169,10 +189,28 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 const SizedBox(height: 14),
 
                 _itemAcao(
-                  icon: Icons.receipt_long_outlined,
+                  icon: Icons.receipt_long_rounded,
                   titulo: 'Minhas compras',
                   onTap: abrirPedidos,
                   iconColor: Colors.orange,
+                ),
+
+                const SizedBox(height: 14),
+                _itemAcao(
+                  icon: Icons.logout_rounded,
+                  titulo: 'Cashback',
+                  onTap: abrirCashback,
+                  iconColor: Colors.red,
+                ),
+
+                const SizedBox(height: 14),
+
+                const SizedBox(height: 14),
+                _itemAcao(
+                  icon: Icons.logout_rounded,
+                  titulo: 'Fale conosco',
+                  onTap: faleConosco,
+                  iconColor: Colors.red,
                 ),
 
                 const SizedBox(height: 14),
@@ -184,7 +222,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   iconColor: Colors.red,
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
               ],
             ),
           ),

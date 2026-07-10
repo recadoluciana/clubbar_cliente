@@ -40,7 +40,7 @@ class ClubbarPageHeader extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Colors.amber, Colors.amber, Colors.amber],
+              colors: [Color(0xFFFFD54F), Color(0xFFFFECB3), Color(0xFFF6F6F6)],
             ),
             borderRadius: const BorderRadius.only(
               bottomLeft: Radius.circular(22),
