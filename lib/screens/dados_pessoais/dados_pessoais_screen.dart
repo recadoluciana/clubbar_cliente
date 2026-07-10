@@ -189,6 +189,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: const ClubbarAppBar(mostrarVoltar: true),
+
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -201,7 +202,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 children: [
                   const ClubbarPageHeader(
                     titulo: 'Dados pessoais',
@@ -210,119 +211,163 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                   ),
 
                   const SizedBox(height: 22),
-                  TextFormField(
-                    controller: _nomeCtrl,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: _decoracao(
-                      label: 'Nome completo',
-                      icon: Icons.person_outline,
-                    ),
-                    validator: (value) {
-                      final v = value?.trim() ?? '';
-                      if (v.isEmpty) return 'Informe seu nome';
-                      if (v.length < 3) return 'Nome muito curto';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 14),
 
-                  TextFormField(
-                    controller: _emailCtrl,
-                    readOnly: true,
-                    enabled: false,
-                    decoration: _decoracao(
-                      label: 'E-mail',
-                      icon: Icons.email_outlined,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'O e-mail de acesso não pode ser alterado nesta tela.',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                  ),
-                  const SizedBox(height: 14),
-
-                  TextFormField(
-                    controller: _telefoneCtrl,
-                    keyboardType: TextInputType.phone,
-                    decoration: _decoracao(
-                      label: 'Celular',
-                      icon: Icons.phone_outlined,
-                    ),
-                    onChanged: (value) {
-                      final formatado = _formatarTelefone(value);
-                      if (formatado != value) {
-                        _telefoneCtrl.value = TextEditingValue(
-                          text: formatado,
-                          selection: TextSelection.collapsed(
-                            offset: formatado.length,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _nomeCtrl,
+                          textCapitalization: TextCapitalization.words,
+                          decoration: _decoracao(
+                            label: 'Nome completo',
+                            icon: Icons.person_outline,
                           ),
-                        );
-                      }
-                    },
-                    validator: (value) {
-                      final numeros = _somenteNumeros(value ?? '');
-                      if (numeros.isEmpty) return null;
-                      if (numeros.length < 10 || numeros.length > 11) {
-                        return 'Telefone inválido';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 14),
+                          validator: (value) {
+                            final v = value?.trim() ?? '';
 
-                  TextFormField(
-                    controller: _cpfCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: _decoracao(
-                      label: 'CPF',
-                      icon: Icons.badge_outlined,
-                    ),
-                    onChanged: (value) {
-                      final formatado = _formatarCPF(value);
-                      if (formatado != value) {
-                        _cpfCtrl.value = TextEditingValue(
-                          text: formatado,
-                          selection: TextSelection.collapsed(
-                            offset: formatado.length,
-                          ),
-                        );
-                      }
-                    },
-                    validator: (value) {
-                      final v = value?.trim() ?? '';
-                      if (v.isEmpty) return null;
-                      if (!_validarCPF(v)) return 'CPF inválido';
-                      return null;
-                    },
-                  ),
+                            if (v.isEmpty) {
+                              return 'Informe seu nome';
+                            }
 
-                  const SizedBox(height: 24),
+                            if (v.length < 3) {
+                              return 'Nome muito curto';
+                            }
 
-                  SizedBox(
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: salvando ? null : salvar,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                            return null;
+                          },
                         ),
-                      ),
-                      child: salvando
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text(
-                              'Salvar alterações',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+
+                        const SizedBox(height: 14),
+
+                        TextFormField(
+                          controller: _emailCtrl,
+                          readOnly: true,
+                          enabled: false,
+                          decoration: _decoracao(
+                            label: 'E-mail',
+                            icon: Icons.email_outlined,
+                          ),
+                        ),
+
+                        const SizedBox(height: 6),
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'O e-mail de acesso não pode ser alterado nesta tela.',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        TextFormField(
+                          controller: _telefoneCtrl,
+                          keyboardType: TextInputType.phone,
+                          decoration: _decoracao(
+                            label: 'Celular',
+                            icon: Icons.phone_outlined,
+                          ),
+                          onChanged: (value) {
+                            final formatado = _formatarTelefone(value);
+
+                            if (formatado != value) {
+                              _telefoneCtrl.value = TextEditingValue(
+                                text: formatado,
+                                selection: TextSelection.collapsed(
+                                  offset: formatado.length,
+                                ),
+                              );
+                            }
+                          },
+                          validator: (value) {
+                            final numeros = _somenteNumeros(value ?? '');
+
+                            if (numeros.isEmpty) {
+                              return null;
+                            }
+
+                            if (numeros.length < 10 || numeros.length > 11) {
+                              return 'Telefone inválido';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        TextFormField(
+                          controller: _cpfCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: _decoracao(
+                            label: 'CPF',
+                            icon: Icons.badge_outlined,
+                          ),
+                          onChanged: (value) {
+                            final formatado = _formatarCPF(value);
+
+                            if (formatado != value) {
+                              _cpfCtrl.value = TextEditingValue(
+                                text: formatado,
+                                selection: TextSelection.collapsed(
+                                  offset: formatado.length,
+                                ),
+                              );
+                            }
+                          },
+                          validator: (value) {
+                            final v = value?.trim() ?? '';
+
+                            if (v.isEmpty) {
+                              return null;
+                            }
+
+                            if (!_validarCPF(v)) {
+                              return 'CPF inválido';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: ElevatedButton(
+                            onPressed: salvando ? null : salvar,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
+                            child: salvando
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Salvar alterações',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
