@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../utils/app_snackbar.dart';
 
 class CarteiraLojaScreen extends StatefulWidget {
   final String nomeLoja;
@@ -68,9 +69,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     });
 
     if (codigo.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('QR Code não disponível para este item')),
-      );
+      AppSnackBar.erro(context, 'QR Code não disponível para este item.');
       return;
     }
 

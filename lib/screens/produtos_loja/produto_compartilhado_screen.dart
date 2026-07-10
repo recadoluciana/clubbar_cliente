@@ -6,6 +6,9 @@ import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../screens/produtos_loja/produtos_loja_screen.dart';
+import '../../services/main_navigation_controller.dart';
+import '../../utils/app_snackbar.dart';
 
 class ProdutoCompartilhadoScreen extends StatefulWidget {
   final int produtoId;
@@ -115,91 +118,25 @@ class _ProdutoCompartilhadoScreenState
 
       if (!mounted) return;
 
-      setState(() {
-        produtoAdicionado = true;
-      });
+      AppSnackBar.sucesso(context, 'Produto adicionado ao carrinho.');
+
+      MainNavigationController.abrirTela(
+        ProdutosLojaScreen(
+          loja: loja!,
+          onVoltar: () {
+            Navigator.pop(context);
+          },
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     } finally {
       if (mounted) {
         setState(() => adicionando = false);
       }
     }
-  }
-
-  Widget _botoesAposAdicionar() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.green.shade50,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.green.shade300),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green),
-              SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Produto adicionado ao carrinho.',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 54,
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.shopping_cart_checkout_rounded),
-            label: const Text(
-              'Finalizar compra',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 52,
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            icon: const Icon(Icons.storefront_outlined),
-            label: const Text(
-              'Continuar comprando',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.black,
-              side: const BorderSide(color: Colors.black26),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _botaoAdicionar() {
@@ -341,7 +278,7 @@ class _ProdutoCompartilhadoScreenState
                   ),
                 ),
                 const SizedBox(height: 26),
-                produtoAdicionado ? _botoesAposAdicionar() : _botaoAdicionar(),
+                _botaoAdicionar(),
                 const SizedBox(height: 80),
               ],
             ),

@@ -9,6 +9,7 @@ import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
+import '../../utils/app_snackbar.dart';
 
 class ItemCarrinhoAgrupado {
   final int produtoId;
@@ -183,9 +184,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
   Future<void> removerItemAgrupado(ItemCarrinhoAgrupado item) async {
     if (carrinhoId == null || carrinhoId == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Carrinho inválido para remoção')),
-      );
+      AppSnackBar.erro(context, 'Carrinho inválido para remoção.');
       return;
     }
 
@@ -198,10 +197,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('1 unidade de "${item.nome}" removida do carrinho'),
-        ),
+      AppSnackBar.sucesso(
+        context,
+        '1 unidade de "${item.nome}" removida do carrinho',
       );
 
       await carregarCarrinho();
@@ -215,9 +213,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     }
   }
 
@@ -261,12 +257,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Erro ao buscar dados da loja: ${e.toString().replaceFirst('Exception: ', '')}',
-          ),
-        ),
+      AppSnackBar.erro(
+        context,
+        'Erro ao buscar dados da loja: ${apiService.mensagemErroAmigavel(e)}',
       );
     }
   }

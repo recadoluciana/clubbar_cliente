@@ -63,7 +63,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,
       centerTitle: true,
-      toolbarHeight: 80,
+      toolbarHeight: 70,
 
       leading: mostrarVoltar
           ? IconButton(

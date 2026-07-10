@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../services/api_service.dart';
+import '../../utils/app_snackbar.dart';
 
 class DadosPessoaisScreen extends StatefulWidget {
   const DadosPessoaisScreen({super.key});
@@ -143,17 +143,13 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Dados atualizados com sucesso')),
-      );
+      AppSnackBar.sucesso(context, 'Dados atualizados com sucesso.');
 
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, 'Erro ao atualizar dados.');
     } finally {
       if (mounted) {
         setState(() {

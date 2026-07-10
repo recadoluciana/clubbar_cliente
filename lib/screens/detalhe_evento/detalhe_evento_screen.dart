@@ -15,6 +15,7 @@ import '../../utils/cpf_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../utils/value_formatters.dart';
+import '../../utils/app_snackbar.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -174,15 +175,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresso adicionado ao carrinho')),
-      );
+      AppSnackBar.sucesso(context, 'Ingresso adicionado ao carrinho.');
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, 'Erro ao adicionar ingresso ao carrinho.');
     }
   }
 
@@ -221,18 +218,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 final nome = nomeController.text.trim();
 
                 if (nome.isEmpty || cpfController.text.trim().isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Informe nome e CPF do participante'),
-                    ),
+                  AppSnackBar.erro(
+                    context,
+                    'Informe nome e CPF do participante',
                   );
                   return;
                 }
 
                 if (!CpfUtils.validar(cpfController.text)) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('CPF inválido')));
+                  AppSnackBar.erro(context, 'CPF inválido');
                   return;
                 }
 
@@ -290,9 +284,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     } finally {
       if (mounted) {
         setState(() {

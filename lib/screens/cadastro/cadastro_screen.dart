@@ -221,7 +221,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     } finally {
       if (mounted) {
         setState(() {

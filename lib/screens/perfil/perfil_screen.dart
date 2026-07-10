@@ -7,6 +7,7 @@ import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../pedidos/meus_pedidos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -119,143 +120,77 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+      extendBodyBehindAppBar: false,
       appBar: const ClubbarAppBar(
         logoPath: 'assets/images/logo_copa.png',
         mostrarVoltar: true,
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.fromARGB(255, 255, 255, 253),
-                  Color.fromARGB(255, 241, 239, 239),
-                  Color.fromARGB(255, 236, 241, 211),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.10),
-                  blurRadius: 10,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
+          ClubbarPageHeader(
+            titulo: nomeCliente,
+            subtitulo: 'Gerencie sua conta',
+            textoAvatar: nomeCliente,
+          ),
+
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 30, 20, 24),
               children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      nomeCliente.isNotEmpty
-                          ? nomeCliente[0].toUpperCase()
-                          : 'C',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                _itemAcao(
+                  icon: Icons.person,
+                  titulo: 'Dados pessoais',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DadosPessoaisScreen(),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                  iconColor: Colors.blue,
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(height: 14),
 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        nomeCliente.trim().isEmpty
-                            ? 'Cliente Clubbar'
-                            : nomeCliente.split(' ').first,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          fontWeight: FontWeight.w700,
+                _itemAcao(
+                  icon: Icons.password_rounded,
+                  titulo: 'Alterar senha',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AlterarSenhaScreen(
+                          onVoltar: () => Navigator.pop(context),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Gerencie sua conta',
-                        style: TextStyle(
-                          color: Colors.grey.shade400,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
+                  iconColor: Colors.blue,
                 ),
+
+                const SizedBox(height: 14),
+
+                _itemAcao(
+                  icon: Icons.receipt_long_outlined,
+                  titulo: 'Minhas compras',
+                  onTap: abrirPedidos,
+                  iconColor: Colors.blue,
+                ),
+
+                const SizedBox(height: 14),
+
+                _itemAcao(
+                  icon: Icons.logout_rounded,
+                  titulo: 'Sair',
+                  onTap: fazerLogout,
+                  iconColor: Colors.red,
+                ),
+
+                const SizedBox(height: 24),
               ],
             ),
           ),
-
-          const SizedBox(height: 22),
-
-          // 🔒 Dados Pessoais
-          _itemAcao(
-            icon: Icons.person,
-            titulo: 'Dados pessoais',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const DadosPessoaisScreen()),
-              );
-            },
-            iconColor: Colors.blue,
-          ),
-
-          const SizedBox(height: 22),
-
-          // 🔒 ALTERAR SENHA
-          _itemAcao(
-            icon: Icons.password_rounded,
-            titulo: 'Alterar senha',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AlterarSenhaScreen(
-                    onVoltar: () => Navigator.pop(context),
-                  ),
-                ),
-              );
-            },
-            iconColor: Colors.blue,
-          ),
-
-          const SizedBox(height: 14),
-
-          // 📄 MEUS PEDIDOS
-          _itemAcao(
-            icon: Icons.receipt_long_outlined,
-            titulo: 'Minhas compras',
-            onTap: abrirPedidos,
-            iconColor: Colors.blue,
-          ),
-
-          const SizedBox(height: 14),
-
-          // 🚪 SAIR
-          _itemAcao(
-            icon: Icons.logout_rounded,
-            titulo: 'Sair',
-            onTap: fazerLogout,
-            iconColor: Colors.red,
-          ),
-          const SizedBox(height: 24),
         ],
       ),
     );

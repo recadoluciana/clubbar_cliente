@@ -91,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final senha = senhaController.text;
 
     if (email.isEmpty) {
-      AppSnackBar.erro(context, 'Informe o e-mail.');
+      AppSnackBar.erro(context, 'Informe o e-mail para realizar o login.');
       return;
     }
 
@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (senha.isEmpty) {
-      AppSnackBar.erro(context, 'Informe a senha.');
+      AppSnackBar.erro(context, 'Informe a senha para realizar o login.');
       return;
     }
 

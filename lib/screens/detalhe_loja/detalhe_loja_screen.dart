@@ -6,6 +6,7 @@ import '../agenda/agenda_eventos_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../utils/app_snackbar.dart';
 
 class DetalheLojaScreen extends StatelessWidget {
   final Loja loja;
@@ -36,9 +37,7 @@ class DetalheLojaScreen extends StatelessWidget {
     }
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir o Instagram')),
-      );
+      AppSnackBar.erro(context, 'Não foi possível abrir o Instagram.');
     }
   }
 

@@ -16,7 +16,7 @@ import '../models/evento_lote.dart';
 class ApiService {
   static const String baseUrl = 'https://api.clubbar.com.br';
 
-  String _mensagemErroAmigavel(Object e) {
+  String mensagemErroAmigavel(Object e) {
     final texto = e.toString();
 
     final textoLower = texto.toLowerCase();
@@ -126,7 +126,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -156,7 +156,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -203,7 +203,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -240,7 +240,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -272,7 +272,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -304,7 +304,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -344,7 +344,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -373,7 +373,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -398,7 +398,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -443,7 +443,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -461,7 +461,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -487,7 +487,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -508,7 +508,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -528,7 +528,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -554,7 +554,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -648,7 +648,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -675,7 +675,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -695,7 +695,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -715,7 +715,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -745,7 +745,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -791,7 +791,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -833,7 +833,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 
@@ -856,7 +856,7 @@ class ApiService {
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
-      throw Exception(_mensagemErroAmigavel(e));
+      throw Exception(mensagemErroAmigavel(e));
     }
   }
 

@@ -6,6 +6,7 @@ import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/api_service.dart';
 import '../../utils/cpf_utils.dart';
+import '../../utils/app_snackbar.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
   final String nomeLoja;
@@ -121,18 +122,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 );
 
                 if (nome.isEmpty || cpf.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Informe nome e CPF do participante.'),
-                    ),
+                  AppSnackBar.erro(
+                    context,
+                    'Informe nome e CPF do participante.',
                   );
                   return;
                 }
 
                 if (!CpfUtils.validar(cpf)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('CPF inválido.')),
-                  );
+                  AppSnackBar.erro(context, 'CPF do cliente inválido.');
                   return;
                 }
 
@@ -170,15 +168,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         item['cpfparticipante'] = resultado['cpf'];
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Participante alterado com sucesso.')),
-      );
+      AppSnackBar.sucesso(context, 'Participante alterado com sucesso.');
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, 'Erro ao alterar participante.');
     }
   }
 
@@ -200,9 +194,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     });
 
     if (codigo.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('QR Code não disponível para este item')),
-      );
+      AppSnackBar.erro(context, 'QR Code não disponível para este item.');
       return;
     }
 
