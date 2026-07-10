@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../services/api_service.dart';
+import '../../utils/app_snackbar.dart';
 
 class CadastroClienteScreen extends StatefulWidget {
   const CadastroClienteScreen({super.key});
@@ -216,17 +216,12 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cadastro realizado com sucesso')),
-      );
-
+      AppSnackBar.sucesso(context, 'Cadastro realizado com sucesso.');
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) {
         setState(() {

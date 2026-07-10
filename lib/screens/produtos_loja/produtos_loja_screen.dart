@@ -18,6 +18,7 @@ import '../../services/main_navigation_controller.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import 'produto_compartilhado_screen.dart';
 import '../agenda/agenda_eventos_screen.dart';
+import '../../utils/categoria_icon_utils.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -555,7 +556,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.restaurant_menu,
+                  CategoriaIconUtils.porNome(categoria.nome),
                   color: selecionada ? Colors.black : Colors.grey.shade700,
                   size: 26,
                 ),
@@ -566,7 +567,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 10,
                     height: 1.15,
                     fontWeight: FontWeight.w700,
                     color: selecionada ? Colors.black : Colors.black87,
@@ -650,6 +651,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.grey.shade700,
+                          fontSize: 11,
                           height: 1.35,
                         ),
                       ),
@@ -838,18 +840,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 4),
-
-                      Text(
-                        'Cardápio',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
                       _campoPesquisa(),
                     ],
                   ),
