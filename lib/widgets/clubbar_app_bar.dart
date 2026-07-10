@@ -25,7 +25,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   // 🔥 AQUI ESTÁ O SEGREDO
   @override
-  Size get preferredSize => const Size.fromHeight(80); // 🔥 AUMENTADO
+  Size get preferredSize => const Size.fromHeight(70); // 🔥 AUMENTADO
 
   Widget _badgeCarrinho() {
     if (quantidadeCarrinho <= 0) return const SizedBox();

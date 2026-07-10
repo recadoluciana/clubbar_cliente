@@ -202,7 +202,6 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 children: [
                   const ClubbarPageHeader(
                     titulo: 'Dados pessoais',

@@ -135,7 +135,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               padding: const EdgeInsets.fromLTRB(20, 30, 20, 24),
               children: [
                 _itemAcao(
-                  icon: Icons.person,
+                  icon: Icons.badge_rounded,
                   titulo: 'Dados pessoais',
                   onTap: () {
                     Navigator.push(
@@ -163,7 +163,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                     );
                   },
-                  iconColor: Colors.blue,
+                  iconColor: Colors.green,
                 ),
 
                 const SizedBox(height: 14),
@@ -172,7 +172,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   icon: Icons.receipt_long_outlined,
                   titulo: 'Minhas compras',
                   onTap: abrirPedidos,
-                  iconColor: Colors.blue,
+                  iconColor: Colors.orange,
                 ),
 
                 const SizedBox(height: 14),
