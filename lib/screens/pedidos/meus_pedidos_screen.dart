@@ -4,6 +4,7 @@ import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../utils/value_formatters.dart';
 
 class MeusPedidosScreen extends StatefulWidget {
   const MeusPedidosScreen({super.key});
@@ -26,6 +27,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
   String tipoSelecionado = 'P';
+  String statusSelecionado = 'TODOS';
 
   List<Map<String, dynamic>> pedidos = [];
 
@@ -96,6 +98,15 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             .toUpperCase();
 
         if (tipo != tipoSelecionado) {
+          return false;
+        }
+
+        final usado = (item['identregaitvenda'] ?? '')
+            .toString()
+            .trim()
+            .toUpperCase();
+
+        if (statusSelecionado != 'TODOS' && usado != statusSelecionado) {
           return false;
         }
 
@@ -204,8 +215,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       },
       decoration: InputDecoration(
         hintText: tipoSelecionado == 'I'
-            ? 'Pesquisar ingresso, participante, CPF ou loja'
-            : 'Pesquisar produto, descrição, observação ou loja',
+            ? 'Pesquisar ingresso, participante, CPF ou bar'
+            : 'Pesquisar produto, descrição, observação ou bar',
         hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
         prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: termoBusca.isEmpty
@@ -236,11 +247,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         ),
       ),
     );
-  }
-
-  String _valor(dynamic v) {
-    final n = (v is num) ? v.toDouble() : double.tryParse('$v') ?? 0;
-    return 'R\$ ${n.toStringAsFixed(2)}';
   }
 
   bool _isIngresso(Map<String, dynamic> item) {
@@ -280,7 +286,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        entregue ? 'Entregue' : 'Não entregue',
+        entregue ? 'Utilizado' : 'Não utilizado',
         style: TextStyle(
           color: entregue ? Colors.green : Colors.red,
           fontSize: 12,
@@ -376,14 +382,43 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ],
           ),
           const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
-              _chipInfo('Valor: ${_valor(item['vrunititvenda'])}'),
-              _badgeEntrega(item),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth < 330) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
+                        _chipInfo(
+                          'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: _badgeEntrega(item),
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
+                  const SizedBox(width: 8),
+                  _chipInfo(
+                    'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
+                  ),
+                  const Spacer(),
+                  _badgeEntrega(item),
+                ],
+              );
+            },
           ),
           if (obs.isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -456,7 +491,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                     ),
                   ),
                   Text(
-                    _valor(pedido['totalvenda']),
+                    ValueFormatters.moeda(pedido['totalvenda']),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -529,25 +564,26 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: carregarPedidos,
-              child: ListView(
-                padding: EdgeInsets.zero,
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  ClubbarPageHeader(
-                    titulo: 'Minhas compras',
-                    subtitulo: nomeCliente,
-                    icone: Icons.receipt_long_rounded,
-                  ),
+          : Column(
+              children: [
+                ClubbarPageHeader(
+                  titulo: 'Minhas compras',
+                  subtitulo: nomeCliente,
+                  icone: Icons.receipt_long_rounded,
+                ),
 
-                  const SizedBox(height: 22),
-
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                    child: Column(
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: carregarPedidos,
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                      physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         _filtrosTipo(),
+
+                        const SizedBox(height: 12),
+
+                        _filtrosStatus(),
 
                         const SizedBox(height: 14),
 
@@ -564,8 +600,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
     );
   }
@@ -608,6 +644,73 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _filtrosStatus() {
+    return Row(
+      children: [
+        Expanded(
+          child: _botaoStatus(
+            titulo: 'Todos',
+            status: 'TODOS',
+            icone: Icons.all_inbox_rounded,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _botaoStatus(
+            titulo: 'Não utilizados',
+            status: 'NAO',
+            icone: Icons.hourglass_bottom_rounded,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _botaoStatus(
+            titulo: 'Utilizados',
+            status: 'SIM',
+            icone: Icons.check_circle_outline_rounded,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _botaoStatus({
+    required String titulo,
+    required String status,
+    required IconData icone,
+  }) {
+    final selecionado = statusSelecionado == status;
+
+    return SizedBox(
+      height: 44,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          setState(() {
+            statusSelecionado = status;
+          });
+        },
+        icon: Icon(icone, size: 17),
+        label: Text(
+          titulo,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: selecionado ? Colors.amber : Colors.white,
+          foregroundColor: Colors.black,
+          side: BorderSide(
+            color: selecionado ? Colors.amber.shade700 : Colors.grey.shade300,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
     );
   }

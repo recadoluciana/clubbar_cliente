@@ -168,7 +168,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   iconColor: Colors.blue,
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
                 _itemAcao(
                   icon: Icons.password_rounded,
@@ -186,7 +186,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   iconColor: Colors.green,
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
                 _itemAcao(
                   icon: Icons.receipt_long_rounded,
@@ -195,25 +195,24 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   iconColor: Colors.orange,
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 _itemAcao(
-                  icon: Icons.logout_rounded,
+                  icon: Icons.savings_rounded,
                   titulo: 'Cashback',
                   onTap: abrirCashback,
-                  iconColor: Colors.red,
+                  iconColor: Colors.lightGreen,
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
-                const SizedBox(height: 14),
                 _itemAcao(
-                  icon: Icons.logout_rounded,
+                  icon: Icons.support_agent_rounded,
                   titulo: 'Fale conosco',
                   onTap: faleConosco,
-                  iconColor: Colors.red,
+                  iconColor: const Color.fromARGB(174, 244, 184, 54),
                 ),
 
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
 
                 _itemAcao(
                   icon: Icons.logout_rounded,
@@ -221,8 +220,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   onTap: fazerLogout,
                   iconColor: Colors.red,
                 ),
-
-                const SizedBox(height: 14),
               ],
             ),
           ),
