@@ -702,7 +702,7 @@ ${AppConfig.appWebUrl}
                                       icon: const Icon(Icons.ios_share_rounded),
                                       tooltip: 'Compartilhar',
                                       style: IconButton.styleFrom(
-                                        backgroundColor: Colors.amber.shade100,
+                                        backgroundColor: Colors.white,
                                         foregroundColor: Colors.black,
                                       ),
                                     ),

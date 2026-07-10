@@ -463,8 +463,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         });
       },
       decoration: InputDecoration(
-        hintText: 'Pesquisar produto, categoria ou descrição',
-        prefixIcon: const Icon(Icons.search),
+        hintText: 'produto, categoria ou descrição',
+        hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+        prefixIcon: const Icon(Icons.search, size: 22),
         suffixIcon: termoBusca.isEmpty
             ? null
             : IconButton(
@@ -522,9 +523,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final selecionada = categoriaSelecionadaId == categoria.id;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 10),
+      padding: const EdgeInsets.only(right: 8),
       child: ChoiceChip(
-        label: Text(categoria.nome),
         selected: selecionada,
         onSelected: (_) {
           setState(() {
@@ -532,9 +532,22 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           });
         },
         selectedColor: Colors.amber,
-        labelStyle: TextStyle(
-          color: selecionada ? Colors.black : Colors.black87,
-          fontWeight: FontWeight.w600,
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        label: SizedBox(
+          width: 78, // largura fixa
+          child: Text(
+            categoria.nome,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.1,
+              color: selecionada ? Colors.black : Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );

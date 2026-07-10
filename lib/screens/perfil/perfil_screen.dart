@@ -133,9 +133,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF111111),
-                  Color(0xFF1E1E1E),
-                  Color(0xFF2A2A2A),
+                  Color.fromARGB(255, 255, 255, 253),
+                  Color.fromARGB(255, 241, 239, 239),
+                  Color.fromARGB(255, 236, 241, 211),
                 ],
               ),
               borderRadius: BorderRadius.circular(22),
