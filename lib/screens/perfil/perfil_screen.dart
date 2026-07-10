@@ -121,16 +121,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       extendBodyBehindAppBar: false,
-      appBar: const ClubbarAppBar(
-        logoPath: 'assets/images/logo_copa.png',
-        mostrarVoltar: true,
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: nomeCliente,
-            subtitulo: 'Gerencie sua conta',
-            textoAvatar: nomeCliente,
+            titulo: 'Perfil',
+            subtitulo: nomeCliente,
+            icone: Icons.person_rounded,
           ),
 
           Expanded(

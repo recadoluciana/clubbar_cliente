@@ -70,7 +70,7 @@ class ClubbarPageHeader extends StatelessWidget {
                     : Text(
                         _inicial,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.w900,
                         ),
                       ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_app_bar.dart';
+import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class DadosPessoaisScreen extends StatefulWidget {
   const DadosPessoaisScreen({super.key});
@@ -185,7 +188,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Dados pessoais')),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -200,17 +203,13 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  const Text(
-                    'Seus dados',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+                  const ClubbarPageHeader(
+                    titulo: 'Dados pessoais',
+                    subtitulo: 'Atualize suas informações cadastrais',
+                    icone: Icons.badge_rounded,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Atualize suas informações pessoais.',
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-                  ),
-                  const SizedBox(height: 24),
 
+                  const SizedBox(height: 22),
                   TextFormField(
                     controller: _nomeCtrl,
                     textCapitalization: TextCapitalization.words,
