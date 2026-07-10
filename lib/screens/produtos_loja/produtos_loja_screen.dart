@@ -43,10 +43,19 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
   int quantidadeCarrinho = 0;
 
+  final TextEditingController _buscaController = TextEditingController();
+  String termoBusca = '';
+
   @override
   void initState() {
     super.initState();
     carregarDados();
+  }
+
+  @override
+  void dispose() {
+    _buscaController.dispose();
+    super.dispose();
   }
 
   Future<File?> gerarArteCompartilhamento(Produto produto) async {
@@ -418,11 +427,65 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   }
 
   List<Produto> get produtosFiltrados {
+    final pesquisa = termoBusca.trim().toLowerCase();
+
+    // Se está pesquisando, ignora categoria e busca em todos os produtos
+    if (pesquisa.isNotEmpty) {
+      return produtos.where((produto) {
+        final categoria = categorias
+            .firstWhere(
+              (c) => c.id == produto.categoriaId,
+              orElse: () => Categoria(id: 0, nome: ''),
+            )
+            .nome
+            .toLowerCase();
+
+        return produto.nmproduto.toLowerCase().contains(pesquisa) ||
+            produto.dsproduto.toLowerCase().contains(pesquisa) ||
+            categoria.contains(pesquisa);
+      }).toList();
+    }
+
+    // Se não está pesquisando, usa a categoria selecionada normalmente
     if (categoriaSelecionadaId == null) return produtos;
 
     return produtos
         .where((p) => p.categoriaId == categoriaSelecionadaId)
         .toList();
+  }
+
+  Widget _campoPesquisa() {
+    return TextField(
+      controller: _buscaController,
+      onChanged: (texto) {
+        setState(() {
+          termoBusca = texto;
+        });
+      },
+      decoration: InputDecoration(
+        hintText: 'Pesquisar produto, categoria ou descrição',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: termoBusca.isEmpty
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  _buscaController.clear();
+
+                  setState(() {
+                    termoBusca = '';
+                  });
+                },
+              ),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      ),
+    );
   }
 
   Widget _imagemProduto(String? url) {
@@ -586,9 +649,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   children: [
                     IconButton(
                       onPressed: () => compartilharProduto(produto),
-                      icon: const Icon(Icons.share_outlined),
+                      icon: const Icon(Icons.ios_share_rounded),
                       tooltip: 'Compartilhar produto',
                     ),
+                    const SizedBox(height: 4),
                     IconButton(
                       onPressed: () => abrirDialogObservacao(produto),
                       icon: const Icon(Icons.add_shopping_cart_rounded),
@@ -745,6 +809,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      _campoPesquisa(),
                     ],
                   ),
                   const SizedBox(height: 14),
