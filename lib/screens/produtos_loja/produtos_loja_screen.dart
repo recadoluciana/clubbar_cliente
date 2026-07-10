@@ -523,29 +523,56 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final selecionada = categoriaSelecionadaId == categoria.id;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        selected: selecionada,
-        onSelected: (_) {
+      padding: const EdgeInsets.only(right: 10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
           setState(() {
             categoriaSelecionadaId = categoria.id;
           });
         },
-        selectedColor: Colors.amber,
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        label: SizedBox(
-          width: 78, // largura fixa
-          child: Text(
-            categoria.nome,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.1,
-              color: selecionada ? Colors.black : Colors.black87,
-              fontWeight: FontWeight.w600,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 92,
+          height: 82,
+          decoration: BoxDecoration(
+            color: selecionada ? Colors.amber : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: selecionada ? Colors.amber : Colors.grey.shade300,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.restaurant_menu,
+                  color: selecionada ? Colors.black : Colors.grey.shade700,
+                  size: 26,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  categoria.nome,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.15,
+                    fontWeight: FontWeight.w700,
+                    color: selecionada ? Colors.black : Colors.black87,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
