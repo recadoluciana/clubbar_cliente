@@ -19,6 +19,7 @@ import '../detalhe_loja/detalhe_loja_screen.dart';
 import 'produto_compartilhado_screen.dart';
 import '../agenda/agenda_eventos_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -464,28 +465,39 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         });
       },
       decoration: InputDecoration(
-        hintText: 'produto, categoria ou descrição',
+        hintText: 'Produto, categoria ou descrição',
         hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-        prefixIcon: const Icon(Icons.search, size: 22),
-        suffixIcon: termoBusca.isEmpty
+        prefixIcon: const Icon(Icons.search_rounded, size: 22),
+        suffixIcon: termoBusca.trim().isEmpty
             ? null
             : IconButton(
-                icon: const Icon(Icons.close),
+                tooltip: 'Limpar pesquisa',
                 onPressed: () {
                   _buscaController.clear();
 
                   setState(() {
                     termoBusca = '';
                   });
+
+                  FocusScope.of(context).unfocus();
                 },
+                icon: const Icon(Icons.close_rounded, size: 21),
               ),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.amber, width: 1.6),
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -534,8 +546,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          width: 92,
-          height: 82,
+          width: 82,
+          height: 72,
           decoration: BoxDecoration(
             color: selecionada ? Colors.amber : Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -793,74 +805,72 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ? const Center(child: CircularProgressIndicator())
           : erro != null
           ? _erroWidget()
-          : RefreshIndicator(
-              onRefresh: carregarDados,
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              widget.loja.nome,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      AgendaEventosScreen(loja: widget.loja),
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.event, size: 18),
-                            label: const Text('Agenda'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              foregroundColor: Colors.black,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ],
+          : Column(
+              children: [
+                ClubbarPageHeader(
+                  titulo: widget.loja.nome,
+                  subtitulo: 'Cardápio e bebidas',
+                  icone: Icons.restaurant_menu_rounded,
+                  trailing: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              AgendaEventosScreen(loja: widget.loja),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.event, size: 18),
+                    label: const Text('Agenda'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(height: 4),
-                      _campoPesquisa(),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 14),
-                  if (categorias.isEmpty)
-                    const Text('Nenhum cardápio disponível.')
-                  else
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
+                  child: _campoPesquisa(),
+                ),
+
+                if (termoBusca.trim().isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      bottom: 12,
+                    ),
+                    child: SizedBox(
+                      height: 82,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
                         children: categorias.map(_chipCategoria).toList(),
                       ),
                     ),
-                  const SizedBox(height: 14),
-                  if (produtosFiltrados.isEmpty)
-                    _estadoVazio()
-                  else
-                    ...produtosFiltrados.map(_cardProduto),
-                ],
-              ),
+                  ),
+
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: carregarDados,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                      children: [
+                        if (produtosFiltrados.isEmpty)
+                          _estadoVazio()
+                        else
+                          ...produtosFiltrados.map(_cardProduto),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
