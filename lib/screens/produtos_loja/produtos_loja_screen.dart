@@ -119,6 +119,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       if (produto.descontoativo) {
         paint.color = Colors.red;
+
         canvas.drawRRect(
           RRect.fromRectAndRadius(
             const Rect.fromLTWH(60, 860, 310, 70),
@@ -126,6 +127,21 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ),
           paint,
         );
+
+        final descontoTexto = TextPainter(
+          text: TextSpan(
+            text: 'Promoção',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout(maxWidth: 280);
+
+        descontoTexto.paint(canvas, const Offset(85, 875));
+      }
 
       final nomeProduto = TextPainter(
         text: TextSpan(
@@ -578,135 +594,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
-  Widget _cardProduto(Produto produto) {
-    final bool temDesconto = produto.descontoativo;
-
-    final String seloDesconto =
-        produto.tipodesconto.toUpperCase() == 'PERCENTUAL'
-        ? '${produto.vrdesconto.toStringAsFixed(0)}% OFF'
-        : 'R\$ ${produto.vrdesconto.toStringAsFixed(2)} OFF';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        elevation: 2,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(22),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _imagemProduto(produto.urlfotoproduto),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (temDesconto)
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            seloDesconto,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      Text(
-                        produto.nmproduto,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        produto.dsproduto.isEmpty ? '' : produto.dsproduto,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 11,
-                          height: 1.35,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      if (temDesconto) ...[
-                        Text(
-                          ValueFormatters.moeda(produto.vrprecoprod),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                            decoration: TextDecoration.lineThrough,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          ValueFormatters.moeda(produto.vrprecofinal),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ] else
-                        Text(
-                          ValueFormatters.moeda(produto.vrprecoprod),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  children: [
-                    IconButton(
-                      onPressed: () => compartilharProduto(produto),
-                      icon: const Icon(Icons.ios_share_rounded),
-                      tooltip: 'Compartilhar produto',
-                    ),
-                    const SizedBox(height: 4),
-                    IconButton(
-                      onPressed: () => abrirDialogObservacao(produto),
-                      icon: const Icon(Icons.add_shopping_cart_rounded),
-                      tooltip: 'Adicionar ao carrinho',
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _estadoVazio() {
     return Container(
       padding: const EdgeInsets.all(26),
@@ -859,7 +746,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 12,
                                   mainAxisSpacing: 12,
-                                  mainAxisExtent: 260,
+                                  mainAxisExtent: 270,
                                 ),
                             itemBuilder: (context, index) {
                               return _cardProdutoGrade(
@@ -903,7 +790,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           );
         },
         child: SizedBox(
-          height: 260,
+          height: 270,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1007,32 +894,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         const SizedBox(height: 2),
                       ],
 
-                      Row(
-                        children: [
-                          Text(
-                            ValueFormatters.moeda(precoAtual),
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
-                              color: temDesconto
-                                  ? Colors.green.shade700
-                                  : Colors.black,
-                            ),
-                          ),
-
-                          if (temDesconto) ...[
-                            const SizedBox(width: 6),
-
-                            Text(
-                              'Promoção',
-                              style: TextStyle(
-                                color: Colors.red.shade700,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ],
+                      const SizedBox(height: 5),
+                      Text(
+                        ValueFormatters.moeda(precoAtual),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          color: temDesconto
+                              ? Colors.green.shade700
+                              : Colors.black,
+                        ),
                       ),
 
                       const SizedBox(height: 4),
