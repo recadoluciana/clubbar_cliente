@@ -932,7 +932,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             size: 16,
                           ),
                           label: const Text(
-                            'Adicionar ao carrinho',
+                            'Carrinho',
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.bold,

@@ -47,6 +47,155 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     _iniciarDeepLinksAndroid();
   }
 
+  Widget _itemBarraNavegacao({
+    required int index,
+    required Widget icone,
+    required String texto,
+  }) {
+    final selecionado = currentIndex == index;
+
+    final cor = selecionado ? Colors.black : Colors.grey.shade500;
+
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _aoTocarNaAba(index),
+          child: SizedBox(
+            height: 56,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (selecionado)
+                  Positioned(
+                    top: 0,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      width: 28,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: const BorderRadius.vertical(
+                          bottom: Radius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconTheme(
+                      data: IconThemeData(
+                        color: cor,
+                        size: selecionado ? 23 : 22,
+                      ),
+                      child: SizedBox(height: 25, child: Center(child: icone)),
+                    ),
+
+                    // Espaço bem pequeno entre ícone e texto.
+                    const SizedBox(height: 1),
+
+                    Text(
+                      texto,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: cor,
+                        fontSize: 11,
+                        height: 1,
+                        fontWeight: selecionado
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _barraNavegacao() {
+    final textoPerfil = logado && nomeCliente.trim().isNotEmpty
+        ? _primeiroNome(nomeCliente)
+        : 'Login';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            _itemBarraNavegacao(
+              index: 0,
+              icone: Icon(
+                currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+              ),
+              texto: 'Home',
+            ),
+
+            _itemBarraNavegacao(
+              index: 1,
+              icone: _iconeCarrinhoComBadge(selecionado: currentIndex == 1),
+              texto: 'Carrinho',
+            ),
+
+            _itemBarraNavegacao(
+              index: 2,
+              icone: _iconeCarteiraComBadge(selecionado: currentIndex == 2),
+              texto: 'Carteira',
+            ),
+
+            _itemBarraNavegacao(
+              index: 3,
+              icone: Icon(
+                currentIndex == 3
+                    ? Icons.person_rounded
+                    : Icons.person_outline_rounded,
+              ),
+              texto: textoPerfil,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _aoTocarNaAba(int index) async {
+    if (index == currentIndex) {
+      MainNavigationController.fecharTelaInterna();
+      return;
+    }
+
+    MainNavigationController.fecharTelaInterna();
+
+    await _selecionarAba(index);
+
+    if (!mounted) return;
+
+    // Só altera o ValueNotifier se a navegação foi realmente autorizada.
+    // Exemplo: se precisava de login e o usuário cancelou, não troca a aba.
+    if (currentIndex == index) {
+      MainNavigationController.abaIndex.value = index;
+    }
+  }
+
   Widget _buildPage() {
     switch (currentIndex) {
       case 0:
@@ -344,75 +493,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               return telaInterna ?? _buildPage();
             },
           ),
-          bottomNavigationBar: NavigationBarTheme(
-            data: NavigationBarThemeData(
-              backgroundColor: Colors.white,
-              // Remova a cor bege
-              indicatorColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              elevation: 6,
-              iconTheme: WidgetStateProperty.resolveWith<IconThemeData>((
-                states,
-              ) {
-                if (states.contains(WidgetState.selected)) {
-                  return const IconThemeData(color: Colors.black, size: 26);
-                }
-                return const IconThemeData(color: Colors.grey, size: 24);
-              }),
-              labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>((
-                states,
-              ) {
-                if (states.contains(WidgetState.selected)) {
-                  return const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  );
-                }
-                return const TextStyle(color: Colors.grey, fontSize: 12);
-              }),
-            ),
-            child: NavigationBar(
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.transparent,
-              selectedIndex: currentIndex,
-              onDestinationSelected: (index) {
-                if (index == currentIndex) {
-                  MainNavigationController.fecharTelaInterna();
-                  return;
-                }
-
-                MainNavigationController.fecharTelaInterna();
-                MainNavigationController.abaIndex.value = index;
-                _selecionarAba(index);
-              },
-              height: 52,
-              destinations: [
-                const NavigationDestination(
-                  icon: Icon(Icons.home_outlined),
-                  selectedIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                NavigationDestination(
-                  icon: _iconeCarrinhoComBadge(selecionado: false),
-                  selectedIcon: _iconeCarrinhoComBadge(selecionado: true),
-                  label: 'Carrinho',
-                ),
-                NavigationDestination(
-                  icon: _iconeCarteiraComBadge(selecionado: false),
-                  selectedIcon: _iconeCarteiraComBadge(selecionado: true),
-                  label: 'Carteira',
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.person_outline),
-                  selectedIcon: const Icon(Icons.person),
-                  label: logado && nomeCliente.trim().isNotEmpty
-                      ? _primeiroNome(nomeCliente)
-                      : 'Login',
-                ),
-              ],
-            ),
-          ),
+          bottomNavigationBar: _barraNavegacao(),
         );
       },
     );

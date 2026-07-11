@@ -674,13 +674,13 @@ ${AppConfig.appWebUrl}
                                                       ? 'Localização não informada'
                                                       : [
                                                           if (loja
-                                                              .bairro
-                                                              .isNotEmpty)
-                                                            loja.bairro,
-                                                          if (loja
                                                               .cidade
                                                               .isNotEmpty)
                                                             loja.cidade,
+                                                          if (loja
+                                                              .bairro
+                                                              .isNotEmpty)
+                                                            loja.bairro,
                                                           if (loja
                                                               .sgEstado
                                                               .isNotEmpty)

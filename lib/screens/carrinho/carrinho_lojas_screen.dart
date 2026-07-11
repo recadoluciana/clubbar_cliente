@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class CarrinhoLojasScreen extends StatefulWidget {
   const CarrinhoLojasScreen({super.key});
@@ -53,8 +53,10 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
         carregando = false;
       });
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
-        erro = e.toString().replaceFirst('Exception: ', '');
+        erro = apiService.mensagemErroAmigavel(e);
         lojasCarrinho = [];
         carregando = false;
       });
@@ -101,69 +103,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _cabecalho() {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF111111), Color(0xFF1E1E1E), Color(0xFF2A2A2A)],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(
-              Icons.shopping_cart_outlined,
-              size: 36,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Carrinho',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Itens pendentes de pagamento por bar/casa noturna',
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -321,21 +260,32 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: carregarLojasCarrinho,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                children: [
-                  _cabecalho(),
-                  const SizedBox(height: 22),
-                  if (erro != null)
-                    _erroWidget()
-                  else if (lojasCarrinho.isEmpty)
-                    _estadoVazio()
-                  else
-                    ...lojasCarrinho.map(_cardLoja),
-                ],
-              ),
+          : Column(
+              children: [
+                const ClubbarPageHeader(
+                  titulo: 'Carrinho',
+                  subtitulo: 'Itens pendentes de pagamento por estabelecimento',
+                  icone: Icons.shopping_cart_rounded,
+                ),
+
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: carregarLojasCarrinho,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                      children: [
+                        if (erro != null)
+                          _erroWidget()
+                        else if (lojasCarrinho.isEmpty)
+                          _estadoVazio()
+                        else
+                          ...lojasCarrinho.map(_cardLoja),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
