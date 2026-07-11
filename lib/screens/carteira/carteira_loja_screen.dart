@@ -4,6 +4,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_page_header.dart';
+import '../../utils/value_formatters.dart';
 
 class CarteiraLojaScreen extends StatefulWidget {
   final String nomeLoja;
@@ -40,11 +42,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
   bool _isIngresso(Map<String, dynamic> item) {
     return (item['idtipoproduto'] ?? '').toString().toUpperCase() == 'I';
-  }
-
-  String _valor(dynamic v) {
-    final n = (v is num) ? v.toDouble() : double.tryParse('$v') ?? 0;
-    return 'R\$ ${n.toStringAsFixed(2)}';
   }
 
   String _buildImageUrl(String path) {
@@ -248,7 +245,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                         runSpacing: 8,
                         children: [
                           _chip('Qtd: ${item['qtitvenda'] ?? 0}'),
-                          _chip('Valor: ${_valor(item['vrunititvenda'])}'),
+                          _chip(
+                            'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
+                          ),
                           if (validade.isNotEmpty) _chip('Validade: $validade'),
                         ],
                       ),
@@ -317,72 +316,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
   }
 
-  Widget _cabecalho(int totalUnidades) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF111111), Color(0xFF1E1E1E), Color(0xFF2A2A2A)],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          _logoLoja(),
-
-          const SizedBox(width: 16),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Carteira - Produtos',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  widget.nomeLoja,
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  '$totalUnidades item(ns) disponível(is) para retirada',
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 14,
-                    height: 1.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _logoLoja() {
     if (widget.logoLoja.isEmpty) {
       return Container(
@@ -421,33 +354,88 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
   }
 
+  Widget _estadoVazio() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 60,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Nenhum produto disponível',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Não há produtos disponíveis para retirada nesta loja.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final totalUnidades = itensTela.fold<int>(
-      0,
-      (total, item) => total + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
-    );
+    final totalUnidades = itensTela.fold<int>(0, (total, item) {
+      final quantidade = int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0;
+
+      return total + quantidade;
+    });
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+
       appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+
+      body: Column(
         children: [
-          _cabecalho(totalUnidades),
-          const SizedBox(height: 22),
-          if (itensTela.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 40),
-                child: Text(
-                  'Nenhum item disponível para retirada nesta loja.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+          ClubbarPageHeader(
+            titulo: 'Carteira de Produtos',
+            subtitulo:
+                '${widget.nomeLoja} • $totalUnidades item(ns) disponível(is)',
+            icone: Icons.inventory_2_rounded,
+          ),
+
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                if (widget.onAtualizar == null) return;
+
+                final novosItens = await widget.onAtualizar!();
+
+                CarteiraBadgeNotifier.atualizar();
+
+                if (!mounted) return;
+
+                setState(() {
+                  itensTela = novosItens;
+                });
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                children: [
+                  if (itensTela.isEmpty)
+                    _estadoVazio()
+                  else
+                    ...itensTela.map((item) => _itemCard(context, item)),
+                ],
               ),
-            )
-          else
-            ...itensTela.map((item) => _itemCard(context, item)),
+            ),
+          ),
         ],
       ),
     );
