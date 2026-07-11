@@ -386,7 +386,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 MainNavigationController.abaIndex.value = index;
                 _selecionarAba(index);
               },
-              height: 72,
+              height: 52,
               destinations: [
                 const NavigationDestination(
                   icon: Icon(Icons.home_outlined),

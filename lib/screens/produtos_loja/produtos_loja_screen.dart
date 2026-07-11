@@ -127,21 +127,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           paint,
         );
 
-        final desconto = TextPainter(
-          text: const TextSpan(
-            text: 'PROMOÇÃO',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 34,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        )..layout(maxWidth: 300);
-
-        desconto.paint(canvas, const Offset(92, 876));
-      }
-
       final nomeProduto = TextPainter(
         text: TextSpan(
           text: produto.nmproduto,
@@ -413,7 +398,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: Colors.amber,
                 foregroundColor: Colors.black,
               ),
               child: const Text('Adicionar'),
@@ -874,7 +859,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   crossAxisCount: 2,
                                   crossAxisSpacing: 12,
                                   mainAxisSpacing: 12,
-                                  mainAxisExtent: 320,
+                                  mainAxisExtent: 260,
                                 ),
                             itemBuilder: (context, index) {
                               return _cardProdutoGrade(
@@ -918,7 +903,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           );
         },
         child: SizedBox(
-          height: 320,
+          height: 260,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -994,7 +979,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(11, 10, 11, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1008,7 +993,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 3),
 
                       if (temDesconto) ...[
                         Text(
@@ -1022,22 +1007,39 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         const SizedBox(height: 2),
                       ],
 
-                      Text(
-                        ValueFormatters.moeda(precoAtual),
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          color: temDesconto
-                              ? Colors.green.shade700
-                              : Colors.black,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            ValueFormatters.moeda(precoAtual),
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                              color: temDesconto
+                                  ? Colors.green.shade700
+                                  : Colors.black,
+                            ),
+                          ),
+
+                          if (temDesconto) ...[
+                            const SizedBox(width: 6),
+
+                            Text(
+                              'Promoção',
+                              style: TextStyle(
+                                color: Colors.red.shade700,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
 
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 4),
 
                       Text(
                         produto.dsproduto.trim().isEmpty
-                            ? 'Produto disponível no cardápio.'
+                            ? 'sem descrição'
                             : produto.dsproduto,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1051,17 +1053,17 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
                       SizedBox(
                         width: double.infinity,
-                        height: 40,
+                        height: 34,
                         child: ElevatedButton.icon(
                           onPressed: () => abrirDialogObservacao(produto),
                           icon: const Icon(
                             Icons.add_shopping_cart_rounded,
-                            size: 18,
+                            size: 16,
                           ),
                           label: const Text(
                             'Adicionar ao carrinho',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
