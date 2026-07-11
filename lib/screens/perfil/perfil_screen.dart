@@ -8,6 +8,8 @@ import '../pedidos/meus_pedidos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../cashback/cashback_screen.dart';
+import '../fale_conosco/fale_conosco_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -199,17 +201,29 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 _itemAcao(
                   icon: Icons.savings_rounded,
                   titulo: 'Cashback',
-                  onTap: abrirCashback,
-                  iconColor: Colors.lightGreen,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CashbackScreen()),
+                    );
+                  },
+                  iconColor: Colors.green,
                 ),
 
                 const SizedBox(height: 10),
 
                 _itemAcao(
                   icon: Icons.support_agent_rounded,
-                  titulo: 'Fale conosco',
-                  onTap: faleConosco,
-                  iconColor: const Color.fromARGB(174, 244, 184, 54),
+                  titulo: 'Fale Conosco',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const FaleConoscoScreen(),
+                      ),
+                    );
+                  },
+                  iconColor: Colors.blue,
                 ),
 
                 const SizedBox(height: 10),
