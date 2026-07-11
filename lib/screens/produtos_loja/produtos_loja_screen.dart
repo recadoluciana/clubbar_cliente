@@ -546,8 +546,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          width: 82,
-          height: 72,
+          width: 78,
+          height: 70,
           decoration: BoxDecoration(
             color: selecionada ? Colors.amber : Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -570,16 +570,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 Icon(
                   CategoriaIconUtils.porNome(categoria.nome),
                   color: selecionada ? Colors.black : Colors.grey.shade700,
-                  size: 26,
+                  size: 22,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 5),
                 Text(
                   categoria.nome,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 10,
+                    fontSize: 9,
                     height: 1.15,
                     fontWeight: FontWeight.w700,
                     color: selecionada ? Colors.black : Colors.black87,
@@ -865,13 +865,225 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         if (produtosFiltrados.isEmpty)
                           _estadoVazio()
                         else
-                          ...produtosFiltrados.map(_cardProduto),
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: produtosFiltrados.length,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                  mainAxisExtent: 320,
+                                ),
+                            itemBuilder: (context, index) {
+                              return _cardProdutoGrade(
+                                produtosFiltrados[index],
+                              );
+                            },
+                          ),
                       ],
                     ),
                   ),
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _cardProdutoGrade(Produto produto) {
+    final temDesconto = produto.descontoativo;
+
+    final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
+
+    final seloDesconto = produto.tipodesconto.toUpperCase() == 'PERCENTUAL'
+        ? '${produto.vrdesconto.toStringAsFixed(0)}% OFF'
+        : '${ValueFormatters.moeda(produto.vrdesconto)} OFF';
+
+    final imagem = produto.urlfotoproduto ?? '';
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      elevation: 2,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
+            ),
+          );
+        },
+        child: SizedBox(
+          height: 320,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 125,
+                    child: imagem.isEmpty
+                        ? Container(
+                            color: Colors.grey.shade200,
+                            child: const Icon(
+                              Icons.fastfood_outlined,
+                              size: 38,
+                            ),
+                          )
+                        : Image.network(
+                            imagem,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) {
+                              return Container(
+                                color: Colors.grey.shade200,
+                                child: const Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 36,
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+
+                  if (temDesconto)
+                    Positioned(
+                      left: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: Text(
+                          seloDesconto,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  Positioned(
+                    right: 8,
+                    top: 8,
+                    child: Material(
+                      color: Colors.white.withOpacity(0.92),
+                      shape: const CircleBorder(),
+                      elevation: 2,
+                      child: IconButton(
+                        onPressed: () => compartilharProduto(produto),
+                        tooltip: 'Compartilhar produto',
+                        visualDensity: VisualDensity.compact,
+                        icon: const Icon(Icons.ios_share_rounded, size: 19),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(11, 10, 11, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        produto.nmproduto,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      if (temDesconto) ...[
+                        Text(
+                          ValueFormatters.moeda(produto.vrprecoprod),
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                      ],
+
+                      Text(
+                        ValueFormatters.moeda(precoAtual),
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          color: temDesconto
+                              ? Colors.green.shade700
+                              : Colors.black,
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      Text(
+                        produto.dsproduto.trim().isEmpty
+                            ? 'Produto disponível no cardápio.'
+                            : produto.dsproduto,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+
+                      const Spacer(),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: ElevatedButton.icon(
+                          onPressed: () => abrirDialogObservacao(produto),
+                          icon: const Icon(
+                            Icons.add_shopping_cart_rounded,
+                            size: 18,
+                          ),
+                          label: const Text(
+                            'Adicionar ao carrinho',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
