@@ -8,6 +8,7 @@ import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
+import '../../services/api_service.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
@@ -37,8 +38,6 @@ class CarteiraLojaScreen extends StatefulWidget {
 class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   late List<Map<String, dynamic>> itensTela;
 
-  static const String baseUrl = 'https://api.clubbar.com.br';
-
   @override
   void initState() {
     super.initState();
@@ -52,18 +51,17 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   String _buildImageUrl(String path) {
     if (path.isEmpty) return '';
     if (path.startsWith('http')) return path;
-    return '$baseUrl$path';
+    return '$ApiService. baseUrl$path';
   }
 
   String _montarDadosQr(Map<String, dynamic> item) {
-    return jsonEncode({
-      'itvenda_id': (item['itvenda_id'] ?? '').toString(),
-      'nmloja': widget.nomeLoja,
-      'nmcliente': (item['nmcliente'] ?? widget.nomeCliente).toString(),
-      'nmproduto': (item['nmproduto'] ?? '').toString(),
-      'dsobsitvenda': (item['dsobsitvenda'] ?? '').toString(),
-      'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
-    });
+    final token = (item['qrtokenitvenda'] ?? '').toString().trim();
+
+    if (token.isEmpty) {
+      return '';
+    }
+
+    return 'CLUBBAR-PRODUTO:$token';
   }
 
   Future<ui.Image?> _carregarImagemProduto(Map<String, dynamic> item) async {
@@ -127,27 +125,38 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   Future<Uint8List?> _gerarImagemPresente(Map<String, dynamic> item) async {
     try {
       const largura = 1080.0;
-      const altura = 1500.0;
+      const altura = 1600.0;
+
+      const tamanhoQr = 600.0;
+      const margemQr = 45.0;
+      const tamanhoAreaQr = tamanhoQr + (margemQr * 2);
+
+      final dadosQr = _montarDadosQr(item).trim();
+
+      if (dadosQr.isEmpty) {
+        return null;
+      }
 
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
-
       final paint = Paint();
 
-      // Fundo
+      // Fundo geral
       paint.color = const Color(0xFFF6F6F6);
+
       canvas.drawRect(const Rect.fromLTWH(0, 0, largura, altura), paint);
 
       // Cabeçalho preto
       paint.color = Colors.black;
-      canvas.drawRect(const Rect.fromLTWH(0, 0, largura, 175), paint);
+
+      canvas.drawRect(const Rect.fromLTWH(0, 0, largura, 155), paint);
 
       _desenharTexto(
         canvas,
         texto: 'CLUBBAR',
-        posicao: const Offset(0, 52),
+        posicao: const Offset(0, 44),
         larguraMaxima: largura,
-        tamanho: 58,
+        tamanho: 54,
         cor: Colors.white,
         peso: FontWeight.w900,
         alinhamento: TextAlign.center,
@@ -158,29 +167,29 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          const Rect.fromLTWH(55, 215, 970, 1210),
+          const Rect.fromLTWH(50, 190, 980, 1350),
           const Radius.circular(42),
         ),
         paint,
       );
 
-      // Faixa de presente
+      // Faixa do presente
       paint.color = Colors.amber;
 
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          const Rect.fromLTWH(95, 255, 890, 90),
-          const Radius.circular(24),
+          const Rect.fromLTWH(90, 230, 900, 82),
+          const Radius.circular(22),
         ),
         paint,
       );
 
       _desenharTexto(
         canvas,
-        texto: '🎁 Você ganhou um presente!',
-        posicao: const Offset(95, 275),
-        larguraMaxima: 890,
-        tamanho: 38,
+        texto: 'Você ganhou um presente!',
+        posicao: const Offset(90, 251),
+        larguraMaxima: 900,
+        tamanho: 36,
         cor: Colors.black,
         peso: FontWeight.w900,
         alinhamento: TextAlign.center,
@@ -190,8 +199,8 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       final imagemProduto = await _carregarImagemProduto(item);
 
       final areaFoto = RRect.fromRectAndRadius(
-        const Rect.fromLTWH(95, 380, 890, 430),
-        const Radius.circular(30),
+        const Rect.fromLTWH(90, 345, 900, 300),
+        const Radius.circular(28),
       );
 
       canvas.save();
@@ -209,72 +218,94 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
           imagemProduto,
           origem,
           areaFoto.outerRect,
-          Paint(),
+          Paint()..filterQuality = FilterQuality.high,
         );
       } else {
         paint.color = const Color(0xFFFFF2C7);
+
         canvas.drawRect(areaFoto.outerRect, paint);
 
         _desenharTexto(
           canvas,
-          texto: '🍹',
-          posicao: const Offset(95, 520),
-          larguraMaxima: 890,
-          tamanho: 120,
+          texto: 'PRESENTE CLUBBAR',
+          posicao: const Offset(90, 465),
+          larguraMaxima: 900,
+          tamanho: 42,
           cor: Colors.black,
-          peso: FontWeight.bold,
+          peso: FontWeight.w800,
           alinhamento: TextAlign.center,
         );
       }
 
       canvas.restore();
 
-      final nomeProduto = (item['nmproduto'] ?? 'Produto Clubbar').toString();
+      final nomeProduto = (item['nmproduto'] ?? 'Produto Clubbar')
+          .toString()
+          .trim();
 
+      // Nome do produto
       _desenharTexto(
         canvas,
         texto: nomeProduto,
-        posicao: const Offset(95, 845),
-        larguraMaxima: 890,
-        tamanho: 48,
+        posicao: const Offset(90, 680),
+        larguraMaxima: 900,
+        tamanho: 44,
         cor: Colors.black,
         peso: FontWeight.w900,
         maxLines: 2,
+        alinhamento: TextAlign.center,
       );
 
+      // Nome da loja
       _desenharTexto(
         canvas,
         texto: widget.nomeLoja,
-        posicao: const Offset(95, 965),
-        larguraMaxima: 890,
-        tamanho: 30,
-        cor: Colors.grey.shade700,
+        posicao: const Offset(90, 785),
+        larguraMaxima: 900,
+        tamanho: 29,
+        cor: Colors.grey.shade800,
         peso: FontWeight.w700,
+        alinhamento: TextAlign.center,
       );
 
+      // Quem enviou
       if (widget.nomeCliente.trim().isNotEmpty) {
         _desenharTexto(
           canvas,
           texto: 'Presente de ${widget.nomeCliente}',
-          posicao: const Offset(95, 1010),
-          larguraMaxima: 890,
-          tamanho: 27,
+          posicao: const Offset(90, 830),
+          larguraMaxima: 900,
+          tamanho: 25,
           cor: Colors.grey.shade700,
           peso: FontWeight.w600,
+          alinhamento: TextAlign.center,
         );
       }
 
-      // QR Code
+      // Área branca externa do QR Code
+      const areaBrancaQr = Rect.fromLTWH(
+        (largura - tamanhoAreaQr) / 2,
+        885,
+        tamanhoAreaQr,
+        tamanhoAreaQr,
+      );
+
+      paint.color = Colors.white;
+
+      canvas.drawRect(areaBrancaQr, paint);
+
+      // Geração do QR Code
       final qrPainter = QrPainter(
-        data: _montarDadosQr(item),
+        data: dadosQr,
         version: QrVersions.auto,
-        gapless: true,
+        errorCorrectionLevel: QrErrorCorrectLevel.M,
+        gapless: false,
         color: Colors.black,
         emptyColor: Colors.white,
       );
 
       final qrData = await qrPainter.toImageData(
-        310,
+        tamanhoQr,
         format: ui.ImageByteFormat.png,
       );
 
@@ -284,19 +315,22 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
       final qrCodec = await ui.instantiateImageCodec(
         qrData.buffer.asUint8List(),
+        targetWidth: tamanhoQr.toInt(),
+        targetHeight: tamanhoQr.toInt(),
       );
 
       final qrFrame = await qrCodec.getNextFrame();
 
-      paint.color = Colors.white;
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(385, 1065, 310, 310),
-          const Radius.circular(18),
-        ),
-        paint,
+      const areaQr = Rect.fromLTWH(
+        (largura - tamanhoQr) / 2,
+        885 + margemQr,
+        tamanhoQr,
+        tamanhoQr,
       );
+
+      final paintQr = Paint()
+        ..isAntiAlias = false
+        ..filterQuality = FilterQuality.none;
 
       canvas.drawImageRect(
         qrFrame.image,
@@ -306,16 +340,17 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
           qrFrame.image.width.toDouble(),
           qrFrame.image.height.toDouble(),
         ),
-        const Rect.fromLTWH(385, 1065, 310, 310),
-        Paint(),
+        areaQr,
+        paintQr,
       );
 
+      // Orientação
       _desenharTexto(
         canvas,
         texto: 'Apresente este QR Code ao atendente',
-        posicao: const Offset(95, 1382),
-        larguraMaxima: 890,
-        tamanho: 24,
+        posicao: const Offset(90, 1510),
+        larguraMaxima: 900,
+        tamanho: 22,
         cor: Colors.grey.shade700,
         peso: FontWeight.w700,
         alinhamento: TextAlign.center,
@@ -333,7 +368,8 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       );
 
       return dados?.buffer.asUint8List();
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Erro ao gerar imagem do presente: $e');
       return null;
     }
   }
@@ -342,7 +378,10 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     final itvendaId = int.tryParse('${item['itvenda_id'] ?? 0}') ?? 0;
 
     if (itvendaId == 0) {
-      AppSnackBar.erro(context, 'Não foi possível identificar este produto.');
+      AppSnackBar.erro(
+        context,
+        'Não foi possível identificar este produto. Item venda id inválido.',
+      );
       return;
     }
 
@@ -353,7 +392,10 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     if (!mounted) return;
 
     if (imagem == null) {
-      AppSnackBar.erro(context, 'Não foi possível gerar a imagem do presente.');
+      AppSnackBar.erro(
+        context,
+        'Não foi possível gerar a imagem do presente. Imagem inválida.',
+      );
       return;
     }
 
@@ -579,111 +621,120 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
         elevation: 2,
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
           onTap: () => _abrirQrOuRetirada(context, item),
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _imagemItem(item),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _imagemItem(item),
+
+                    const SizedBox(width: 14),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              (item['nmproduto'] ?? '').toString(),
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          Text(
+                            (item['nmproduto'] ?? '').toString(),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _chip('Qtd: ${item['qtitvenda'] ?? 0}'),
-                          _chip(
-                            'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
+
+                          const SizedBox(height: 8),
+
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              _chip('Qtd: ${item['qtitvenda'] ?? 0}'),
+                              _chip(
+                                'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
+                              ),
+                              if (validade.isNotEmpty)
+                                _chip('Validade: $validade'),
+                            ],
                           ),
-                          if (validade.isNotEmpty) _chip('Validade: $validade'),
+
+                          if (obs.trim().isNotEmpty) ...[
+                            const SizedBox(height: 10),
+                            Text(
+                              'Observação: $obs',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 13,
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                      if (obs.isNotEmpty) ...[
-                        const SizedBox(height: 10),
-                        Text(
-                          'Observação: $obs',
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 13,
-                            height: 1.35,
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 44,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _abrirQrOuRetirada(context, item),
+                          icon: const Icon(Icons.qr_code_2_rounded, size: 18),
+                          label: const Text(
+                            'Usar',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF7A5A00),
+                            side: const BorderSide(color: Color(0xFFE0C36A)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                         ),
-                      ],
-                      const SizedBox(height: 12),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () =>
-                                  _abrirQrOuRetirada(context, item),
-                              icon: const Icon(
-                                Icons.qr_code_2_rounded,
-                                size: 18,
-                              ),
-                              label: const Text(
-                                'Usar',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF7A5A00),
-                                side: const BorderSide(
-                                  color: Color(0xFFE0C36A),
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(width: 10),
-
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () => _confirmarCompartilhamento(item),
-                              icon: const Icon(
-                                Icons.card_giftcard_rounded,
-                                size: 18,
-                              ),
-                              label: const Text(
-                                'Presentear',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
-                    ],
-                  ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    Expanded(
+                      child: SizedBox(
+                        height: 44,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _confirmarCompartilhamento(item),
+                          icon: const Icon(
+                            Icons.card_giftcard_rounded,
+                            size: 18,
+                          ),
+                          label: const Text(
+                            'Presentear',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
