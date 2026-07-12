@@ -6,6 +6,11 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
+
+import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
 
 class CarteiraLojaScreen extends StatefulWidget {
   final String nomeLoja;
@@ -50,20 +55,403 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     return '$baseUrl$path';
   }
 
+  String _montarDadosQr(Map<String, dynamic> item) {
+    return jsonEncode({
+      'itvenda_id': (item['itvenda_id'] ?? '').toString(),
+      'nmloja': widget.nomeLoja,
+      'nmcliente': (item['nmcliente'] ?? widget.nomeCliente).toString(),
+      'nmproduto': (item['nmproduto'] ?? '').toString(),
+      'dsobsitvenda': (item['dsobsitvenda'] ?? '').toString(),
+      'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
+    });
+  }
+
+  Future<ui.Image?> _carregarImagemProduto(Map<String, dynamic> item) async {
+    try {
+      final url = _buildImageUrl((item['urlfotoproduto'] ?? '').toString());
+
+      if (url.isEmpty) {
+        return null;
+      }
+
+      final resposta = await http.get(Uri.parse(url));
+
+      if (resposta.statusCode != 200) {
+        return null;
+      }
+
+      final codec = await ui.instantiateImageCodec(
+        resposta.bodyBytes,
+        targetWidth: 900,
+        targetHeight: 520,
+      );
+
+      final frame = await codec.getNextFrame();
+
+      return frame.image;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _desenharTexto(
+    Canvas canvas, {
+    required String texto,
+    required Offset posicao,
+    required double larguraMaxima,
+    required double tamanho,
+    required Color cor,
+    FontWeight peso = FontWeight.normal,
+    int maxLines = 1,
+    TextAlign alinhamento = TextAlign.left,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: texto,
+        style: TextStyle(
+          color: cor,
+          fontSize: tamanho,
+          fontWeight: peso,
+          height: 1.2,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: alinhamento,
+      maxLines: maxLines,
+      ellipsis: '...',
+    )..layout(maxWidth: larguraMaxima);
+
+    painter.paint(canvas, posicao);
+  }
+
+  Future<Uint8List?> _gerarImagemPresente(Map<String, dynamic> item) async {
+    try {
+      const largura = 1080.0;
+      const altura = 1500.0;
+
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(recorder);
+
+      final paint = Paint();
+
+      // Fundo
+      paint.color = const Color(0xFFF6F6F6);
+      canvas.drawRect(const Rect.fromLTWH(0, 0, largura, altura), paint);
+
+      // Cabeçalho preto
+      paint.color = Colors.black;
+      canvas.drawRect(const Rect.fromLTWH(0, 0, largura, 175), paint);
+
+      _desenharTexto(
+        canvas,
+        texto: 'CLUBBAR',
+        posicao: const Offset(0, 52),
+        larguraMaxima: largura,
+        tamanho: 58,
+        cor: Colors.white,
+        peso: FontWeight.w900,
+        alinhamento: TextAlign.center,
+      );
+
+      // Cartão principal
+      paint.color = Colors.white;
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTWH(55, 215, 970, 1210),
+          const Radius.circular(42),
+        ),
+        paint,
+      );
+
+      // Faixa de presente
+      paint.color = Colors.amber;
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTWH(95, 255, 890, 90),
+          const Radius.circular(24),
+        ),
+        paint,
+      );
+
+      _desenharTexto(
+        canvas,
+        texto: '🎁 Você ganhou um presente!',
+        posicao: const Offset(95, 275),
+        larguraMaxima: 890,
+        tamanho: 38,
+        cor: Colors.black,
+        peso: FontWeight.w900,
+        alinhamento: TextAlign.center,
+      );
+
+      // Foto do produto
+      final imagemProduto = await _carregarImagemProduto(item);
+
+      final areaFoto = RRect.fromRectAndRadius(
+        const Rect.fromLTWH(95, 380, 890, 430),
+        const Radius.circular(30),
+      );
+
+      canvas.save();
+      canvas.clipRRect(areaFoto);
+
+      if (imagemProduto != null) {
+        final origem = Rect.fromLTWH(
+          0,
+          0,
+          imagemProduto.width.toDouble(),
+          imagemProduto.height.toDouble(),
+        );
+
+        canvas.drawImageRect(
+          imagemProduto,
+          origem,
+          areaFoto.outerRect,
+          Paint(),
+        );
+      } else {
+        paint.color = const Color(0xFFFFF2C7);
+        canvas.drawRect(areaFoto.outerRect, paint);
+
+        _desenharTexto(
+          canvas,
+          texto: '🍹',
+          posicao: const Offset(95, 520),
+          larguraMaxima: 890,
+          tamanho: 120,
+          cor: Colors.black,
+          peso: FontWeight.bold,
+          alinhamento: TextAlign.center,
+        );
+      }
+
+      canvas.restore();
+
+      final nomeProduto = (item['nmproduto'] ?? 'Produto Clubbar').toString();
+
+      _desenharTexto(
+        canvas,
+        texto: nomeProduto,
+        posicao: const Offset(95, 845),
+        larguraMaxima: 890,
+        tamanho: 48,
+        cor: Colors.black,
+        peso: FontWeight.w900,
+        maxLines: 2,
+      );
+
+      _desenharTexto(
+        canvas,
+        texto: widget.nomeLoja,
+        posicao: const Offset(95, 965),
+        larguraMaxima: 890,
+        tamanho: 30,
+        cor: Colors.grey.shade700,
+        peso: FontWeight.w700,
+      );
+
+      if (widget.nomeCliente.trim().isNotEmpty) {
+        _desenharTexto(
+          canvas,
+          texto: 'Presente de ${widget.nomeCliente}',
+          posicao: const Offset(95, 1010),
+          larguraMaxima: 890,
+          tamanho: 27,
+          cor: Colors.grey.shade700,
+          peso: FontWeight.w600,
+        );
+      }
+
+      // QR Code
+      final qrPainter = QrPainter(
+        data: _montarDadosQr(item),
+        version: QrVersions.auto,
+        gapless: true,
+        color: Colors.black,
+        emptyColor: Colors.white,
+      );
+
+      final qrData = await qrPainter.toImageData(
+        310,
+        format: ui.ImageByteFormat.png,
+      );
+
+      if (qrData == null) {
+        return null;
+      }
+
+      final qrCodec = await ui.instantiateImageCodec(
+        qrData.buffer.asUint8List(),
+      );
+
+      final qrFrame = await qrCodec.getNextFrame();
+
+      paint.color = Colors.white;
+
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          const Rect.fromLTWH(385, 1065, 310, 310),
+          const Radius.circular(18),
+        ),
+        paint,
+      );
+
+      canvas.drawImageRect(
+        qrFrame.image,
+        Rect.fromLTWH(
+          0,
+          0,
+          qrFrame.image.width.toDouble(),
+          qrFrame.image.height.toDouble(),
+        ),
+        const Rect.fromLTWH(385, 1065, 310, 310),
+        Paint(),
+      );
+
+      _desenharTexto(
+        canvas,
+        texto: 'Apresente este QR Code ao atendente',
+        posicao: const Offset(95, 1382),
+        larguraMaxima: 890,
+        tamanho: 24,
+        cor: Colors.grey.shade700,
+        peso: FontWeight.w700,
+        alinhamento: TextAlign.center,
+      );
+
+      final picture = recorder.endRecording();
+
+      final imagemFinal = await picture.toImage(
+        largura.toInt(),
+        altura.toInt(),
+      );
+
+      final dados = await imagemFinal.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
+
+      return dados?.buffer.asUint8List();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _compartilharPresente(Map<String, dynamic> item) async {
+    final itvendaId = int.tryParse('${item['itvenda_id'] ?? 0}') ?? 0;
+
+    if (itvendaId == 0) {
+      AppSnackBar.erro(context, 'Não foi possível identificar este produto.');
+      return;
+    }
+
+    AppSnackBar.info(context, 'Preparando o presente...');
+
+    final imagem = await _gerarImagemPresente(item);
+
+    if (!mounted) return;
+
+    if (imagem == null) {
+      AppSnackBar.erro(context, 'Não foi possível gerar a imagem do presente.');
+      return;
+    }
+
+    final nomeProduto = (item['nmproduto'] ?? 'Presente Clubbar').toString();
+
+    final texto =
+        '🎁 Você ganhou um presente pelo Clubbar!\n\n'
+        '$nomeProduto\n'
+        '📍 ${widget.nomeLoja}\n\n'
+        'Apresente o QR Code da imagem ao atendente.';
+
+    try {
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            imagem,
+            name: 'presente_clubbar_$itvendaId.png',
+            mimeType: 'image/png',
+          ),
+        ],
+        text: texto,
+        subject: 'Presente Clubbar',
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      AppSnackBar.erro(context, 'Não foi possível compartilhar o presente.');
+    }
+  }
+
+  Future<void> _confirmarCompartilhamento(Map<String, dynamic> item) async {
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFF6F6F6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.card_giftcard_rounded, color: Colors.amber),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Enviar como presente',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Será criada uma imagem com a foto do produto e o QR Code.\n\n'
+            'O produto continuará aparecendo na sua carteira, mas o mesmo '
+            'QR Code poderá ser usado pela pessoa presenteada.\n\n'
+            'Quem apresentar o QR Code primeiro utilizará o produto.',
+            style: TextStyle(height: 1.45),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              icon: const Icon(Icons.ios_share_rounded),
+              label: const Text('Compartilhar'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmado != true) {
+      return;
+    }
+
+    await _compartilharPresente(item);
+  }
+
   Future<void> _abrirQrOuRetirada(
     BuildContext context,
     Map<String, dynamic> item,
   ) async {
     final codigo = (item['itvenda_id'] ?? '').toString();
 
-    final qrData = jsonEncode({
-      'itvenda_id': codigo,
-      'nmloja': widget.nomeLoja,
-      'nmcliente': (item['nmcliente'] ?? '').toString(),
-      'nmproduto': (item['nmproduto'] ?? '').toString(),
-      'dsobsitvenda': (item['dsobsitvenda'] ?? '').toString(),
-      'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
-    });
+    final qrData = _montarDadosQr(item);
 
     if (codigo.isEmpty) {
       AppSnackBar.erro(context, 'QR Code não disponível para este item.');
@@ -241,11 +629,58 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 10),
-                      TextButton.icon(
-                        onPressed: () => _abrirQrOuRetirada(context, item),
-                        icon: const Icon(Icons.qr_code_2_rounded),
-                        label: const Text('Retirar'),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () =>
+                                  _abrirQrOuRetirada(context, item),
+                              icon: const Icon(
+                                Icons.qr_code_2_rounded,
+                                size: 18,
+                              ),
+                              label: const Text(
+                                'Usar',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF7A5A00),
+                                side: const BorderSide(
+                                  color: Color(0xFFE0C36A),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _confirmarCompartilhamento(item),
+                              icon: const Icon(
+                                Icons.card_giftcard_rounded,
+                                size: 18,
+                              ),
+                              label: const Text(
+                                'Presentear',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

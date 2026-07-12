@@ -309,168 +309,268 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     }
   }
 
-  Widget _chip(String texto) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        texto,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-      ),
-    );
-  }
-
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
-    final nomeParticipante = (item['nmparticipante'] ?? '').toString();
-    final cpfParticipante = _formatarCpf(
-      (item['cpfparticipante'] ?? '').toString(),
-    );
-    final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
+    final nomeIngresso = (item['nmproduto'] ?? 'Ingresso').toString().trim();
 
-    //debugPrint('ITEM CARTEIRA INGRESSO => $item');
+    final nomeParticipante = (item['nmparticipante'] ?? '').toString().trim();
+
+    final cpfOriginal = (item['cpfparticipante'] ?? '').toString().trim();
+
+    final cpfParticipante = cpfOriginal.isEmpty
+        ? ''
+        : _formatarCpf(cpfOriginal);
+
+    final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString().trim();
+
+    final valor = double.tryParse('${item['vrunititvenda'] ?? 0}') ?? 0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
         elevation: 2,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(22),
-          onTap: null,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _imagemItem(item),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              (item['nmproduto'] ?? '').toString(),
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _chip(
-                            'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
-                          ),
-                          if (validade.isNotEmpty) _chip('Validade: $validade'),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      if (nomeParticipante.isNotEmpty ||
-                          cpfParticipante.isNotEmpty) ...[
-                        const SizedBox(height: 10),
+        shadowColor: Colors.black.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(24),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            // Faixa superior do ingresso
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(15, 14, 15, 13),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Colors.blue.withOpacity(0.12),
+                    Colors.amber.withOpacity(0.10),
+                  ],
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 62,
+                    height: 62,
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(17),
+                      border: Border.all(color: Colors.blue.withOpacity(0.20)),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: _imagemItem(item),
+                    ),
+                  ),
 
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.blue.withOpacity(0.20),
-                            ),
+                  const SizedBox(width: 4),
+
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          nomeIngresso,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            height: 1.15,
                           ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          widget.nomeLoja,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  _badgeDisponivel(),
+                ],
+              ),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.fromLTRB(15, 4, 5, 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Valor e validade
+                  Row(
+                    children: [
+                      _informacaoIngresso(
+                        icone: Icons.payments_outlined,
+                        titulo: 'Valor',
+                        valor: ValueFormatters.moeda(valor),
+                        corIcone: Colors.green.shade700,
+                      ),
+
+                      const SizedBox(width: 5),
+
+                      _informacaoIngresso(
+                        icone: Icons.event_available_outlined,
+                        titulo: 'Validade',
+                        valor: validade.isEmpty ? 'Não informada' : validade,
+                        corIcone: Colors.blue.shade700,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  // Participante
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(13),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.blue.withOpacity(0.16)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.person_rounded,
+                            color: Colors.blue,
+                            size: 22,
+                          ),
+                        ),
+
+                        const SizedBox(width: 2),
+
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (nomeParticipante.isNotEmpty)
-                                Text(
-                                  nomeParticipante,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                              Text(
+                                'Participante',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
                                 ),
+                              ),
+
+                              const SizedBox(height: 3),
+
+                              Text(
+                                nomeParticipante.isEmpty
+                                    ? 'Participante não informado'
+                                    : nomeParticipante,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
 
                               if (cpfParticipante.isNotEmpty) ...[
-                                const SizedBox(height: 4),
-
+                                const SizedBox(height: 3),
                                 Text(
-                                  cpfParticipante,
+                                  'CPF: $cpfParticipante',
                                   style: TextStyle(
-                                    fontSize: 13,
                                     color: Colors.grey.shade700,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: 8),
-                              InkWell(
-                                borderRadius: BorderRadius.circular(20),
-                                onTap: () =>
-                                    _abrirDialogAlterarParticipante(item),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.edit_outlined, size: 16),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Alterar',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ),
+
+                        IconButton(
+                          tooltip: 'Alterar participante',
+                          onPressed: () =>
+                              _abrirDialogAlterarParticipante(item),
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.amber.withOpacity(0.18),
+                            foregroundColor: Colors.black87,
+                          ),
+                          icon: const Icon(Icons.edit_outlined, size: 19),
+                        ),
                       ],
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 42,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _abrirQrOuRetirada(context, item),
-                          icon: const Icon(Icons.qr_code_2_rounded, size: 18),
-                          label: const Text('Retirar ingresso'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF7A5A00),
-                            side: const BorderSide(color: Color(0xFFE0C36A)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Botão principal
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _abrirQrOuRetirada(context, item),
+                      icon: const Icon(Icons.qr_code_2_rounded, size: 22),
+                      label: const Text(
+                        'Exibir ingresso e QR Code',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          'Apresente o QR Code na portaria do evento.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -483,124 +583,25 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       return _placeholderItem(item);
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: Image.network(
-        url,
-        width: 72,
-        height: 72,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => _placeholderItem(item),
-      ),
+    return Image.network(
+      url,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => _placeholderItem(item),
     );
   }
 
   Widget _placeholderItem(Map<String, dynamic> item) {
     return Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(18),
-      ),
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.amber.withOpacity(0.14),
+      alignment: Alignment.center,
       child: Icon(
-        _isIngresso(item)
-            ? Icons.confirmation_number_outlined
-            : Icons.local_bar_outlined,
+        Icons.confirmation_number_outlined,
         color: Colors.amber.shade800,
-        size: 30,
-      ),
-    );
-  }
-
-  Widget _logoLoja() {
-    if (widget.logoLoja.isEmpty) {
-      return Container(
-        width: 92,
-        height: 92,
-        decoration: BoxDecoration(
-          color: Colors.amber.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Icon(Icons.storefront_outlined, color: Colors.amber.shade800),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: Image.network(
-        widget.logoLoja,
-        width: 58,
-        height: 58,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) {
-          return Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(
-              Icons.storefront_outlined,
-              color: Colors.amber.shade800,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _identificacaoLoja(int totalUnidades) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            _logoLoja(),
-
-            const SizedBox(width: 14),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.nomeLoja,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-                ],
-              ),
-            ),
-
-            const Icon(
-              Icons.confirmation_number_rounded,
-              color: Colors.amber,
-              size: 25,
-            ),
-          ],
-        ),
+        size: 28,
       ),
     );
   }
@@ -638,6 +639,81 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
   }
 
+  Widget _informacaoIngresso({
+    required IconData icone,
+    required String titulo,
+    required String valor,
+    Color? corIcone,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          children: [
+            Icon(icone, size: 18, color: corIcone ?? Colors.grey.shade700),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    titulo,
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    valor,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _badgeDisponivel() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.green.withOpacity(0.25)),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_circle_rounded, size: 14, color: Colors.green),
+          SizedBox(width: 4),
+          Text(
+            'Disponível',
+            style: TextStyle(
+              color: Colors.green,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final totalUnidades = itensTela.fold<int>(0, (total, item) {
@@ -647,8 +723,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     });
 
     final subtituloAux = totalUnidades == 1
-        ? '1 ingresso disponível para uso'
-        : '$totalUnidades ingressos disponíveis para uso';
+        ? '1 ingresso disponível'
+        : '$totalUnidades ingressos disponíveis';
 
     final subtituloCompleto = '${widget.nomeLoja} • $subtituloAux';
 
@@ -660,12 +736,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: 'Carteira de Ingressos',
+            titulo: 'Carteira de ingressos',
             subtitulo: subtituloCompleto,
             icone: Icons.confirmation_number_rounded,
+            imagemUrl: widget.logoLoja,
           ),
-
-          _identificacaoLoja(totalUnidades),
 
           Expanded(
             child: RefreshIndicator(
