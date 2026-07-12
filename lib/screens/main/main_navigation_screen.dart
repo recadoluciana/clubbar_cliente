@@ -54,7 +54,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }) {
     final selecionado = currentIndex == index;
 
-    final cor = selecionado ? Colors.black : Colors.grey.shade500;
+    final cor_item = selecionado ? Colors.black : Colors.black;
 
     return Expanded(
       child: Material(
@@ -88,7 +88,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   children: [
                     IconTheme(
                       data: IconThemeData(
-                        color: cor,
+                        color: cor_item,
                         size: selecionado ? 23 : 22,
                       ),
                       child: SizedBox(height: 25, child: Center(child: icone)),
@@ -103,7 +103,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: cor,
+                        color: cor_item,
                         fontSize: 11,
                         height: 1,
                         fontWeight: selecionado

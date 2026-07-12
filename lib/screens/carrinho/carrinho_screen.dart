@@ -10,6 +10,7 @@ import '../pagamento/escolha_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class ItemCarrinhoAgrupado {
   final int produtoId;
@@ -24,6 +25,7 @@ class ItemCarrinhoAgrupado {
   final int quantidade;
   final String nmparticipante;
   final String cpfparticipante;
+  final String idtipoproduto;
 
   ItemCarrinhoAgrupado({
     required this.produtoId,
@@ -38,6 +40,7 @@ class ItemCarrinhoAgrupado {
     required this.quantidade,
     required this.nmparticipante,
     required this.cpfparticipante,
+    required this.idtipoproduto,
   });
 
   double get subtotal => precoFinal * quantidade;
@@ -60,7 +63,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   String? erro;
   int? clienteId;
   int? carrinhoId;
-
+  bool alterandoQuantidade = false;
   List<ItemCarrinho> itensCarrinho = [];
 
   @override
@@ -76,11 +79,14 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       final obs = item.observacao.trim();
       final nome = item.nmparticipante.trim();
       final cpf = item.cpfparticipante.trim();
+
       final chave =
-          '${item.produtoId}__${obs.toLowerCase()}__${nome.toLowerCase()}__${cpf.toLowerCase()}';
+          '${item.produtoId}__${obs.toLowerCase()}__'
+          '${nome.toLowerCase()}__${cpf.toLowerCase()}';
 
       if (mapa.containsKey(chave)) {
         final atual = mapa[chave]!;
+
         mapa[chave] = ItemCarrinhoAgrupado(
           produtoId: atual.produtoId,
           nome: atual.nome,
@@ -94,6 +100,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           quantidade: atual.quantidade + item.quantidade,
           nmparticipante: atual.nmparticipante,
           cpfparticipante: atual.cpfparticipante,
+          idtipoproduto: atual.idtipoproduto,
         );
       } else {
         mapa[chave] = ItemCarrinhoAgrupado(
@@ -109,6 +116,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           quantidade: item.quantidade,
           nmparticipante: item.nmparticipante,
           cpfparticipante: item.cpfparticipante,
+          idtipoproduto: item.idtipoproduto.trim().toUpperCase(),
         );
       }
     }
@@ -144,6 +152,66 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return total;
   }
 
+  Future<void> _atualizarCarrinhoEBadge() async {
+    await carregarCarrinho();
+
+    if (clienteId == null || clienteId == 0) return;
+
+    final quantidade = await apiService.buscarQuantidadeCarrinho(
+      clienteId: clienteId!,
+    );
+
+    CartBadgeNotifier.atualizar(quantidade);
+  }
+
+  Future<void> aumentarQuantidade(ItemCarrinhoAgrupado item) async {
+    if (alterandoQuantidade) return;
+
+    if (item.idtipoproduto == 'I') {
+      AppSnackBar.aviso(
+        context,
+        'Para adicionar outro ingresso, informe os dados do novo participante.',
+      );
+      return;
+    }
+
+    if (clienteId == null || clienteId == 0) {
+      AppSnackBar.erro(context, 'Cliente não identificado.');
+      return;
+    }
+
+    setState(() {
+      alterandoQuantidade = true;
+    });
+
+    try {
+      await apiService.adicionarAoCarrinho(
+        clienteId: clienteId!,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        produtoId: item.produtoId,
+        quantidade: 1,
+        observacao: item.observacao,
+      );
+
+      await _atualizarCarrinhoEBadge();
+
+      if (!mounted) return;
+
+      AppSnackBar.sucesso(context, 'Quantidade de "${item.nome}" aumentada.');
+    } catch (e) {
+      if (!mounted) return;
+
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) {
+        setState(() {
+          alterandoQuantidade = false;
+        });
+      }
+    }
+  }
+
   Future<void> carregarCarrinho() async {
     setState(() {
       carregando = true;
@@ -174,19 +242,27 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         carregando = false;
       });
     } catch (e) {
+      if (!mounted) return;
+
       setState(() {
-        erro = e.toString().replaceFirst('Exception: ', '');
+        erro = apiService.mensagemErroAmigavel(e);
         itensCarrinho = [];
         carregando = false;
       });
     }
   }
 
-  Future<void> removerItemAgrupado(ItemCarrinhoAgrupado item) async {
+  Future<void> diminuirQuantidade(ItemCarrinhoAgrupado item) async {
+    if (alterandoQuantidade) return;
+
     if (carrinhoId == null || carrinhoId == 0) {
       AppSnackBar.erro(context, 'Carrinho inválido para remoção.');
       return;
     }
+
+    setState(() {
+      alterandoQuantidade = true;
+    });
 
     try {
       await apiService.removerItemCarrinho(
@@ -195,33 +271,168 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         observacao: item.observacao,
       );
 
+      await _atualizarCarrinhoEBadge();
+
       if (!mounted) return;
 
       AppSnackBar.sucesso(
         context,
-        '1 unidade de "${item.nome}" removida do carrinho',
+        item.quantidade > 1
+            ? 'Quantidade de "${item.nome}" diminuída.'
+            : '"${item.nome}" removido do carrinho.',
       );
-
-      await carregarCarrinho();
-
-      if (clienteId != null && clienteId != 0) {
-        final total = await apiService.buscarQuantidadeCarrinho(
-          clienteId: clienteId!,
-        );
-        CartBadgeNotifier.atualizar(total);
-      }
     } catch (e) {
       if (!mounted) return;
 
       AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) {
+        setState(() {
+          alterandoQuantidade = false;
+        });
+      }
     }
+  }
+
+  Future<void> removerItemCompleto(ItemCarrinhoAgrupado item) async {
+    if (alterandoQuantidade) return;
+
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFF6F6F6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Remover item',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Deseja remover todas as unidades de "${item.nome}" do carrinho?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              icon: const Icon(Icons.delete_outline_rounded),
+              label: const Text('Remover'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmar != true) return;
+
+    if (carrinhoId == null || carrinhoId == 0) {
+      AppSnackBar.erro(context, 'Carrinho inválido para remoção.');
+      return;
+    }
+
+    setState(() {
+      alterandoQuantidade = true;
+    });
+
+    try {
+      for (var i = 0; i < item.quantidade; i++) {
+        await apiService.removerItemCarrinho(
+          carrinhoId: carrinhoId!,
+          produtoId: item.produtoId,
+          observacao: item.observacao,
+        );
+      }
+
+      await _atualizarCarrinhoEBadge();
+
+      if (!mounted) return;
+
+      AppSnackBar.sucesso(context, '"${item.nome}" removido do carrinho.');
+    } catch (e) {
+      if (!mounted) return;
+
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) {
+        setState(() {
+          alterandoQuantidade = false;
+        });
+      }
+    }
+  }
+
+  Widget _controleQuantidade(ItemCarrinhoAgrupado item) {
+    final permiteAumentar = item.idtipoproduto != 'I';
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: 'Diminuir quantidade',
+                onPressed: alterandoQuantidade
+                    ? null
+                    : () => diminuirQuantidade(item),
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.remove_rounded, size: 19),
+              ),
+              Text(
+                '${item.quantidade}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              IconButton(
+                tooltip: permiteAumentar
+                    ? 'Aumentar quantidade'
+                    : 'Adicione outro ingresso pela agenda',
+                onPressed: alterandoQuantidade || !permiteAumentar
+                    ? null
+                    : () => aumentarQuantidade(item),
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.add_rounded, size: 19),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 6),
+        IconButton(
+          tooltip: 'Remover item',
+          onPressed: alterandoQuantidade
+              ? null
+              : () => removerItemCompleto(item),
+          icon: const Icon(
+            Icons.delete_outline_rounded,
+            color: Colors.red,
+            size: 22,
+          ),
+        ),
+      ],
+    );
   }
 
   Future<void> abrirEscolhaPagamento() async {
     if (itensCarrinho.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Seu carrinho está vazio')));
+      AppSnackBar.aviso(context, 'Seu carrinho está vazio.');
       return;
     }
 
@@ -404,26 +615,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         ),
                       ),
                     ],
-                    Text(
-                      'Qtd: ${item.quantidade}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
                     const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () => removerItemAgrupado(item),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Remover',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
+                    _controleQuantidade(item),
                   ],
                 ),
               ),
@@ -581,80 +774,91 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   Widget build(BuildContext context) {
     final vazio = itensAgrupados.isEmpty;
 
+    final totalItens = itensAgrupados.fold<int>(
+      0,
+      (soma, item) => soma + item.quantidade,
+    );
+
+    final subtitulo = totalItens == 1
+        ? '${widget.loja.nome} • 1 item no carrinho'
+        : '${widget.loja.nome} • $totalItens itens no carrinho';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+
       appBar: const ClubbarAppBar(mostrarVoltar: true),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
           ? _erroWidget()
-          : RefreshIndicator(
-              onRefresh: carregarCarrinho,
-              child: ListView(
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.loja.nome,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
+          : Column(
+              children: [
+                ClubbarPageHeader(
+                  titulo: 'Carrinho',
+                  subtitulo: subtitulo,
+                  icone: Icons.shopping_cart_rounded,
+                  imagemUrl: widget.loja.imagemUrl,
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 42,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ProdutosLojaScreen(loja: widget.loja),
                           ),
+                        );
+                      },
+                      icon: const Icon(Icons.storefront_outlined, size: 18),
+                      label: const Text(
+                        'Continuar comprando',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        side: BorderSide(color: Colors.grey.shade300),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ProdutosLojaScreen(loja: widget.loja),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.storefront_outlined, size: 18),
-                        label: const Text('Comprar mais'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.black,
-                          side: const BorderSide(color: Colors.black26),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    'Carrinho',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
                     ),
                   ),
+                ),
 
-                  const SizedBox(height: 14),
-                  if (vazio)
-                    _estadoVazio()
-                  else ...[
-                    ...itensAgrupados.map(_itemCarrinho),
-                    const SizedBox(height: 14),
-                  ],
-                ],
-              ),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: carregarCarrinho,
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+                      children: [
+                        if (vazio)
+                          _estadoVazio()
+                        else ...[
+                          ...itensAgrupados.map(_itemCarrinho),
+                          const SizedBox(height: 6),
+                          _resumoTotal(),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
 
       bottomNavigationBar: carregando || erro != null || vazio
           ? null
           : SafeArea(
+              top: false,
               child: Container(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 14),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF6F6F6),
                   boxShadow: [
@@ -665,10 +869,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [_botaoPagar()],
-                ),
+                child: _botaoPagar(),
               ),
             ),
     );

@@ -167,26 +167,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     }
   }
 
-  Widget _badgeTipo(Map<String, dynamic> item) {
-    final ingresso = _isIngresso(item);
-    final cor = ingresso ? Colors.blue : Colors.amber.shade800;
-    final fundo = ingresso
-        ? Colors.blue.withOpacity(0.10)
-        : Colors.amber.withOpacity(0.15);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: fundo,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        ingresso ? 'Ingresso' : 'Produto',
-        style: TextStyle(color: cor, fontSize: 12, fontWeight: FontWeight.w700),
-      ),
-    );
-  }
-
   Widget _chip(String texto) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -236,7 +216,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                               ),
                             ),
                           ),
-                          _badgeTipo(item),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -407,6 +386,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
             subtitulo:
                 '${widget.nomeLoja} • $totalUnidades item(ns) disponível(is)',
             icone: Icons.inventory_2_rounded,
+            imagemUrl: widget.logoLoja,
           ),
 
           Expanded(

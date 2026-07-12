@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+
 import '../../services/api_service.dart';
+import '../../services/auth_storage.dart';
+import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class AlterarSenhaScreen extends StatefulWidget {
   final VoidCallback onVoltar;
@@ -13,15 +17,28 @@ class AlterarSenhaScreen extends StatefulWidget {
 
 class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
   final _formKey = GlobalKey<FormState>();
+
   final _senhaAtualCtrl = TextEditingController();
   final _novaSenhaCtrl = TextEditingController();
   final _confirmarSenhaCtrl = TextEditingController();
+
   final apiService = ApiService();
+  final authStorage = AuthStorage();
 
   bool carregando = false;
+  bool carregandoCliente = true;
+
   bool ocultarSenhaAtual = true;
   bool ocultarNovaSenha = true;
   bool ocultarConfirmarSenha = true;
+
+  String nomeCliente = '';
+
+  @override
+  void initState() {
+    super.initState();
+    carregarCliente();
+  }
 
   @override
   void dispose() {
@@ -31,23 +48,36 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
     super.dispose();
   }
 
+  Future<void> carregarCliente() async {
+    try {
+      final nome = await authStorage.obterNmcliente();
+
+      if (!mounted) return;
+
+      setState(() {
+        nomeCliente = nome?.trim() ?? '';
+        carregandoCliente = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        nomeCliente = '';
+        carregandoCliente = false;
+      });
+    }
+  }
+
   Future<void> salvarNovaSenha() async {
     FocusScope.of(context).unfocus();
 
-    if (!_formKey.currentState!.validate()) return;
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
 
     setState(() {
       carregando = true;
     });
-
-    if (_novaSenhaCtrl.text.trim().length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('A nova senha deve conter pelo menos 6 caracteres.'),
-        ),
-      );
-      return;
-    }
 
     try {
       await apiService.alterarMinhaSenha(
@@ -57,17 +87,13 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Senha alterada com sucesso')),
-      );
+      AppSnackBar.sucesso(context, 'Senha alterada com sucesso.');
 
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     } finally {
       if (mounted) {
         setState(() {
@@ -83,10 +109,26 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
     required bool obscure,
     required VoidCallback onToggle,
   }) {
+    final bordaNormal = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+    );
+
+    final bordaFoco = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: const BorderSide(color: Colors.amber, width: 1.6),
+    );
+
+    final bordaErro = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16),
+      borderSide: BorderSide(color: Colors.red.shade700, width: 1),
+    );
+
     return InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon),
       suffixIcon: IconButton(
+        tooltip: obscure ? 'Mostrar senha' : 'Ocultar senha',
         onPressed: onToggle,
         icon: Icon(
           obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
@@ -94,139 +136,229 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
       ),
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: bordaNormal,
+      enabledBorder: bordaNormal,
+      focusedBorder: bordaFoco,
+      errorBorder: bordaErro,
+      focusedErrorBorder: bordaErro.copyWith(
+        borderSide: BorderSide(color: Colors.red.shade700, width: 1.6),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final subtitulo = nomeCliente.isEmpty
+        ? 'Atualize a senha da sua conta'
+        : '$nomeCliente • Atualize a senha da sua conta';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+
       appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
-      body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              const Text(
-                'Atualize sua senha',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Informe sua senha atual e depois escolha uma nova senha para sua conta.',
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-              ),
-              const SizedBox(height: 24),
 
-              TextFormField(
-                controller: _senhaAtualCtrl,
-                obscureText: ocultarSenhaAtual,
-                decoration: _decoracao(
-                  label: 'Senha atual',
-                  icon: Icons.lock_outline,
-                  obscure: ocultarSenhaAtual,
-                  onToggle: () {
-                    setState(() {
-                      ocultarSenhaAtual = !ocultarSenhaAtual;
-                    });
-                  },
+      body: carregandoCliente
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                ClubbarPageHeader(
+                  titulo: 'Alterar senha',
+                  subtitulo: subtitulo,
+                  icone: Icons.lock_reset_rounded,
                 ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Informe sua senha atual';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
 
-              TextFormField(
-                controller: _novaSenhaCtrl,
-                obscureText: ocultarNovaSenha,
-                decoration: _decoracao(
-                  label: 'Nova senha',
-                  icon: Icons.lock_reset_outlined,
-                  obscure: ocultarNovaSenha,
-                  onToggle: () {
-                    setState(() {
-                      ocultarNovaSenha = !ocultarNovaSenha;
-                    });
-                  },
-                ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Informe a nova senha';
-                  if (v.length < 6) {
-                    return 'A nova senha deve ter pelo menos 6 caracteres';
-                  }
-                  if (v == _senhaAtualCtrl.text.trim()) {
-                    return 'A nova senha deve ser diferente da atual';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
+                Expanded(
+                  child: Form(
+                    key: _formKey,
+                    child: ListView(
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
+                      children: [
+                        TextFormField(
+                          controller: _senhaAtualCtrl,
+                          obscureText: ocultarSenhaAtual,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.password],
+                          decoration: _decoracao(
+                            label: 'Senha atual',
+                            icon: Icons.lock_outline_rounded,
+                            obscure: ocultarSenhaAtual,
+                            onToggle: () {
+                              setState(() {
+                                ocultarSenhaAtual = !ocultarSenhaAtual;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            final senha = value?.trim() ?? '';
 
-              TextFormField(
-                controller: _confirmarSenhaCtrl,
-                obscureText: ocultarConfirmarSenha,
-                decoration: _decoracao(
-                  label: 'Confirmar nova senha',
-                  icon: Icons.lock_person_outlined,
-                  obscure: ocultarConfirmarSenha,
-                  onToggle: () {
-                    setState(() {
-                      ocultarConfirmarSenha = !ocultarConfirmarSenha;
-                    });
-                  },
-                ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Confirme a nova senha';
-                  if (v != _novaSenhaCtrl.text.trim()) {
-                    return 'As senhas não conferem';
-                  }
-                  return null;
-                },
-              ),
+                            if (senha.isEmpty) {
+                              return 'Informe sua senha atual';
+                            }
 
-              const SizedBox(height: 24),
+                            return null;
+                          },
+                        ),
 
-              SizedBox(
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: carregando ? null : salvarNovaSenha,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: carregando
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Salvar nova senha',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(height: 14),
+
+                        TextFormField(
+                          controller: _novaSenhaCtrl,
+                          obscureText: ocultarNovaSenha,
+                          textInputAction: TextInputAction.next,
+                          autofillHints: const [AutofillHints.newPassword],
+                          decoration: _decoracao(
+                            label: 'Nova senha',
+                            icon: Icons.lock_reset_outlined,
+                            obscure: ocultarNovaSenha,
+                            onToggle: () {
+                              setState(() {
+                                ocultarNovaSenha = !ocultarNovaSenha;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            final novaSenha = value?.trim() ?? '';
+                            final senhaAtual = _senhaAtualCtrl.text.trim();
+
+                            if (novaSenha.isEmpty) {
+                              return 'Informe a nova senha';
+                            }
+
+                            if (novaSenha.length < 6) {
+                              return 'A nova senha deve ter pelo menos 6 caracteres';
+                            }
+
+                            if (novaSenha == senhaAtual) {
+                              return 'A nova senha deve ser diferente da atual';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        TextFormField(
+                          controller: _confirmarSenhaCtrl,
+                          obscureText: ocultarConfirmarSenha,
+                          textInputAction: TextInputAction.done,
+                          autofillHints: const [AutofillHints.newPassword],
+                          onFieldSubmitted: (_) {
+                            if (!carregando) {
+                              salvarNovaSenha();
+                            }
+                          },
+                          decoration: _decoracao(
+                            label: 'Confirmar nova senha',
+                            icon: Icons.lock_person_outlined,
+                            obscure: ocultarConfirmarSenha,
+                            onToggle: () {
+                              setState(() {
+                                ocultarConfirmarSenha = !ocultarConfirmarSenha;
+                              });
+                            },
+                          ),
+                          validator: (value) {
+                            final confirmacao = value?.trim() ?? '';
+                            final novaSenha = _novaSenhaCtrl.text.trim();
+
+                            if (confirmacao.isEmpty) {
+                              return 'Confirme a nova senha';
+                            }
+
+                            if (confirmacao != novaSenha) {
+                              return 'As senhas não conferem';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.amber.withOpacity(0.35),
+                            ),
+                          ),
+                          child: const Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.info_outline_rounded,
+                                size: 20,
+                                color: Color(0xFF7A5A00),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'A nova senha deve conter pelo menos 6 caracteres e ser diferente da senha atual.',
+                                  style: TextStyle(
+                                    color: Color(0xFF6A5200),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+
+                        const SizedBox(height: 24),
+
+                        SizedBox(
+                          width: double.infinity,
+                          height: 54,
+                          child: ElevatedButton.icon(
+                            onPressed: carregando ? null : salvarNovaSenha,
+                            icon: carregando
+                                ? const SizedBox(
+                                    width: 21,
+                                    height: 21,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.black,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.check_circle_outline_rounded,
+                                  ),
+                            label: Text(
+                              carregando ? 'Salvando...' : 'Salvar nova senha',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                              disabledBackgroundColor: Colors.amber.withOpacity(
+                                0.55,
+                              ),
+                              disabledForegroundColor: Colors.black54,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
+              ],
+            ),
     );
   }
 }

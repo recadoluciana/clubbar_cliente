@@ -7,6 +7,8 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../services/api_service.dart';
 import '../../utils/cpf_utils.dart';
 import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_page_header.dart';
+import '../../utils/value_formatters.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
   final String nomeLoja;
@@ -45,11 +47,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
   bool _isIngresso(Map<String, dynamic> item) {
     return (item['idtipoproduto'] ?? '').toString().toUpperCase() == 'I';
-  }
-
-  String _valor(dynamic v) {
-    final n = (v is num) ? v.toDouble() : double.tryParse('$v') ?? 0;
-    return 'R\$ ${n.toStringAsFixed(2)}';
   }
 
   String _formatarCpf(String cpf) {
@@ -312,26 +309,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     }
   }
 
-  Widget _badgeTipo(Map<String, dynamic> item) {
-    final ingresso = _isIngresso(item);
-    final cor = ingresso ? Colors.blue : Colors.amber.shade800;
-    final fundo = ingresso
-        ? Colors.blue.withOpacity(0.10)
-        : Colors.amber.withOpacity(0.15);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: fundo,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        ingresso ? 'Ingresso' : 'Produto',
-        style: TextStyle(color: cor, fontSize: 12, fontWeight: FontWeight.w700),
-      ),
-    );
-  }
-
   Widget _chip(String texto) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -386,7 +363,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                               ),
                             ),
                           ),
-                          _badgeTipo(item),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -394,7 +370,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _chip('Valor: ${_valor(item['vrunititvenda'])}'),
+                          _chip(
+                            'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
+                          ),
                           if (validade.isNotEmpty) _chip('Validade: $validade'),
                         ],
                       ),
@@ -535,84 +513,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
   }
 
-  Widget _cabecalho(int totalUnidades) {
-    return Container(
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF111111), Color(0xFF1E1E1E), Color(0xFF2A2A2A)],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: 92, height: 92, child: _logoLoja()),
-
-          const SizedBox(width: 18),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Carteira - Ingressos',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                Text(
-                  widget.nomeLoja,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: Colors.grey.shade300,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '$totalUnidades ingresso(s) disponível(is)',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _logoLoja() {
     if (widget.logoLoja.isEmpty) {
       return Container(
@@ -651,33 +551,149 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
   }
 
+  Widget _identificacaoLoja(int totalUnidades) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            _logoLoja(),
+
+            const SizedBox(width: 14),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.nomeLoja,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+                ],
+              ),
+            ),
+
+            const Icon(
+              Icons.confirmation_number_rounded,
+              color: Colors.amber,
+              size: 25,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _estadoVazio() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.confirmation_number_outlined,
+            size: 60,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Nenhum ingresso disponível',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Não há ingressos disponíveis para uso neste estabelecimento.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final totalUnidades = itensTela.fold<int>(
-      0,
-      (total, item) => total + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
-    );
+    final totalUnidades = itensTela.fold<int>(0, (total, item) {
+      final quantidade = int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0;
+
+      return total + quantidade;
+    });
+
+    final subtituloAux = totalUnidades == 1
+        ? '1 ingresso disponível para uso'
+        : '$totalUnidades ingressos disponíveis para uso';
+
+    final subtituloCompleto = '${widget.nomeLoja} • $subtituloAux';
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+
       appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+
+      body: Column(
         children: [
-          _cabecalho(totalUnidades),
-          const SizedBox(height: 22),
-          if (itensTela.isEmpty)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 40),
-                child: Text(
-                  'Nenhum ingresso disponível para uso neste estabelecimento',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+          ClubbarPageHeader(
+            titulo: 'Carteira de Ingressos',
+            subtitulo: subtituloCompleto,
+            icone: Icons.confirmation_number_rounded,
+          ),
+
+          _identificacaoLoja(totalUnidades),
+
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                if (widget.onAtualizar == null) return;
+
+                final novosItens = await widget.onAtualizar!();
+
+                CarteiraBadgeNotifier.atualizar();
+
+                if (!mounted) return;
+
+                setState(() {
+                  itensTela = novosItens;
+                });
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
+                  if (itensTela.isEmpty)
+                    _estadoVazio()
+                  else
+                    ...itensTela.map((item) => _itemCard(context, item)),
+                ],
               ),
-            )
-          else
-            ...itensTela.map((item) => _itemCard(context, item)),
+            ),
+          ),
         ],
       ),
     );
