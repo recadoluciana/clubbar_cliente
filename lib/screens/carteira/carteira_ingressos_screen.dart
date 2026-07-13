@@ -45,10 +45,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     itensTela = List<Map<String, dynamic>>.from(widget.itens);
   }
 
-  bool _isIngresso(Map<String, dynamic> item) {
-    return (item['idtipoproduto'] ?? '').toString().toUpperCase() == 'I';
-  }
-
   String _formatarCpf(String cpf) {
     final numeros = cpf.replaceAll(RegExp(r'[^0-9]'), '');
 

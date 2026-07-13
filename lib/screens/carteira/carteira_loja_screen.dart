@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
@@ -6,12 +5,8 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-import '../../services/api_service.dart';
-
-import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
+import '../../utils/presente_image_generator.dart';
 
 class CarteiraLojaScreen extends StatefulWidget {
   final String nomeLoja;
@@ -38,6 +33,8 @@ class CarteiraLojaScreen extends StatefulWidget {
 class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   late List<Map<String, dynamic>> itensTela;
 
+  static const String baseUrl = 'https://api.clubbar.com.br';
+
   @override
   void initState() {
     super.initState();
@@ -49,329 +46,38 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   }
 
   String _buildImageUrl(String path) {
-    if (path.isEmpty) return '';
-    if (path.startsWith('http')) return path;
-    return '$ApiService. baseUrl$path';
+    final caminho = path.trim();
+
+    if (caminho.isEmpty) {
+      return '';
+    }
+
+    if (caminho.startsWith('http://') || caminho.startsWith('https://')) {
+      return caminho;
+    }
+
+    final url = caminho.startsWith('/')
+        ? '$baseUrl$caminho'
+        : '$baseUrl/$caminho';
+
+    //debugPrint('[CARTEIRA] Caminho recebido: $caminho');
+    //debugPrint('[CARTEIRA] URL final da imagem: $url');
+
+    return url;
   }
 
   String _montarDadosQr(Map<String, dynamic> item) {
     final token = (item['qrtokenitvenda'] ?? '').toString().trim();
 
     if (token.isEmpty) {
+      debugPrint(
+        '[PRESENTEAR] qrtokenitvenda vazio para itvenda_id=${item['itvenda_id']}',
+      );
+
       return '';
     }
 
     return 'CLUBBAR-PRODUTO:$token';
-  }
-
-  Future<ui.Image?> _carregarImagemProduto(Map<String, dynamic> item) async {
-    try {
-      final url = _buildImageUrl((item['urlfotoproduto'] ?? '').toString());
-
-      if (url.isEmpty) {
-        return null;
-      }
-
-      final resposta = await http.get(Uri.parse(url));
-
-      if (resposta.statusCode != 200) {
-        return null;
-      }
-
-      final codec = await ui.instantiateImageCodec(
-        resposta.bodyBytes,
-        targetWidth: 900,
-        targetHeight: 520,
-      );
-
-      final frame = await codec.getNextFrame();
-
-      return frame.image;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  void _desenharTexto(
-    Canvas canvas, {
-    required String texto,
-    required Offset posicao,
-    required double larguraMaxima,
-    required double tamanho,
-    required Color cor,
-    FontWeight peso = FontWeight.normal,
-    int maxLines = 1,
-    TextAlign alinhamento = TextAlign.left,
-  }) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: texto,
-        style: TextStyle(
-          color: cor,
-          fontSize: tamanho,
-          fontWeight: peso,
-          height: 1.2,
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-      textAlign: alinhamento,
-      maxLines: maxLines,
-      ellipsis: '...',
-    )..layout(maxWidth: larguraMaxima);
-
-    painter.paint(canvas, posicao);
-  }
-
-  Future<Uint8List?> _gerarImagemPresente(Map<String, dynamic> item) async {
-    try {
-      const largura = 1080.0;
-      const altura = 1600.0;
-
-      const tamanhoQr = 600.0;
-      const margemQr = 45.0;
-      const tamanhoAreaQr = tamanhoQr + (margemQr * 2);
-
-      final dadosQr = _montarDadosQr(item).trim();
-
-      if (dadosQr.isEmpty) {
-        return null;
-      }
-
-      final recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder);
-      final paint = Paint();
-
-      // Fundo geral
-      paint.color = const Color(0xFFF6F6F6);
-
-      canvas.drawRect(const Rect.fromLTWH(0, 0, largura, altura), paint);
-
-      // Cabeçalho preto
-      paint.color = Colors.black;
-
-      canvas.drawRect(const Rect.fromLTWH(0, 0, largura, 155), paint);
-
-      _desenharTexto(
-        canvas,
-        texto: 'CLUBBAR',
-        posicao: const Offset(0, 44),
-        larguraMaxima: largura,
-        tamanho: 54,
-        cor: Colors.white,
-        peso: FontWeight.w900,
-        alinhamento: TextAlign.center,
-      );
-
-      // Cartão principal
-      paint.color = Colors.white;
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(50, 190, 980, 1350),
-          const Radius.circular(42),
-        ),
-        paint,
-      );
-
-      // Faixa do presente
-      paint.color = Colors.amber;
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          const Rect.fromLTWH(90, 230, 900, 82),
-          const Radius.circular(22),
-        ),
-        paint,
-      );
-
-      _desenharTexto(
-        canvas,
-        texto: 'Você ganhou um presente!',
-        posicao: const Offset(90, 251),
-        larguraMaxima: 900,
-        tamanho: 36,
-        cor: Colors.black,
-        peso: FontWeight.w900,
-        alinhamento: TextAlign.center,
-      );
-
-      // Foto do produto
-      final imagemProduto = await _carregarImagemProduto(item);
-
-      final areaFoto = RRect.fromRectAndRadius(
-        const Rect.fromLTWH(90, 345, 900, 300),
-        const Radius.circular(28),
-      );
-
-      canvas.save();
-      canvas.clipRRect(areaFoto);
-
-      if (imagemProduto != null) {
-        final origem = Rect.fromLTWH(
-          0,
-          0,
-          imagemProduto.width.toDouble(),
-          imagemProduto.height.toDouble(),
-        );
-
-        canvas.drawImageRect(
-          imagemProduto,
-          origem,
-          areaFoto.outerRect,
-          Paint()..filterQuality = FilterQuality.high,
-        );
-      } else {
-        paint.color = const Color(0xFFFFF2C7);
-
-        canvas.drawRect(areaFoto.outerRect, paint);
-
-        _desenharTexto(
-          canvas,
-          texto: 'PRESENTE CLUBBAR',
-          posicao: const Offset(90, 465),
-          larguraMaxima: 900,
-          tamanho: 42,
-          cor: Colors.black,
-          peso: FontWeight.w800,
-          alinhamento: TextAlign.center,
-        );
-      }
-
-      canvas.restore();
-
-      final nomeProduto = (item['nmproduto'] ?? 'Produto Clubbar')
-          .toString()
-          .trim();
-
-      // Nome do produto
-      _desenharTexto(
-        canvas,
-        texto: nomeProduto,
-        posicao: const Offset(90, 680),
-        larguraMaxima: 900,
-        tamanho: 44,
-        cor: Colors.black,
-        peso: FontWeight.w900,
-        maxLines: 2,
-        alinhamento: TextAlign.center,
-      );
-
-      // Nome da loja
-      _desenharTexto(
-        canvas,
-        texto: widget.nomeLoja,
-        posicao: const Offset(90, 785),
-        larguraMaxima: 900,
-        tamanho: 29,
-        cor: Colors.grey.shade800,
-        peso: FontWeight.w700,
-        alinhamento: TextAlign.center,
-      );
-
-      // Quem enviou
-      if (widget.nomeCliente.trim().isNotEmpty) {
-        _desenharTexto(
-          canvas,
-          texto: 'Presente de ${widget.nomeCliente}',
-          posicao: const Offset(90, 830),
-          larguraMaxima: 900,
-          tamanho: 25,
-          cor: Colors.grey.shade700,
-          peso: FontWeight.w600,
-          alinhamento: TextAlign.center,
-        );
-      }
-
-      // Área branca externa do QR Code
-      const areaBrancaQr = Rect.fromLTWH(
-        (largura - tamanhoAreaQr) / 2,
-        885,
-        tamanhoAreaQr,
-        tamanhoAreaQr,
-      );
-
-      paint.color = Colors.white;
-
-      canvas.drawRect(areaBrancaQr, paint);
-
-      // Geração do QR Code
-      final qrPainter = QrPainter(
-        data: dadosQr,
-        version: QrVersions.auto,
-        errorCorrectionLevel: QrErrorCorrectLevel.M,
-        gapless: false,
-        color: Colors.black,
-        emptyColor: Colors.white,
-      );
-
-      final qrData = await qrPainter.toImageData(
-        tamanhoQr,
-        format: ui.ImageByteFormat.png,
-      );
-
-      if (qrData == null) {
-        return null;
-      }
-
-      final qrCodec = await ui.instantiateImageCodec(
-        qrData.buffer.asUint8List(),
-        targetWidth: tamanhoQr.toInt(),
-        targetHeight: tamanhoQr.toInt(),
-      );
-
-      final qrFrame = await qrCodec.getNextFrame();
-
-      const areaQr = Rect.fromLTWH(
-        (largura - tamanhoQr) / 2,
-        885 + margemQr,
-        tamanhoQr,
-        tamanhoQr,
-      );
-
-      final paintQr = Paint()
-        ..isAntiAlias = false
-        ..filterQuality = FilterQuality.none;
-
-      canvas.drawImageRect(
-        qrFrame.image,
-        Rect.fromLTWH(
-          0,
-          0,
-          qrFrame.image.width.toDouble(),
-          qrFrame.image.height.toDouble(),
-        ),
-        areaQr,
-        paintQr,
-      );
-
-      // Orientação
-      _desenharTexto(
-        canvas,
-        texto: 'Apresente este QR Code ao atendente',
-        posicao: const Offset(90, 1510),
-        larguraMaxima: 900,
-        tamanho: 22,
-        cor: Colors.grey.shade700,
-        peso: FontWeight.w700,
-        alinhamento: TextAlign.center,
-      );
-
-      final picture = recorder.endRecording();
-
-      final imagemFinal = await picture.toImage(
-        largura.toInt(),
-        altura.toInt(),
-      );
-
-      final dados = await imagemFinal.toByteData(
-        format: ui.ImageByteFormat.png,
-      );
-
-      return dados?.buffer.asUint8List();
-    } catch (e) {
-      debugPrint('Erro ao gerar imagem do presente: $e');
-      return null;
-    }
   }
 
   Future<void> _compartilharPresente(Map<String, dynamic> item) async {
@@ -387,7 +93,16 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
     AppSnackBar.info(context, 'Preparando o presente...');
 
-    final imagem = await _gerarImagemPresente(item);
+    final imagemUrl = _buildImageUrl((item['urlfotoproduto'] ?? '').toString());
+
+    final imagem = await PresenteImageGenerator.gerar(
+      tipo: 'P',
+      nomeItem: (item['nmproduto'] ?? '').toString(),
+      nomeLoja: widget.nomeLoja,
+      nomeRemetente: widget.nomeCliente,
+      imagemUrl: imagemUrl,
+      dadosQr: _montarDadosQr(item),
+    );
 
     if (!mounted) return;
 
@@ -491,19 +206,20 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     BuildContext context,
     Map<String, dynamic> item,
   ) async {
-    final codigo = (item['itvenda_id'] ?? '').toString();
-
     final qrData = _montarDadosQr(item);
 
-    if (codigo.isEmpty) {
-      AppSnackBar.erro(context, 'QR Code não disponível para este item.');
+    if (qrData.isEmpty) {
+      AppSnackBar.erro(
+        context,
+        'Este produto ainda não está pronto para retirada. Atualize sua carteira e tente novamente.',
+      );
       return;
     }
 
     await showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (_) {
+      builder: (dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -517,7 +233,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   'Retirada do produto',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
+
                 const SizedBox(height: 10),
+
                 Text(
                   (item['nmproduto'] ?? '').toString(),
                   textAlign: TextAlign.center,
@@ -526,11 +244,13 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+
                 if ((item['dsobsitvenda'] ?? '')
                     .toString()
                     .trim()
                     .isNotEmpty) ...[
                   const SizedBox(height: 8),
+
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(12),
@@ -550,22 +270,30 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     ),
                   ),
                 ],
+
                 const SizedBox(height: 16),
+
                 const Text(
                   'Apresente este QR Code para o atendente.',
                   textAlign: TextAlign.center,
                 ),
+
                 const SizedBox(height: 20),
+
                 QrImageView(
                   data: qrData,
                   size: 220,
                   backgroundColor: Colors.white,
                 ),
+
                 const SizedBox(height: 20),
+
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pop(dialogContext);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.amber,
                       foregroundColor: Colors.black,
@@ -583,17 +311,27 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       },
     );
 
-    // atualizar itens e badge após retirada ou fechamento do qr
+    // Atualiza os itens depois que o QR for fechado.
+    // Se o barman já deu baixa, o produto deixa de aparecer.
     if (widget.onAtualizar != null) {
-      final novosItens = await widget.onAtualizar!();
+      try {
+        final novosItens = await widget.onAtualizar!();
 
-      CarteiraBadgeNotifier.atualizar();
+        CarteiraBadgeNotifier.atualizar();
 
-      if (!mounted) return;
+        if (!mounted) return;
 
-      setState(() {
-        itensTela = novosItens;
-      });
+        setState(() {
+          itensTela = novosItens;
+        });
+      } catch (e) {
+        if (!mounted) return;
+
+        AppSnackBar.erro(
+          context,
+          'Não foi possível atualizar sua carteira. Puxe a tela para baixo e tente novamente.',
+        );
+      }
     }
   }
 
@@ -777,44 +515,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
             : Icons.local_bar_outlined,
         color: Colors.amber.shade800,
         size: 30,
-      ),
-    );
-  }
-
-  Widget _logoLoja() {
-    if (widget.logoLoja.isEmpty) {
-      return Container(
-        width: 58,
-        height: 58,
-        decoration: BoxDecoration(
-          color: Colors.amber.withOpacity(0.15),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Icon(Icons.storefront_outlined, color: Colors.amber.shade800),
-      );
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: Image.network(
-        widget.logoLoja,
-        width: 58,
-        height: 58,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) {
-          return Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(
-              Icons.storefront_outlined,
-              color: Colors.amber.shade800,
-            ),
-          );
-        },
       ),
     );
   }
