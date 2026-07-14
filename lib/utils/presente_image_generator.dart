@@ -20,7 +20,7 @@ class PresenteImageGenerator {
   }) async {
     try {
       const largura = 1080.0;
-      const altura = 2050.0;
+      const altura = 1940.0;
 
       final tipoNormalizado = tipo.trim().toUpperCase();
       final ehIngresso = tipoNormalizado == 'I';
@@ -53,9 +53,9 @@ class PresenteImageGenerator {
         altura: altura,
       );
 
-      _desenharCabecalho(canvas: canvas, paint: paint, largura: largura);
+      _desenharCabecalho(canvas: canvas, paint: paint);
 
-      const areaCartao = Rect.fromLTWH(50, 190, 980, 2120);
+      const areaCartao = Rect.fromLTWH(44, 176, 992, 1718);
 
       paint.color = Colors.white;
 
@@ -87,9 +87,7 @@ class PresenteImageGenerator {
         dadosQr: qrPrincipal,
       );
 
-      _desenharInstrucaoUso(canvas: canvas, ehIngresso: ehIngresso);
-
-      _desenharDivisor(canvas: canvas, paint: paint, y: 1700);
+      _desenharDivisor(canvas: canvas, paint: paint, y: 1450);
 
       _desenharMarketing(canvas: canvas);
 
@@ -100,7 +98,7 @@ class PresenteImageGenerator {
         urlWeb: urlWeb,
       );
 
-      _desenharRodape(canvas: canvas);
+      _desenharRodape(canvas: canvas, urlWeb: urlWeb);
 
       final picture = recorder.endRecording();
       final imagemFinal = await picture.toImage(
@@ -133,21 +131,22 @@ class PresenteImageGenerator {
   static void _desenharCabecalho({
     required Canvas canvas,
     required Paint paint,
-    required double largura,
   }) {
-    const areaCabecalho = Rect.fromLTWH(0, 0, 1080, 155);
+    const areaCabecalho = Rect.fromLTWH(0, 0, 1080, 145);
 
     paint.color = Colors.black;
     canvas.drawRect(areaCabecalho, paint);
 
-    _desenharTextoCentralizadoNaArea(
+    _desenharLinhaCentralizadaComIcone(
       canvas,
-      texto: 'CLUBBAR',
       area: areaCabecalho,
-      tamanho: 58,
+      icone: Icons.card_giftcard_rounded, // presentinho estilizado
+      texto: 'CLUBBAR',
+      tamanhoIcone: 66,
+      tamanhoTexto: 56,
       cor: Colors.white,
       peso: FontWeight.w900,
-      espacamentoLetras: 2,
+      espacamento: 14,
     );
   }
 
@@ -155,11 +154,11 @@ class PresenteImageGenerator {
     required Canvas canvas,
     required Paint paint,
   }) {
-    const areaFaixa = Rect.fromLTWH(90, 230, 900, 92);
+    const areaFaixa = Rect.fromLTWH(84, 215, 912, 86);
 
     paint.color = Colors.amber;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(areaFaixa, const Radius.circular(24)),
+      RRect.fromRectAndRadius(areaFaixa, const Radius.circular(22)),
       paint,
     );
 
@@ -168,11 +167,11 @@ class PresenteImageGenerator {
       area: areaFaixa,
       icone: Icons.card_giftcard_rounded,
       texto: 'Você recebeu um presente!',
-      tamanhoIcone: 43,
-      tamanhoTexto: 37,
+      tamanhoIcone: 40,
+      tamanhoTexto: 36,
       cor: Colors.black,
       peso: FontWeight.w900,
-      espacamento: 14,
+      espacamento: 13,
     );
   }
 
@@ -182,7 +181,7 @@ class PresenteImageGenerator {
     required String imagemUrl,
     required bool ehIngresso,
   }) async {
-    const areaFotoRect = Rect.fromLTWH(90, 355, 900, 410);
+    const areaFotoRect = Rect.fromLTWH(84, 328, 912, 350);
 
     final areaFoto = RRect.fromRectAndRadius(
       areaFotoRect,
@@ -238,21 +237,20 @@ class PresenteImageGenerator {
     _desenharTexto(
       canvas,
       texto: nomeItem,
-      posicao: const Offset(90, 805),
-      larguraMaxima: 900,
-      tamanho: 46,
+      posicao: const Offset(84, 710),
+      larguraMaxima: 912,
+      tamanho: 43,
       cor: Colors.black,
       peso: FontWeight.w900,
-      maxLines: 2,
       alinhamento: TextAlign.center,
     );
 
     _desenharTexto(
       canvas,
       texto: nomeLoja,
-      posicao: const Offset(90, 925),
-      larguraMaxima: 900,
-      tamanho: 38,
+      posicao: const Offset(84, 760),
+      larguraMaxima: 912,
+      tamanho: 40,
       cor: Colors.black87,
       peso: FontWeight.w900,
       alinhamento: TextAlign.center,
@@ -262,37 +260,36 @@ class PresenteImageGenerator {
       _desenharTexto(
         canvas,
         texto: 'Presente de ${nomeRemetente.trim()}',
-        posicao: const Offset(90, 980),
-        larguraMaxima: 900,
-        tamanho: 31,
-        cor: Colors.black54,
-        peso: FontWeight.w700,
+        posicao: const Offset(84, 810),
+        larguraMaxima: 912,
+        tamanho: 32,
+        cor: Colors.blue,
+        peso: FontWeight.w800,
         alinhamento: TextAlign.center,
       );
     }
 
-    if (validade.trim().isNotEmpty) {
-      const areaValidade = Rect.fromLTWH(230, 1032, 620, 62);
+    _desenharTexto(
+      canvas,
+      texto: validade.trim().isEmpty ? 'xxx' : 'Válido até ${validade.trim()}',
+      posicao: const Offset(84, 850),
+      larguraMaxima: 912,
+      tamanho: 32,
+      cor: Colors.red,
+      peso: FontWeight.w800,
+      alinhamento: TextAlign.center,
+    );
 
-      final paint = Paint()..color = const Color(0xFFFFF2CC);
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(areaValidade, const Radius.circular(20)),
-        paint,
-      );
-
-      _desenharLinhaCentralizadaComIcone(
-        canvas,
-        area: areaValidade,
-        icone: Icons.schedule_rounded,
-        texto: 'Válido até ${validade.trim()}',
-        tamanhoIcone: 28,
-        tamanhoTexto: 27,
-        cor: const Color(0xFF8A5A00),
-        peso: FontWeight.w800,
-        espacamento: 10,
-      );
-    }
+    _desenharTexto(
+      canvas,
+      texto: 'Apresente este QR Code para o atendende',
+      posicao: const Offset(84, 890),
+      larguraMaxima: 912,
+      tamanho: 30,
+      cor: Colors.red,
+      peso: FontWeight.w900,
+      alinhamento: TextAlign.center,
+    );
   }
 
   static Future<void> _desenharQrPrincipal({
@@ -300,13 +297,14 @@ class PresenteImageGenerator {
     required Paint paint,
     required String dadosQr,
   }) async {
-    const tamanhoQr = 540.0;
-    const margemQr = 38.0;
+    const tamanhoQr = 300.0;
+    //350.0;
+    const margemQr = 30.0;
     const tamanhoAreaQr = tamanhoQr + (margemQr * 2);
 
     const areaBrancaQr = Rect.fromLTWH(
       (1080 - tamanhoAreaQr) / 2,
-      1120,
+      960 + margemQr,
       tamanhoAreaQr,
       tamanhoAreaQr,
     );
@@ -322,7 +320,7 @@ class PresenteImageGenerator {
 
     const areaQr = Rect.fromLTWH(
       (1080 - tamanhoQr) / 2,
-      1120 + margemQr,
+      930 + margemQr,
       tamanhoQr,
       tamanhoQr,
     );
@@ -334,24 +332,6 @@ class PresenteImageGenerator {
       Paint()
         ..isAntiAlias = false
         ..filterQuality = FilterQuality.none,
-    );
-  }
-
-  static void _desenharInstrucaoUso({
-    required Canvas canvas,
-    required bool ehIngresso,
-  }) {
-    _desenharTexto(
-      canvas,
-      texto: ehIngresso
-          ? 'Apresente este QR Code na entrada do evento'
-          : 'Apresente este QR Code ao atendente',
-      posicao: const Offset(90, 1648),
-      larguraMaxima: 900,
-      tamanho: 30,
-      cor: Colors.red,
-      peso: FontWeight.w900,
-      alinhamento: TextAlign.center,
     );
   }
 
@@ -371,9 +351,20 @@ class PresenteImageGenerator {
     _desenharTexto(
       canvas,
       texto: 'Gostou deste presente?',
-      posicao: const Offset(90, 1740),
-      larguraMaxima: 900,
-      tamanho: 37,
+      posicao: const Offset(84, 1300),
+      larguraMaxima: 912,
+      tamanho: 36,
+      cor: Colors.black,
+      peso: FontWeight.w900,
+      alinhamento: TextAlign.center,
+    );
+
+    _desenharTexto(
+      canvas,
+      texto: 'https://app.clubbar.com.br',
+      posicao: const Offset(120 + 362, 1300),
+      larguraMaxima: 912,
+      tamanho: 36,
       cor: Colors.black,
       peso: FontWeight.w900,
       alinhamento: TextAlign.center,
@@ -382,11 +373,11 @@ class PresenteImageGenerator {
     _desenharTexto(
       canvas,
       texto:
-          'Com o Clubbar você compra ingressos, pede bebidas, recebe cashback e presenteia seus amigos.',
-      posicao: const Offset(125, 1795),
-      larguraMaxima: 830,
-      tamanho: 24,
-      cor: Colors.black54,
+          'Conheça o aplicativo Clubbar, para bares e casas noturnas.\nBaixe o app e aproveite promoções, descontos e benefícios exclusivos.',
+      posicao: const Offset(118, 1350),
+      larguraMaxima: 844,
+      tamanho: 23,
+      cor: Colors.black,
       peso: FontWeight.w600,
       maxLines: 3,
       alinhamento: TextAlign.center,
@@ -399,8 +390,8 @@ class PresenteImageGenerator {
     required String urlApp,
     required String urlWeb,
   }) async {
-    const tamanhoQr = 205.0;
-    const margem = 18.0;
+    const tamanhoQr = 130.0;
+    const margem = 12.0;
 
     final qrApp = await _gerarQrImage(
       conteudo: urlApp.trim(),
@@ -412,15 +403,15 @@ class PresenteImageGenerator {
       tamanho: tamanhoQr,
     );
 
-    const areaApp = Rect.fromLTWH(145, 1910, 325, 295);
-    const areaWeb = Rect.fromLTWH(610, 1910, 325, 295);
+    const areaApp = Rect.fromLTWH(115, 1450, 365, 220);
+    const areaWeb = Rect.fromLTWH(600, 1450, 365, 220);
 
     _desenharCardDivulgacao(
       canvas: canvas,
       paint: paint,
       area: areaApp,
       titulo: 'Baixe o App',
-      subtitulo: 'CLUBBAR',
+      subtitulo: ' ',
       icone: Icons.download_rounded,
       qrImage: qrApp,
       tamanhoQr: tamanhoQr,
@@ -434,7 +425,7 @@ class PresenteImageGenerator {
       paint: paint,
       area: areaWeb,
       titulo: 'Acesse pela Web',
-      subtitulo: 'clubbar.com.br',
+      subtitulo: ' ',
       icone: Icons.language_rounded,
       qrImage: qrWeb,
       tamanhoQr: tamanhoQr,
@@ -462,7 +453,7 @@ class PresenteImageGenerator {
     paint.color = fundo;
 
     canvas.drawRRect(
-      RRect.fromRectAndRadius(area, const Radius.circular(24)),
+      RRect.fromRectAndRadius(area, const Radius.circular(22)),
       paint,
     );
 
@@ -477,10 +468,10 @@ class PresenteImageGenerator {
     }
 
     final areaTitulo = Rect.fromLTWH(
-      area.left + 16,
-      area.top + 12,
-      area.width - 32,
-      50,
+      area.left + 12,
+      area.top + 8,
+      area.width - 24,
+      44,
     );
 
     _desenharLinhaCentralizadaComIcone(
@@ -488,22 +479,25 @@ class PresenteImageGenerator {
       area: areaTitulo,
       icone: icone,
       texto: titulo,
-      tamanhoIcone: 25,
-      tamanhoTexto: 21,
+      tamanhoIcone: 23,
+      tamanhoTexto: 20,
       cor: corTexto,
       peso: FontWeight.w800,
-      espacamento: 8,
+      espacamento: 7,
     );
 
     if (qrImage != null) {
       final areaBranca = Rect.fromLTWH(
         area.left + ((area.width - (tamanhoQr + margem * 2)) / 2),
-        area.top + 62,
+        area.top + 45,
         tamanhoQr + margem * 2,
         tamanhoQr + margem * 2,
       );
 
-      canvas.drawRect(areaBranca, Paint()..color = Colors.white);
+      canvas.drawRect(
+        areaBranca,
+        Paint()..color = const ui.Color.fromARGB(255, 231, 201, 65),
+      );
 
       final areaQr = Rect.fromLTWH(
         areaBranca.left + margem,
@@ -530,35 +524,27 @@ class PresenteImageGenerator {
     _desenharTexto(
       canvas,
       texto: subtitulo,
-      posicao: Offset(area.left + 10, area.bottom - 35),
-      larguraMaxima: area.width - 20,
-      tamanho: 18,
+      posicao: Offset(area.left + 12, area.bottom - 27),
+      larguraMaxima: area.width - 24,
+      tamanho: 13,
       cor: corTexto,
       peso: FontWeight.w700,
       alinhamento: TextAlign.center,
     );
   }
 
-  static void _desenharRodape({required Canvas canvas}) {
+  static void _desenharRodape({
+    required Canvas canvas,
+    required String urlWeb,
+  }) {
     _desenharTexto(
       canvas,
-      texto: 'Presente enviado através do Clubbar',
-      posicao: const Offset(90, 2250),
-      larguraMaxima: 900,
+      texto: 'Presente enviado através do app Clubbar',
+      posicao: const Offset(84, 1710),
+      larguraMaxima: 912,
       tamanho: 23,
-      cor: Colors.black54,
-      peso: FontWeight.w700,
-      alinhamento: TextAlign.center,
-    );
-
-    _desenharTexto(
-      canvas,
-      texto: 'www.clubbar.com.br',
-      posicao: const Offset(90, 2290),
-      larguraMaxima: 900,
-      tamanho: 25,
       cor: Colors.black,
-      peso: FontWeight.w900,
+      peso: FontWeight.w700,
       alinhamento: TextAlign.center,
     );
   }
