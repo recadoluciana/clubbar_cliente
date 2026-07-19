@@ -6,7 +6,15 @@ WORKDIR /app
 COPY . .
 
 RUN flutter pub get
-RUN flutter build web --release
+
+ARG API_BASE_URL=https://api.clubbar.com.br
+ARG APP_WEB_URL=https://app.clubbar.com.br
+ARG SITE_URL=https://clubbar.com.br
+
+RUN flutter build web --release \
+    --dart-define=API_BASE_URL=${API_BASE_URL} \
+    --dart-define=APP_WEB_URL=${APP_WEB_URL} \
+    --dart-define=SITE_URL=${SITE_URL}
 
 # Etapa 2: servidor Nginx
 FROM nginx:alpine

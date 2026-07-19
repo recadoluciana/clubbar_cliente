@@ -1,4 +1,4 @@
-import '../../config/app_config.dart';
+import 'package:clubbar_cliente/config/app_config.dart';
 
 class Loja {
   final int id;

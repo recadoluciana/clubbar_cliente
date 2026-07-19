@@ -8,6 +8,7 @@ import '../../services/carteira_badge_notifier.dart';
 import 'carteira_loja_screen.dart';
 import 'carteira_ingressos_screen.dart';
 import '../../widgets/clubbar_page_header.dart';
+import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraScreen extends StatefulWidget {
   const CarteiraScreen({super.key});
@@ -20,7 +21,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
-  static const String baseUrl = 'https://api.clubbar.com.br';
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   bool carregando = true;
   String? erro;

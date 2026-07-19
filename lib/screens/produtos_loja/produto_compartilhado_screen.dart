@@ -9,6 +9,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../screens/produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
+import 'package:clubbar_cliente/config/app_config.dart';
 
 class ProdutoCompartilhadoScreen extends StatefulWidget {
   final int produtoId;
@@ -46,7 +47,7 @@ class _ProdutoCompartilhadoScreenState
       return url;
     }
 
-    return 'https://api.clubbar.com.br$url';
+    return '${AppConfig.apiBaseUrl}$url';
   }
 
   double _valorDouble(dynamic valor) {

@@ -9,6 +9,7 @@ import '../../utils/cpf_utils.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
+import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
   final String nomeLoja;
@@ -37,7 +38,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   late List<Map<String, dynamic>> itensTela;
   final ApiService apiService = ApiService();
 
-  static const String baseUrl = 'https://api.clubbar.com.br';
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   @override
   void initState() {

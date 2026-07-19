@@ -5,6 +5,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
+import 'package:clubbar_cliente/config/app_config.dart';
 
 class MeusPedidosScreen extends StatefulWidget {
   const MeusPedidosScreen({super.key});
@@ -17,7 +18,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
-  static const String baseUrl = 'https://api.clubbar.com.br';
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   bool carregando = true;
   String? erro;

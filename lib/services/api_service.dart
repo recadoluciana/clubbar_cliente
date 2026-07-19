@@ -12,9 +12,10 @@ import '../models/produto.dart';
 import '../models/carteira_item.dart';
 import '../models/evento_detalhe.dart';
 import '../models/evento_lote.dart';
+import 'package:clubbar_cliente/config/app_config.dart';
 
 class ApiService {
-  static const String baseUrl = 'https://api.clubbar.com.br';
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   String mensagemErroAmigavel(Object e) {
     final texto = e.toString();

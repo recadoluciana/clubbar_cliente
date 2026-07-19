@@ -5,6 +5,7 @@ import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarrinhoLojasScreen extends StatefulWidget {
   const CarrinhoLojasScreen({super.key});
@@ -17,7 +18,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
-  static const String baseUrl = 'https://api.clubbar.com.br';
+  static const String baseUrl = AppConfig.apiBaseUrl;
 
   bool carregando = true;
   String? erro;
