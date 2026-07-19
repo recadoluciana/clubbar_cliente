@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class CadastroClienteScreen extends StatefulWidget {
   const CadastroClienteScreen({super.key});
@@ -257,219 +259,245 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('Clubbar')),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
       body: SafeArea(
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              const Text(
-                'Crie sua conta',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Dados pessoais',
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 15),
-              ),
-              const SizedBox(height: 24),
-
-              TextFormField(
-                controller: _nomeCtrl,
-                textCapitalization: TextCapitalization.words,
-                decoration: _decoracao(
-                  label: 'Nome',
-                  icon: Icons.person_outline,
-                ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Informe seu nome';
-                  if (v.length < 3) return 'Nome muito curto';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              TextFormField(
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                decoration: _decoracao(
-                  label: 'E-mail',
-                  icon: Icons.email_outlined,
-                ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Informe seu e-mail';
-                  if (!_validarEmail(v)) return 'E-mail inválido';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              TextFormField(
-                controller: _confirmarEmailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                decoration: _decoracao(
-                  label: 'Confirmar e-mail',
-                  icon: Icons.mark_email_read_outlined,
-                ),
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return 'Confirme seu e-mail';
-                  if (!_validarEmail(v)) return 'E-mail inválido';
-                  if (v.toLowerCase() != _emailCtrl.text.trim().toLowerCase()) {
-                    return 'Os e-mails não conferem';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              TextFormField(
-                controller: _telefoneCtrl,
-                keyboardType: TextInputType.phone,
-                decoration: _decoracao(
-                  label: 'Celular',
-                  icon: Icons.phone_outlined,
-                ),
-                onChanged: (value) {
-                  final formatado = _formatarTelefone(value);
-                  if (formatado != value) {
-                    _telefoneCtrl.value = TextEditingValue(
-                      text: formatado,
-                      selection: TextSelection.collapsed(
-                        offset: formatado.length,
+        child: Column(
+          children: [
+            const ClubbarPageHeader(
+              titulo: 'Crie sua conta',
+              subtitulo: 'Informe seus dados pessoais',
+              icone: Icons.person_add_alt_1_rounded,
+            ),
+            Expanded(
+              child: Form(
+                key: _formKey,
+                child: ListView(
+                  padding: const EdgeInsets.all(20),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  children: [
+                    TextFormField(
+                      controller: _nomeCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: _decoracao(
+                        label: 'Nome',
+                        icon: Icons.person_outline,
                       ),
-                    );
-                  }
-                },
-                validator: (value) {
-                  final numeros = _somenteNumeros(value ?? '');
-                  if (numeros.isEmpty) return null;
-                  if (numeros.length < 10 || numeros.length > 11) {
-                    return 'Telefone inválido';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              TextFormField(
-                controller: _cpfCtrl,
-                keyboardType: TextInputType.number,
-                decoration: _decoracao(
-                  label: 'CPF',
-                  icon: Icons.badge_outlined,
-                ),
-                onChanged: (value) {
-                  final formatado = _formatarCPF(value);
-                  if (formatado != value) {
-                    _cpfCtrl.value = TextEditingValue(
-                      text: formatado,
-                      selection: TextSelection.collapsed(
-                        offset: formatado.length,
-                      ),
-                    );
-                  }
-                },
-                validator: (value) {
-                  final v = value?.trim() ?? '';
-                  if (v.isEmpty) return null;
-                  if (!_validarCPF(v)) return 'CPF inválido';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
-
-              TextFormField(
-                controller: _senhaCtrl,
-                obscureText: _obscureSenha,
-                decoration: _decoracao(label: 'Senha', icon: Icons.lock_outline)
-                    .copyWith(
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscureSenha = !_obscureSenha;
-                          });
-                        },
-                        icon: Icon(
-                          _obscureSenha
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                      ),
+                      validator: (value) {
+                        final v = value?.trim() ?? '';
+                        if (v.isEmpty) return 'Informe seu nome';
+                        if (v.length < 3) return 'Nome muito curto';
+                        return null;
+                      },
                     ),
-                validator: (value) {
-                  final v = value ?? '';
-                  if (v.isEmpty) return 'Informe uma senha';
-                  if (v.length < 6) {
-                    return 'A senha deve ter pelo menos 6 caracteres';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 14),
+                    const SizedBox(height: 14),
 
-              TextFormField(
-                controller: _confirmarSenhaCtrl,
-                obscureText: _obscureConfirmarSenha,
-                decoration:
-                    _decoracao(
-                      label: 'Confirmar senha',
-                      icon: Icons.lock_reset_outlined,
-                    ).copyWith(
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmarSenha = !_obscureConfirmarSenha;
-                          });
-                        },
-                        icon: Icon(
-                          _obscureConfirmarSenha
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
+                    TextFormField(
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: _decoracao(
+                        label: 'E-mail',
+                        icon: Icons.email_outlined,
                       ),
+                      validator: (value) {
+                        final v = value?.trim() ?? '';
+                        if (v.isEmpty) return 'Informe seu e-mail';
+                        if (!_validarEmail(v)) return 'E-mail inválido';
+                        return null;
+                      },
                     ),
-                validator: (value) {
-                  final v = value ?? '';
-                  if (v.isEmpty) return 'Confirme sua senha';
-                  if (v != _senhaCtrl.text) return 'As senhas não conferem';
-                  return null;
-                },
-              ),
+                    const SizedBox(height: 14),
 
-              const SizedBox(height: 24),
+                    TextFormField(
+                      controller: _confirmarEmailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: _decoracao(
+                        label: 'Confirmar e-mail',
+                        icon: Icons.mark_email_read_outlined,
+                      ),
+                      validator: (value) {
+                        final v = value?.trim() ?? '';
 
-              SizedBox(
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: _carregando ? null : _cadastrar,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                        if (v.isEmpty) return 'Confirme seu e-mail';
+                        if (!_validarEmail(v)) return 'E-mail inválido';
+
+                        if (v.toLowerCase() !=
+                            _emailCtrl.text.trim().toLowerCase()) {
+                          return 'Os e-mails não conferem';
+                        }
+
+                        return null;
+                      },
                     ),
-                  ),
-                  child: _carregando
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Criar conta',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _telefoneCtrl,
+                      keyboardType: TextInputType.phone,
+                      decoration: _decoracao(
+                        label: 'Celular',
+                        icon: Icons.phone_outlined,
+                      ),
+                      onChanged: (value) {
+                        final formatado = _formatarTelefone(value);
+
+                        if (formatado != value) {
+                          _telefoneCtrl.value = TextEditingValue(
+                            text: formatado,
+                            selection: TextSelection.collapsed(
+                              offset: formatado.length,
+                            ),
+                          );
+                        }
+                      },
+                      validator: (value) {
+                        final numeros = _somenteNumeros(value ?? '');
+
+                        if (numeros.isEmpty) return null;
+
+                        if (numeros.length < 10 || numeros.length > 11) {
+                          return 'Telefone inválido';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _cpfCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: _decoracao(
+                        label: 'CPF',
+                        icon: Icons.badge_outlined,
+                      ),
+                      onChanged: (value) {
+                        final formatado = _formatarCPF(value);
+
+                        if (formatado != value) {
+                          _cpfCtrl.value = TextEditingValue(
+                            text: formatado,
+                            selection: TextSelection.collapsed(
+                              offset: formatado.length,
+                            ),
+                          );
+                        }
+                      },
+                      validator: (value) {
+                        final v = value?.trim() ?? '';
+
+                        if (v.isEmpty) return null;
+                        if (!_validarCPF(v)) return 'CPF inválido';
+
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _senhaCtrl,
+                      obscureText: _obscureSenha,
+                      decoration:
+                          _decoracao(
+                            label: 'Senha',
+                            icon: Icons.lock_outline,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscureSenha = !_obscureSenha;
+                                });
+                              },
+                              icon: Icon(
+                                _obscureSenha
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                              ),
+                            ),
+                          ),
+                      validator: (value) {
+                        final v = value ?? '';
+
+                        if (v.isEmpty) return 'Informe uma senha';
+
+                        if (v.length < 6) {
+                          return 'A senha deve ter pelo menos 6 caracteres';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _confirmarSenhaCtrl,
+                      obscureText: _obscureConfirmarSenha,
+                      decoration:
+                          _decoracao(
+                            label: 'Confirmar senha',
+                            icon: Icons.lock_reset_outlined,
+                          ).copyWith(
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscureConfirmarSenha =
+                                      !_obscureConfirmarSenha;
+                                });
+                              },
+                              icon: Icon(
+                                _obscureConfirmarSenha
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                              ),
+                            ),
+                          ),
+                      validator: (value) {
+                        final v = value ?? '';
+
+                        if (v.isEmpty) return 'Confirme sua senha';
+
+                        if (v != _senhaCtrl.text) {
+                          return 'As senhas não conferem';
+                        }
+
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: _carregando ? null : _cadastrar,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
+                        child: _carregando
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Criar conta',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
