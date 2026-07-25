@@ -34,16 +34,16 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: true
-
   ios: true
 
-  image_path: "assets/images/icone.jpg"
+  image_path: "assets/images/icone_clubbar.png"
 
   adaptive_icon_background: "#FFFFFF"
 
   adaptive_icon_foreground:
-    "assets/images/icone.jpg"
+    "assets/images/icone_clubbar.png"
 
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true

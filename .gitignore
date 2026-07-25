@@ -43,6 +43,8 @@ android/key.properties
 ios/Pods/
 ios/.symlinks/
 ios/Flutter/.last_build_id
+*.jks
+*.keystore
 
 # =========================
 # WEB BUILD
