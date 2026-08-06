@@ -18,7 +18,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
-  static const String baseUrl = AppConfig.apiBaseUrl;
+  static final String baseUrl = AppConfig.apiBaseUrl;
 
   bool carregando = true;
   String? erro;

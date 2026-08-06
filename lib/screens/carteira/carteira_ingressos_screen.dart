@@ -38,7 +38,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   late List<Map<String, dynamic>> itensTela;
   final ApiService apiService = ApiService();
 
-  static const String baseUrl = AppConfig.apiBaseUrl;
+  static final String baseUrl = AppConfig.apiBaseUrl;
 
   @override
   void initState() {

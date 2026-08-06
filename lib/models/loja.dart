@@ -33,7 +33,7 @@ class Loja {
     required this.sgEstado,
   });
 
-  static const String baseUrl =
+  static final String baseUrl =
       AppConfig.apiBaseUrl; // Use the apiBaseUrl from AppConfig
 
   static String buildUrl(String path) {

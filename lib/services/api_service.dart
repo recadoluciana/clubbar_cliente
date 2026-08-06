@@ -15,7 +15,7 @@ import '../models/evento_lote.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class ApiService {
-  static const String baseUrl = AppConfig.apiBaseUrl;
+  static final String baseUrl = AppConfig.apiBaseUrl;
 
   String mensagemErroAmigavel(Object e) {
     final texto = e.toString();

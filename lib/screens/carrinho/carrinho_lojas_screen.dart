@@ -18,7 +18,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
-  static const String baseUrl = AppConfig.apiBaseUrl;
+  static final String baseUrl = AppConfig.apiBaseUrl;
 
   bool carregando = true;
   String? erro;

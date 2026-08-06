@@ -34,7 +34,7 @@ class CarteiraLojaScreen extends StatefulWidget {
 class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   late List<Map<String, dynamic>> itensTela;
 
-  static const String baseUrl = AppConfig.apiBaseUrl;
+  static final String baseUrl = AppConfig.apiBaseUrl;
 
   @override
   void initState() {
