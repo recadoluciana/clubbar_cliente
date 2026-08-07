@@ -50,9 +50,6 @@ class AppConfig {
     defaultValue: 'https://clubbar.com.br',
   );
 
-  static String get checkoutCartaoUrl =>
-      '$apiBaseUrl/static/checkout_cartao.html';
-
   static String _removerBarraFinal(String valor) {
     var resultado = valor;
     while (resultado.endsWith('/')) {

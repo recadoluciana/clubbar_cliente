@@ -886,10 +886,10 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
-  Future<Map<String, dynamic>> consultarPixMercadoPago({
+  Future<Map<String, dynamic>> consultarCheckoutAsaas({
     required int vendaId,
   }) async {
-    final url = Uri.parse('$baseUrl/pagamentos/mercadopago/consultar/$vendaId');
+    final url = Uri.parse('$baseUrl/pagamentos/asaas/status/$vendaId');
 
     final response = await http.post(url);
 
@@ -947,7 +947,7 @@ class ApiService {
     required String pagamentoId,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/mercadopago/consultar-pagamento/$pagamentoId'),
+      Uri.parse('$baseUrl/pagamentos/asaas/status/$pagamentoId'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -980,29 +980,6 @@ class ApiService {
         'dsmetodopag': 'CREDIT_CARD',
         'percentual_taxa_ingresso': percentualTaxaIngresso,
         'percentual_taxa_produto': percentualTaxaProduto,
-      }),
-    );
-
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception(response.body);
-    }
-
-    return jsonDecode(response.body);
-  }
-
-  Future<Map<String, dynamic>> pagarCartaoStripe({
-    required int clienteId,
-    required int organizacaoId,
-    required int lojaId,
-  }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/pagamentos/pagar-cartao-stripe'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'cliente_id': clienteId,
-        'organizacao_id': organizacaoId,
-        'loja_id': lojaId,
-        'dsmetodopag': 'CREDIT_CARD',
       }),
     );
 

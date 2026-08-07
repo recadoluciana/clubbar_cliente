@@ -371,7 +371,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final total = _toInt(status?['qt_total'] ?? lote.qtTotal);
     final disponivel = _toInt(status?['qt_disponivel'] ?? lote.qtDisponivel);
 
-    final esgotado = disponivel <= 0;
+    final esgotado = !lote.semLimite && disponivel <= 0;
 
     final corBadge = esgotado ? Colors.red : Colors.green;
     final textoBadge = esgotado ? 'Esgotado' : 'Disponível';
@@ -391,10 +391,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 children: [
                   Column(
                     children: [
-                      miniGraficoLote(total: total, vendidos: vendidos),
+                      lote.semLimite
+                          ? const SizedBox(
+                              width: 58,
+                              height: 58,
+                              child: CircleAvatar(
+                                backgroundColor: Color(0xFFE8F5E9),
+                                child: Text(
+                                  '∞',
+                                  style: TextStyle(
+                                    fontSize: 28,
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            )
+                          : miniGraficoLote(total: total, vendidos: vendidos),
                       const SizedBox(height: 4),
                       Text(
-                        'Taxa Ocupação',
+                        lote.semLimite ? 'Sem limite' : 'Taxa Ocupação',
                         style: TextStyle(
                           fontSize: 10,
                           color: Colors.grey.shade700,

@@ -5,6 +5,7 @@ class EventoLote {
   final double preco;
   final int qtTotal;
   final int qtVendida;
+  final bool semLimite;
   final String status;
   final String dataInicioVenda;
   final String dataFimVenda;
@@ -16,6 +17,7 @@ class EventoLote {
     required this.preco,
     required this.qtTotal,
     required this.qtVendida,
+    required this.semLimite,
     required this.status,
     required this.dataInicioVenda,
     required this.dataFimVenda,
@@ -34,6 +36,7 @@ class EventoLote {
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
+      semLimite: json['qttotallote'] == null,
       status: (json['statuslote'] ?? 'ATIVO').toString(),
       dataInicioVenda: (json['dtiniciovenda'] ?? '').toString(),
       dataFimVenda: (json['dtfimvenda'] ?? '').toString(),

@@ -42,7 +42,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     carregarBadgeCarteira();
 
     CarteiraBadgeNotifier.refresh.addListener(carregarBadgeCarteira);
-    _verificarRetornoPagamentoWeb();
     _verificarLinkProdutoCompartilhado();
     _iniciarDeepLinksAndroid();
   }
@@ -276,7 +275,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     try {
       final api = ApiService();
 
-      final response = await api.consultarPixMercadoPago(vendaId: vendaId);
+      final response = await api.consultarCheckoutAsaas(vendaId: vendaId);
 
       final status = (response['status'] ?? '').toString().toUpperCase();
 
