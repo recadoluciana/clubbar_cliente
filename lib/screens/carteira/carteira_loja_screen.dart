@@ -326,13 +326,13 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
         CarteiraBadgeNotifier.atualizar();
 
-        if (!mounted) return;
+        if (!context.mounted) return;
 
         setState(() {
           itensTela = novosItens;
         });
       } catch (e) {
-        if (!mounted) return;
+        if (!context.mounted) return;
 
         AppSnackBar.erro(
           context,

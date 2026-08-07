@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'package:clubbar_cliente/config/app_config.dart';

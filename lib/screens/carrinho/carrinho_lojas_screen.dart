@@ -49,6 +49,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
 
       final data = await apiService.buscarLojasComCarrinho(clienteId: id);
 
+      if (!mounted) return;
       setState(() {
         lojasCarrinho = data;
         carregando = false;

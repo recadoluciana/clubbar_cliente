@@ -8,10 +8,7 @@ import '../services/cart_badge_notifier.dart';
 class CartBadgeAction extends StatelessWidget {
   final Loja? loja;
 
-  const CartBadgeAction({
-    super.key,
-    this.loja,
-  });
+  const CartBadgeAction({super.key, this.loja});
 
   @override
   Widget build(BuildContext context) {

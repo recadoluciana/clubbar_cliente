@@ -829,6 +829,7 @@ class ApiService {
           nomeCidade: evento.nomeCidade,
           sgEstado: evento.sgEstado,
           bairro: (data['dsbairroloja'] ?? '').toString(),
+          atracoes: evento.atracoes,
         );
       }
 

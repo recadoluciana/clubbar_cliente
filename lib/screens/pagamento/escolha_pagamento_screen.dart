@@ -98,6 +98,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         throw Exception('Checkout Asaas não retornado.');
       }
 
+      if (!mounted) return;
       if (kIsWeb) {
         await launchUrl(Uri.parse(checkoutUrl), webOnlyWindowName: '_self');
       } else {
@@ -131,7 +132,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             ),
           );
 
-          if (retornoSucesso == true && context.mounted) {
+          if (!mounted) return;
+          if (retornoSucesso == true) {
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(builder: (_) => const MainNavigationScreen()),

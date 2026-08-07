@@ -13,6 +13,7 @@ import '../login/login_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
+import '../../utils/app_snackbar.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,6 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool carregando = true;
   bool logado = false;
   String? erro;
+  String? erroEventos;
+  String? erroLojas;
   String nomeCliente = '';
   String termoBusca = '';
 
@@ -50,43 +53,43 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       carregando = true;
       erro = null;
+      erroEventos = null;
+      erroLojas = null;
     });
 
     try {
       final token = await authStorage.obterToken();
       final nome = await authStorage.obterNmcliente();
-      final idCliente = await authStorage.obterClienteId();
-
       logado = token != null && token.isNotEmpty;
       nomeCliente = nome ?? '';
 
-      try {
-        lojas = await apiService.buscarLojas();
+      final lojasFuture = apiService.buscarLojas();
+      final eventosFuture = apiService.buscarEventos();
 
-        //for (final loja in lojas) {
-        //  debugPrint('--------------------------------');
-        //  debugPrint('id: ${loja.id}');
-        //  debugPrint('nome: ${loja.nome}');
-        //  debugPrint('bairro: ${loja.bairro}');
-        //  debugPrint('horario: ${loja.horario}');
-        //  debugPrint('instagram: ${loja.instagram}');
-        //  debugPrint('imagemUrl: ${loja.imagemUrl}');
-        //}
+      try {
+        lojas = await lojasFuture;
       } catch (e) {
         lojas = [];
-        debugPrint('Erro ao buscar bares: $e');
+        erroLojas = apiService.mensagemErroAmigavel(e);
       }
 
       try {
-        eventos = await apiService.buscarEventos();
+        eventos = await eventosFuture;
       } catch (e) {
         eventos = [];
-        debugPrint('Erro ao buscar eventos: $e');
+        erroEventos = apiService.mensagemErroAmigavel(e);
       }
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        iniciarCarousel();
-      });
+      _paginaAtual = 0;
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (_pageController.hasClients) {
+            _pageController.jumpToPage(0);
+          }
+          iniciarCarousel();
+        });
+      }
     } catch (e) {
       erro = e.toString().replaceFirst('Exception: ', '');
     } finally {
@@ -116,6 +119,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
+  List<Evento> get destaquesFiltrados =>
+      eventosFiltrados.take(8).toList(growable: false);
+
   List<Loja> get lojasFiltradas {
     if (termoBusca.trim().isEmpty) return lojas;
 
@@ -143,14 +149,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void iniciarCarousel() {
     _timer?.cancel();
 
-    if (eventosFiltrados.isEmpty) return;
+    if (destaquesFiltrados.length <= 1) return;
 
     _timer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted) return;
-      if (eventosFiltrados.isEmpty) return;
+      if (destaquesFiltrados.length <= 1) return;
       if (!_pageController.hasClients) return;
 
-      _paginaAtual = (_paginaAtual + 1) % eventosFiltrados.length;
+      _paginaAtual = (_paginaAtual + 1) % destaquesFiltrados.length;
 
       _pageController.animateToPage(
         _paginaAtual,
@@ -198,7 +204,7 @@ $cidadeEstado
 
 🍺 Conheça esta casa pelo Clubbar
 
-${AppConfig.appWebUrl}
+${AppConfig.appWebUrl}/?loja_id=${loja.id}
 ''';
 
     await Share.share(texto);
@@ -308,6 +314,55 @@ ${AppConfig.appWebUrl}
           texto,
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
+        ),
+      ),
+    );
+  }
+
+  Loja? _lojaDoEvento(Evento evento) {
+    for (final loja in lojas) {
+      if (loja.id == evento.lojaId) return loja;
+    }
+    return null;
+  }
+
+  Future<void> _abrirEvento(Evento evento, Loja? lojaConhecida) async {
+    try {
+      final loja =
+          lojaConhecida ?? await apiService.buscarDadosLoja(evento.lojaId);
+      if (!mounted) return;
+      MainNavigationController.abrirTela(
+        DetalheEventoScreen(eventoId: evento.id, loja: loja),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.erro(
+        context,
+        'Não foi possível carregar os dados do estabelecimento.',
+      );
+    }
+  }
+
+  Widget _cardErro(String texto, VoidCallback tentarNovamente) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.cloud_off_outlined, size: 36),
+            const SizedBox(height: 10),
+            Text(texto, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: tentarNovamente,
+              child: const Text('Tentar novamente'),
+            ),
+          ],
         ),
       ),
     );
@@ -424,51 +479,28 @@ ${AppConfig.appWebUrl}
                   _secaoTitulo('Destaques', Icons.celebration_outlined),
                   const SizedBox(height: 14),
 
-                  if (eventosFiltrados.isEmpty)
+                  if (erroEventos != null)
+                    _cardErro(erroEventos!, carregarHome)
+                  else if (destaquesFiltrados.isEmpty)
                     _cardVazio('Nenhum evento encontrado.')
                   else
                     SizedBox(
                       height: 280,
                       child: PageView.builder(
                         controller: _pageController,
-                        itemCount: eventosFiltrados.length,
+                        itemCount: destaquesFiltrados.length,
                         onPageChanged: (index) {
                           setState(() {
                             _paginaAtual = index;
                           });
                         },
                         itemBuilder: (context, index) {
-                          final evento = eventosFiltrados[index];
+                          final evento = destaquesFiltrados[index];
 
-                          final loja = lojas.firstWhere(
-                            (l) => l.id == evento.lojaId,
-                            orElse: () => Loja(
-                              id: evento.lojaId,
-                              organizacaoId: evento.organizacaoId,
-                              nome: evento.nomeLoja,
-                              endereco: '',
-                              bairro: '',
-                              cidade: '',
-                              horario: '',
-                              imagemUrl: '',
-                              instagram: '',
-                              vrtaxaprod: 0,
-                              vrtaxaing: 0,
-                              dsestiloloja: '',
-                              nrtelloja: '',
-                              sgEstado: '',
-                            ),
-                          );
+                          final loja = _lojaDoEvento(evento);
 
                           return GestureDetector(
-                            onTap: () {
-                              MainNavigationController.abrirTela(
-                                DetalheEventoScreen(
-                                  eventoId: evento.id,
-                                  loja: loja,
-                                ),
-                              );
-                            },
+                            onTap: () => _abrirEvento(evento, loja),
                             child: Container(
                               margin: const EdgeInsets.symmetric(horizontal: 8),
                               decoration: BoxDecoration(
@@ -579,11 +611,13 @@ ${AppConfig.appWebUrl}
                       ),
                     ),
 
-                  if (eventosFiltrados.isNotEmpty) ...[
+                  if (destaquesFiltrados.length > 1) ...[
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(eventosFiltrados.length, (index) {
+                      children: List.generate(destaquesFiltrados.length, (
+                        index,
+                      ) {
                         final ativo = index == _paginaAtual;
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
@@ -607,7 +641,9 @@ ${AppConfig.appWebUrl}
                   ),
                   const SizedBox(height: 14),
 
-                  if (lojasFiltradas.isEmpty)
+                  if (erroLojas != null)
+                    _cardErro(erroLojas!, carregarHome)
+                  else if (lojasFiltradas.isEmpty)
                     _cardVazio('Nenhum bar ou casa noturna encontrado.')
                   else
                     ListView.builder(

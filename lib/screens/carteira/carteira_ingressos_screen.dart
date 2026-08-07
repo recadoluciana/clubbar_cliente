@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
@@ -174,20 +172,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     BuildContext context,
     Map<String, dynamic> item,
   ) async {
-    final codigo = (item['itvenda_id'] ?? '').toString();
+    final token = (item['qrtokenitvenda'] ?? '').toString().trim();
+    final qrData = 'CLUBBAR-INGRESSO:$token';
 
-    final qrData = jsonEncode({
-      'itvenda_id': codigo,
-      'nmloja': widget.nomeLoja,
-      'nmcliente': (item['nmcliente'] ?? '').toString(),
-      'nmproduto': (item['nmproduto'] ?? '').toString(),
-      'nmparticipante': (item['nmparticipante'] ?? '').toString(),
-      'cpfparticipante': (item['cpfparticipante'] ?? '').toString(),
-      'urlfotoproduto': (item['urlfotoproduto'] ?? '').toString(),
-      'idtipoproduto': (item['idtipoproduto'] ?? '').toString(),
-    });
-
-    if (codigo.isEmpty) {
+    if (token.isEmpty) {
       AppSnackBar.erro(context, 'QR Code não disponível para este item.');
       return;
     }

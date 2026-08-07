@@ -28,6 +28,33 @@ class EventoLote {
     return disponivel < 0 ? 0 : disponivel;
   }
 
+  bool podeComprarEm(DateTime agora) {
+    final statusNormalizado = status.trim().toUpperCase();
+    if (statusNormalizado != 'ATIVO') return false;
+    if (!semLimite && qtDisponivel <= 0) return false;
+
+    final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
+    final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
+    if (inicio != null && agora.isBefore(inicio)) return false;
+    if (fim != null && agora.isAfter(fim)) return false;
+    return true;
+  }
+
+  String situacaoVendaEm(DateTime agora) {
+    final statusNormalizado = status.trim().toUpperCase();
+    if (statusNormalizado == 'ESGOTADO' || (!semLimite && qtDisponivel <= 0)) {
+      return 'Esgotado';
+    }
+    if (statusNormalizado == 'INATIVO') return 'Indisponível';
+    if (statusNormalizado == 'ENCERRADO') return 'Vendas encerradas';
+
+    final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
+    final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
+    if (inicio != null && agora.isBefore(inicio)) return 'Em breve';
+    if (fim != null && agora.isAfter(fim)) return 'Vendas encerradas';
+    return statusNormalizado == 'ATIVO' ? 'Disponível' : 'Indisponível';
+  }
+
   factory EventoLote.fromJson(Map<String, dynamic> json) {
     return EventoLote(
       loteId: _toInt(json['lote_id'] ?? 0),

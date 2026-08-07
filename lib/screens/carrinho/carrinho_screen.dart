@@ -335,6 +335,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
 
     if (confirmar != true) return;
+    if (!mounted) return;
 
     if (carrinhoId == null || carrinhoId == 0) {
       AppSnackBar.erro(context, 'Carrinho inválido para remoção.');

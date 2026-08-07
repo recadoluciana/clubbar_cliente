@@ -39,11 +39,13 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
     try {
       final lista = await apiService.buscarEventosPorLoja(widget.loja.id);
 
+      if (!mounted) return;
       setState(() {
         eventos = lista;
         carregando = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         erro = e.toString().replaceFirst('Exception: ', '');
         carregando = false;

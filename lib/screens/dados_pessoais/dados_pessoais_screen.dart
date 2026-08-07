@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
-import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';

@@ -12,6 +12,7 @@ class EventoDetalhe {
   final String nomeLoja;
   final String nomeCidade;
   final String sgEstado;
+  final List<AtracaoEventoDetalhe> atracoes;
 
   EventoDetalhe({
     required this.id,
@@ -27,6 +28,7 @@ class EventoDetalhe {
     required this.nomeLoja,
     required this.nomeCidade,
     required this.sgEstado,
+    required this.atracoes,
   });
 
   factory EventoDetalhe.fromJson(Map<String, dynamic> json) {
@@ -44,11 +46,50 @@ class EventoDetalhe {
       nomeLoja: (json['nmloja'] ?? '').toString(),
       nomeCidade: (json['nmcidade'] ?? '').toString(),
       sgEstado: (json['sgestado'] ?? '').toString(),
+      atracoes: (json['atracoes'] as List? ?? const [])
+          .whereType<Map>()
+          .map(
+            (item) =>
+                AtracaoEventoDetalhe.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .toList(),
     );
   }
 
   static int _toInt(dynamic valor) {
     if (valor is int) return valor;
     return int.tryParse(valor.toString()) ?? 0;
+  }
+}
+
+class AtracaoEventoDetalhe {
+  final int id;
+  final String nome;
+  final String estilo;
+  final String descricao;
+  final String bannerUrl;
+  final String inicio;
+  final String fim;
+
+  const AtracaoEventoDetalhe({
+    required this.id,
+    required this.nome,
+    required this.estilo,
+    required this.descricao,
+    required this.bannerUrl,
+    required this.inicio,
+    required this.fim,
+  });
+
+  factory AtracaoEventoDetalhe.fromJson(Map<String, dynamic> json) {
+    return AtracaoEventoDetalhe(
+      id: EventoDetalhe._toInt(json['atracao_id'] ?? 0),
+      nome: (json['nmatracao'] ?? 'Atração').toString(),
+      estilo: (json['dsestilomusical'] ?? '').toString(),
+      descricao: (json['dsatracao'] ?? '').toString(),
+      bannerUrl: (json['urlbanneratracao'] ?? '').toString(),
+      inicio: (json['dtinicioatracao'] ?? '').toString(),
+      fim: (json['dtfimatracao'] ?? '').toString(),
+    );
   }
 }

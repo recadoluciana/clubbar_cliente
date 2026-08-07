@@ -13,6 +13,8 @@ import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
+import '../detalhe_evento/detalhe_evento_screen.dart';
+import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../../utils/url_cleaner.dart';
 import '../../utils/app_snackbar.dart';
 import '../../services/deep_link_service.dart';
@@ -43,6 +45,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     CarteiraBadgeNotifier.refresh.addListener(carregarBadgeCarteira);
     _verificarLinkProdutoCompartilhado();
+    _verificarRetornoPagamentoWeb();
     _iniciarDeepLinksAndroid();
   }
 
@@ -53,7 +56,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }) {
     final selecionado = currentIndex == index;
 
-    final cor_item = selecionado ? Colors.black : Colors.black;
+    final corItem = selecionado ? Colors.black : Colors.black87;
 
     return Expanded(
       child: Material(
@@ -87,7 +90,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   children: [
                     IconTheme(
                       data: IconThemeData(
-                        color: cor_item,
+                        color: corItem,
                         size: selecionado ? 23 : 22,
                       ),
                       child: SizedBox(height: 25, child: Center(child: icone)),
@@ -102,7 +105,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: cor_item,
+                        color: corItem,
                         fontSize: 11,
                         height: 1,
                         fontWeight: selecionado
@@ -178,11 +181,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Future<void> _aoTocarNaAba(int index) async {
     if (index == currentIndex) {
-      MainNavigationController.fecharTelaInterna();
+      MainNavigationController.limparTelasInternas();
       return;
     }
 
-    MainNavigationController.fecharTelaInterna();
+    MainNavigationController.limparTelasInternas();
 
     await _selecionarAba(index);
 
@@ -239,25 +242,46 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _abrirLinkCompartilhado(Uri uri, {required bool limparUrl}) {
     final produtoIdTexto = uri.queryParameters['produto_id'];
+    final eventoId = int.tryParse(uri.queryParameters['evento_id'] ?? '');
+    final lojaId = int.tryParse(uri.queryParameters['loja_id'] ?? '');
+    final produtoId = int.tryParse(produtoIdTexto ?? '');
 
-    if (produtoIdTexto == null) return;
-
-    final produtoId = int.tryParse(produtoIdTexto);
-
-    if (produtoId == null) return;
+    if (produtoId == null && eventoId == null && lojaId == null) return;
 
     if (!mounted) return;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProdutoCompartilhadoScreen(produtoId: produtoId),
-        ),
-      );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        if (produtoId != null) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProdutoCompartilhadoScreen(produtoId: produtoId),
+            ),
+          );
+          return;
+        }
 
-      if (limparUrl) {
-        limparUrlWeb();
+        if (lojaId == null) return;
+        final loja = await apiService.buscarDadosLoja(lojaId);
+        if (!mounted) return;
+
+        MainNavigationController.abrirTela(
+          eventoId != null
+              ? DetalheEventoScreen(eventoId: eventoId, loja: loja)
+              : DetalheLojaScreen(loja: loja),
+        );
+      } catch (e) {
+        if (mounted) {
+          AppSnackBar.erro(
+            context,
+            'Não foi possível abrir o link compartilhado.',
+          );
+        }
+      } finally {
+        if (limparUrl) {
+          limparUrlWeb();
+        }
       }
     });
   }
@@ -271,6 +295,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     final vendaId = int.tryParse(vendaIdTexto);
     if (vendaId == null) return;
+    limparUrlWeb();
 
     try {
       final api = ApiService();
@@ -295,7 +320,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       MainNavigationController.abrirTela(
         PagamentoSucessoScreen(sucesso: status == 'PAGO'),
       );
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        AppSnackBar.erro(
+          context,
+          'Não foi possível confirmar o retorno do pagamento.',
+        );
+      }
+    }
   }
 
   Future<void> carregarUsuario() async {
@@ -489,7 +521,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           body: ValueListenableBuilder<Widget?>(
             valueListenable: MainNavigationController.telaInterna,
             builder: (context, telaInterna, _) {
-              return telaInterna ?? _buildPage();
+              return PopScope(
+                canPop: telaInterna == null,
+                onPopInvokedWithResult: (didPop, _) {
+                  if (!didPop) {
+                    MainNavigationController.fecharTelaInterna();
+                  }
+                },
+                child: telaInterna ?? _buildPage(),
+              );
             },
           ),
           bottomNavigationBar: _barraNavegacao(),

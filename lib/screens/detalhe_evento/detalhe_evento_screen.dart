@@ -83,7 +83,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   🍻 Garanta seu ingresso pelo Clubbar
 
   👉 Acesse:
-  ${AppConfig.appWebUrl}
+  ${AppConfig.appWebUrl}/?evento_id=${widget.eventoId}&loja_id=${widget.loja.id}
 
   🦉 Clubbar
   Compre seu ingresso e o que vai consumir
@@ -115,6 +115,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       final detalhe = resultados[0] as EventoDetalhe;
       final listaLotes = resultados[1] as List<EventoLote>;
 
+      if (!mounted) return;
       setState(() {
         evento = detalhe;
         lotes = listaLotes;
@@ -122,6 +123,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       });
       await carregarStatusLotes();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         erro = e.toString().replaceFirst('Exception: ', '');
         carregando = false;
@@ -296,8 +298,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget miniGraficoLote({required int total, required int vendidos}) {
     final vendidosAjustado = vendidos.clamp(0, total);
-    final disponiveis = (total - vendidosAjustado).clamp(0, total);
-
     final percentualVendido = total <= 0 ? 0.0 : vendidosAjustado / total;
 
     return SizedBox(
@@ -369,12 +369,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     final vendidos = _toInt(status?['qt_vendida']);
     final total = _toInt(status?['qt_total'] ?? lote.qtTotal);
-    final disponivel = _toInt(status?['qt_disponivel'] ?? lote.qtDisponivel);
+    final agora = DateTime.now();
+    final vendaDisponivel = lote.podeComprarEm(agora);
 
-    final esgotado = !lote.semLimite && disponivel <= 0;
-
-    final corBadge = esgotado ? Colors.red : Colors.green;
-    final textoBadge = esgotado ? 'Esgotado' : 'Disponível';
+    final corBadge = vendaDisponivel ? Colors.green : Colors.red;
+    final textoBadge = lote.situacaoVendaEm(agora);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -472,7 +471,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: esgotado || processandoCompra
+                      onPressed: !vendaDisponivel || processandoCompra
                           ? null
                           : () => adicionarAoCarrinho(lote),
                       icon: const Icon(Icons.add_shopping_cart),
@@ -663,6 +662,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             titulo: 'Data',
                             valor: formatarDataHora(ev.dataInicio),
                           ),
+                          if (ev.dataFim.trim().isNotEmpty)
+                            linhaInfo(
+                              icone: Icons.event_available_outlined,
+                              titulo: 'Término',
+                              valor: formatarDataHora(ev.dataFim),
+                            ),
                           linhaInfo(
                             icone: Icons.storefront_outlined,
                             titulo: 'Local',
@@ -685,6 +690,54 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 ? ev.nomeCidade
                                 : '${ev.nomeCidade} - ${ev.sgEstado}',
                           ),
+
+                          if (ev.atracoes.isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            const Text(
+                              'Atrações',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ...ev.atracoes.map(
+                              (atracao) => Container(
+                                width: double.infinity,
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      atracao.nome,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (atracao.estilo.trim().isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 3),
+                                        child: Text(atracao.estilo),
+                                      ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      '${DateFormatters.dataHoraSimples(atracao.inicio)} até ${DateFormatters.dataHoraSimples(atracao.fim)}',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
 
                           const SizedBox(height: 12),
                           Row(
