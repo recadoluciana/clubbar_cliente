@@ -283,7 +283,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                     )
                   : const Icon(Icons.account_balance_wallet_outlined, size: 24),
               label: const Text(
-                'Escolher tipo de pagamento',
+                'Pagar com PIX ou cartão',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
@@ -297,6 +297,14 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ),
 
           const SizedBox(height: 20),
+
+          const Text(
+            'O pagamento é processado com segurança pelo Asaas. No checkout, escolha PIX ou cartão de crédito.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black54, height: 1.4),
+          ),
+
+          const SizedBox(height: 12),
 
           TextButton.icon(
             onPressed: () {
