@@ -112,6 +112,20 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         if (resultado == true) {
           if (!mounted) return;
 
+          Map<String, dynamic>? confirmacao;
+          for (var tentativa = 0; tentativa < 6; tentativa++) {
+            confirmacao = await apiService.consultarCheckoutAsaas(
+              checkoutId: resposta['pagamento_id'].toString(),
+            );
+            if ((confirmacao['status'] ?? '').toString().toUpperCase() ==
+                'PAGO') {
+              break;
+            }
+            await Future<void>.delayed(const Duration(seconds: 2));
+          }
+          final confirmado =
+              (confirmacao?['status'] ?? '').toString().toUpperCase() == 'PAGO';
+
           final clienteId = await authStorage.obterClienteId();
 
           if (clienteId != null && clienteId > 0) {
@@ -128,7 +142,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           final retornoSucesso = await Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => const PagamentoSucessoScreen(sucesso: true),
+              builder: (_) => PagamentoSucessoScreen(sucesso: confirmado),
             ),
           );
 

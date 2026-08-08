@@ -888,11 +888,11 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> consultarCheckoutAsaas({
-    required int vendaId,
+    required String checkoutId,
   }) async {
-    final url = Uri.parse('$baseUrl/pagamentos/asaas/status/$vendaId');
+    final url = Uri.parse('$baseUrl/pagamentos/asaas/status/$checkoutId');
 
-    final response = await http.post(url);
+    final response = await http.get(url);
 
     final data = jsonDecode(response.body);
 
@@ -947,7 +947,7 @@ class ApiService {
   Future<Map<String, dynamic>> consultarPixPorPagamentoId({
     required String pagamentoId,
   }) async {
-    final response = await http.post(
+    final response = await http.get(
       Uri.parse('$baseUrl/pagamentos/asaas/status/$pagamentoId'),
       headers: {
         'Content-Type': 'application/json',

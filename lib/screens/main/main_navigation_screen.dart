@@ -289,18 +289,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Future<void> _verificarRetornoPagamentoWeb() async {
     if (!kIsWeb) return;
 
-    final vendaIdTexto = Uri.base.queryParameters['ultima_venda'];
-
-    if (vendaIdTexto == null || vendaIdTexto.isEmpty) return;
-
-    final vendaId = int.tryParse(vendaIdTexto);
-    if (vendaId == null) return;
+    final checkoutId = Uri.base.queryParameters['checkout_id'];
+    final retorno = Uri.base.queryParameters['pagamento'];
+    if (checkoutId == null || checkoutId.isEmpty || retorno == null) return;
     limparUrlWeb();
 
     try {
       final api = ApiService();
 
-      final response = await api.consultarCheckoutAsaas(vendaId: vendaId);
+      final response = await api.consultarCheckoutAsaas(checkoutId: checkoutId);
 
       final status = (response['status'] ?? '').toString().toUpperCase();
 
