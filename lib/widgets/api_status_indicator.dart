@@ -7,7 +7,9 @@ import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 
 class ApiStatusIndicator extends StatefulWidget {
-  const ApiStatusIndicator({super.key});
+  final String versao;
+
+  const ApiStatusIndicator({super.key, required this.versao});
 
   @override
   State<ApiStatusIndicator> createState() => _ApiStatusIndicatorState();
@@ -70,6 +72,12 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
         : Colors.redAccent;
     final api = _consultando ? '...' : (_online ? 'ON' : 'OFF');
 
+    final iconeApi = _consultando
+        ? Icons.sync_rounded
+        : _online
+        ? Icons.cloud_done_rounded
+        : Icons.cloud_off_rounded;
+
     return Tooltip(
       message:
           'API: ${_online ? 'online' : 'offline'} | Banco: ${_bancoOnline ? 'online' : 'offline'} | Ambiente: $_ambiente',
@@ -81,20 +89,29 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(color: cor, shape: BoxShape.circle),
-              ),
-              const SizedBox(width: 4),
+              Icon(iconeApi, color: cor, size: 15),
+              const SizedBox(width: 3),
               Text(
-                'API $api\nDB $_ambiente',
-                textAlign: TextAlign.center,
+                'API $api',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 9,
-                  height: 1.15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(width: 5),
+              Icon(
+                Icons.storage_rounded,
+                color: _bancoOnline ? Colors.greenAccent.shade400 : cor,
+                size: 14,
+              ),
+              const SizedBox(width: 2),
+              Text(
+                'DB $_ambiente · v${widget.versao}',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],

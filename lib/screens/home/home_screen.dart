@@ -591,7 +591,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
       appBar: ClubbarAppBar(
         mostrarVoltar: false,
         actions: [
-          const ApiStatusIndicator(),
+          const ApiStatusIndicator(versao: '1.0.0'),
           if (logado)
             IconButton(
               onPressed: sair,
