@@ -363,6 +363,28 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     return '$ruaNumero. $localidade';
   }
 
+  String _telefoneFormatado(String telefone) {
+    var numeros = telefone.replaceAll(RegExp(r'\D'), '');
+    var prefixoPais = '';
+
+    if ((numeros.length == 12 || numeros.length == 13) &&
+        numeros.startsWith('55')) {
+      numeros = numeros.substring(2);
+      prefixoPais = '+55 ';
+    }
+
+    if (numeros.length == 11) {
+      return '$prefixoPais(${numeros.substring(0, 2)}) '
+          '${numeros.substring(2, 7)}-${numeros.substring(7)}';
+    }
+    if (numeros.length == 10) {
+      return '$prefixoPais(${numeros.substring(0, 2)}) '
+          '${numeros.substring(2, 6)}-${numeros.substring(6)}';
+    }
+
+    return telefone.trim();
+  }
+
   bool _lojaNova(Loja loja) {
     final data = loja.dataCriacao;
     if (data == null) return false;
@@ -392,7 +414,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
       return _cardVazio('Ainda não há produtos vendidos para destacar.');
     }
 
-    final moeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
     return SizedBox(
       height: 230,
       child: ListView.separated(
@@ -430,37 +451,56 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                           children: [
                             Text(
                               produto.nmproduto,
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              produto.nmloja,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
-                              ),
+                            const SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.storefront_rounded,
+                                  color: Colors.amber.shade900,
+                                  size: 15,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    produto.nmloja,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: Colors.amber.shade900,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const Spacer(),
-                            Text(
-                              moeda.format(produto.vrprecofinal),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            Text(
-                              '${produto.quantidadeVendida} vendidos',
-                              style: const TextStyle(
-                                color: Colors.deepOrange,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.local_fire_department_rounded,
+                                  color: Colors.deepOrange,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 3),
+                                Expanded(
+                                  child: Text(
+                                    '${produto.quantidadeVendida} vendidos',
+                                    style: const TextStyle(
+                                      color: Colors.deepOrange,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -938,7 +978,9 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                 const SizedBox(width: 6),
                                                 Expanded(
                                                   child: Text(
-                                                    loja.nrtelloja.trim(),
+                                                    _telefoneFormatado(
+                                                      loja.nrtelloja,
+                                                    ),
                                                     maxLines: 1,
                                                     overflow:
                                                         TextOverflow.ellipsis,
@@ -952,17 +994,37 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                               ],
                                             ),
                                           ],
+                                          const SizedBox(height: 4),
+                                          Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: TextButton.icon(
+                                              onPressed: () =>
+                                                  compartilharLoja(loja),
+                                              icon: const Icon(
+                                                Icons.ios_share_rounded,
+                                                size: 17,
+                                              ),
+                                              label: const Text('Compartilhar'),
+                                              style: TextButton.styleFrom(
+                                                foregroundColor:
+                                                    Colors.amber.shade900,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 3,
+                                                    ),
+                                                minimumSize: const Size(0, 32),
+                                                tapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                                textStyle: const TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
                                         ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    IconButton.filledTonal(
-                                      onPressed: () => compartilharLoja(loja),
-                                      icon: const Icon(Icons.ios_share_rounded),
-                                      tooltip: 'Compartilhar',
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: Colors.white,
-                                        foregroundColor: Colors.black,
                                       ),
                                     ),
                                   ],

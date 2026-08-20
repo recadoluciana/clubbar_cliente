@@ -20,7 +20,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onCarrinhoTap,
     this.mostrarVersao = false,
     this.mostrarVoltar = false,
-    this.logoPath = 'assets/images/logo_copa.png',
+    this.logoPath = 'assets/images/clubbar_topbar.png',
     this.onVoltar,
     this.actions = const [],
   });
