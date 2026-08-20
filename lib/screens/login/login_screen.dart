@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
+import '../../services/app_exit_service.dart';
 import '../../services/auth_storage.dart';
 import '../cadastro/cadastro_screen.dart';
 import '../esqueceu_senha/esqueceu_senha_screen.dart';
@@ -182,6 +183,13 @@ class _LoginScreenState extends State<LoginScreen> {
           MainNavigationController.irParaHome();
           Navigator.of(context).maybePop();
         },
+        actions: [
+          IconButton(
+            tooltip: 'Fechar aplicativo',
+            onPressed: AppExitService.fechar,
+            icon: const Icon(Icons.close_rounded),
+          ),
+        ],
       ),
       extendBodyBehindAppBar: true,
       body: Container(
