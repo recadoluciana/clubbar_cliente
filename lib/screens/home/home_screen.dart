@@ -415,7 +415,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     }
 
     return SizedBox(
-      height: 230,
+      height: 205,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -424,7 +424,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         itemBuilder: (context, index) {
           final produto = produtosMaisVendidos[index];
           return SizedBox(
-            width: 165,
+            width: 155,
             child: Material(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -439,13 +439,13 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   children: [
                     _imagemSegura(
                       url: produto.urlfotoproduto ?? '',
-                      width: 165,
-                      height: 112,
+                      width: 155,
+                      height: 100,
                       fallbackIcon: Icons.local_bar_outlined,
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -463,7 +463,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                               children: [
                                 Icon(
                                   Icons.storefront_rounded,
-                                  color: Colors.amber.shade900,
+                                  color: Colors.amber.shade800,
                                   size: 15,
                                 ),
                                 const SizedBox(width: 4),
@@ -473,7 +473,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      color: Colors.amber.shade900,
+                                      color: Colors.amber.shade800,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -481,7 +481,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                 ),
                               ],
                             ),
-                            const Spacer(),
+                            const SizedBox(height: 5),
                             Row(
                               children: [
                                 const Icon(
