@@ -991,6 +991,32 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  Future<Map<String, dynamic>> criarPixAsaas({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+    required double percentualTaxaIngresso,
+    required double percentualTaxaProduto,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/pix'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+        'dsmetodopag': 'PIX',
+        'percentual_taxa_ingresso': percentualTaxaIngresso,
+        'percentual_taxa_produto': percentualTaxaProduto,
+      }),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> pagarAsaas({
     required int clienteId,
     required int organizacaoId,

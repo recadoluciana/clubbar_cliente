@@ -6,8 +6,10 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
+import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import 'pagamento_sucesso_screen.dart';
+import '../main/main_navigation_screen.dart';
 
 class PixPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -26,6 +28,8 @@ class PixPagamentoScreen extends StatefulWidget {
 class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   final apiService = ApiService();
   Timer? _timer;
+  bool _consultando = false;
+  bool _confirmacaoProcessada = false;
 
   @override
   void initState() {
@@ -63,8 +67,18 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         .toString();
   }
 
+  double get valorTotal {
+    final valor = widget.pagamento['valor_total'] ?? widget.pagamento['valor'];
+    if (valor is num) return valor.toDouble();
+    return double.tryParse(valor?.toString() ?? '') ?? 0;
+  }
+
+  String get valorTotalFormatado =>
+      'R\$ ${valorTotal.toStringAsFixed(2).replaceAll('.', ',')}';
+
   Future<void> _consultarPagamento() async {
-    if (pagamentoId.isEmpty) return;
+    if (pagamentoId.isEmpty || _consultando || _confirmacaoProcessada) return;
+    _consultando = true;
 
     try {
       final response = await apiService.consultarPixPorPagamentoId(
@@ -74,18 +88,22 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
       final statusAtual = (response['status'] ?? '').toString().toUpperCase();
 
       if (statusAtual == 'PAGO') {
+        _confirmacaoProcessada = true;
         _timer?.cancel();
-
         if (!mounted) return;
-
-        Navigator.pushReplacement(
+        CartBadgeNotifier.limpar();
+        CarteiraBadgeNotifier.atualizar();
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(
-            builder: (_) => const PagamentoSucessoScreen(sucesso: true),
-          ),
+          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+          (route) => false,
         );
       }
-    } catch (_) {}
+    } catch (_) {
+      // Mantem a tela aguardando; a proxima consulta tenta novamente.
+    } finally {
+      _consultando = false;
+    }
   }
 
   void copiarCodigoPix(BuildContext context) {
@@ -232,6 +250,37 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
           ),
 
           const SizedBox(height: 14),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.green.shade100),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.payments_outlined, color: Colors.green),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Valor total',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                Text(
+                  valorTotalFormatado,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
 
           Container(
             padding: const EdgeInsets.all(13),

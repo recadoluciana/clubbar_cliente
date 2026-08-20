@@ -11,6 +11,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../main/main_navigation_screen.dart';
 import 'pagamento_sucesso_screen.dart';
+import 'pix_pagamento_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -61,6 +62,50 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   String _moeda(double valor) {
     return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
+  }
+
+  Future<void> abrirPix() async {
+    if (totalPagar < 5.00) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('O pagamento mínimo é R\$ 5,00.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    setState(() => carregandoPagamento = true);
+    try {
+      final clienteId = await authStorage.obterClienteId();
+      if (clienteId == null || clienteId == 0) {
+        throw Exception('Cliente não identificado');
+      }
+      final pagamento = await apiService.criarPixAsaas(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        percentualTaxaIngresso: percentualTaxaIngresso,
+        percentualTaxaProduto: percentualTaxaProduto,
+      );
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              PixPagamentoScreen(loja: widget.loja, pagamento: pagamento),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('Exception: ', '')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => carregandoPagamento = false);
+    }
   }
 
   Future<void> abrirAsaas() async {
@@ -288,6 +333,33 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           SizedBox(
             height: 56,
             child: ElevatedButton.icon(
+              onPressed: carregandoPagamento ? null : abrirPix,
+              icon: carregandoPagamento
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.pix, size: 25),
+              label: const Text(
+                'Pagamento PIX',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          SizedBox(
+            height: 56,
+            child: ElevatedButton.icon(
               onPressed: carregandoPagamento ? null : abrirAsaas,
               icon: carregandoPagamento
                   ? const SizedBox(
@@ -297,7 +369,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                     )
                   : const Icon(Icons.account_balance_wallet_outlined, size: 24),
               label: const Text(
-                'Pagar com PIX ou cartão',
+                'Pagamento cartão débito ou crédito',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
@@ -313,7 +385,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           const SizedBox(height: 20),
 
           const Text(
-            'O pagamento é processado com segurança pelo Asaas. No checkout, escolha PIX ou cartão de crédito.',
+            'Os pagamentos são processados com segurança pelo Asaas.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.black54, height: 1.4),
           ),
