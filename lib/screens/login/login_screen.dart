@@ -7,6 +7,7 @@ import '../cadastro/cadastro_screen.dart';
 import '../esqueceu_senha/esqueceu_senha_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
+import '../main/main_navigation_screen.dart';
 import '../../utils/app_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -127,7 +128,10 @@ class _LoginScreenState extends State<LoginScreen> {
       AppSnackBar.sucesso(context, 'Login realizado com sucesso!');
 
       MainNavigationController.irParaHome();
-      Navigator.pop(context, true);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        (_) => false,
+      );
     } catch (e) {
       if (!mounted) return;
 

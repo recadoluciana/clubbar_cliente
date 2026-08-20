@@ -1,15 +1,19 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/evento.dart';
 import '../../models/loja.dart';
+import '../../models/produto.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/api_status_indicator.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../login/login_screen.dart';
+import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
@@ -26,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final authStorage = AuthStorage();
   final apiService = ApiService();
 
-  final PageController _pageController = PageController(viewportFraction: 0.92);
+  final PageController _pageController = PageController(viewportFraction: 0.86);
   final TextEditingController _buscaCtrl = TextEditingController();
 
   Timer? _timer;
@@ -37,11 +41,14 @@ class _HomeScreenState extends State<HomeScreen> {
   String? erro;
   String? erroEventos;
   String? erroLojas;
+  String? erroProdutos;
   String nomeCliente = '';
   String termoBusca = '';
 
   List<Evento> eventos = [];
+  List<Evento> eventosCarrossel = [];
   List<Loja> lojas = [];
+  List<Produto> produtosMaisVendidos = [];
 
   @override
   void initState() {
@@ -55,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       erro = null;
       erroEventos = null;
       erroLojas = null;
+      erroProdutos = null;
     });
 
     try {
@@ -65,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final lojasFuture = apiService.buscarLojas();
       final eventosFuture = apiService.buscarEventos();
+      final produtosFuture = apiService.buscarProdutosMaisVendidos();
 
       try {
         lojas = await lojasFuture;
@@ -75,9 +84,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
       try {
         eventos = await eventosFuture;
+        final embaralhados = List<Evento>.from(eventos)..shuffle(Random());
+        eventosCarrossel = embaralhados.take(10).toList(growable: false);
       } catch (e) {
         eventos = [];
+        eventosCarrossel = [];
         erroEventos = apiService.mensagemErroAmigavel(e);
+      }
+
+      try {
+        produtosMaisVendidos = await produtosFuture;
+      } catch (e) {
+        produtosMaisVendidos = [];
+        erroProdutos = apiService.mensagemErroAmigavel(e);
       }
 
       _paginaAtual = 0;
@@ -119,8 +138,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
-  List<Evento> get destaquesFiltrados =>
-      eventosFiltrados.take(8).toList(growable: false);
+  List<Evento> get destaquesFiltrados {
+    if (termoBusca.trim().isEmpty) return eventosCarrossel;
+    return eventosFiltrados.take(10).toList(growable: false);
+  }
 
   List<Loja> get lojasFiltradas {
     if (termoBusca.trim().isEmpty) return lojas;
@@ -179,13 +200,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (!mounted) return;
 
-    setState(() {
-      logado = false;
-      nomeCliente = '';
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logout realizado com sucesso')),
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
     );
   }
 
@@ -326,6 +343,139 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     return null;
   }
 
+  String _enderecoCompleto(Loja loja) {
+    final rua = loja.endereco.trim().isEmpty ? '' : loja.endereco.trim();
+    final ruaNumero = [
+      if (rua.isNotEmpty) rua,
+      if (loja.numero.trim().isNotEmpty) loja.numero.trim(),
+    ].join(', ');
+    final localidade = [
+      if (loja.bairro.trim().isNotEmpty) loja.bairro.trim(),
+      if (loja.cidade.trim().isNotEmpty) loja.cidade.trim(),
+      if (loja.sgEstado.trim().isNotEmpty) loja.sgEstado.trim(),
+    ].join(' - ');
+
+    if (ruaNumero.isEmpty && localidade.isEmpty) {
+      return 'Localização não informada';
+    }
+    if (ruaNumero.isEmpty) return localidade;
+    if (localidade.isEmpty) return ruaNumero;
+    return '$ruaNumero. $localidade';
+  }
+
+  bool _lojaNova(Loja loja) {
+    final data = loja.dataCriacao;
+    if (data == null) return false;
+    final agora = DateTime.now();
+    final anoMesAnterior = agora.month == 1 ? agora.year - 1 : agora.year;
+    final mesAnterior = agora.month == 1 ? 12 : agora.month - 1;
+    final diaLimite = min(
+      agora.day,
+      DateUtils.getDaysInMonth(anoMesAnterior, mesAnterior),
+    );
+    final limite = DateTime(
+      anoMesAnterior,
+      mesAnterior,
+      diaLimite,
+      agora.hour,
+      agora.minute,
+      agora.second,
+    );
+    return !data.isAfter(agora) && !data.isBefore(limite);
+  }
+
+  Widget _listaProdutosMaisVendidos() {
+    if (erroProdutos != null) {
+      return _cardErro(erroProdutos!, carregarHome);
+    }
+    if (produtosMaisVendidos.isEmpty) {
+      return _cardVazio('Ainda não há produtos vendidos para destacar.');
+    }
+
+    final moeda = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
+    return SizedBox(
+      height: 230,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: produtosMaisVendidos.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final produto = produtosMaisVendidos[index];
+          return SizedBox(
+            width: 165,
+            child: Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              elevation: 2,
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                onTap: () => MainNavigationController.abrirTela(
+                  ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _imagemSegura(
+                      url: produto.urlfotoproduto ?? '',
+                      width: 165,
+                      height: 112,
+                      fallbackIcon: Icons.local_bar_outlined,
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              produto.nmproduto,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              produto.nmloja,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              moeda.format(produto.vrprecofinal),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            Text(
+                              '${produto.quantidadeVendida} vendidos',
+                              style: const TextStyle(
+                                color: Colors.deepOrange,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _abrirEvento(Evento evento, Loja? lojaConhecida) async {
     try {
       final loja =
@@ -438,7 +588,18 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: false),
+      appBar: ClubbarAppBar(
+        mostrarVoltar: false,
+        actions: [
+          const ApiStatusIndicator(),
+          if (logado)
+            IconButton(
+              onPressed: sair,
+              tooltip: 'Sair da conta',
+              icon: const Icon(Icons.logout_rounded),
+            ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: carregarHome,
         child: carregando
@@ -476,7 +637,10 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   _campoBusca(),
                   const SizedBox(height: 22),
 
-                  _secaoTitulo('Destaques', Icons.celebration_outlined),
+                  _secaoTitulo(
+                    'Eventos em destaque',
+                    Icons.celebration_outlined,
+                  ),
                   const SizedBox(height: 14),
 
                   if (erroEventos != null)
@@ -485,7 +649,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     _cardVazio('Nenhum evento encontrado.')
                   else
                     SizedBox(
-                      height: 280,
+                      height: 250,
                       child: PageView.builder(
                         controller: _pageController,
                         itemCount: destaquesFiltrados.length,
@@ -636,6 +800,15 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   const SizedBox(height: 28),
 
                   _secaoTitulo(
+                    'Produtos mais vendidos',
+                    Icons.local_fire_department_outlined,
+                  ),
+                  const SizedBox(height: 14),
+                  _listaProdutosMaisVendidos(),
+
+                  const SizedBox(height: 28),
+
+                  _secaoTitulo(
                     'Bares e Casas Noturnas',
                     Icons.storefront_outlined,
                   ),
@@ -670,6 +843,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                               child: Padding(
                                 padding: const EdgeInsets.all(14),
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     _imagemSegura(
                                       url: loja.imagemUrl,
@@ -684,16 +858,49 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            loja.nome,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              fontSize: 19,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: Text(
+                                                  loja.nome,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 19,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                              if (_lojaNova(loja)) ...[
+                                                const SizedBox(width: 6),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 7,
+                                                        vertical: 3,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.green,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                  ),
+                                                  child: const Text(
+                                                    'NOVO',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 9,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
-                                          const SizedBox(height: 10),
+                                          const SizedBox(height: 7),
                                           Row(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
@@ -705,30 +912,46 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                               const SizedBox(width: 6),
                                               Expanded(
                                                 child: Text(
-                                                  loja.bairro.isEmpty &&
-                                                          loja.cidade.isEmpty
-                                                      ? 'Localização não informada'
-                                                      : [
-                                                          if (loja
-                                                              .cidade
-                                                              .isNotEmpty)
-                                                            loja.cidade,
-                                                          if (loja
-                                                              .bairro
-                                                              .isNotEmpty)
-                                                            loja.bairro,
-                                                          if (loja
-                                                              .sgEstado
-                                                              .isNotEmpty)
-                                                            loja.sgEstado,
-                                                        ].join(' - '),
+                                                  _enderecoCompleto(loja),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: Colors.grey.shade700,
+                                                    fontSize: 12,
+                                                    height: 1.2,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
+                                          if (loja.nrtelloja
+                                              .trim()
+                                              .isNotEmpty) ...[
+                                            const SizedBox(height: 5),
+                                            Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.phone_outlined,
+                                                  size: 16,
+                                                ),
+                                                const SizedBox(width: 6),
+                                                Expanded(
+                                                  child: Text(
+                                                    loja.nrtelloja.trim(),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade700,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
                                         ],
                                       ),
                                     ),

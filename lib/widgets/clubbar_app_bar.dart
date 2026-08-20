@@ -10,6 +10,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool mostrarVoltar;
   final String logoPath;
   final VoidCallback? onVoltar;
+  final List<Widget> actions;
 
   const ClubbarAppBar({
     super.key,
@@ -21,6 +22,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.mostrarVoltar = false,
     this.logoPath = 'assets/images/logo_copa.png',
     this.onVoltar,
+    this.actions = const [],
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -101,6 +103,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
 
       actions: [
+        ...actions,
         if (mostrarCarrinho)
           Padding(
             padding: const EdgeInsets.only(right: 10),

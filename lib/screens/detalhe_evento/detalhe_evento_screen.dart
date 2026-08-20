@@ -169,19 +169,24 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         cpfparticipante: participante['cpf'],
       );
 
-      final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
-        clienteId: clienteId,
-      );
-
-      CartBadgeNotifier.atualizar(totalCarrinho);
+      try {
+        final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
+          clienteId: clienteId,
+        );
+        CartBadgeNotifier.atualizar(totalCarrinho);
+      } catch (e) {
+        debugPrint('Ingresso incluído, mas o badge não foi atualizado: $e');
+      }
 
       if (!mounted) return;
 
       AppSnackBar.sucesso(context, 'Ingresso adicionado ao carrinho.');
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Erro ao adicionar ingresso ao carrinho: $e');
+      debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
 
-      AppSnackBar.erro(context, 'Erro ao adicionar ingresso ao carrinho.');
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     }
   }
 

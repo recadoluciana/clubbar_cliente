@@ -15,6 +15,8 @@ class Loja {
   final String dsestiloloja;
   final String nrtelloja;
   final String sgEstado;
+  final String numero;
+  final DateTime? dataCriacao;
 
   Loja({
     required this.id,
@@ -31,6 +33,8 @@ class Loja {
     required this.dsestiloloja,
     required this.nrtelloja,
     required this.sgEstado,
+    this.numero = '',
+    this.dataCriacao,
   });
 
   static final String baseUrl =
@@ -60,6 +64,8 @@ class Loja {
       dsestiloloja: (json['dsestiloloja'] ?? '').toString(),
       nrtelloja: (json['nrtelloja'] ?? '').toString(),
       sgEstado: (json['sgestado'] ?? '').toString(),
+      numero: (json['nrendeloja'] ?? '').toString(),
+      dataCriacao: DateTime.tryParse((json['dtcriacao'] ?? '').toString()),
     );
   }
 

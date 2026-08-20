@@ -309,6 +309,30 @@ class ApiService {
     }
   }
 
+  Future<List<Produto>> buscarProdutosMaisVendidos({int limite = 10}) async {
+    try {
+      final uri = Uri.parse(
+        '$baseUrl/produtos/mais-vendidos',
+      ).replace(queryParameters: {'limite': limite.toString()});
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+        if (data is List) {
+          return data.map((e) => Produto.fromJson(e)).toList();
+        }
+        return [];
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
   Future<void> adicionarAoCarrinho({
     required int clienteId,
     required int organizacaoId,
@@ -684,7 +708,10 @@ class ApiService {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/carrinho/qtde_itens_geral?cliente_id=$clienteId'),
-        headers: await _headersAutenticado(),
+        headers: const {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {

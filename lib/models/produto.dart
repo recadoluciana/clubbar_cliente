@@ -18,6 +18,8 @@ class Produto {
   final String? dtfimdesconto;
   final double vrprecofinal;
   final bool descontoativo;
+  final String nmloja;
+  final int quantidadeVendida;
 
   Produto({
     required this.produtoId,
@@ -36,6 +38,8 @@ class Produto {
     required this.dtfimdesconto,
     required this.vrprecofinal,
     required this.descontoativo,
+    this.nmloja = '',
+    this.quantidadeVendida = 0,
   });
 
   static final String baseUrl =
@@ -66,6 +70,9 @@ class Produto {
       vrprecofinal: (json['vrprecofinal'] ?? json['vrprecoprod'] ?? 0)
           .toDouble(),
       descontoativo: json['descontoativo'] ?? false,
+      nmloja: (json['nmloja'] ?? '').toString(),
+      quantidadeVendida:
+          int.tryParse((json['quantidade_vendida'] ?? 0).toString()) ?? 0,
     );
   }
 }
