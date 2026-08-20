@@ -7,6 +7,7 @@ class ClubbarPageHeader extends StatelessWidget {
   // Conteúdo do lado esquerdo
   final String? textoAvatar;
   final IconData? icone;
+  final String? imagemAvatarUrl;
 
   // Conteúdo opcional do lado direito
   final Widget? trailing;
@@ -21,6 +22,7 @@ class ClubbarPageHeader extends StatelessWidget {
     required this.subtitulo,
     this.textoAvatar,
     this.icone,
+    this.imagemAvatarUrl,
     this.trailing,
     this.imagemUrl,
     this.mostrarAba = false,
@@ -38,6 +40,8 @@ class ClubbarPageHeader extends StatelessWidget {
 
   /// Ícone ou inicial exibido sempre do lado esquerdo.
   Widget _avatarEsquerdo() {
+    final avatarUrl = imagemAvatarUrl?.trim() ?? '';
+
     return Container(
       width: 48,
       height: 48,
@@ -47,12 +51,29 @@ class ClubbarPageHeader extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: Colors.amber.shade200, width: 2),
       ),
-      child: icone != null
-          ? Icon(icone, size: 24, color: Colors.black87)
-          : Text(
-              _inicial,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-            ),
+      child: ClipOval(
+        child: avatarUrl.isNotEmpty
+            ? Image.network(
+                avatarUrl,
+                width: 48,
+                height: 48,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Icon(
+                  icone ?? Icons.storefront_rounded,
+                  size: 24,
+                  color: Colors.black87,
+                ),
+              )
+            : icone != null
+            ? Icon(icone, size: 24, color: Colors.black87)
+            : Text(
+                _inicial,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+      ),
     );
   }
 

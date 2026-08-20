@@ -99,11 +99,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Align(
               alignment: Alignment.centerLeft,
-              child: Image.asset(
-                logoPath,
-                height: 70, // 🔥 AGORA FUNCIONA
-                fit: BoxFit.contain,
-              ),
+              child: Image.asset(logoPath, height: 44, fit: BoxFit.contain),
             ),
 
       actions: [

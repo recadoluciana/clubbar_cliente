@@ -9,6 +9,7 @@ import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
+import '../login/login_screen.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 
@@ -162,6 +163,17 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
 
     CartBadgeNotifier.atualizar(quantidade);
+  }
+
+  Future<void> _sair() async {
+    await authStorage.limparToken();
+    CartBadgeNotifier.atualizar(0);
+
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
   }
 
   Future<void> aumentarQuantidade(ItemCarrinhoAgrupado item) async {
@@ -504,7 +516,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
   }
 
-  Widget _imagemProduto(String url) {
+  Widget _imagemProduto(String url, {bool ingresso = false}) {
     if (url.isEmpty) {
       return Container(
         width: 58,
@@ -513,7 +525,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           color: Colors.amber.withOpacity(0.15),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Icon(Icons.shopping_bag_outlined, color: Colors.amber.shade800),
+        child: Icon(
+          ingresso
+              ? Icons.confirmation_number_rounded
+              : Icons.shopping_bag_outlined,
+          color: ingresso ? Colors.deepPurple : Colors.amber.shade800,
+        ),
       );
     }
 
@@ -539,6 +556,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
   Widget _itemCarrinho(ItemCarrinhoAgrupado item) {
     final bool temDesconto = item.descontoAtivo;
+    final bool ehIngresso = item.idtipoproduto == 'I';
 
     final String seloDesconto = item.tipodesconto.toUpperCase() == 'PERCENTUAL'
         ? '${item.vrdesconto.toStringAsFixed(0)}% OFF'
@@ -547,20 +565,57 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       child: Material(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        color: ehIngresso ? const Color(0xFFF7F3FF) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: ehIngresso
+              ? BorderSide(color: Colors.deepPurple.shade200, width: 1.5)
+              : BorderSide.none,
+        ),
         elevation: 2,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _imagemProduto(item.fotoUrl),
+              _imagemProduto(item.fotoUrl, ingresso: ehIngresso),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (ehIngresso)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurple,
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.confirmation_number_rounded,
+                              color: Colors.white,
+                              size: 15,
+                            ),
+                            SizedBox(width: 5),
+                            Text(
+                              'INGRESSO',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.7,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     if (temDesconto)
                       Container(
                         margin: const EdgeInsets.only(bottom: 8),
@@ -594,8 +649,13 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.08),
+                          color: ehIngresso
+                              ? Colors.deepPurple.withValues(alpha: 0.08)
+                              : Colors.blue.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
+                          border: ehIngresso
+                              ? Border.all(color: Colors.deepPurple.shade100)
+                              : null,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -781,13 +841,22 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
 
     final subtitulo = totalItens == 1
-        ? '${widget.loja.nome} • 1 item no carrinho'
-        : '${widget.loja.nome} • $totalItens itens no carrinho';
+        ? '1 item no carrinho.'
+        : '$totalItens itens no carrinho.';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: ClubbarAppBar(
+        mostrarVoltar: true,
+        actions: [
+          IconButton(
+            tooltip: 'Sair',
+            onPressed: _sair,
+            icon: const Icon(Icons.meeting_room_outlined),
+          ),
+        ],
+      ),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
@@ -796,10 +865,10 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           : Column(
               children: [
                 ClubbarPageHeader(
-                  titulo: 'Carrinho',
+                  titulo: widget.loja.nome,
                   subtitulo: subtitulo,
-                  icone: Icons.shopping_cart_rounded,
-                  imagemUrl: widget.loja.imagemUrl,
+                  icone: Icons.storefront_rounded,
+                  imagemAvatarUrl: widget.loja.imagemUrl,
                 ),
 
                 Padding(
@@ -824,7 +893,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                       ),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.black,
-                        side: BorderSide(color: Colors.grey.shade300),
+                        backgroundColor: Colors.amber.shade600,
+                        side: BorderSide(color: Colors.amber.shade800),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),

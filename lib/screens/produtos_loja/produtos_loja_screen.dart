@@ -13,6 +13,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
+import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
@@ -350,21 +351,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         quantidadeCarrinho += 1;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            observacao.trim().isEmpty
-                ? '"${produto.nmproduto}" adicionado ao carrinho'
-                : '"${produto.nmproduto}" adicionado ao carrinho com observação',
-          ),
-        ),
+      AppSnackBar.info(
+        context,
+        observacao.trim().isEmpty
+            ? '"${produto.nmproduto}" adicionado ao carrinho'
+            : '"${produto.nmproduto}" adicionado ao carrinho com observação',
       );
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     }
   }
 

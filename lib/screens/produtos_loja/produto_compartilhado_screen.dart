@@ -119,7 +119,7 @@ class _ProdutoCompartilhadoScreenState
 
       if (!mounted) return;
 
-      AppSnackBar.sucesso(context, 'Produto adicionado ao carrinho.');
+      AppSnackBar.info(context, 'Produto adicionado ao carrinho.');
 
       MainNavigationController.abrirTela(
         ProdutosLojaScreen(
