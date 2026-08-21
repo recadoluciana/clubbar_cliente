@@ -176,6 +176,37 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
                           ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.fromLTRB(20, 22, 20, 30),
                       children: [
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: const Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.security_rounded,
+                                color: Color(0xFF8A6500),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'Confirme sua senha atual antes de cadastrar uma nova senha.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
                         TextFormField(
                           controller: _senhaAtualCtrl,
                           obscureText: ocultarSenhaAtual,
@@ -283,10 +314,10 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.10),
+                            color: Colors.amber.withValues(alpha: .10),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.amber.withOpacity(0.35),
+                              color: Colors.amber.withValues(alpha: .35),
                             ),
                           ),
                           child: const Row(
@@ -342,8 +373,8 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.amber,
                               foregroundColor: Colors.black,
-                              disabledBackgroundColor: Colors.amber.withOpacity(
-                                0.55,
+                              disabledBackgroundColor: Colors.amber.withValues(
+                                alpha: .55,
                               ),
                               disabledForegroundColor: Colors.black54,
                               elevation: 0,
