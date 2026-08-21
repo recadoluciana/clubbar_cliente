@@ -88,13 +88,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         percentualTaxaProduto: percentualTaxaProduto,
       );
       if (!mounted) return;
-      await Navigator.push(
+      final resultadoPix = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) =>
               PixPagamentoScreen(loja: widget.loja, pagamento: pagamento),
         ),
       );
+      if (resultadoPix == false && mounted) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -154,6 +157,17 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ),
         );
 
+        if (resultado != true) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Pagamento nao concluido. O carrinho foi mantido.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          Navigator.pop(context);
+          return;
+        }
         if (resultado == true) {
           if (!mounted) return;
 
@@ -171,6 +185,20 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           final confirmado =
               (confirmacao?['status'] ?? '').toString().toUpperCase() == 'PAGO';
 
+          if (!confirmado) {
+            if (!mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Pagamento nao confirmado. O carrinho foi mantido.',
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+            Navigator.pop(context);
+            return;
+          }
+
           final clienteId = await authStorage.obterClienteId();
 
           if (clienteId != null && clienteId > 0) {
@@ -187,7 +215,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           final retornoSucesso = await Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => PagamentoSucessoScreen(sucesso: confirmado),
+              builder: (_) => const PagamentoSucessoScreen(sucesso: true),
             ),
           );
 

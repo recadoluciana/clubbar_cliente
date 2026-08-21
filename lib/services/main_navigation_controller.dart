@@ -26,4 +26,9 @@ class MainNavigationController {
     limparTelasInternas();
     abaIndex.value = 0;
   }
+
+  static void irParaCarrinho() {
+    limparTelasInternas();
+    abaIndex.value = 1;
+  }
 }

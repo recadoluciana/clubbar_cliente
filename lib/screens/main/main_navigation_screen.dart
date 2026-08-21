@@ -314,9 +314,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
       if (!mounted) return;
 
-      MainNavigationController.abrirTela(
-        PagamentoSucessoScreen(sucesso: status == 'PAGO'),
-      );
+      if (status == 'PAGO') {
+        MainNavigationController.abrirTela(
+          const PagamentoSucessoScreen(sucesso: true),
+        );
+      } else {
+        MainNavigationController.irParaCarrinho();
+        AppSnackBar.erro(
+          context,
+          'Pagamento nao confirmado. O carrinho foi mantido.',
+        );
+      }
     } catch (_) {
       if (mounted) {
         AppSnackBar.erro(

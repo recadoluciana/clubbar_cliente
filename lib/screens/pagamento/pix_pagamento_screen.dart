@@ -98,6 +98,23 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
           MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
           (route) => false,
         );
+      } else if ({
+        'SUBSTITUIDO',
+        'CANCELADO',
+        'CANCELLED',
+        'CANCELED',
+        'EXPIRED',
+      }.contains(statusAtual)) {
+        _confirmacaoProcessada = true;
+        _timer?.cancel();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pagamento nao concluido. O carrinho foi mantido.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.pop(context, false);
       }
     } catch (_) {
       // Mantem a tela aguardando; a proxima consulta tenta novamente.
