@@ -560,7 +560,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
 
   Widget _campoBusca() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
       child: TextField(
         controller: _buscaCtrl,
         onChanged: (value) {
@@ -633,10 +633,13 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         actions: [
           const ApiStatusIndicator(versao: '1.0.0'),
           if (logado)
-            IconButton(
-              onPressed: sair,
-              tooltip: 'Sair da conta',
-              icon: const Icon(Icons.logout_rounded),
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                onPressed: sair,
+                tooltip: 'Sair da conta',
+                icon: const Icon(Icons.logout_rounded),
+              ),
             ),
         ],
       ),

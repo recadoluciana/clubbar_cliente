@@ -66,7 +66,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       foregroundColor: Colors.white,
       centerTitle: temTitulo,
       toolbarHeight: 60,
-      titleSpacing: temTitulo ? NavigationToolbar.kMiddleSpacing : 8,
+      titleSpacing: temTitulo ? NavigationToolbar.kMiddleSpacing : 10,
 
       leading: mostrarVoltar
           ? IconButton(
@@ -99,7 +99,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Align(
               alignment: Alignment.centerLeft,
-              child: Image.asset(logoPath, height: 44, fit: BoxFit.contain),
+              child: Image.asset(logoPath, height: 50, fit: BoxFit.contain),
             ),
 
       actions: [
