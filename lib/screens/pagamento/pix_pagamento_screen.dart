@@ -8,8 +8,9 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
+import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../main/main_navigation_screen.dart';
+import 'pagamento_sucesso_screen.dart';
 
 class PixPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -27,24 +28,71 @@ class PixPagamentoScreen extends StatefulWidget {
 
 class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   final apiService = ApiService();
-  Timer? _timer;
+  Timer? _timerStatus;
+  Timer? _timerExpiracao;
   bool _consultando = false;
   bool _confirmacaoProcessada = false;
+  bool _expiracaoPendente = false;
+  late final DateTime _expiraEm;
+  late final Duration _duracaoValidade;
+  Duration _tempoRestante = Duration.zero;
 
   @override
   void initState() {
     super.initState();
+    _expiraEm = _obterDataExpiracao();
+    final duracaoInicial = _expiraEm.difference(DateTime.now());
+    _duracaoValidade = duracaoInicial.isNegative
+        ? Duration.zero
+        : duracaoInicial;
+    _atualizarTempoRestante();
 
-    _timer = Timer.periodic(
+    _timerStatus = Timer.periodic(
       const Duration(seconds: 3),
       (_) => _consultarPagamento(),
     );
+    _timerExpiracao = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _atualizarTempoRestante(),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => _consultarPagamento());
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _timerStatus?.cancel();
+    _timerExpiracao?.cancel();
     super.dispose();
+  }
+
+  DateTime _obterDataExpiracao() {
+    final valor =
+        widget.pagamento['expiration_date'] ??
+        widget.pagamento['pix_expiration_date'];
+    final data = DateTime.tryParse(valor?.toString() ?? '');
+    if (data == null) return DateTime.now().add(const Duration(minutes: 10));
+    return data.isUtc ? data.toLocal() : data;
+  }
+
+  void _atualizarTempoRestante() {
+    if (_confirmacaoProcessada) return;
+    final restante = _expiraEm.difference(DateTime.now());
+    final atualizado = restante.isNegative ? Duration.zero : restante;
+    if (mounted) setState(() => _tempoRestante = atualizado);
+    if (atualizado > Duration.zero) return;
+
+    _timerExpiracao?.cancel();
+    _timerStatus?.cancel();
+    _validarAntesDeExpirar();
+  }
+
+  Future<void> _validarAntesDeExpirar() async {
+    if (_confirmacaoProcessada) return;
+    if (_consultando) {
+      _expiracaoPendente = true;
+      return;
+    }
+    await _consultarPagamento(validacaoFinal: true);
   }
 
   String get status {
@@ -76,8 +124,15 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   String get valorTotalFormatado =>
       'R\$ ${valorTotal.toStringAsFixed(2).replaceAll('.', ',')}';
 
-  Future<void> _consultarPagamento() async {
-    if (pagamentoId.isEmpty || _consultando || _confirmacaoProcessada) return;
+  Future<void> _consultarPagamento({bool validacaoFinal = false}) async {
+    if (pagamentoId.isEmpty || _confirmacaoProcessada) {
+      if (validacaoFinal) _encerrarComoExpirado();
+      return;
+    }
+    if (_consultando) {
+      if (validacaoFinal) _expiracaoPendente = true;
+      return;
+    }
     _consultando = true;
 
     try {
@@ -89,38 +144,116 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
       if (statusAtual == 'PAGO') {
         _confirmacaoProcessada = true;
-        _timer?.cancel();
+        _timerStatus?.cancel();
+        _timerExpiracao?.cancel();
         if (!mounted) return;
         CartBadgeNotifier.limpar();
         CarteiraBadgeNotifier.atualizar();
-        Navigator.pushAndRemoveUntil(
+        Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-          (route) => false,
+          MaterialPageRoute(
+            builder: (_) => const PagamentoSucessoScreen(sucesso: true),
+          ),
         );
+      } else if ({'EXPIRED', 'EXPIRADO'}.contains(statusAtual)) {
+        _encerrarComoExpirado();
       } else if ({
         'SUBSTITUIDO',
         'CANCELADO',
         'CANCELLED',
         'CANCELED',
-        'EXPIRED',
       }.contains(statusAtual)) {
         _confirmacaoProcessada = true;
-        _timer?.cancel();
+        _timerStatus?.cancel();
+        _timerExpiracao?.cancel();
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pagamento nao concluido. O carrinho foi mantido.'),
-            backgroundColor: Colors.red,
-          ),
+        AppSnackBar.erro(
+          context,
+          'Pagamento não concluído. O carrinho foi mantido.',
         );
         Navigator.pop(context, false);
+      } else if (validacaoFinal) {
+        _encerrarComoExpirado();
       }
     } catch (_) {
-      // Mantem a tela aguardando; a proxima consulta tenta novamente.
+      if (validacaoFinal) _encerrarComoExpirado();
+      // Enquanto houver tempo, a proxima consulta tenta novamente.
     } finally {
       _consultando = false;
+      if (_expiracaoPendente && !_confirmacaoProcessada) {
+        _expiracaoPendente = false;
+        unawaited(_consultarPagamento(validacaoFinal: true));
+      }
     }
+  }
+
+  void _encerrarComoExpirado() {
+    if (_confirmacaoProcessada || !mounted) return;
+    _confirmacaoProcessada = true;
+    _timerStatus?.cancel();
+    _timerExpiracao?.cancel();
+    AppSnackBar.aviso(
+      context,
+      'O QR Code PIX expirou. O carrinho foi mantido para uma nova tentativa.',
+    );
+    Navigator.pop(context, false);
+  }
+
+  double get _progressoExpiracao {
+    final total = _duracaoValidade.inMilliseconds;
+    if (total <= 0) return 0;
+    return (_tempoRestante.inMilliseconds / total).clamp(0.0, 1.0);
+  }
+
+  String get _tempoRestanteFormatado {
+    final minutos = _tempoRestante.inMinutes;
+    final segundos = _tempoRestante.inSeconds.remainder(60);
+    return '${minutos.toString().padLeft(2, '0')}:'
+        '${segundos.toString().padLeft(2, '0')}';
+  }
+
+  Widget _barraExpiracao() {
+    final urgente = _tempoRestante <= const Duration(minutes: 1);
+    final cor = urgente ? Colors.red : Colors.green;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: cor.withValues(alpha: 0.28)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.timer_outlined, size: 20, color: cor),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'QR Code expira em $_tempoRestanteFormatado',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: urgente ? Colors.red.shade700 : Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: LinearProgressIndicator(
+              value: _progressoExpiracao,
+              minHeight: 8,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: AlwaysStoppedAnimation<Color>(cor),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void copiarCodigoPix(BuildContext context) {
@@ -165,7 +298,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -211,7 +344,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
+                  color: Colors.black.withValues(alpha: 0.12),
                   blurRadius: 12,
                   offset: const Offset(0, 7),
                 ),
@@ -299,12 +432,16 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
           const SizedBox(height: 12),
 
+          _barraExpiracao(),
+
+          const SizedBox(height: 12),
+
           Container(
             padding: const EdgeInsets.all(13),
             decoration: BoxDecoration(
               color: statusPago
-                  ? Colors.green.withOpacity(0.10)
-                  : Colors.amber.withOpacity(0.10),
+                  ? Colors.green.withValues(alpha: 0.10)
+                  : Colors.amber.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: statusPago ? Colors.green : Colors.amber.shade300,

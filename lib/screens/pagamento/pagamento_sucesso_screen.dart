@@ -62,7 +62,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
+                  color: Colors.black.withValues(alpha: 0.08),
                   blurRadius: 18,
                   offset: const Offset(0, 8),
                 ),
@@ -75,8 +75,8 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                   width: 92,
                   height: 92,
                   decoration: BoxDecoration(
-                    color: (sucesso ? Colors.green : Colors.red).withOpacity(
-                      0.12,
+                    color: (sucesso ? Colors.green : Colors.red).withValues(
+                      alpha: 0.12,
                     ),
                     shape: BoxShape.circle,
                   ),
@@ -104,7 +104,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
 
                 Text(
                   sucesso
-                      ? 'Sua compra foi confirmada. Você já pode acompanhar pela sua carteira.'
+                      ? 'Acompanhe sua compra através de sua carteira.'
                       : 'Não foi possível concluir o pagamento. Você pode tentar novamente pelo carrinho.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
