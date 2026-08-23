@@ -45,6 +45,40 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   final AuthStorage authStorage = AuthStorage();
 
   bool carregandoPagamento = false;
+  bool carregandoCashback = false;
+  bool usarCashback = false;
+  double cashbackUtilizavel = 0;
+  double saldoCashback = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.reservaIngressoId == null && widget.totalProdutos > 0) {
+      _carregarCashback();
+    }
+  }
+
+  Future<void> _carregarCashback() async {
+    setState(() => carregandoCashback = true);
+    try {
+      final clienteId = await authStorage.obterClienteId();
+      if (clienteId == null) return;
+      final dados = await apiService.cashbackDisponivel(
+        clienteId: clienteId,
+        lojaId: widget.loja.id,
+        totalCompra: widget.totalProdutos,
+      );
+      if (mounted) {
+        setState(() {
+          cashbackUtilizavel =
+              double.tryParse('${dados['valor_utilizavel']}') ?? 0;
+          saldoCashback = double.tryParse('${dados['saldo_disponivel']}') ?? 0;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => carregandoCashback = false);
+    }
+  }
 
   double get percentualTaxaProduto => widget.loja.vrtaxaprod;
   double get percentualTaxaIngresso => widget.loja.vrtaxaing;
@@ -58,7 +92,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   double get taxaClubbarTotal => taxaProdutoSplit + taxaIngressoCliente;
 
   double get totalPagar =>
-      widget.totalProdutos + widget.totalIngressos + taxaIngressoCliente;
+      widget.totalProdutos +
+      widget.totalIngressos +
+      taxaIngressoCliente -
+      (usarCashback ? cashbackUtilizavel : 0);
 
   double get valorParceiro => totalPagar - taxaClubbarTotal;
 
@@ -93,6 +130,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               lojaId: widget.loja.id,
               percentualTaxaIngresso: percentualTaxaIngresso,
               percentualTaxaProduto: percentualTaxaProduto,
+              usarCashback: usarCashback,
+              valorCashback: usarCashback ? cashbackUtilizavel : null,
             );
       if (!mounted) return;
       final resultadoPix = await Navigator.push(
@@ -154,6 +193,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               lojaId: widget.loja.id,
               percentualTaxaIngresso: percentualTaxaIngresso,
               percentualTaxaProduto: percentualTaxaProduto,
+              usarCashback: usarCashback,
+              valorCashback: usarCashback ? cashbackUtilizavel : null,
             );
 
       final checkoutUrl = resposta['checkout_url'];
@@ -350,7 +391,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -381,6 +422,33 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
                 const Divider(height: 28),
 
+                if (widget.reservaIngressoId == null &&
+                    (carregandoCashback || saldoCashback > 0)) ...[
+                  const Divider(height: 28),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: usarCashback,
+                    onChanged: cashbackUtilizavel > 0 && !carregandoPagamento
+                        ? (value) => setState(() => usarCashback = value)
+                        : null,
+                    secondary: const Icon(
+                      Icons.savings_outlined,
+                      color: Colors.amber,
+                    ),
+                    title: const Text(
+                      'Usar saldo cashback',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      carregandoCashback
+                          ? 'Consultando saldo...'
+                          : 'Saldo: ${_moeda(saldoCashback)} • Uso nesta compra: ${_moeda(cashbackUtilizavel)}',
+                    ),
+                  ),
+                  if (usarCashback)
+                    _linhaResumo('Desconto cashback', -cashbackUtilizavel),
+                ],
+                const Divider(height: 28),
                 _linhaResumo('Total a pagar', totalPagar, destaque: true),
               ],
             ),

@@ -387,8 +387,9 @@ class ApiService {
         'quantidade': quantidade,
       }),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300)
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
+    }
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
@@ -401,8 +402,9 @@ class ApiService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'participantes': participantes}),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300)
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
+    }
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
@@ -1093,6 +1095,8 @@ class ApiService {
     required int lojaId,
     required double percentualTaxaIngresso,
     required double percentualTaxaProduto,
+    bool usarCashback = false,
+    double? valorCashback,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pix'),
@@ -1104,6 +1108,8 @@ class ApiService {
         'dsmetodopag': 'PIX',
         'percentual_taxa_ingresso': percentualTaxaIngresso,
         'percentual_taxa_produto': percentualTaxaProduto,
+        'usar_cashback': usarCashback,
+        'valor_cashback': valorCashback,
       }),
     );
 
@@ -1119,6 +1125,8 @@ class ApiService {
     required int lojaId,
     required double percentualTaxaIngresso,
     required double percentualTaxaProduto,
+    bool usarCashback = false,
+    double? valorCashback,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pagar-asaas'),
@@ -1130,6 +1138,8 @@ class ApiService {
         'dsmetodopag': 'CREDIT_CARD',
         'percentual_taxa_ingresso': percentualTaxaIngresso,
         'percentual_taxa_produto': percentualTaxaProduto,
+        'usar_cashback': usarCashback,
+        'valor_cashback': valorCashback,
       }),
     );
 
@@ -1138,6 +1148,50 @@ class ApiService {
     }
 
     return jsonDecode(response.body);
+  }
+
+  Future<Map<String, dynamic>> cashbackDisponivel({
+    required int clienteId,
+    required int lojaId,
+    required double totalCompra,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/cashback/disponivel?cliente_id=$clienteId&loja_id=$lojaId&total_compra=${totalCompra.toStringAsFixed(2)}',
+      ),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> resumoCashback({
+    required int clienteId,
+    required int lojaId,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/cashback/resumo?cliente_id=$clienteId&loja_id=$lojaId',
+      ),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> carteiraCashback({
+    required int clienteId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/cashback/carteira?cliente_id=$clienteId'),
+      headers: await _headersAutenticado(),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
   Future<Map<String, dynamic>> buscarProdutoCompartilhado({

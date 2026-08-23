@@ -1,40 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../utils/value_formatters.dart';
-import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/clubbar_page_header.dart';
-
-enum CashbackStatus { disponivel, pendente, utilizado, expirado }
-
-enum CashbackTipoMovimento { credito, debito }
-
-class CashbackMovimentoMock {
-  final int id;
-  final int lojaId;
-  final String nomeLoja;
-  final String descricao;
-  final double valor;
-  final CashbackTipoMovimento tipo;
-  final CashbackStatus status;
-  final DateTime dataMovimento;
-  final DateTime? dataLiberacao;
-  final DateTime? dataValidade;
-  final String? observacao;
-
-  const CashbackMovimentoMock({
-    required this.id,
-    required this.lojaId,
-    required this.nomeLoja,
-    required this.descricao,
-    required this.valor,
-    required this.tipo,
-    required this.status,
-    required this.dataMovimento,
-    this.dataLiberacao,
-    this.dataValidade,
-    this.observacao,
-  });
-}
+import '../services/api_service.dart';
+import '../services/auth_storage.dart';
+import '../utils/value_formatters.dart';
+import '../widgets/clubbar_app_bar.dart';
+import '../widgets/clubbar_page_header.dart';
 
 class CashbackScreen extends StatefulWidget {
   const CashbackScreen({super.key});
@@ -44,160 +14,68 @@ class CashbackScreen extends StatefulWidget {
 }
 
 class _CashbackScreenState extends State<CashbackScreen> {
-  String filtroSelecionado = 'TODOS';
+  final _api = ApiService();
+  final _auth = AuthStorage();
+  Map<String, dynamic>? _dados;
+  String? _erro;
+  bool _carregando = true;
+  String _filtro = 'TODOS';
 
-  final List<CashbackMovimentoMock> movimentos = [
-    CashbackMovimentoMock(
-      id: 1,
-      lojaId: 2,
-      nomeLoja: 'Forró do X',
-      descricao: 'Cashback da compra #245',
-      valor: 3.50,
-      tipo: CashbackTipoMovimento.credito,
-      status: CashbackStatus.disponivel,
-      dataMovimento: DateTime(2026, 7, 8, 22, 46),
-      dataLiberacao: DateTime(2026, 7, 8, 22, 46),
-      dataValidade: DateTime(2026, 10, 8),
-    ),
-    CashbackMovimentoMock(
-      id: 2,
-      lojaId: 1,
-      nomeLoja: 'Bar da Cida',
-      descricao: 'Cashback da compra #239',
-      valor: 7.25,
-      tipo: CashbackTipoMovimento.credito,
-      status: CashbackStatus.pendente,
-      dataMovimento: DateTime(2026, 7, 7, 20, 30),
-      dataLiberacao: DateTime(2026, 7, 10),
-      dataValidade: DateTime(2026, 10, 10),
-      observacao: 'Será liberado após a confirmação da compra.',
-    ),
-    CashbackMovimentoMock(
-      id: 3,
-      lojaId: 3,
-      nomeLoja: 'Motor Rock',
-      descricao: 'Cashback utilizado na compra #232',
-      valor: 5.00,
-      tipo: CashbackTipoMovimento.debito,
-      status: CashbackStatus.utilizado,
-      dataMovimento: DateTime(2026, 7, 5, 23, 15),
-    ),
-    CashbackMovimentoMock(
-      id: 4,
-      lojaId: 2,
-      nomeLoja: 'Forró do X',
-      descricao: 'Cashback da compra #210',
-      valor: 2.80,
-      tipo: CashbackTipoMovimento.credito,
-      status: CashbackStatus.expirado,
-      dataMovimento: DateTime(2026, 3, 10, 19, 20),
-      dataLiberacao: DateTime(2026, 3, 10),
-      dataValidade: DateTime(2026, 6, 10),
-    ),
-  ];
-
-  double get saldoDisponivel {
-    return movimentos
-        .where(
-          (m) =>
-              m.tipo == CashbackTipoMovimento.credito &&
-              m.status == CashbackStatus.disponivel,
-        )
-        .fold<double>(0, (soma, item) => soma + item.valor);
+  @override
+  void initState() {
+    super.initState();
+    _carregar();
   }
 
-  double get saldoPendente {
-    return movimentos
-        .where(
-          (m) =>
-              m.tipo == CashbackTipoMovimento.credito &&
-              m.status == CashbackStatus.pendente,
-        )
-        .fold<double>(0, (soma, item) => soma + item.valor);
-  }
-
-  double get totalRecebido {
-    return movimentos
-        .where((m) => m.tipo == CashbackTipoMovimento.credito)
-        .fold<double>(0, (soma, item) => soma + item.valor);
-  }
-
-  List<CashbackMovimentoMock> get movimentosFiltrados {
-    if (filtroSelecionado == 'TODOS') {
-      return movimentos;
-    }
-
-    return movimentos.where((movimento) {
-      switch (filtroSelecionado) {
-        case 'DISPONIVEL':
-          return movimento.status == CashbackStatus.disponivel;
-        case 'PENDENTE':
-          return movimento.status == CashbackStatus.pendente;
-        case 'UTILIZADO':
-          return movimento.status == CashbackStatus.utilizado;
-        case 'EXPIRADO':
-          return movimento.status == CashbackStatus.expirado;
-        default:
-          return true;
+  Future<void> _carregar() async {
+    setState(() {
+      _carregando = true;
+      _erro = null;
+    });
+    try {
+      final clienteId = await _auth.obterClienteId();
+      if (clienteId == null || clienteId <= 0) {
+        throw Exception('Cliente não autenticado.');
       }
-    }).toList();
-  }
-
-  String _formatarData(DateTime? data) {
-    if (data == null) return '';
-
-    final dia = data.day.toString().padLeft(2, '0');
-    final mes = data.month.toString().padLeft(2, '0');
-    final ano = data.year.toString();
-
-    return '$dia/$mes/$ano';
-  }
-
-  Color _corStatus(CashbackStatus status) {
-    switch (status) {
-      case CashbackStatus.disponivel:
-        return Colors.green;
-      case CashbackStatus.pendente:
-        return Colors.orange;
-      case CashbackStatus.utilizado:
-        return Colors.blue;
-      case CashbackStatus.expirado:
-        return Colors.red;
+      final dados = await _api.carteiraCashback(clienteId: clienteId);
+      if (!mounted) return;
+      setState(() => _dados = dados);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _erro = e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) setState(() => _carregando = false);
     }
   }
 
-  String _textoStatus(CashbackStatus status) {
-    switch (status) {
-      case CashbackStatus.disponivel:
-        return 'Disponível';
-      case CashbackStatus.pendente:
-        return 'Pendente';
-      case CashbackStatus.utilizado:
-        return 'Utilizado';
-      case CashbackStatus.expirado:
-        return 'Expirado';
-    }
+  double _numero(dynamic valor) => double.tryParse('$valor') ?? 0;
+
+  List<Map<String, dynamic>> get _movimentos {
+    final lista = (_dados?['movimentos'] as List? ?? const [])
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+    if (_filtro == 'TODOS') return lista;
+    return lista.where((item) => item['status'] == _filtro).toList();
   }
 
-  IconData _iconeStatus(CashbackStatus status) {
-    switch (status) {
-      case CashbackStatus.disponivel:
-        return Icons.check_circle_outline_rounded;
-      case CashbackStatus.pendente:
-        return Icons.hourglass_bottom_rounded;
-      case CashbackStatus.utilizado:
-        return Icons.shopping_cart_checkout_rounded;
-      case CashbackStatus.expirado:
-        return Icons.event_busy_rounded;
-    }
-  }
+  Color _corStatus(String status) => switch (status) {
+    'DISPONIVEL' => Colors.green,
+    'PENDENTE' => Colors.orange,
+    'UTILIZADO' => Colors.blue,
+    'EXPIRADO' || 'CANCELADO' => Colors.red,
+    _ => Colors.grey,
+  };
 
-  Widget _cardSaldo({
-    required String titulo,
-    required double valor,
-    required IconData icone,
-    required Color cor,
-  }) {
+  String _textoStatus(String status) => switch (status) {
+    'DISPONIVEL' => 'Disponível',
+    'PENDENTE' => 'Pendente',
+    'UTILIZADO' => 'Utilizado',
+    'EXPIRADO' => 'Expirado',
+    'CANCELADO' => 'Cancelado',
+    _ => status,
+  };
+
+  Widget _saldo(String titulo, dynamic valor, IconData icone, Color cor) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -205,38 +83,16 @@ class _CashbackScreenState extends State<CashbackScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.grey.shade200),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: cor.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icone, color: cor),
-            ),
-            const SizedBox(height: 12),
+            Icon(icone, color: cor),
+            const SizedBox(height: 10),
+            Text(titulo, style: const TextStyle(color: Colors.black54)),
+            const SizedBox(height: 4),
             Text(
-              titulo,
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              ValueFormatters.moeda(valor),
+              ValueFormatters.moeda(_numero(valor)),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
             ),
           ],
@@ -245,335 +101,139 @@ class _CashbackScreenState extends State<CashbackScreen> {
     );
   }
 
-  Widget _resumoCashback() {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFFC107), Color(0xFFFFE082)],
-            ),
-            borderRadius: BorderRadius.circular(24),
+  Widget _resumo() => Column(
+    children: [
+      Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFC107), Color(0xFFFFE082)],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Row(
-                children: [
-                  Icon(Icons.savings_rounded, size: 26),
-                  SizedBox(width: 10),
-                  Text(
-                    'Saldo disponível',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              Text(
-                ValueFormatters.moeda(saldoDisponivel),
-                style: const TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Use este saldo nas próximas compras elegíveis.',
-                style: TextStyle(
-                  color: Colors.black.withOpacity(0.65),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+          borderRadius: BorderRadius.circular(24),
         ),
-        const SizedBox(height: 14),
-        Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _cardSaldo(
-              titulo: 'Pendente',
-              valor: saldoPendente,
-              icone: Icons.hourglass_bottom_rounded,
-              cor: Colors.orange,
+            const Text(
+              'Saldo disponível',
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(width: 12),
-            _cardSaldo(
-              titulo: 'Total recebido',
-              valor: totalRecebido,
-              icone: Icons.trending_up_rounded,
-              cor: Colors.green,
+            const SizedBox(height: 10),
+            Text(
+              ValueFormatters.moeda(_numero(_dados?['saldo_disponivel'])),
+              style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'O saldo é separado por loja e pode pagar até 30% de uma compra elegível.',
             ),
           ],
         ),
-      ],
-    );
-  }
-
-  Widget _botaoFiltro({required String titulo, required String valor}) {
-    final selecionado = filtroSelecionado == valor;
-
-    return ChoiceChip(
-      selected: selecionado,
-      label: Text(titulo),
-      onSelected: (_) {
-        setState(() {
-          filtroSelecionado = valor;
-        });
-      },
-      selectedColor: Colors.amber,
-      backgroundColor: Colors.white,
-      labelStyle: TextStyle(
-        color: Colors.black,
-        fontWeight: selecionado ? FontWeight.bold : FontWeight.w600,
       ),
-      side: BorderSide(
-        color: selecionado ? Colors.amber.shade700 : Colors.grey.shade300,
-      ),
-    );
-  }
-
-  Widget _filtros() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
+      const SizedBox(height: 12),
+      Row(
         children: [
-          _botaoFiltro(titulo: 'Todos', valor: 'TODOS'),
-          const SizedBox(width: 8),
-          _botaoFiltro(titulo: 'Disponíveis', valor: 'DISPONIVEL'),
-          const SizedBox(width: 8),
-          _botaoFiltro(titulo: 'Pendentes', valor: 'PENDENTE'),
-          const SizedBox(width: 8),
-          _botaoFiltro(titulo: 'Utilizados', valor: 'UTILIZADO'),
-          const SizedBox(width: 8),
-          _botaoFiltro(titulo: 'Expirados', valor: 'EXPIRADO'),
+          _saldo(
+            'Pendente',
+            _dados?['saldo_pendente'],
+            Icons.hourglass_bottom_rounded,
+            Colors.orange,
+          ),
+          const SizedBox(width: 12),
+          _saldo(
+            'Lojas com saldo',
+            (_dados?['saldos_por_loja'] as List? ?? const []).length,
+            Icons.storefront_rounded,
+            Colors.green,
+          ),
         ],
       ),
-    );
-  }
+    ],
+  );
 
-  Widget _badgeStatus(CashbackStatus status) {
+  Widget _movimento(Map<String, dynamic> item) {
+    final status = '${item['status'] ?? ''}';
+    final credito = item['tipo'] == 'CREDITO';
     final cor = _corStatus(status);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: cor.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(_iconeStatus(status), size: 15, color: cor),
-          const SizedBox(width: 5),
-          Text(
-            _textoStatus(status),
-            style: TextStyle(
-              color: cor,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _cardMovimento(CashbackMovimentoMock movimento) {
-    final credito = movimento.tipo == CashbackTipoMovimento.credito;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: credito
-                      ? Colors.green.withOpacity(0.10)
-                      : Colors.blue.withOpacity(0.10),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(
-                  credito
-                      ? Icons.add_circle_outline_rounded
-                      : Icons.remove_circle_outline_rounded,
-                  color: credito ? Colors.green : Colors.blue,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      movimento.nomeLoja,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      movimento.descricao,
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${credito ? '+' : '-'} ${ValueFormatters.moeda(movimento.valor)}',
-                style: TextStyle(
-                  color: credito ? Colors.green.shade700 : Colors.blue.shade700,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              _badgeStatus(movimento.status),
-              const Spacer(),
-              Text(
-                _formatarData(movimento.dataMovimento),
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-            ],
-          ),
-          if (movimento.status == CashbackStatus.disponivel &&
-              movimento.dataValidade != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Válido até ${_formatarData(movimento.dataValidade)}',
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-          if (movimento.status == CashbackStatus.pendente &&
-              movimento.dataLiberacao != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Liberação prevista: ${_formatarData(movimento.dataLiberacao)}',
-              style: TextStyle(
-                color: Colors.orange.shade800,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-          if ((movimento.observacao ?? '').trim().isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              movimento.observacao!,
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 12,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _estadoVazio() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.savings_outlined, size: 60, color: Colors.grey.shade400),
-          const SizedBox(height: 12),
-          const Text(
-            'Nenhum cashback encontrado',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _abrirRegrasCashback() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFFF6F6F6),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 30),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                const Center(
-                  child: SizedBox(width: 44, child: Divider(thickness: 4)),
+                Expanded(
+                  child: Text(
+                    '${item['nome_loja'] ?? 'Loja'}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Como funciona o cashback?',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  '• Parte do valor de compras elegíveis volta para você.\n\n'
-                  '• O cashback pode ficar pendente até a confirmação da compra.\n\n'
-                  '• O saldo disponível pode ser usado em novas compras.\n\n'
-                  '• Cada cashback pode ter uma data de validade.\n\n'
-                  '• Compras canceladas podem cancelar o cashback relacionado.',
-                  style: TextStyle(fontSize: 15, height: 1.45),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: cor.withValues(alpha: .12),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Text(
+                    _textoStatus(status),
+                    style: TextStyle(
+                      color: cor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 8),
+            Text('${item['descricao'] ?? 'Movimento de cashback'}'),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${item['data'] ?? ''}',
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                ),
+                Text(
+                  '${credito ? '+' : '-'} ${ValueFormatters.moeda(_numero(item['valor']))}',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                    color: credito
+                        ? Colors.green.shade700
+                        : Colors.blue.shade700,
+                  ),
+                ),
+              ],
+            ),
+            if (item['validade'] != null &&
+                '${item['validade']}'.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Validade: ${item['validade']}',
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final lista = movimentosFiltrados;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: const ClubbarAppBar(mostrarVoltar: true),
@@ -581,42 +241,82 @@ class _CashbackScreenState extends State<CashbackScreen> {
         children: [
           const ClubbarPageHeader(
             titulo: 'Cashback',
-            subtitulo: 'Seu saldo e histórico de recompensas',
+            subtitulo: 'Saldo e histórico por estabelecimento',
             icone: Icons.savings_rounded,
           ),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
-              children: [
-                _resumoCashback(),
-                const SizedBox(height: 22),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Histórico',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                        ),
+            child: _carregando
+                ? const Center(child: CircularProgressIndicator())
+                : _erro != null
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_erro!, textAlign: TextAlign.center),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: _carregar,
+                            child: const Text('Tentar novamente'),
+                          ),
+                        ],
                       ),
                     ),
-                    TextButton.icon(
-                      onPressed: _abrirRegrasCashback,
-                      icon: const Icon(Icons.help_outline_rounded),
-                      label: const Text('Como funciona'),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _carregar,
+                    child: ListView(
+                      padding: const EdgeInsets.all(20),
+                      children: [
+                        _resumo(),
+                        const SizedBox(height: 20),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children:
+                                [
+                                      'TODOS',
+                                      'DISPONIVEL',
+                                      'PENDENTE',
+                                      'UTILIZADO',
+                                      'EXPIRADO',
+                                      'CANCELADO',
+                                    ]
+                                    .map(
+                                      (status) => Padding(
+                                        padding: const EdgeInsets.only(
+                                          right: 8,
+                                        ),
+                                        child: ChoiceChip(
+                                          label: Text(
+                                            status == 'TODOS'
+                                                ? 'Todos'
+                                                : _textoStatus(status),
+                                          ),
+                                          selected: _filtro == status,
+                                          onSelected: (_) =>
+                                              setState(() => _filtro = status),
+                                          selectedColor: Colors.amber,
+                                        ),
+                                      ),
+                                    )
+                                    .toList(),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (_movimentos.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(30),
+                            child: Center(
+                              child: Text('Nenhum movimento encontrado.'),
+                            ),
+                          )
+                        else
+                          ..._movimentos.map(_movimento),
+                      ],
                     ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                _filtros(),
-                const SizedBox(height: 18),
-                if (lista.isEmpty)
-                  _estadoVazio()
-                else
-                  ...lista.map(_cardMovimento),
-              ],
-            ),
+                  ),
           ),
         ],
       ),
