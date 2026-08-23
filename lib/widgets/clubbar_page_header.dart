@@ -8,6 +8,7 @@ class ClubbarPageHeader extends StatelessWidget {
   final String? textoAvatar;
   final IconData? icone;
   final String? imagemAvatarUrl;
+  final double tamanhoAvatar;
 
   // Conteúdo opcional do lado direito
   final Widget? trailing;
@@ -23,6 +24,7 @@ class ClubbarPageHeader extends StatelessWidget {
     this.textoAvatar,
     this.icone,
     this.imagemAvatarUrl,
+    this.tamanhoAvatar = 48,
     this.trailing,
     this.imagemUrl,
     this.mostrarAba = false,
@@ -43,8 +45,8 @@ class ClubbarPageHeader extends StatelessWidget {
     final avatarUrl = imagemAvatarUrl?.trim() ?? '';
 
     return Container(
-      width: 48,
-      height: 48,
+      width: tamanhoAvatar,
+      height: tamanhoAvatar,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -55,8 +57,8 @@ class ClubbarPageHeader extends StatelessWidget {
         child: avatarUrl.isNotEmpty
             ? Image.network(
                 avatarUrl,
-                width: 48,
-                height: 48,
+                width: tamanhoAvatar,
+                height: tamanhoAvatar,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Icon(
                   icone ?? Icons.storefront_rounded,

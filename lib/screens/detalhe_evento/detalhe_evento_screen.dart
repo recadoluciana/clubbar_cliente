@@ -16,6 +16,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
+import 'participantes_reserva_screen.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -187,6 +188,91 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       if (!mounted) return;
 
       AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    }
+  }
+
+  Future<void> iniciarReserva(EventoLote lote) async {
+    if (processandoCompra) return;
+    var quantidade = 1;
+    final confirmada = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Comprar ingressos'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                lote.nome,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              const Text('Quantos participantes?'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: quantidade > 1
+                        ? () => setDialogState(() => quantidade--)
+                        : null,
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                  Text(
+                    '$quantidade',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: quantidade < 20
+                        ? () => setDialogState(() => quantidade++)
+                        : null,
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Continuar'),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmada != true || !mounted) return;
+    setState(() => processandoCompra = true);
+    try {
+      final clienteId = await _obterClienteIdLogado();
+      final reserva = await apiService.criarReservaIngresso(
+        clienteId: clienteId,
+        loteId: lote.loteId,
+        quantidade: quantidade,
+      );
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ParticipantesReservaScreen(
+            loja: widget.loja,
+            reserva: reserva,
+            nomeEvento: evento?.titulo ?? lote.nome,
+          ),
+        ),
+      );
+      await carregarStatusLotes();
+    } catch (e) {
+      if (mounted)
+        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) setState(() => processandoCompra = false);
     }
   }
 
@@ -478,9 +564,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     child: OutlinedButton.icon(
                       onPressed: !vendaDisponivel || processandoCompra
                           ? null
-                          : () => adicionarAoCarrinho(lote),
-                      icon: const Icon(Icons.add_shopping_cart),
-                      label: const Text('Adicionar'),
+                          : () => iniciarReserva(lote),
+                      icon: const Icon(Icons.local_activity_outlined),
+                      label: const Text('Comprar ingressos'),
                     ),
                   ),
                   const SizedBox(width: 10),

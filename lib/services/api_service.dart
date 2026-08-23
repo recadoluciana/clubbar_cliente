@@ -373,6 +373,82 @@ class ApiService {
     }
   }
 
+  Future<Map<String, dynamic>> criarReservaIngresso({
+    required int clienteId,
+    required int loteId,
+    required int quantidade,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reservas-ingressos'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'lote_id': loteId,
+        'quantidade': quantidade,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300)
+      throw Exception(_extrairMensagemHttp(response));
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> salvarParticipantesReserva({
+    required int reservaId,
+    required List<Map<String, String>> participantes,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/reservas-ingressos/$reservaId/participantes'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'participantes': participantes}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300)
+      throw Exception(_extrairMensagemHttp(response));
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> criarPixReserva({
+    required int reservaId,
+    required int clienteId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reservas-ingressos/$reservaId/pix'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'cliente_id': clienteId, 'parcelas': 1}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300)
+      throw Exception(_extrairMensagemHttp(response));
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> criarCheckoutReserva({
+    required int reservaId,
+    required int clienteId,
+    int parcelas = 1,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reservas-ingressos/$reservaId/checkout'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'cliente_id': clienteId, 'parcelas': parcelas}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300)
+      throw Exception(_extrairMensagemHttp(response));
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> consultarReserva({
+    required int reservaId,
+    required int clienteId,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/reservas-ingressos/$reservaId/status?cliente_id=$clienteId',
+      ),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300)
+      throw Exception(_extrairMensagemHttp(response));
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> buscarCarrinho({
     required int clienteId,
     required int organizacaoId,
@@ -969,6 +1045,26 @@ class ApiService {
     final data = jsonDecode(response.body);
 
     throw Exception(data['detail'] ?? 'Erro ao alterar participante');
+  }
+
+  Future<Map<String, dynamic>> cancelarIngresso({
+    required int itvendaId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/entregas/itvenda/$itvendaId/cancelar-ingresso'),
+      headers: await _headersAutenticado(),
+    );
+    final data = response.body.trim().isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return Map<String, dynamic>.from(data as Map);
+    }
+    throw Exception(
+      data is Map
+          ? data['detail'] ?? 'Erro ao cancelar ingresso'
+          : 'Erro ao cancelar ingresso',
+    );
   }
 
   Future<Map<String, dynamic>> consultarPixPorPagamentoId({

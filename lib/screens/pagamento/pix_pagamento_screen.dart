@@ -15,11 +15,15 @@ import 'pagamento_sucesso_screen.dart';
 class PixPagamentoScreen extends StatefulWidget {
   final Loja loja;
   final Map<String, dynamic> pagamento;
+  final int? reservaIngressoId;
+  final int? clienteId;
 
   const PixPagamentoScreen({
     super.key,
     required this.loja,
     required this.pagamento,
+    this.reservaIngressoId,
+    this.clienteId,
   });
 
   @override
@@ -136,11 +140,20 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     _consultando = true;
 
     try {
-      final response = await apiService.consultarPixPorPagamentoId(
-        pagamentoId: pagamentoId,
-      );
+      final response =
+          widget.reservaIngressoId != null && widget.clienteId != null
+          ? await apiService.consultarReserva(
+              reservaId: widget.reservaIngressoId!,
+              clienteId: widget.clienteId!,
+            )
+          : await apiService.consultarPixPorPagamentoId(
+              pagamentoId: pagamentoId,
+            );
 
-      final statusAtual = (response['status'] ?? '').toString().toUpperCase();
+      final statusAtual =
+          (response['status_pagamento'] ?? response['status'] ?? '')
+              .toString()
+              .toUpperCase();
 
       if (statusAtual == 'PAGO') {
         _confirmacaoProcessada = true;

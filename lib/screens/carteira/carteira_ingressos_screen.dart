@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/api_service.dart';
@@ -7,6 +8,7 @@ import '../../utils/cpf_utils.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
+import '../../utils/presente_image_generator.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
@@ -41,7 +43,151 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   @override
   void initState() {
     super.initState();
-    itensTela = List<Map<String, dynamic>>.from(widget.itens);
+    itensTela = _somenteIngressosFuturos(widget.itens);
+  }
+
+  List<Map<String, dynamic>> _somenteIngressosFuturos(
+    List<Map<String, dynamic>> itens,
+  ) {
+    final hoje = DateTime.now();
+    final inicioHoje = DateTime(hoje.year, hoje.month, hoje.day);
+    return itens
+        .where((item) {
+          final data = DateTime.tryParse(
+            (item['dtinicioevento'] ?? '').toString(),
+          );
+          if (data == null) return true;
+          final diaEvento = DateTime(data.year, data.month, data.day);
+          return !diaEvento.isBefore(inicioHoje);
+        })
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+  }
+
+  DateTime? _dataEvento(Map<String, dynamic> item) =>
+      DateTime.tryParse((item['dtinicioevento'] ?? '').toString());
+
+  DateTime? _dataCompra(Map<String, dynamic> item) =>
+      DateTime.tryParse((item['dtcriacao'] ?? '').toString());
+
+  Future<void> _compartilharIngresso(Map<String, dynamic> item) async {
+    final token = (item['qrtokenitvenda'] ?? '').toString().trim();
+    final itvendaId = int.tryParse('${item['itvenda_id'] ?? 0}') ?? 0;
+    if (token.isEmpty || itvendaId == 0) {
+      AppSnackBar.erro(context, 'QR Code do ingresso não disponível.');
+      return;
+    }
+    AppSnackBar.info(context, 'Preparando o ingresso...');
+    final nomeEvento =
+        (item['nmevento'] ?? item['nmproduto'] ?? 'Ingresso Clubbar')
+            .toString();
+    final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString();
+    final imagem = await PresenteImageGenerator.gerar(
+      tipo: 'I',
+      nomeItem: nomeEvento,
+      nomeLoja: widget.nomeLoja,
+      nomeRemetente: widget.nomeCliente,
+      imagemUrl: _buildImageUrl((item['urlfotoproduto'] ?? '').toString()),
+      dadosQr: 'CLUBBAR-INGRESSO:$token',
+      validade: dataEvento,
+    );
+    if (!mounted) return;
+    if (imagem == null) {
+      AppSnackBar.erro(context, 'Não foi possível gerar o ingresso.');
+      return;
+    }
+    final texto =
+        'Você recebeu um ingresso pelo Clubbar!\n\n'
+        '$nomeEvento\n'
+        'Data e hora: $dataEvento\n'
+        'Recebido de: ${widget.nomeCliente}\n\n'
+        'Apresente o QR Code na entrada junto com seu documento de identificação.';
+    try {
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            imagem,
+            name: 'ingresso_clubbar_$itvendaId.png',
+            mimeType: 'image/png',
+          ),
+        ],
+        text: texto,
+        subject: 'Ingresso Clubbar',
+      );
+    } catch (_) {
+      if (mounted) {
+        AppSnackBar.erro(context, 'Não foi possível compartilhar o ingresso.');
+      }
+    }
+  }
+
+  Future<void> _cancelarIngresso(Map<String, dynamic> item) async {
+    final dataEvento = _dataEvento(item);
+    final dataCompra = _dataCompra(item);
+    if (dataEvento == null || dataCompra == null) {
+      AppSnackBar.erro(context, 'Data da compra ou do evento não informada.');
+      return;
+    }
+    final agora = DateTime.now();
+    final dentroDosSeteDias = !agora.isAfter(
+      dataCompra.add(const Duration(days: 7)),
+    );
+    final antesDasQuarentaEOitoHoras = !agora.isAfter(
+      dataEvento.subtract(const Duration(hours: 48)),
+    );
+    if (!dentroDosSeteDias || !antesDasQuarentaEOitoHoras) {
+      AppSnackBar.erro(
+        context,
+        'Cancelamento não permitido. O ingresso só pode ser cancelado em até '
+        '7 dias após a compra e com no mínimo 48 horas de antecedência do '
+        'início do evento.',
+      );
+      return;
+    }
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Cancelar ingresso'),
+        content: const Text(
+          'Deseja cancelar somente este ingresso? O valor correspondente a '
+          'este item será solicitado como reembolso pelo mesmo meio de '
+          'pagamento. Os demais ingressos continuarão disponíveis.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Não'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Cancelar ingresso'),
+          ),
+        ],
+      ),
+    );
+    if (confirmado != true || !mounted) return;
+    try {
+      final itvendaId = int.parse('${item['itvenda_id']}');
+      await apiService.cancelarIngresso(itvendaId: itvendaId);
+      if (!mounted) return;
+      setState(() {
+        itensTela.removeWhere(
+          (registro) => registro['itvenda_id'] == item['itvenda_id'],
+        );
+      });
+      CarteiraBadgeNotifier.atualizar();
+      AppSnackBar.sucesso(
+        context,
+        'Ingresso cancelado. O reembolso deste item foi solicitado com sucesso.',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   String _formatarCpf(String cpf) {
@@ -289,13 +435,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       if (!mounted) return;
 
       setState(() {
-        itensTela = novosItens;
+        itensTela = _somenteIngressosFuturos(novosItens);
       });
     }
   }
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
-    final nomeIngresso = (item['nmproduto'] ?? 'Ingresso').toString().trim();
+    final nomeIngresso = (item['nmevento'] ?? item['nmproduto'] ?? 'Ingresso')
+        .toString()
+        .trim();
 
     final nomeParticipante = (item['nmparticipante'] ?? '').toString().trim();
 
@@ -305,7 +453,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         ? ''
         : _formatarCpf(cpfOriginal);
 
-    final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString().trim();
+    final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
+    final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
 
     final valor = double.tryParse('${item['vrunititvenda'] ?? 0}') ?? 0;
 
@@ -369,7 +518,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          widget.nomeLoja,
+                          dataEvento.isEmpty
+                              ? 'Data do evento não informada'
+                              : dataEvento,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -381,10 +532,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(width: 8),
-
-                  _badgeDisponivel(),
                 ],
               ),
             ),
@@ -394,7 +541,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Valor e validade
+                  // Valor e data da compra
                   Row(
                     children: [
                       _informacaoIngresso(
@@ -407,9 +554,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       const SizedBox(width: 5),
 
                       _informacaoIngresso(
-                        icone: Icons.event_available_outlined,
-                        titulo: 'Validade',
-                        valor: validade.isEmpty ? 'Não informada' : validade,
+                        icone: Icons.shopping_bag_outlined,
+                        titulo: 'Data e hora da compra',
+                        valor: dataCompra.isEmpty
+                            ? 'Não informada'
+                            : dataCompra,
                         corIcone: Colors.blue.shade700,
                       ),
                     ],
@@ -526,6 +675,36 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         ),
                       ),
                     ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _compartilharIngresso(item),
+                          icon: const Icon(Icons.ios_share_rounded),
+                          label: const Text('Compartilhar'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.blue.shade700,
+                            side: BorderSide(color: Colors.blue.shade200),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _cancelarIngresso(item),
+                          icon: const Icon(Icons.cancel_outlined),
+                          label: const Text('Cancelar'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red.shade700,
+                            side: BorderSide(color: Colors.red.shade200),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 8),
@@ -673,32 +852,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
   }
 
-  Widget _badgeDisponivel() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.10),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.green.withOpacity(0.25)),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.check_circle_rounded, size: 14, color: Colors.green),
-          SizedBox(width: 4),
-          Text(
-            'Disponível',
-            style: TextStyle(
-              color: Colors.green,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final totalUnidades = itensTela.fold<int>(0, (total, item) {
@@ -711,8 +864,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         ? '1 ingresso disponível'
         : '$totalUnidades ingressos disponíveis';
 
-    final subtituloCompleto = '${widget.nomeLoja} • $subtituloAux';
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
@@ -721,10 +872,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: 'Carteira de ingressos',
-            subtitulo: subtituloCompleto,
-            icone: Icons.confirmation_number_rounded,
-            imagemUrl: widget.logoLoja,
+            titulo: widget.nomeLoja,
+            subtitulo: subtituloAux,
+            icone: Icons.storefront_rounded,
+            imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
+            tamanhoAvatar: 58,
           ),
 
           Expanded(
@@ -739,7 +891,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 if (!mounted) return;
 
                 setState(() {
-                  itensTela = novosItens;
+                  itensTela = _somenteIngressosFuturos(novosItens);
                 });
               },
               child: ListView(

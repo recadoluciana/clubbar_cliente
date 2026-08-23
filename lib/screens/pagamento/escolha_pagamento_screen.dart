@@ -23,6 +23,7 @@ class EscolhaPagamentoScreen extends StatefulWidget {
   final double? totalPagar;
 
   final VoidCallback? onVoltar;
+  final int? reservaIngressoId;
 
   const EscolhaPagamentoScreen({
     super.key,
@@ -32,6 +33,7 @@ class EscolhaPagamentoScreen extends StatefulWidget {
     this.taxaConveniencia,
     this.totalPagar,
     this.onVoltar,
+    this.reservaIngressoId,
   });
 
   @override
@@ -80,19 +82,28 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (clienteId == null || clienteId == 0) {
         throw Exception('Cliente não identificado');
       }
-      final pagamento = await apiService.criarPixAsaas(
-        clienteId: clienteId,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-        percentualTaxaIngresso: percentualTaxaIngresso,
-        percentualTaxaProduto: percentualTaxaProduto,
-      );
+      final pagamento = widget.reservaIngressoId != null
+          ? await apiService.criarPixReserva(
+              reservaId: widget.reservaIngressoId!,
+              clienteId: clienteId,
+            )
+          : await apiService.criarPixAsaas(
+              clienteId: clienteId,
+              organizacaoId: widget.loja.organizacaoId,
+              lojaId: widget.loja.id,
+              percentualTaxaIngresso: percentualTaxaIngresso,
+              percentualTaxaProduto: percentualTaxaProduto,
+            );
       if (!mounted) return;
       final resultadoPix = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              PixPagamentoScreen(loja: widget.loja, pagamento: pagamento),
+          builder: (_) => PixPagamentoScreen(
+            loja: widget.loja,
+            pagamento: pagamento,
+            reservaIngressoId: widget.reservaIngressoId,
+            clienteId: clienteId,
+          ),
         ),
       );
       if (resultadoPix == false && mounted) {
@@ -132,13 +143,18 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         throw Exception('Cliente não identificado');
       }
 
-      final resposta = await apiService.pagarAsaas(
-        clienteId: clienteId,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-        percentualTaxaIngresso: percentualTaxaIngresso,
-        percentualTaxaProduto: percentualTaxaProduto,
-      );
+      final resposta = widget.reservaIngressoId != null
+          ? await apiService.criarCheckoutReserva(
+              reservaId: widget.reservaIngressoId!,
+              clienteId: clienteId,
+            )
+          : await apiService.pagarAsaas(
+              clienteId: clienteId,
+              organizacaoId: widget.loja.organizacaoId,
+              lojaId: widget.loja.id,
+              percentualTaxaIngresso: percentualTaxaIngresso,
+              percentualTaxaProduto: percentualTaxaProduto,
+            );
 
       final checkoutUrl = resposta['checkout_url'];
 
@@ -173,17 +189,31 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           Map<String, dynamic>? confirmacao;
           for (var tentativa = 0; tentativa < 6; tentativa++) {
-            confirmacao = await apiService.consultarCheckoutAsaas(
-              checkoutId: resposta['pagamento_id'].toString(),
-            );
+            confirmacao = widget.reservaIngressoId != null
+                ? await apiService.consultarReserva(
+                    reservaId: widget.reservaIngressoId!,
+                    clienteId: clienteId,
+                  )
+                : await apiService.consultarCheckoutAsaas(
+                    checkoutId: resposta['pagamento_id'].toString(),
+                  );
             if ((confirmacao['status'] ?? '').toString().toUpperCase() ==
-                'PAGO') {
+                    'PAGO' ||
+                (confirmacao['status_pagamento'] ?? '')
+                        .toString()
+                        .toUpperCase() ==
+                    'PAGO') {
               break;
             }
             await Future<void>.delayed(const Duration(seconds: 2));
           }
           final confirmado =
-              (confirmacao?['status'] ?? '').toString().toUpperCase() == 'PAGO';
+              (confirmacao?['status'] ?? '').toString().toUpperCase() ==
+                  'PAGO' ||
+              (confirmacao?['status_pagamento'] ?? '')
+                      .toString()
+                      .toUpperCase() ==
+                  'PAGO';
 
           if (!confirmado) {
             if (!mounted) return;
@@ -199,11 +229,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             return;
           }
 
-          final clienteId = await authStorage.obterClienteId();
+          final clienteAtualId = await authStorage.obterClienteId();
 
-          if (clienteId != null && clienteId > 0) {
+          if (clienteAtualId != null && clienteAtualId > 0) {
             final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
-              clienteId: clienteId,
+              clienteId: clienteAtualId,
             );
 
             CartBadgeNotifier.atualizar(totalCarrinho);

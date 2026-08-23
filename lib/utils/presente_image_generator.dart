@@ -79,6 +79,7 @@ class PresenteImageGenerator {
         nomeLoja: nomeLojaFinal,
         nomeRemetente: nomeRemetente,
         validade: validade,
+        ehIngresso: ehIngresso,
       );
 
       await _desenharQrPrincipal(
@@ -233,6 +234,7 @@ class PresenteImageGenerator {
     required String nomeLoja,
     required String nomeRemetente,
     required String validade,
+    required bool ehIngresso,
   }) {
     _desenharTexto(
       canvas,
@@ -259,7 +261,9 @@ class PresenteImageGenerator {
     if (nomeRemetente.trim().isNotEmpty) {
       _desenharTexto(
         canvas,
-        texto: 'Presente de ${nomeRemetente.trim()}',
+        texto: ehIngresso
+            ? 'Recebido de ${nomeRemetente.trim()}'
+            : 'Presente de ${nomeRemetente.trim()}',
         posicao: const Offset(84, 810),
         larguraMaxima: 912,
         tamanho: 32,
@@ -271,7 +275,11 @@ class PresenteImageGenerator {
 
     _desenharTexto(
       canvas,
-      texto: validade.trim().isEmpty ? 'xxx' : 'Válido até ${validade.trim()}',
+      texto: validade.trim().isEmpty
+          ? 'Data não informada'
+          : ehIngresso
+          ? 'Evento: ${validade.trim()}'
+          : 'Válido até ${validade.trim()}',
       posicao: const Offset(84, 850),
       larguraMaxima: 912,
       tamanho: 32,
