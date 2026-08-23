@@ -70,7 +70,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         widget.pagamento['expiration_date'] ??
         widget.pagamento['pix_expiration_date'];
     final data = DateTime.tryParse(valor?.toString() ?? '');
-    if (data == null) return DateTime.now().add(const Duration(minutes: 10));
+    if (data == null) return DateTime.now().add(const Duration(minutes: 5));
     return data.isUtc ? data.toLocal() : data;
   }
 
@@ -316,8 +316,6 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final statusPago = status.toUpperCase() == 'PAGO';
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
@@ -366,9 +364,11 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Pague com PIX',
-                        style: TextStyle(
+                      Text(
+                        widget.loja.nome,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 21,
                           fontWeight: FontWeight.w800,
@@ -376,7 +376,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.loja.nome,
+                        'Pagamento com Pix',
                         style: TextStyle(
                           color: Colors.grey.shade300,
                           fontSize: 13,
@@ -435,43 +435,6 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
           _barraExpiracao(),
 
           const SizedBox(height: 12),
-
-          Container(
-            padding: const EdgeInsets.all(13),
-            decoration: BoxDecoration(
-              color: statusPago
-                  ? Colors.green.withValues(alpha: 0.10)
-                  : Colors.amber.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: statusPago ? Colors.green : Colors.amber.shade300,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  statusPago ? Icons.check_circle_outline : Icons.timelapse,
-                  size: 21,
-                  color: statusPago ? Colors.green : Colors.amber.shade800,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    statusPago
-                        ? 'Pagamento confirmado'
-                        : 'Aguardando pagamento PIX...',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: statusPago ? Colors.green : Colors.amber.shade900,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
 
           const Text(
             'Escaneie o QR Code',
