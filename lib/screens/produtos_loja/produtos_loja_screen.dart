@@ -19,7 +19,6 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import 'produto_compartilhado_screen.dart';
-import '../agenda/agenda_eventos_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
 import '../../widgets/clubbar_page_header.dart';
 
@@ -532,9 +531,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final selecionada = categoriaSelecionadaId == categoria.id;
 
     return Padding(
-      padding: const EdgeInsets.only(right: 10),
+      padding: const EdgeInsets.only(right: 7),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(13),
         onTap: () {
           setState(() {
             categoriaSelecionadaId = categoria.id;
@@ -542,11 +541,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          width: 78,
-          height: 70,
+          width: 62,
+          height: 56,
           decoration: BoxDecoration(
             color: selecionada ? Colors.amber : Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(13),
             border: Border.all(
               color: selecionada ? Colors.amber : Colors.grey.shade300,
             ),
@@ -559,23 +558,23 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 5),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   CategoriaIconUtils.porNome(categoria.nome),
                   color: selecionada ? Colors.black : Colors.grey.shade700,
-                  size: 22,
+                  size: 18,
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 3),
                 Text(
                   categoria.nome,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 9,
+                    fontSize: 8,
                     height: 1.15,
                     fontWeight: FontWeight.w700,
                     color: selecionada ? Colors.black : Colors.black87,
@@ -677,28 +676,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 ClubbarPageHeader(
                   titulo: widget.loja.nome,
                   subtitulo: 'Cardápio e bebidas',
-                  icone: Icons.restaurant_menu_rounded,
-                  trailing: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              AgendaEventosScreen(loja: widget.loja),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.event, size: 18),
-                    label: const Text('Agenda'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
+                  imagemAvatarUrl: widget.loja.imagemUrl,
+                  tamanhoAvatar: 52,
                 ),
 
                 Padding(
@@ -714,7 +693,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       bottom: 12,
                     ),
                     child: SizedBox(
-                      height: 82,
+                      height: 64,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: categorias.map(_chipCategoria).toList(),
@@ -727,7 +706,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     onRefresh: carregarDados,
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
                       children: [
                         if (produtosFiltrados.isEmpty)
                           _estadoVazio()
@@ -738,10 +717,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             itemCount: produtosFiltrados.length,
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  mainAxisExtent: 270,
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 7,
+                                  mainAxisSpacing: 9,
+                                  mainAxisExtent: 218,
                                 ),
                             itemBuilder: (context, index) {
                               return _cardProdutoGrade(
@@ -771,7 +750,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(14),
       elevation: 2,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -785,7 +764,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           );
         },
         child: SizedBox(
-          height: 270,
+          height: 218,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -793,13 +772,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 children: [
                   SizedBox(
                     width: double.infinity,
-                    height: 125,
+                    height: 88,
                     child: imagem.isEmpty
                         ? Container(
                             color: Colors.grey.shade200,
                             child: const Icon(
                               Icons.fastfood_outlined,
-                              size: 38,
+                              size: 30,
                             ),
                           )
                         : Image.network(
@@ -810,7 +789,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 color: Colors.grey.shade200,
                                 child: const Icon(
                                   Icons.image_not_supported_outlined,
-                                  size: 36,
+                                  size: 28,
                                 ),
                               );
                             },
@@ -819,12 +798,12 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
                   if (temDesconto)
                     Positioned(
-                      left: 8,
-                      top: 8,
+                      left: 5,
+                      top: 5,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 5,
+                          horizontal: 5,
+                          vertical: 3,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.red,
@@ -834,7 +813,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           seloDesconto,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 8,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -842,17 +821,22 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     ),
 
                   Positioned(
-                    right: 8,
-                    top: 8,
+                    right: 4,
+                    top: 4,
                     child: Material(
                       color: Colors.white.withOpacity(0.92),
                       shape: const CircleBorder(),
                       elevation: 2,
-                      child: IconButton(
-                        onPressed: () => compartilharProduto(produto),
-                        tooltip: 'Compartilhar produto',
-                        visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.ios_share_rounded, size: 19),
+                      child: SizedBox(
+                        width: 29,
+                        height: 29,
+                        child: IconButton(
+                          onPressed: () => compartilharProduto(produto),
+                          tooltip: 'Compartilhar produto',
+                          padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.ios_share_rounded, size: 15),
+                        ),
                       ),
                     ),
                   ),
@@ -861,7 +845,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                  padding: const EdgeInsets.fromLTRB(7, 6, 7, 7),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -870,30 +854,30 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 12,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
 
-                      const SizedBox(height: 3),
+                      const SizedBox(height: 2),
 
                       if (temDesconto) ...[
                         Text(
                           ValueFormatters.moeda(produto.vrprecoprod),
                           style: const TextStyle(
                             color: Colors.grey,
-                            fontSize: 10,
+                            fontSize: 8,
                             decoration: TextDecoration.lineThrough,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 1),
                       ],
 
-                      const SizedBox(height: 5),
+                      const SizedBox(height: 2),
                       Text(
                         ValueFormatters.moeda(precoAtual),
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 13,
                           fontWeight: FontWeight.w900,
                           color: temDesconto
                               ? Colors.green.shade700
@@ -901,7 +885,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
 
                       Text(
                         produto.dsproduto.trim().isEmpty
@@ -910,7 +894,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 8,
                           color: Colors.grey.shade700,
                         ),
                       ),
@@ -919,17 +903,17 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
                       SizedBox(
                         width: double.infinity,
-                        height: 34,
+                        height: 29,
                         child: ElevatedButton.icon(
                           onPressed: () => abrirDialogObservacao(produto),
                           icon: const Icon(
                             Icons.add_shopping_cart_rounded,
-                            size: 16,
+                            size: 13,
                           ),
                           label: const Text(
                             'Carrinho',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -937,7 +921,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             backgroundColor: Colors.amber,
                             foregroundColor: Colors.black,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 3),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
