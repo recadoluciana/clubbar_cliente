@@ -13,6 +13,7 @@ import '../../widgets/api_status_indicator.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../login/login_screen.dart';
+import '../perfil/perfil_screen.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import 'package:share_plus/share_plus.dart';
@@ -238,6 +239,17 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     if (resultado == true && mounted) {
       await carregarHome();
     }
+  }
+
+  String get _primeiroNomeCliente {
+    final partes = nomeCliente.trim().split(RegExp(r'\s+'));
+    if (partes.isEmpty || partes.first.isEmpty) return 'Perfil';
+    final nome = partes.first.toLowerCase();
+    return '${nome[0].toUpperCase()}${nome.substring(1)}';
+  }
+
+  void _abrirPerfil() {
+    MainNavigationController.abrirTela(const PerfilScreen());
   }
 
   String formatarDataEvento(String valor) {
@@ -648,8 +660,26 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
               ),
             )
           else
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 105),
+              child: TextButton.icon(
+                onPressed: _abrirPerfil,
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                ),
+                icon: const Icon(Icons.account_circle_rounded, size: 22),
+                label: Text(
+                  _primeiroNomeCliente,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+            ),
+          if (logado)
             Padding(
-              padding: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.only(right: 8),
               child: IconButton(
                 onPressed: sair,
                 tooltip: 'Sair da conta',

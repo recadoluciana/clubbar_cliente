@@ -6,7 +6,6 @@ import '../../services/auth_storage.dart';
 import '../carteira/carteira_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
-import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
@@ -32,13 +31,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int currentIndex = 0;
   int totalItensCarteira = 0;
 
-  String nomeCliente = '';
-  bool logado = false;
-
   @override
   void initState() {
     super.initState();
-    carregarUsuario();
     carregarBadgeCarrinho();
     carregarBadgeCarteira();
 
@@ -158,19 +153,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               icone: _iconeCarteiraComBadge(selecionado: currentIndex == 2),
               texto: 'Carteira',
             ),
-
-            if (logado)
-              _itemBarraNavegacao(
-                index: 3,
-                icone: Icon(
-                  currentIndex == 3
-                      ? Icons.person_rounded
-                      : Icons.person_outline_rounded,
-                ),
-                texto: nomeCliente.trim().isNotEmpty
-                    ? _primeiroNome(nomeCliente)
-                    : 'Perfil',
-              ),
           ],
         ),
       ),
@@ -204,19 +186,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         return const CarrinhoLojasScreen();
       case 2:
         return const CarteiraScreen();
-      case 3:
-        return const PerfilScreen();
       default:
         return const HomeScreen();
     }
-  }
-
-  String _primeiroNome(String nomeCompleto) {
-    final partes = nomeCompleto.trim().split(' ');
-    if (partes.isEmpty) return '';
-
-    final nome = partes.first.toLowerCase();
-    return nome[0].toUpperCase() + nome.substring(1);
   }
 
   Future<bool> _estaLogado() async {
@@ -331,18 +303,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         );
       }
     }
-  }
-
-  Future<void> carregarUsuario() async {
-    final token = await authStorage.obterToken();
-    final nome = await authStorage.obterNmcliente();
-
-    if (!mounted) return;
-
-    setState(() {
-      logado = token != null && token.isNotEmpty;
-      nomeCliente = nome ?? '';
-    });
   }
 
   Future<void> carregarBadgeCarrinho() async {
@@ -465,7 +425,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Future<void> _selecionarAba(int index) async {
-    final exigeLogin = index == 1 || index == 2 || index == 3;
+    final exigeLogin = index == 1 || index == 2;
 
     if (exigeLogin) {
       final logado = await _estaLogado();
@@ -479,8 +439,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           mensagem = 'Faça login para acessar seu carrinho';
         } else if (index == 2) {
           mensagem = 'Faça login para acessar sua carteira';
-        } else if (index == 3) {
-          mensagem = 'Faça login para acessar seu perfil';
         }
 
         AppSnackBar.info(context, mensagem);
