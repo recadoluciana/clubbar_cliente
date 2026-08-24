@@ -53,6 +53,11 @@ class ApiService {
       if (data is Map) {
         final detail = data['detail'];
         if (detail is String && detail.trim().isNotEmpty) {
+          if (detail.toLowerCase().contains(
+            'produto de ingresso do lote não encontrado',
+          )) {
+            return 'Não foi possível preparar este ingresso. Atualize a tela e tente novamente.';
+          }
           return detail;
         }
 
