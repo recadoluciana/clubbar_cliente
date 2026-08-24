@@ -9,6 +9,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../screens/produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/login_redirect.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class ProdutoCompartilhadoScreen extends StatefulWidget {
@@ -97,9 +98,14 @@ class _ProdutoCompartilhadoScreenState
 
     try {
       final clienteId = await authStorage.obterClienteId();
+      if (!mounted) return;
 
       if (clienteId == null || clienteId == 0) {
-        throw Exception('Faça login para adicionar ao carrinho.');
+        await direcionarParaLogin(
+          context,
+          mensagem: 'Faça login para adicionar o produto ao carrinho.',
+        );
+        return;
       }
 
       await apiService.adicionarAoCarrinho(

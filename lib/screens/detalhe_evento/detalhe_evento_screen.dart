@@ -16,6 +16,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/login_redirect.dart';
 import 'participantes_reserva_screen.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
@@ -140,11 +141,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return DateFormatters.periodo(inicio, fim);
   }
 
-  Future<int> _obterClienteIdLogado() async {
+  Future<int?> _obterClienteIdLogado() async {
     final clienteId = await authStorage.obterClienteId();
+    if (!mounted) return null;
 
     if (clienteId == null || clienteId == 0) {
-      throw Exception('Faça login para continuar');
+      await direcionarParaLogin(context);
+      return null;
     }
 
     return clienteId;
@@ -153,6 +156,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Future<void> adicionarAoCarrinho(EventoLote lote) async {
     try {
       final clienteId = await _obterClienteIdLogado();
+      if (clienteId == null) return;
       final participante = await pedirParticipante();
 
       if (participante == null) return;
@@ -251,6 +255,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     setState(() => processandoCompra = true);
     try {
       final clienteId = await _obterClienteIdLogado();
+      if (clienteId == null) return;
       final reserva = await apiService.criarReservaIngresso(
         clienteId: clienteId,
         loteId: lote.loteId,
@@ -344,9 +349,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     try {
       final clienteId = await authStorage.obterClienteId();
+      if (!mounted) return;
 
       if (clienteId == null || clienteId == 0) {
-        throw Exception('Faça login para comprar');
+        await direcionarParaLogin(
+          context,
+          mensagem: 'Faça login para comprar seu ingresso.',
+        );
+        return;
       }
 
       await apiService.adicionarAoCarrinho(

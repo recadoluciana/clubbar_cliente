@@ -14,6 +14,7 @@ import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/login_redirect.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
@@ -322,10 +323,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     String observacao = '',
   }) async {
     if (clienteId == null || clienteId == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Faça login para adicionar itens ao carrinho'),
-        ),
+      await direcionarParaLogin(
+        context,
+        mensagem: 'Faça login para adicionar itens ao carrinho.',
       );
       return;
     }
@@ -368,10 +368,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final controller = TextEditingController();
 
     if (clienteId == null || clienteId == 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Faça login para adicionar itens ao carrinho'),
-        ),
+      await direcionarParaLogin(
+        context,
+        mensagem: 'Faça login para adicionar itens ao carrinho.',
       );
       return;
     }

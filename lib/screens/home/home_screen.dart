@@ -632,7 +632,20 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         mostrarVoltar: false,
         actions: [
           const ApiStatusIndicator(versao: '1.0.0'),
-          if (logado)
+          if (!logado)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: TextButton.icon(
+                onPressed: abrirLogin,
+                style: TextButton.styleFrom(foregroundColor: Colors.white),
+                icon: const Icon(Icons.login_rounded, size: 21),
+                label: const Text(
+                  'Entrar',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+            )
+          else
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: IconButton(

@@ -124,10 +124,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _barraNavegacao() {
-    final textoPerfil = logado && nomeCliente.trim().isNotEmpty
-        ? _primeiroNome(nomeCliente)
-        : 'Login';
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -164,15 +160,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               texto: 'Carteira',
             ),
 
-            _itemBarraNavegacao(
-              index: 3,
-              icone: Icon(
-                currentIndex == 3
-                    ? Icons.person_rounded
-                    : Icons.person_outline_rounded,
+            if (logado)
+              _itemBarraNavegacao(
+                index: 3,
+                icone: Icon(
+                  currentIndex == 3
+                      ? Icons.person_rounded
+                      : Icons.person_outline_rounded,
+                ),
+                texto: nomeCliente.trim().isNotEmpty
+                    ? _primeiroNome(nomeCliente)
+                    : 'Perfil',
               ),
-              texto: textoPerfil,
-            ),
           ],
         ),
       ),
