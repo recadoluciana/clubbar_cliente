@@ -12,7 +12,9 @@ import '../main/main_navigation_screen.dart';
 import '../../utils/app_snackbar.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final bool mostrarVoltar;
+
+  const LoginScreen({super.key, this.mostrarVoltar = true});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -178,11 +180,13 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: ClubbarAppBar(
-        mostrarVoltar: true,
-        onVoltar: () {
-          MainNavigationController.irParaHome();
-          Navigator.of(context).maybePop();
-        },
+        mostrarVoltar: widget.mostrarVoltar,
+        onVoltar: widget.mostrarVoltar
+            ? () {
+                MainNavigationController.irParaHome();
+                Navigator.of(context).maybePop();
+              }
+            : null,
         actions: [
           IconButton(
             tooltip: 'Fechar aplicativo',

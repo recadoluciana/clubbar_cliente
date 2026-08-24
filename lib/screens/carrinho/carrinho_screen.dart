@@ -171,7 +171,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(mostrarVoltar: false),
+      ),
       (_) => false,
     );
   }

@@ -201,7 +201,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!mounted) return;
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(mostrarVoltar: false),
+      ),
       (_) => false,
     );
   }
@@ -304,14 +306,14 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
 
   Widget _secaoTitulo(String titulo, IconData icone) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Icon(icone, size: 24),
-          const SizedBox(width: 8),
+          Icon(icone, size: 20),
+          const SizedBox(width: 7),
           Text(
             titulo,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -320,17 +322,17 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
 
   Widget _cardVazio(String texto) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Text(
           texto,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
+          style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
         ),
       ),
     );
@@ -415,19 +417,19 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     }
 
     return SizedBox(
-      height: 205,
+      height: 174,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: produtosMaisVendidos.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 12),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (context, index) {
           final produto = produtosMaisVendidos[index];
           return SizedBox(
-            width: 155,
+            width: 132,
             child: Material(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(17),
               elevation: 2,
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -439,13 +441,13 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   children: [
                     _imagemSegura(
                       url: produto.urlfotoproduto ?? '',
-                      width: 155,
-                      height: 100,
+                      width: 132,
+                      height: 85,
                       fallbackIcon: Icons.local_bar_outlined,
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(7),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -455,16 +457,16 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                                fontSize: 13,
                               ),
                             ),
-                            const SizedBox(height: 5),
+                            const SizedBox(height: 3),
                             Row(
                               children: [
                                 Icon(
                                   Icons.storefront_rounded,
                                   color: Colors.amber.shade800,
-                                  size: 15,
+                                  size: 13,
                                 ),
                                 const SizedBox(width: 4),
                                 Expanded(
@@ -474,20 +476,20 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       color: Colors.amber.shade800,
-                                      fontSize: 12,
+                                      fontSize: 10.5,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 5),
+                            const SizedBox(height: 3),
                             Row(
                               children: [
                                 const Icon(
                                   Icons.local_fire_department_rounded,
                                   color: Colors.deepOrange,
-                                  size: 16,
+                                  size: 14,
                                 ),
                                 const SizedBox(width: 3),
                                 Expanded(
@@ -495,7 +497,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                     '${produto.quantidadeVendida} vendidos',
                                     style: const TextStyle(
                                       color: Colors.deepOrange,
-                                      fontSize: 11,
+                                      fontSize: 10,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
@@ -535,12 +537,12 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
 
   Widget _cardErro(String texto, VoidCallback tentarNovamente) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
           children: [
@@ -560,7 +562,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
 
   Widget _campoBusca() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+      padding: const EdgeInsets.fromLTRB(16, 7, 16, 0),
       child: TextField(
         controller: _buscaCtrl,
         onChanged: (value) {
@@ -580,7 +582,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         decoration: InputDecoration(
           hintText: 'bar, casa noturna, estilo musical, cidade, bairro',
           hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-          prefixIcon: const Icon(Icons.search, size: 22),
+          prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: termoBusca.isEmpty
               ? null
               : IconButton(
@@ -604,19 +606,19 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
           filled: true,
           fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 16,
+            horizontal: 12,
+            vertical: 12,
           ),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide(color: Colors.grey.shade300),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(15),
             borderSide: const BorderSide(color: Colors.amber, width: 1.6),
           ),
         ),
@@ -691,13 +693,13 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                 children: [
                   _campoBusca(),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 15),
 
                   _secaoTitulo(
                     'Eventos em destaque',
                     Icons.celebration_outlined,
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
 
                   if (erroEventos != null)
                     _cardErro(erroEventos!, carregarHome)
@@ -705,7 +707,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     _cardVazio('Nenhum evento encontrado.')
                   else
                     SizedBox(
-                      height: 250,
+                      height: 210,
                       child: PageView.builder(
                         controller: _pageController,
                         itemCount: destaquesFiltrados.length,
@@ -722,19 +724,19 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                           return GestureDetector(
                             onTap: () => _abrirEvento(evento, loja),
                             child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              margin: const EdgeInsets.symmetric(horizontal: 7),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(26),
+                                borderRadius: BorderRadius.circular(21),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.14),
-                                    blurRadius: 18,
-                                    offset: const Offset(0, 10),
+                                    color: Colors.black.withValues(alpha: 0.14),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 7),
                                   ),
                                 ],
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(26),
+                                borderRadius: BorderRadius.circular(21),
                                 child: Stack(
                                   fit: StackFit.expand,
                                   children: [
@@ -758,9 +760,9 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                       ),
                                     ),
                                     Positioned(
-                                      left: 18,
-                                      right: 18,
-                                      bottom: 18,
+                                      left: 15,
+                                      right: 15,
+                                      bottom: 14,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -771,19 +773,19 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                             overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 23,
+                                              fontSize: 19,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
+                                          const SizedBox(height: 5),
                                           Row(
                                             children: [
                                               const Icon(
                                                 Icons.calendar_month,
                                                 color: Colors.white,
-                                                size: 18,
+                                                size: 16,
                                               ),
-                                              const SizedBox(width: 6),
+                                              const SizedBox(width: 5),
                                               Expanded(
                                                 child: Text(
                                                   formatarDataEvento(
@@ -791,21 +793,21 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                   ),
                                                   style: TextStyle(
                                                     color: Colors.grey.shade200,
-                                                    fontSize: 14,
+                                                    fontSize: 12,
                                                   ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          const SizedBox(height: 6),
+                                          const SizedBox(height: 4),
                                           Row(
                                             children: [
                                               const Icon(
                                                 Icons.location_on_outlined,
                                                 color: Colors.white,
-                                                size: 18,
+                                                size: 16,
                                               ),
-                                              const SizedBox(width: 6),
+                                              const SizedBox(width: 5),
                                               Expanded(
                                                 child: Text(
                                                   evento.local.isEmpty
@@ -813,7 +815,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                       : evento.local,
                                                   style: TextStyle(
                                                     color: Colors.grey.shade300,
-                                                    fontSize: 14,
+                                                    fontSize: 12,
                                                   ),
                                                 ),
                                               ),
@@ -832,7 +834,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     ),
 
                   if (destaquesFiltrados.length > 1) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 9),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(destaquesFiltrados.length, (
@@ -841,9 +843,9 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                         final ativo = index == _paginaAtual;
                         return AnimatedContainer(
                           duration: const Duration(milliseconds: 250),
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          width: ativo ? 22 : 8,
-                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: ativo ? 18 : 7,
+                          height: 7,
                           decoration: BoxDecoration(
                             color: ativo ? Colors.amber : Colors.grey.shade400,
                             borderRadius: BorderRadius.circular(20),
@@ -853,22 +855,22 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     ),
                   ],
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
 
                   _secaoTitulo(
                     'Produtos mais vendidos',
                     Icons.local_fire_department_outlined,
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
                   _listaProdutosMaisVendidos(),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
 
                   _secaoTitulo(
                     'Bares e Casas Noturnas',
                     Icons.storefront_outlined,
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 10),
 
                   if (erroLojas != null)
                     _cardErro(erroLojas!, carregarHome)
@@ -879,36 +881,36 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                       itemCount: lojasFiltradas.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemBuilder: (context, index) {
                         final loja = lojasFiltradas[index];
 
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
+                          margin: const EdgeInsets.only(bottom: 12),
                           child: Material(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(20),
                             elevation: 2,
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(24),
+                              borderRadius: BorderRadius.circular(20),
                               onTap: () {
                                 MainNavigationController.abrirTela(
                                   DetalheLojaScreen(loja: loja),
                                 );
                               },
                               child: Padding(
-                                padding: const EdgeInsets.all(14),
+                                padding: const EdgeInsets.all(11),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     _imagemSegura(
                                       url: loja.imagemUrl,
-                                      width: 100,
-                                      height: 100,
-                                      borderRadius: 18,
+                                      width: 84,
+                                      height: 84,
+                                      borderRadius: 15,
                                       fallbackIcon: Icons.storefront,
                                     ),
-                                    const SizedBox(width: 14),
+                                    const SizedBox(width: 11),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -923,7 +925,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                   overflow:
                                                       TextOverflow.ellipsis,
                                                   style: const TextStyle(
-                                                    fontSize: 19,
+                                                    fontSize: 16,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
@@ -956,16 +958,16 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                               ],
                                             ],
                                           ),
-                                          const SizedBox(height: 7),
+                                          const SizedBox(height: 5),
                                           Row(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
                                               const Icon(
                                                 Icons.location_on_outlined,
-                                                size: 18,
+                                                size: 16,
                                               ),
-                                              const SizedBox(width: 6),
+                                              const SizedBox(width: 5),
                                               Expanded(
                                                 child: Text(
                                                   _enderecoCompleto(loja),
@@ -974,7 +976,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                       TextOverflow.ellipsis,
                                                   style: TextStyle(
                                                     color: Colors.grey.shade700,
-                                                    fontSize: 12,
+                                                    fontSize: 11,
                                                     height: 1.2,
                                                   ),
                                                 ),
@@ -984,14 +986,14 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                           if (loja.nrtelloja
                                               .trim()
                                               .isNotEmpty) ...[
-                                            const SizedBox(height: 5),
+                                            const SizedBox(height: 3),
                                             Row(
                                               children: [
                                                 const Icon(
                                                   Icons.phone_outlined,
-                                                  size: 16,
+                                                  size: 14,
                                                 ),
-                                                const SizedBox(width: 6),
+                                                const SizedBox(width: 5),
                                                 Expanded(
                                                   child: Text(
                                                     _telefoneFormatado(
@@ -1003,14 +1005,14 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                     style: TextStyle(
                                                       color:
                                                           Colors.grey.shade700,
-                                                      fontSize: 12,
+                                                      fontSize: 11,
                                                     ),
                                                   ),
                                                 ),
                                               ],
                                             ),
                                           ],
-                                          const SizedBox(height: 4),
+                                          const SizedBox(height: 2),
                                           Align(
                                             alignment: Alignment.centerLeft,
                                             child: TextButton.icon(
@@ -1018,7 +1020,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                   compartilharLoja(loja),
                                               icon: const Icon(
                                                 Icons.ios_share_rounded,
-                                                size: 17,
+                                                size: 15,
                                               ),
                                               label: const Text('Compartilhar'),
                                               style: TextButton.styleFrom(
@@ -1026,15 +1028,15 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                     Colors.amber.shade900,
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 3,
+                                                      horizontal: 6,
+                                                      vertical: 2,
                                                     ),
-                                                minimumSize: const Size(0, 32),
+                                                minimumSize: const Size(0, 28),
                                                 tapTargetSize:
                                                     MaterialTapTargetSize
                                                         .shrinkWrap,
                                                 textStyle: const TextStyle(
-                                                  fontSize: 12,
+                                                  fontSize: 11,
                                                   fontWeight: FontWeight.w800,
                                                 ),
                                               ),

@@ -6,7 +6,6 @@ import '../../services/auth_storage.dart';
 import '../carteira/carteira_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
-import '../login/login_screen.dart';
 import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
@@ -484,25 +483,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           mensagem = 'Faça login para acessar seu perfil';
         }
 
-        AppSnackBar.sucesso(context, mensagem);
-
-        final resultado = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-
-        if (!mounted) return;
-
-        if (resultado == true) {
-          await carregarUsuario();
-          await carregarBadgeCarrinho();
-          await carregarBadgeCarteira();
-
-          setState(() {
-            currentIndex = index;
-          });
-        }
-
+        AppSnackBar.info(context, mensagem);
         return;
       }
     }
