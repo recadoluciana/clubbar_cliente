@@ -27,7 +27,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   // 🔥 AQUI ESTÁ O SEGREDO
   @override
-  Size get preferredSize => const Size.fromHeight(70); // 🔥 AUMENTADO
+  Size get preferredSize => const Size.fromHeight(58);
 
   Widget _badgeCarrinho() {
     if (quantidadeCarrinho <= 0) return const SizedBox();
@@ -65,7 +65,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: const Color(0xFF000000),
       foregroundColor: Colors.white,
       centerTitle: temTitulo,
-      toolbarHeight: 60,
+      toolbarHeight: 58,
       titleSpacing: temTitulo ? NavigationToolbar.kMiddleSpacing : 10,
 
       leading: mostrarVoltar
@@ -99,7 +99,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             )
           : Align(
               alignment: Alignment.centerLeft,
-              child: Image.asset(logoPath, height: 50, fit: BoxFit.contain),
+              child: Image.asset(logoPath, height: 40, fit: BoxFit.contain),
             ),
 
       actions: [

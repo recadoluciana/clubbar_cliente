@@ -165,7 +165,11 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => const PagamentoSucessoScreen(sucesso: true),
+            builder: (_) => PagamentoSucessoScreen(
+              sucesso: true,
+              cashbackGerado:
+                  double.tryParse('${response['cashback_gerado'] ?? 0}') ?? 0,
+            ),
           ),
         );
       } else if ({'EXPIRED', 'EXPIRADO'}.contains(statusAtual)) {

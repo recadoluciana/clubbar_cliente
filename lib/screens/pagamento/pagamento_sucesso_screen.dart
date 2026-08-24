@@ -9,8 +9,13 @@ import '../../widgets/clubbar_app_bar.dart';
 
 class PagamentoSucessoScreen extends StatefulWidget {
   final bool sucesso;
+  final double cashbackGerado;
 
-  const PagamentoSucessoScreen({super.key, this.sucesso = true});
+  const PagamentoSucessoScreen({
+    super.key,
+    this.sucesso = true,
+    this.cashbackGerado = 0,
+  });
 
   @override
   State<PagamentoSucessoScreen> createState() => _PagamentoSucessoScreenState();
@@ -100,6 +105,36 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                   ),
                 ),
 
+                if (sucesso && widget.cashbackGerado > 0) ...[
+                  const SizedBox(height: 18),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: .16),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.amber.shade600),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.savings_rounded, color: Colors.amber),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Você ganhou ${_moeda(widget.cashbackGerado)} de cashback para usar nas próximas compras de produtos desta loja. O saldo será liberado conforme as regras do estabelecimento.',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              height: 1.4,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
                 const SizedBox(height: 10),
 
                 Text(
@@ -151,4 +186,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
       ),
     );
   }
+
+  String _moeda(double valor) =>
+      'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
 }

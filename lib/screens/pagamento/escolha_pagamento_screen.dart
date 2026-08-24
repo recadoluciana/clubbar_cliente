@@ -286,7 +286,14 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           final retornoSucesso = await Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => const PagamentoSucessoScreen(sucesso: true),
+              builder: (_) => PagamentoSucessoScreen(
+                sucesso: true,
+                cashbackGerado:
+                    double.tryParse(
+                      '${confirmacao?['cashback_gerado'] ?? 0}',
+                    ) ??
+                    0,
+              ),
             ),
           );
 
