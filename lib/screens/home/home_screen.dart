@@ -653,7 +653,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                 style: TextButton.styleFrom(foregroundColor: Colors.white),
                 icon: const Icon(Icons.login_rounded, size: 21),
                 label: const Text(
-                  'Entrar',
+                  'Login',
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
@@ -664,7 +664,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
               child: TextButton.icon(
                 onPressed: _abrirPerfil,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
+                  foregroundColor: Colors.greenAccent.shade400,
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                 ),
                 icon: const Icon(Icons.account_circle_rounded, size: 22),
@@ -674,15 +674,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-              ),
-            ),
-          if (logado)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: IconButton(
-                onPressed: sair,
-                tooltip: 'Sair da conta',
-                icon: const Icon(Icons.logout_rounded),
               ),
             ),
         ],
