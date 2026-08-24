@@ -9,6 +9,7 @@ class Loja {
   final String cidade;
   final String horario;
   final String imagemUrl;
+  final String fachadaUrl;
   final String instagram;
   final double vrtaxaprod;
   final double vrtaxaing;
@@ -27,6 +28,7 @@ class Loja {
     required this.cidade,
     required this.horario,
     required this.imagemUrl,
+    this.fachadaUrl = '',
     required this.instagram,
     required this.vrtaxaprod,
     required this.vrtaxaing,
@@ -48,6 +50,7 @@ class Loja {
 
   factory Loja.fromJson(Map<String, dynamic> json) {
     final path = (json['urllogoloja'] ?? '').toString();
+    final fachadaPath = (json['urlfachadaloja'] ?? '').toString();
 
     return Loja(
       id: _toInt(json['loja_id'] ?? 0),
@@ -58,6 +61,7 @@ class Loja {
       cidade: (json['nmcidade'] ?? '').toString(),
       horario: (json['dshorarioloja'] ?? '').toString(),
       imagemUrl: buildUrl(path),
+      fachadaUrl: buildUrl(fachadaPath),
       instagram: (json['dsinstaloja'] ?? '').toString(),
       vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '0') ?? 0,
       vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '0') ?? 0,

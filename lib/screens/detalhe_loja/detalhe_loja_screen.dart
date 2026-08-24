@@ -41,8 +41,33 @@ class DetalheLojaScreen extends StatelessWidget {
     }
   }
 
-  // 🔥 IMAGEM COM ANIMAÇÃO + FULL WIDTH
-  Widget _fotoFachada() {
+  Widget _imagemRede({
+    required String url,
+    required BoxFit fit,
+    required IconData fallbackIcon,
+  }) {
+    if (url.trim().isEmpty) {
+      return Container(
+        color: Colors.grey.shade300,
+        alignment: Alignment.center,
+        child: Icon(fallbackIcon, size: 48, color: Colors.grey.shade600),
+      );
+    }
+
+    return Image.network(
+      url,
+      fit: fit,
+      width: double.infinity,
+      height: double.infinity,
+      errorBuilder: (_, _, _) => Container(
+        color: Colors.grey.shade300,
+        alignment: Alignment.center,
+        child: Icon(fallbackIcon, size: 48, color: Colors.grey.shade600),
+      ),
+    );
+  }
+
+  Widget _cabecalhoImagens() {
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 700),
       tween: Tween<double>(begin: 0.95, end: 1.0),
@@ -54,14 +79,48 @@ class DetalheLojaScreen extends StatelessWidget {
         );
       },
       child: SizedBox(
-        height: 200,
+        height: 260,
         width: double.infinity,
-        child: loja.imagemUrl.isNotEmpty
-            ? Image.network(loja.imagemUrl, fit: BoxFit.cover)
-            : Container(
-                color: Colors.grey.shade300,
-                child: const Icon(Icons.image_not_supported, size: 48),
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.bottomCenter,
+          children: [
+            Positioned.fill(
+              bottom: 46,
+              child: _imagemRede(
+                url: loja.fachadaUrl,
+                fit: BoxFit.cover,
+                fallbackIcon: Icons.storefront_rounded,
               ),
+            ),
+            Positioned(
+              bottom: 0,
+              child: Container(
+                width: 98,
+                height: 98,
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: .18),
+                      blurRadius: 14,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: _imagemRede(
+                    url: loja.imagemUrl,
+                    fit: BoxFit.cover,
+                    fallbackIcon: Icons.local_bar_rounded,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -105,20 +164,22 @@ class DetalheLojaScreen extends StatelessWidget {
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
-          _fotoFachada(),
+          _cabecalhoImagens(),
 
           // 🔥 CONTEÚDO COM PADDING
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  loja.nome,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
+                Center(
+                  child: Text(
+                    loja.nome,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
 
@@ -248,7 +309,7 @@ class DetalheLojaScreen extends StatelessWidget {
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: cor.withOpacity(0.14),
+                  color: cor.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(icone, color: cor, size: 30),
