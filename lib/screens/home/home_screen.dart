@@ -85,8 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       try {
         eventos = await eventosFuture;
-        final embaralhados = List<Evento>.from(eventos)..shuffle(Random());
-        eventosCarrossel = embaralhados.take(10).toList(growable: false);
+        eventosCarrossel = eventos.take(10).toList(growable: false);
       } catch (e) {
         eventos = [];
         eventosCarrossel = [];
@@ -750,6 +749,9 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                           final evento = destaquesFiltrados[index];
 
                           final loja = _lojaDoEvento(evento);
+                          final logoLoja = evento.logoLojaUrl.isNotEmpty
+                              ? evento.logoLojaUrl
+                              : (loja?.imagemUrl ?? '');
 
                           return GestureDetector(
                             onTap: () => _abrirEvento(evento, loja),
@@ -785,6 +787,58 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                             Colors.transparent,
                                             Colors.black54,
                                             Colors.black87,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 12,
+                                      left: 14,
+                                      child: Container(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          5,
+                                          5,
+                                          10,
+                                          5,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.68,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            24,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            ClipOval(
+                                              child: _imagemSegura(
+                                                url: logoLoja,
+                                                width: 34,
+                                                height: 34,
+                                                fallbackIcon:
+                                                    Icons.storefront_outlined,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            ConstrainedBox(
+                                              constraints: const BoxConstraints(
+                                                maxWidth: 180,
+                                              ),
+                                              child: Text(
+                                                evento.nomeLoja.isEmpty
+                                                    ? 'Estabelecimento'
+                                                    : evento.nomeLoja,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                            ),
                                           ],
                                         ),
                                       ),

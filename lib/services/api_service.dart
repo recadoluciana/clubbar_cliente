@@ -193,6 +193,11 @@ class ApiService {
           final banner = evento.bannerUrl.startsWith('http')
               ? evento.bannerUrl
               : '$baseUrl${evento.bannerUrl}';
+          final logoLoja = evento.logoLojaUrl.isEmpty
+              ? ''
+              : evento.logoLojaUrl.startsWith('http')
+              ? evento.logoLojaUrl
+              : '$baseUrl${evento.logoLojaUrl}';
 
           return Evento(
             id: evento.id,
@@ -203,6 +208,8 @@ class ApiService {
             lojaId: evento.lojaId,
             organizacaoId: evento.organizacaoId,
             nomeLoja: evento.nomeLoja,
+            logoLojaUrl: logoLoja,
+            totalVendasLoja: evento.totalVendasLoja,
           );
         }).toList();
       }

@@ -9,6 +9,8 @@ class Evento {
   final int lojaId;
   final int organizacaoId;
   final String nomeLoja;
+  final String logoLojaUrl;
+  final int totalVendasLoja;
 
   Evento({
     required this.id,
@@ -19,6 +21,8 @@ class Evento {
     required this.lojaId,
     required this.organizacaoId,
     required this.nomeLoja,
+    this.logoLojaUrl = '',
+    this.totalVendasLoja = 0,
   });
 
   factory Evento.fromJson(Map<String, dynamic> json) {
@@ -33,6 +37,8 @@ class Evento {
       lojaId: _toInt(json['loja_id'] ?? 0),
       organizacaoId: _toInt(json['organizacao_id'] ?? 0),
       nomeLoja: (json['nmloja'] ?? '').toString(),
+      logoLojaUrl: (json['urllogoloja'] ?? '').toString().trim(),
+      totalVendasLoja: _toInt(json['total_vendas_loja'] ?? 0),
     );
   }
 
