@@ -58,6 +58,16 @@ class _CashbackScreenState extends State<CashbackScreen> {
     return lista.where((item) => item['status'] == _filtro).toList();
   }
 
+  List<Map<String, dynamic>> get _saldosPorLoja =>
+      (_dados?['saldos_por_loja'] as List? ?? const [])
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .where(
+            (item) =>
+                _numero(item['saldo_disponivel']) > 0 ||
+                _numero(item['saldo_pendente']) > 0,
+          )
+          .toList();
+
   Color _corStatus(String status) => switch (status) {
     'DISPONIVEL' => Colors.green,
     'PENDENTE' => Colors.orange,
@@ -75,7 +85,13 @@ class _CashbackScreenState extends State<CashbackScreen> {
     _ => status,
   };
 
-  Widget _saldo(String titulo, dynamic valor, IconData icone, Color cor) {
+  Widget _saldo({
+    required String titulo,
+    required String valor,
+    required String ajuda,
+    required IconData icone,
+    required Color cor,
+  }) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -92,8 +108,13 @@ class _CashbackScreenState extends State<CashbackScreen> {
             Text(titulo, style: const TextStyle(color: Colors.black54)),
             const SizedBox(height: 4),
             Text(
-              ValueFormatters.moeda(_numero(valor)),
+              valor,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              ajuda,
+              style: const TextStyle(fontSize: 11, color: Colors.black54),
             ),
           ],
         ),
@@ -115,9 +136,17 @@ class _CashbackScreenState extends State<CashbackScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Saldo disponível',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            const Row(
+              children: [
+                Icon(Icons.account_balance_wallet_rounded),
+                SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    'Saldo disponível em todas as lojas',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 10),
             Text(
@@ -126,7 +155,8 @@ class _CashbackScreenState extends State<CashbackScreen> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'O saldo é separado por loja e pode pagar até 30% de uma compra elegível.',
+              'Este é o total da sua carteira. Cada valor só pode ser usado na loja onde foi recebido.',
+              style: TextStyle(height: 1.35),
             ),
           ],
         ),
@@ -135,22 +165,137 @@ class _CashbackScreenState extends State<CashbackScreen> {
       Row(
         children: [
           _saldo(
-            'Pendente',
-            _dados?['saldo_pendente'],
-            Icons.hourglass_bottom_rounded,
-            Colors.orange,
+            titulo: 'A liberar',
+            valor: ValueFormatters.moeda(_numero(_dados?['saldo_pendente'])),
+            ajuda: 'Ainda não disponível',
+            icone: Icons.hourglass_bottom_rounded,
+            cor: Colors.orange,
           ),
           const SizedBox(width: 12),
           _saldo(
-            'Lojas com saldo',
-            (_dados?['saldos_por_loja'] as List? ?? const []).length,
-            Icons.storefront_rounded,
-            Colors.green,
+            titulo: 'Lojas com saldo',
+            valor: '${_saldosPorLoja.length}',
+            ajuda: _saldosPorLoja.length == 1
+                ? 'estabelecimento'
+                : 'estabelecimentos',
+            icone: Icons.storefront_rounded,
+            cor: Colors.green,
           ),
         ],
       ),
     ],
   );
+
+  Widget _saldosDasLojas() {
+    if (_saldosPorLoja.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: const Column(
+          children: [
+            Icon(Icons.savings_outlined, size: 34, color: Colors.black38),
+            SizedBox(height: 8),
+            Text(
+              'Você ainda não possui cashback.',
+              style: TextStyle(fontWeight: FontWeight.w800),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Quando uma compra elegível gerar saldo, ele aparecerá aqui.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Seu saldo em cada loja',
+          style: TextStyle(fontSize: 19, fontWeight: FontWeight.w900),
+        ),
+        const SizedBox(height: 5),
+        const Text(
+          'O cashback não é transferido entre estabelecimentos.',
+          style: TextStyle(color: Colors.black54),
+        ),
+        const SizedBox(height: 12),
+        ..._saldosPorLoja.map((item) {
+          final disponivel = _numero(item['saldo_disponivel']);
+          final pendente = _numero(item['saldo_pendente']);
+          return Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: .16),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(Icons.storefront_rounded),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${item['nome_loja'] ?? 'Loja'}',
+                        style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                      if (pendente > 0) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          '${ValueFormatters.moeda(pendente)} aguardando liberação',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      ValueFormatters.moeda(disponivel),
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                    const Text(
+                      'disponível',
+                      style: TextStyle(fontSize: 11, color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
 
   Widget _movimento(Map<String, dynamic> item) {
     final status = '${item['status'] ?? ''}';
@@ -241,7 +386,7 @@ class _CashbackScreenState extends State<CashbackScreen> {
         children: [
           const ClubbarPageHeader(
             titulo: 'Cashback',
-            subtitulo: 'Saldo e histórico por estabelecimento',
+            subtitulo: 'Visão geral do cashback em todas as lojas',
             icone: Icons.savings_rounded,
           ),
           Expanded(
@@ -271,6 +416,21 @@ class _CashbackScreenState extends State<CashbackScreen> {
                       children: [
                         _resumo(),
                         const SizedBox(height: 20),
+                        _saldosDasLojas(),
+                        const SizedBox(height: 22),
+                        const Text(
+                          'Histórico de movimentações',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        const Text(
+                          'Acompanhe os créditos, usos, liberações e cancelamentos.',
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        const SizedBox(height: 12),
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
