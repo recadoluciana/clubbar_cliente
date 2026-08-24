@@ -7,7 +7,6 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/date_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
-import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/cart_badge_notifier.dart';
@@ -666,7 +665,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            height: 260,
+                            height: 180,
                             width: double.infinity,
                             clipBehavior: Clip.antiAlias,
                             decoration: BoxDecoration(
@@ -705,91 +704,71 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  ev.nomeLoja,
-                                  style: const TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ProdutosLojaScreen(
-                                        loja: widget.loja,
-                                        onVoltar: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 17,
-                                ),
-                                label: const Text('Comprar produto'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.amber,
-                                  foregroundColor: Colors.black,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 9,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
                           Text(
-                            ev.titulo,
+                            ev.nomeLoja,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          linhaInfo(
-                            icone: Icons.calendar_today_outlined,
-                            titulo: 'Data',
-                            valor: formatarDataHora(ev.dataInicio),
+                          const SizedBox(height: 6),
+                          Text(
+                            ev.titulo,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            formatarDataHora(ev.dataInicio),
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              height: 1.2,
+                            ),
                           ),
                           if (ev.dataFim.trim().isNotEmpty)
-                            linhaInfo(
-                              icone: Icons.event_available_outlined,
-                              titulo: 'Término',
-                              valor: formatarDataHora(ev.dataFim),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                'até ${formatarDataHora(ev.dataFim)}',
+                                style: TextStyle(
+                                  color: Colors.blue.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
-                          linhaInfo(
-                            icone: Icons.storefront_outlined,
-                            titulo: 'Local',
-                            valor: ev.local,
+                          const SizedBox(height: 8),
+                          Text(
+                            ev.local.trim().isEmpty
+                                ? 'Local não informado'
+                                : ev.local,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                          linhaInfo(
-                            icone: Icons.home_outlined,
-                            titulo: 'Endereço',
-                            valor: ev.endereco,
-                          ),
-                          linhaInfo(
-                            icone: Icons.map_outlined,
-                            titulo: 'Bairro',
-                            valor: ev.bairro,
-                          ),
-                          linhaInfo(
-                            icone: Icons.location_city_outlined,
-                            titulo: 'Cidade',
-                            valor: ev.sgEstado.trim().isEmpty
-                                ? ev.nomeCidade
-                                : '${ev.nomeCidade} - ${ev.sgEstado}',
+                          const SizedBox(height: 2),
+                          Text(
+                            [
+                              ev.endereco.trim(),
+                              ev.bairro.trim(),
+                              ev.sgEstado.trim().isEmpty
+                                  ? ev.nomeCidade.trim()
+                                  : '${ev.nomeCidade.trim()} - ${ev.sgEstado.trim()}',
+                            ].where((parte) => parte.isNotEmpty).join(' • '),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 12,
+                              height: 1.25,
+                              color: Colors.grey.shade700,
+                            ),
                           ),
 
                           if (ev.atracoes.isNotEmpty) ...[
