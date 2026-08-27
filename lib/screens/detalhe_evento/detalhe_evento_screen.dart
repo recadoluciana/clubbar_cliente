@@ -482,6 +482,39 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
+  Widget _secaoPolitica(String titulo, String texto) {
+    if (texto.trim().isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            titulo,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: Text(
+              texto,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade800,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ev = evento;
@@ -706,6 +739,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
+                          _secaoPolitica(
+                            'Política de cancelamento',
+                            ev.politicaCancelamento,
+                          ),
+                          _secaoPolitica(
+                            'Política de reembolso',
+                            ev.politicaReembolso,
+                          ),
+                          _secaoPolitica(
+                            'Política de cashback',
+                            ev.politicaCashback,
+                          ),
                         ],
                       ),
                     ),
