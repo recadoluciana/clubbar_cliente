@@ -6,11 +6,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../utils/date_formatters.dart';
-import '../pagamento/escolha_pagamento_screen.dart';
-import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../services/cart_badge_notifier.dart';
-import '../../utils/cpf_utils.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../utils/value_formatters.dart';
@@ -152,48 +148,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return clienteId;
   }
 
-  Future<void> adicionarAoCarrinho(EventoLote lote) async {
-    try {
-      final clienteId = await _obterClienteIdLogado();
-      if (clienteId == null) return;
-      final participante = await pedirParticipante();
-
-      if (participante == null) return;
-
-      await apiService.adicionarAoCarrinho(
-        clienteId: clienteId,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-        produtoId: null,
-        loteId: lote.loteId,
-        idtipoproduto: 'I',
-        quantidade: 1,
-        observacao: 'Ingresso ${lote.nome}',
-        nmparticipante: participante['nome'],
-        cpfparticipante: participante['cpf'],
-      );
-
-      try {
-        final totalCarrinho = await apiService.buscarQuantidadeCarrinho(
-          clienteId: clienteId,
-        );
-        CartBadgeNotifier.atualizar(totalCarrinho);
-      } catch (e) {
-        debugPrint('Ingresso incluído, mas o badge não foi atualizado: $e');
-      }
-
-      if (!mounted) return;
-
-      AppSnackBar.sucesso(context, 'Ingresso adicionado ao carrinho.');
-    } catch (e, stackTrace) {
-      debugPrint('Erro ao adicionar ingresso ao carrinho: $e');
-      debugPrintStack(stackTrace: stackTrace);
-      if (!mounted) return;
-
-      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
-    }
-  }
-
   Future<void> iniciarReserva(EventoLote lote) async {
     if (processandoCompra) return;
     var quantidade = 1;
@@ -273,126 +227,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
       await carregarStatusLotes();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+      }
     } finally {
       if (mounted) setState(() => processandoCompra = false);
-    }
-  }
-
-  Future<Map<String, String>?> pedirParticipante() async {
-    final nomeController = TextEditingController();
-    final cpfController = TextEditingController();
-
-    return showDialog<Map<String, String>>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text('Dados do participante'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nomeController,
-                decoration: const InputDecoration(labelText: 'Nome'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: cpfController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'CPF'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final nome = nomeController.text.trim();
-
-                if (nome.isEmpty || cpfController.text.trim().isEmpty) {
-                  AppSnackBar.erro(
-                    context,
-                    'Informe nome e CPF do participante',
-                  );
-                  return;
-                }
-
-                if (!CpfUtils.validar(cpfController.text)) {
-                  AppSnackBar.erro(context, 'CPF inválido');
-                  return;
-                }
-
-                final cpfLimpo = CpfUtils.somenteNumeros(cpfController.text);
-
-                Navigator.pop(context, {'nome': nome, 'cpf': cpfLimpo});
-              },
-              child: const Text('Confirmar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> comprarAgora(EventoLote lote) async {
-    if (processandoCompra) return;
-
-    setState(() {
-      processandoCompra = true;
-    });
-
-    try {
-      final clienteId = await authStorage.obterClienteId();
-      if (!mounted) return;
-
-      if (clienteId == null || clienteId == 0) {
-        await direcionarParaLogin(
-          context,
-          mensagem: 'Faça login para comprar seu ingresso.',
-        );
-        return;
-      }
-
-      await apiService.adicionarAoCarrinho(
-        clienteId: clienteId,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-        produtoId: null,
-        loteId: lote.loteId,
-        idtipoproduto: 'I',
-        quantidade: 1,
-        observacao: 'Ingresso ${lote.nome}',
-      );
-
-      if (!mounted) return;
-
-      MainNavigationController.abrirTela(
-        EscolhaPagamentoScreen(
-          loja: widget.loja,
-          totalProdutos: 0,
-          totalIngressos: lote.preco,
-          onVoltar: () {
-            MainNavigationController.abrirTela(
-              DetalheEventoScreen(eventoId: widget.eventoId, loja: widget.loja),
-            );
-          },
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
-    } finally {
-      if (mounted) {
-        setState(() {
-          processandoCompra = false;
-        });
-      }
     }
   }
 
@@ -409,7 +248,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           CircularProgressIndicator(
             value: percentualVendido,
             strokeWidth: 7,
-            backgroundColor: Colors.green.withOpacity(0.25), // disponível
+            backgroundColor: Colors.green.withValues(alpha: 0.25),
             valueColor: const AlwaysStoppedAnimation<Color>(
               Colors.red, // vendido
             ),
@@ -545,7 +384,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: corBadge.withOpacity(0.12),
+                  color: corBadge.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(

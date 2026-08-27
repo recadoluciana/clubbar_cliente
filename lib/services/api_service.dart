@@ -429,8 +429,9 @@ class ApiService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'cliente_id': clienteId, 'parcelas': 1}),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300)
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
+    }
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
@@ -444,8 +445,9 @@ class ApiService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'cliente_id': clienteId, 'parcelas': parcelas}),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300)
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
+    }
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
@@ -458,8 +460,9 @@ class ApiService {
         '$baseUrl/reservas-ingressos/$reservaId/status?cliente_id=$clienteId',
       ),
     );
-    if (response.statusCode < 200 || response.statusCode >= 300)
+    if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
+    }
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
