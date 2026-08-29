@@ -445,7 +445,7 @@ CREATE TABLE `leadparceiro` (
   `cidade_id` bigint NOT NULL,
   `mensagem` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `status` enum('NOVO','CONTATADO','NEGOCIANDO','CONVERTIDO','PERDIDO') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'NOVO',
-  `decisao` enum('PENDENTE','ACEITOU','DUVIDAS','RECUSOU') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDENTE',
+  `decisao` enum('PENDENTE','ACEITOU','RECUSOU') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDENTE',
   `dtcriacao` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `dtultatu` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`leadparceiro_id`),
