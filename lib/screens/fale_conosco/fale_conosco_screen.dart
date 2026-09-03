@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../services/main_navigation_controller.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class FaleConoscoScreen extends StatelessWidget {
   const FaleConoscoScreen({super.key});
@@ -75,17 +77,13 @@ class FaleConoscoScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => Navigator.maybePop(context),
+          onPressed: MainNavigationController.fecharTelaInterna,
           icon: const Icon(Icons.arrow_back_rounded),
         ),
         titleSpacing: 0,
         title: Row(
           children: [
-            Image.asset(
-              'assets/images/clubbar_topbar.png',
-              height: 29,
-              fit: BoxFit.contain,
-            ),
+            const ClubbarBrandLogo(owlHeight: 29),
             const SizedBox(width: 10),
             const Text(
               'Fale conosco',

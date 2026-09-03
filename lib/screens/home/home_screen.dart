@@ -930,16 +930,16 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     ),
                   ],
 
-                  const SizedBox(height: 20),
-
-                  _secaoTitulo(
-                    'Produtos mais vendidos',
-                    Icons.local_fire_department_outlined,
-                  ),
-                  const SizedBox(height: 10),
-                  _listaProdutosMaisVendidos(),
-
-                  const SizedBox(height: 20),
+                  if (produtosMaisVendidos.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    _secaoTitulo(
+                      'Produtos mais vendidos',
+                      Icons.local_fire_department_outlined,
+                    ),
+                    const SizedBox(height: 10),
+                    _listaProdutosMaisVendidos(),
+                    const SizedBox(height: 20),
+                  ],
 
                   _secaoTitulo(
                     'Bares e Casas Noturnas',

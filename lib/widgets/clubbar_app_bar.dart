@@ -1,6 +1,40 @@
 import 'package:flutter/material.dart';
 import '../services/main_navigation_controller.dart';
 
+class ClubbarBrandLogo extends StatelessWidget {
+  final double owlHeight;
+
+  const ClubbarBrandLogo({super.key, this.owlHeight = 40});
+
+  @override
+  Widget build(BuildContext context) {
+    final wordmarkHeight = owlHeight * 0.45;
+    return SizedBox(
+      height: owlHeight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(
+            'assets/images/corujao.png',
+            height: owlHeight,
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(width: 6),
+          Padding(
+            padding: EdgeInsets.only(top: owlHeight * 0.10),
+            child: Image.asset(
+              'assets/images/clubbar_wordmark_white.png',
+              height: wordmarkHeight,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titulo;
   final bool mostrarCarrinho;
@@ -20,7 +54,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onCarrinhoTap,
     this.mostrarVersao = false,
     this.mostrarVoltar = false,
-    this.logoPath = 'assets/images/clubbar_topbar.png',
+    this.logoPath = 'assets/images/clubbar_topbar_white.png',
     this.onVoltar,
     this.actions = const [],
   });
@@ -55,6 +89,13 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  Widget _logoClubbar() {
+    if (logoPath == 'assets/images/clubbar_topbar_white.png') {
+      return const ClubbarBrandLogo();
+    }
+    return Image.asset(logoPath, height: 40, fit: BoxFit.contain);
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool temTitulo = titulo != null && titulo!.trim().isNotEmpty;
@@ -62,9 +103,9 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       elevation: 0,
-      backgroundColor: const Color(0xFF000000),
+      backgroundColor: Colors.black,
       foregroundColor: Colors.white,
-      centerTitle: temTitulo,
+      centerTitle: true,
       toolbarHeight: 58,
       titleSpacing: temTitulo ? NavigationToolbar.kMiddleSpacing : 10,
 
@@ -74,6 +115,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
               onPressed: () {
                 if (onVoltar != null) {
                   onVoltar!();
+                  return;
+                }
+
+                if (MainNavigationController.telaInterna.value != null) {
+                  MainNavigationController.fecharTelaInterna();
                   return;
                 }
 
@@ -97,10 +143,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                 fontWeight: FontWeight.w800,
               ),
             )
-          : Align(
-              alignment: Alignment.centerLeft,
-              child: Image.asset(logoPath, height: 40, fit: BoxFit.contain),
-            ),
+          : Center(child: _logoClubbar()),
 
       actions: [
         ...actions,

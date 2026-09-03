@@ -10,6 +10,7 @@ import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../cashback/cashback_screen.dart';
 import '../fale_conosco/fale_conosco_screen.dart';
+import '../../services/main_navigation_controller.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -81,10 +82,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   void abrirPedidos() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const MeusPedidosScreen()),
-    );
+    MainNavigationController.abrirTela(const MeusPedidosScreen());
   }
 
   Widget _itemAcao({
@@ -162,11 +160,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   icon: Icons.badge_rounded,
                   titulo: 'Dados pessoais',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const DadosPessoaisScreen(),
-                      ),
+                    MainNavigationController.abrirTela(
+                      const DadosPessoaisScreen(),
                     );
                   },
                   iconColor: Colors.blue,
@@ -178,12 +173,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   icon: Icons.password_rounded,
                   titulo: 'Alterar senha',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => AlterarSenhaScreen(
-                          onVoltar: () => Navigator.pop(context),
-                        ),
+                    MainNavigationController.abrirTela(
+                      AlterarSenhaScreen(
+                        onVoltar: MainNavigationController.fecharTelaInterna,
                       ),
                     );
                   },
@@ -204,10 +196,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   icon: Icons.savings_rounded,
                   titulo: 'Cashback',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const CashbackScreen()),
-                    );
+                    MainNavigationController.abrirTela(const CashbackScreen());
                   },
                   iconColor: Colors.green,
                 ),
@@ -218,11 +207,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   icon: Icons.support_agent_rounded,
                   titulo: 'Fale Conosco',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const FaleConoscoScreen(),
-                      ),
+                    MainNavigationController.abrirTela(
+                      const FaleConoscoScreen(),
                     );
                   },
                   iconColor: Colors.blue,

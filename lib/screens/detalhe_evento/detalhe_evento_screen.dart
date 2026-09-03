@@ -712,7 +712,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           else
                             ...lotes.map(cardLote),
                           const SizedBox(height: 24),
-                          if (ev.descricao.trim().isNotEmpty) ...[
+                          if (ev.descricao.trim().isNotEmpty &&
+                              ev.descricao.trim().toLowerCase() != 'null') ...[
                             const SizedBox(height: 8),
                             const Text(
                               'Descrição',
