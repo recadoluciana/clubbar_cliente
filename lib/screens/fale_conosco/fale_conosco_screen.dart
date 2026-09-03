@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../services/main_navigation_controller.dart';
-import '../../widgets/clubbar_app_bar.dart';
 
 class FaleConoscoScreen extends StatelessWidget {
   const FaleConoscoScreen({super.key});
@@ -83,7 +82,11 @@ class FaleConoscoScreen extends StatelessWidget {
         titleSpacing: 0,
         title: Row(
           children: [
-            const ClubbarBrandLogo(owlHeight: 29),
+            Image.asset(
+              'assets/images/clubbar_topbar.png',
+              height: 29,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(width: 10),
             const Text(
               'Fale conosco',

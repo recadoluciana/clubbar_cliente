@@ -1,40 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/main_navigation_controller.dart';
 
-class ClubbarBrandLogo extends StatelessWidget {
-  final double owlHeight;
-
-  const ClubbarBrandLogo({super.key, this.owlHeight = 40});
-
-  @override
-  Widget build(BuildContext context) {
-    final wordmarkHeight = owlHeight * 0.45;
-    return SizedBox(
-      height: owlHeight,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.asset(
-            'assets/images/corujao.png',
-            height: owlHeight,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(width: 6),
-          Padding(
-            padding: EdgeInsets.only(top: owlHeight * 0.10),
-            child: Image.asset(
-              'assets/images/clubbar_wordmark_white.png',
-              height: wordmarkHeight,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titulo;
   final bool mostrarCarrinho;
@@ -54,7 +20,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onCarrinhoTap,
     this.mostrarVersao = false,
     this.mostrarVoltar = false,
-    this.logoPath = 'assets/images/clubbar_topbar_white.png',
+    this.logoPath = 'assets/images/clubbar_topbar.png',
     this.onVoltar,
     this.actions = const [],
   });
@@ -90,10 +56,10 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _logoClubbar() {
-    if (logoPath == 'assets/images/clubbar_topbar_white.png') {
-      return const ClubbarBrandLogo();
-    }
-    return Image.asset(logoPath, height: 40, fit: BoxFit.contain);
+    return ColorFiltered(
+      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      child: Image.asset(logoPath, height: 40, fit: BoxFit.contain),
+    );
   }
 
   @override
