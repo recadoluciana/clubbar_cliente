@@ -56,10 +56,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   Widget _logoClubbar() {
-    return ColorFiltered(
-      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-      child: Image.asset(logoPath, height: 40, fit: BoxFit.contain),
-    );
+    return Image.asset(logoPath, height: 40, fit: BoxFit.contain);
   }
 
   @override
