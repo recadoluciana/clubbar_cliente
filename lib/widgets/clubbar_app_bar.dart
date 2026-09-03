@@ -106,7 +106,19 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                 fontWeight: FontWeight.w800,
               ),
             )
-          : Center(child: _logoClubbar()),
+          : null,
+
+      flexibleSpace: temTitulo
+          ? null
+          : SafeArea(
+              bottom: false,
+              child: IgnorePointer(
+                child: SizedBox(
+                  height: 58,
+                  child: Center(child: _logoClubbar()),
+                ),
+              ),
+            ),
 
       actions: [
         ...actions,
