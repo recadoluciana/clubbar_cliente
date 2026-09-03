@@ -6,6 +6,7 @@ import '../../services/auth_storage.dart';
 import '../carteira/carteira_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
+import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
@@ -31,12 +32,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   int currentIndex = 0;
   int totalItensCarteira = 0;
+  bool logado = false;
+  String nomeCliente = '';
 
   @override
   void initState() {
     super.initState();
     carregarBadgeCarrinho();
     carregarBadgeCarteira();
+    _carregarSessao();
 
     CarteiraBadgeNotifier.refresh.addListener(carregarBadgeCarteira);
     _verificarLinkProdutoCompartilhado();
@@ -155,6 +159,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               texto: 'Carteira',
             ),
 
+            if (logado)
+              _itemBarraNavegacao(
+                index: 3,
+                icone: Icon(
+                  currentIndex == 3
+                      ? Icons.account_circle_rounded
+                      : Icons.account_circle_outlined,
+                ),
+                texto: _primeiroNomeCliente,
+              ),
+
             if (currentIndex == 0)
               const Padding(
                 padding: EdgeInsets.only(right: 12),
@@ -188,14 +203,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget _buildPage() {
     switch (currentIndex) {
       case 0:
-        return const HomeScreen();
+        return HomeScreen(onLoginChanged: _carregarSessao);
       case 1:
         return const CarrinhoLojasScreen();
       case 2:
         return const CarteiraScreen();
+      case 3:
+        return const PerfilScreen();
       default:
-        return const HomeScreen();
+        return HomeScreen(onLoginChanged: _carregarSessao);
     }
+  }
+
+  String get _primeiroNomeCliente {
+    final partes = nomeCliente.trim().split(RegExp(r'\s+'));
+    if (partes.isEmpty || partes.first.isEmpty) return 'Perfil';
+    final nome = partes.first.toLowerCase();
+    return '${nome[0].toUpperCase()}${nome.substring(1)}';
+  }
+
+  Future<void> _carregarSessao() async {
+    final token = await authStorage.obterToken();
+    final nome = await authStorage.obterNmcliente();
+    if (!mounted) return;
+    setState(() {
+      logado = token != null && token.isNotEmpty;
+      nomeCliente = nome ?? '';
+    });
   }
 
   Future<bool> _estaLogado() async {
@@ -432,7 +466,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Future<void> _selecionarAba(int index) async {
-    final exigeLogin = index == 1 || index == 2;
+    final exigeLogin = index == 1 || index == 2 || index == 3;
 
     if (exigeLogin) {
       final logado = await _estaLogado();
