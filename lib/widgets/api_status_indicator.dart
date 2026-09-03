@@ -100,31 +100,41 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+    return Material(
+      color: Colors.transparent,
       child: Tooltip(
-        message: 'Ver informações do ambiente',
+        message: 'Sobre o aplicativo',
         child: InkWell(
           onTap: _mostrarDetalhes,
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-            decoration: BoxDecoration(
-              color: _ambienteDev ? Colors.red.shade700 : Colors.green.shade700,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
+          child: SizedBox(
+            width: 58,
+            height: 56,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.circle, color: Colors.white, size: 7),
-                SizedBox(width: 5),
-                Text(
-                  _ambienteDev ? 'DEV' : 'PROD',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: .5,
+                Container(
+                  width: 25,
+                  height: 25,
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Colors.black,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.asset(
+                    'assets/images/corujao.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                const Text(
+                  'About',
+                  maxLines: 1,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 11,
+                    height: 1,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],

@@ -164,17 +164,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 index: 3,
                 icone: Icon(
                   currentIndex == 3
-                      ? Icons.account_circle_rounded
-                      : Icons.account_circle_outlined,
+                      ? Icons.person_rounded
+                      : Icons.person_outline_rounded,
                 ),
                 texto: _primeiroNomeCliente,
               ),
 
-            if (currentIndex == 0)
-              const Padding(
-                padding: EdgeInsets.only(right: 12),
-                child: ApiStatusIndicator(versao: '1.0.0'),
-              ),
+            if (currentIndex == 0) const ApiStatusIndicator(versao: '1.0.0'),
           ],
         ),
       ),
