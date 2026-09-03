@@ -163,9 +163,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               _itemBarraNavegacao(
                 index: 3,
                 icone: Icon(
-                  currentIndex == 3
-                      ? Icons.person_rounded
-                      : Icons.person_outline_rounded,
+                  currentIndex == 3 ? Icons.person : Icons.person_outline,
                 ),
                 texto: _primeiroNomeCliente,
               ),
