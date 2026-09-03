@@ -20,7 +20,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
   bool _online = false;
   bool _bancoOnline = false;
 
-  bool get _exibirDev =>
+  bool get _ambienteDev =>
       AppConfig.isDev ||
       AppConfig.apiBaseUrl.contains('desenvolvimento') ||
       AppConfig.apiBaseUrl.contains('localhost');
@@ -28,10 +28,8 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
   @override
   void initState() {
     super.initState();
-    if (_exibirDev) {
-      _consultar();
-      _timer = Timer.periodic(const Duration(seconds: 30), (_) => _consultar());
-    }
+    _consultar();
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _consultar());
   }
 
   @override
@@ -74,7 +72,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
           children: [
             Icon(Icons.developer_mode_rounded, color: Colors.red),
             SizedBox(width: 10),
-            Text('Ambiente DEV'),
+            Text('Ambiente'),
           ],
         ),
         content: Column(
@@ -85,7 +83,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
             const SizedBox(height: 8),
             Text('Banco: ${_bancoOnline ? 'online' : 'offline'}'),
             const SizedBox(height: 8),
-            const Text('Ambiente: Desenvolvimento'),
+            Text('Ambiente: ${_ambienteDev ? 'Desenvolvimento' : 'Produção'}'),
             const SizedBox(height: 8),
             Text('Versão: ${widget.versao}'),
           ],
@@ -102,8 +100,6 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_exibirDev) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Tooltip(
@@ -114,17 +110,17 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
             decoration: BoxDecoration(
-              color: Colors.red.shade700,
+              color: _ambienteDev ? Colors.red.shade700 : Colors.green.shade700,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Row(
+            child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.circle, color: Colors.white, size: 7),
                 SizedBox(width: 5),
                 Text(
-                  'DEV',
-                  style: TextStyle(
+                  _ambienteDev ? 'DEV' : 'PROD',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,

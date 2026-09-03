@@ -16,6 +16,7 @@ import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../../utils/url_cleaner.dart';
 import '../../utils/app_snackbar.dart';
 import '../../services/deep_link_service.dart';
+import '../../widgets/api_status_indicator.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -124,7 +125,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -153,6 +154,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               icone: _iconeCarteiraComBadge(selecionado: currentIndex == 2),
               texto: 'Carteira',
             ),
+
+            if (currentIndex == 0)
+              const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: ApiStatusIndicator(versao: '1.0.0'),
+              ),
           ],
         ),
       ),

@@ -9,7 +9,6 @@ import '../../models/produto.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/api_status_indicator.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../login/login_screen.dart';
@@ -644,7 +643,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
       appBar: ClubbarAppBar(
         mostrarVoltar: false,
         actions: [
-          const ApiStatusIndicator(versao: '1.0.0'),
           if (!logado)
             Padding(
               padding: const EdgeInsets.only(right: 8),
