@@ -2,16 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/loja.dart';
+import '../../models/loja_horario.dart';
+import '../../services/api_service.dart';
 import '../agenda/agenda_eventos_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 
-class DetalheLojaScreen extends StatelessWidget {
+class DetalheLojaScreen extends StatefulWidget {
   final Loja loja;
 
   const DetalheLojaScreen({super.key, required this.loja});
+
+  @override
+  State<DetalheLojaScreen> createState() => _DetalheLojaScreenState();
+}
+
+class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
+  final ApiService _apiService = ApiService();
+  late final Future<List<LojaHorario>> _horariosFuture;
+
+  Loja get loja => widget.loja;
+
+  @override
+  void initState() {
+    super.initState();
+    _horariosFuture = _apiService.buscarHorariosLoja(loja.id);
+  }
 
   Future<void> abrirInstagram(BuildContext context) async {
     final handle = loja.instagram.replaceAll('@', '').trim();
@@ -132,6 +150,12 @@ class DetalheLojaScreen extends StatelessWidget {
       endereco += loja.endereco.trim();
     }
 
+    if (loja.numero.trim().isNotEmpty) {
+      endereco += endereco.isEmpty
+          ? loja.numero.trim()
+          : ', ${loja.numero.trim()}';
+    }
+
     if (loja.bairro.trim().isNotEmpty) {
       if (endereco.isNotEmpty) endereco += ' - ';
       endereco += loja.bairro.trim();
@@ -151,6 +175,124 @@ class DetalheLojaScreen extends StatelessWidget {
     }
 
     return endereco;
+  }
+
+  String _telefoneFormatado() {
+    var numeros = loja.nrtelloja.replaceAll(RegExp(r'\D'), '');
+    if (numeros.length > 11 && numeros.startsWith('55')) {
+      numeros = numeros.substring(2);
+    }
+    if (numeros.length == 11) {
+      return '(${numeros.substring(0, 2)}) '
+          '${numeros.substring(2, 7)}-${numeros.substring(7)}';
+    }
+    if (numeros.length == 10) {
+      return '(${numeros.substring(0, 2)}) '
+          '${numeros.substring(2, 6)}-${numeros.substring(6)}';
+    }
+    return loja.nrtelloja.trim();
+  }
+
+  String _resumoHorario(List<LojaHorario> horarios) {
+    if (loja.aberto24x7) {
+      return 'Aberto 24 horas, todos os dias da semana';
+    }
+    final dias = horarios.where((item) => !item.fechado).length;
+    if (dias == 0) return 'Horário de atendimento não definido';
+    return 'Horário definido para $dias ${dias == 1 ? 'dia' : 'dias'} da semana';
+  }
+
+  Future<void> _mostrarHorarios(
+    BuildContext context,
+    List<LojaHorario> horarios,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Horários de ${loja.nome}',
+                style: const TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 14),
+              if (loja.aberto24x7)
+                const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.schedule_rounded, color: Colors.blue),
+                  title: Text('Aberto 24 horas'),
+                  subtitle: Text('Todos os dias da semana'),
+                )
+              else
+                ...horarios.map(
+                  (item) => ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(item.nomeDia),
+                    trailing: Text(
+                      item.fechado
+                          ? 'Fechado'
+                          : '${item.horaAbertura ?? '--:--'} às '
+                                '${item.horaFechamento ?? '--:--'}'
+                                '${item.fechaDiaSeguinte ? ' (+1 dia)' : ''}',
+                      style: TextStyle(
+                        color: item.fechado
+                            ? Colors.grey
+                            : Colors.blue.shade700,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _horarioAtendimento(BuildContext context) {
+    return FutureBuilder<List<LojaHorario>>(
+      future: _horariosFuture,
+      builder: (context, snapshot) {
+        final horarios = snapshot.data ?? const <LojaHorario>[];
+        final carregando = snapshot.connectionState == ConnectionState.waiting;
+        final possuiInformacao =
+            loja.aberto24x7 || horarios.any((item) => !item.fechado);
+
+        return Row(
+          children: [
+            const Icon(Icons.access_time),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                carregando
+                    ? 'Carregando horários...'
+                    : _resumoHorario(horarios),
+              ),
+            ),
+            if (!carregando && possuiInformacao)
+              IconButton(
+                tooltip: 'Ver horários de atendimento',
+                onPressed: () => _mostrarHorarios(context, horarios),
+                icon: const Icon(
+                  Icons.info_outline_rounded,
+                  color: Colors.blue,
+                ),
+              ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -199,26 +341,14 @@ class DetalheLojaScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.phone_outlined),
                       const SizedBox(width: 8),
-                      Expanded(child: Text(loja.nrtelloja)),
+                      Expanded(child: Text(_telefoneFormatado())),
                     ],
                   ),
                 ],
 
                 const SizedBox(height: 8),
 
-                Row(
-                  children: [
-                    const Icon(Icons.access_time),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        loja.horario.isEmpty
-                            ? 'Horário não informado'
-                            : loja.horario,
-                      ),
-                    ),
-                  ],
-                ),
+                _horarioAtendimento(context),
 
                 const SizedBox(height: 8),
 

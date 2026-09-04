@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/perfil_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
@@ -22,7 +22,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   bool carregando = true;
   String? erro;
   int? clienteId;
-  String nomeCliente = '';
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -64,11 +63,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
 
       clienteId = id;
 
-      final nome = await authStorage.obterNmcliente();
       final data = await apiService.buscarCompras(clienteId: id);
 
       setState(() {
-        nomeCliente = nome ?? '';
         pedidos = data;
         carregando = false;
       });
@@ -566,11 +563,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                ClubbarPageHeader(
-                  titulo: 'Minhas compras',
-                  subtitulo: nomeCliente,
-                  icone: Icons.receipt_long_rounded,
-                ),
+                const PerfilPageHeader(subtitulo: 'Minhas compras'),
 
                 Expanded(
                   child: RefreshIndicator(

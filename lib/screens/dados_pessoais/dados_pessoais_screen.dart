@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
-import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/perfil_page_header.dart';
 
 class DadosPessoaisScreen extends StatefulWidget {
   const DadosPessoaisScreen({super.key});
@@ -202,11 +202,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  const ClubbarPageHeader(
-                    titulo: 'Dados pessoais',
-                    subtitulo: 'Atualize suas informações cadastrais',
-                    icone: Icons.badge_rounded,
-                  ),
+                  const PerfilPageHeader(subtitulo: 'Dados pessoais'),
 
                   Expanded(
                     child: ListView(

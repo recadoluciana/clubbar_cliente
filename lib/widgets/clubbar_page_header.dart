@@ -9,6 +9,8 @@ class ClubbarPageHeader extends StatelessWidget {
   final IconData? icone;
   final String? imagemAvatarUrl;
   final double tamanhoAvatar;
+  final bool mostrarAvatar;
+  final Color? corTitulo;
 
   // Conteúdo opcional do lado direito
   final Widget? trailing;
@@ -25,6 +27,8 @@ class ClubbarPageHeader extends StatelessWidget {
     this.icone,
     this.imagemAvatarUrl,
     this.tamanhoAvatar = 48,
+    this.mostrarAvatar = true,
+    this.corTitulo,
     this.trailing,
     this.imagemUrl,
     this.mostrarAba = false,
@@ -140,9 +144,7 @@ class ClubbarPageHeader extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _avatarEsquerdo(),
-
-          const SizedBox(width: 12),
+          if (mostrarAvatar) ...[_avatarEsquerdo(), const SizedBox(width: 12)],
 
           Expanded(
             child: Column(
@@ -152,9 +154,10 @@ class ClubbarPageHeader extends StatelessWidget {
                   titulo,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
+                    color: corTitulo,
                   ),
                 ),
                 const SizedBox(height: 3),

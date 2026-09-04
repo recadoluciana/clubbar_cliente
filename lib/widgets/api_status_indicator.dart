@@ -8,8 +8,9 @@ import '../config/app_config.dart';
 
 class ApiStatusIndicator extends StatefulWidget {
   final String versao;
+  final VoidCallback? onTap;
 
-  const ApiStatusIndicator({super.key, required this.versao});
+  const ApiStatusIndicator({super.key, required this.versao, this.onTap});
 
   @override
   State<ApiStatusIndicator> createState() => _ApiStatusIndicatorState();
@@ -105,7 +106,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
       child: Tooltip(
         message: 'Sobre o aplicativo',
         child: InkWell(
-          onTap: _mostrarDetalhes,
+          onTap: widget.onTap ?? _mostrarDetalhes,
           child: SizedBox(
             width: double.infinity,
             height: 56,

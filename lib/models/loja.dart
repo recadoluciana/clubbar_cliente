@@ -17,6 +17,7 @@ class Loja {
   final String nrtelloja;
   final String sgEstado;
   final String numero;
+  final bool aberto24x7;
   final DateTime? dataCriacao;
 
   Loja({
@@ -36,6 +37,7 @@ class Loja {
     required this.nrtelloja,
     required this.sgEstado,
     this.numero = '',
+    this.aberto24x7 = false,
     this.dataCriacao,
   });
 
@@ -69,6 +71,7 @@ class Loja {
       nrtelloja: (json['nrtelloja'] ?? '').toString(),
       sgEstado: (json['sgestado'] ?? '').toString(),
       numero: (json['nrendeloja'] ?? '').toString(),
+      aberto24x7: _toBool(json['aberto24x7']),
       dataCriacao: DateTime.tryParse((json['dtcriacao'] ?? '').toString()),
     );
   }
@@ -76,5 +79,16 @@ class Loja {
   static int _toInt(dynamic valor) {
     if (valor is int) return valor;
     return int.tryParse(valor.toString()) ?? 0;
+  }
+
+  static bool _toBool(dynamic valor) {
+    if (valor is bool) return valor;
+    if (valor is num) return valor != 0;
+    return const {
+      'S',
+      'SIM',
+      'TRUE',
+      '1',
+    }.contains(valor?.toString().trim().toUpperCase());
   }
 }

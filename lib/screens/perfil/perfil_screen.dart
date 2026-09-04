@@ -7,9 +7,8 @@ import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../pedidos/meus_pedidos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
-import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/perfil_page_header.dart';
 import '../../cashback/cashback_screen.dart';
-import '../fale_conosco/fale_conosco_screen.dart';
 import '../../services/main_navigation_controller.dart';
 
 class PerfilScreen extends StatefulWidget {
@@ -21,29 +20,6 @@ class PerfilScreen extends StatefulWidget {
 
 class _PerfilScreenState extends State<PerfilScreen> {
   final authStorage = AuthStorage();
-
-  bool carregando = true;
-  String nomeCliente = '';
-  int? clienteId;
-
-  @override
-  void initState() {
-    super.initState();
-    carregarDados();
-  }
-
-  Future<void> carregarDados() async {
-    final nome = await authStorage.obterNmcliente();
-    final id = await authStorage.obterClienteId();
-
-    if (!mounted) return;
-
-    setState(() {
-      nomeCliente = nome ?? '';
-      clienteId = id;
-      carregando = false;
-    });
-  }
 
   Future<void> fazerLogout() async {
     await authStorage.limparToken();
@@ -136,21 +112,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (carregando) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       extendBodyBehindAppBar: false,
       appBar: const ClubbarAppBar(),
       body: Column(
         children: [
-          ClubbarPageHeader(
-            titulo: 'Perfil',
-            subtitulo: nomeCliente,
-            icone: Icons.person_rounded,
-          ),
+          const PerfilPageHeader(subtitulo: 'Perfil'),
 
           Expanded(
             child: ListView(
@@ -199,19 +167,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     MainNavigationController.abrirTela(const CashbackScreen());
                   },
                   iconColor: Colors.green,
-                ),
-
-                const SizedBox(height: 10),
-
-                _itemAcao(
-                  icon: Icons.support_agent_rounded,
-                  titulo: 'Fale Conosco',
-                  onTap: () {
-                    MainNavigationController.abrirTela(
-                      const FaleConoscoScreen(),
-                    );
-                  },
-                  iconColor: Colors.blue,
                 ),
 
                 const SizedBox(height: 10),

@@ -7,6 +7,7 @@ import 'auth_storage.dart';
 import '../models/auth_response.dart';
 import '../models/evento.dart';
 import '../models/loja.dart';
+import '../models/loja_horario.dart';
 import '../models/categoria.dart';
 import '../models/produto.dart';
 import '../models/carteira_item.dart';
@@ -1039,6 +1040,30 @@ class ApiService {
     }
 
     return Loja.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  Future<List<LojaHorario>> buscarHorariosLoja(int lojaId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/lojas/$lojaId/horarios'),
+      headers: const {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+
+    final data = response.body.isNotEmpty ? jsonDecode(response.body) : null;
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(
+        data is Map && data['detail'] != null
+            ? data['detail']
+            : 'Erro ao buscar horários da loja',
+      );
+    }
+
+    if (data is! List) return [];
+    return data
+        .map((item) => LojaHorario.fromJson(Map<String, dynamic>.from(item)))
+        .toList(growable: false);
   }
 
   Future<void> alterarParticipanteItVenda({

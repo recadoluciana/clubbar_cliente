@@ -18,6 +18,7 @@ import '../../utils/url_cleaner.dart';
 import '../../utils/app_snackbar.dart';
 import '../../services/deep_link_service.dart';
 import '../../widgets/api_status_indicator.dart';
+import '../atendimento_cora/atendimento_cora_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -169,7 +170,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 texto: logado ? _primeiroNomeCliente : 'Perfil',
               ),
 
-              const Expanded(child: ApiStatusIndicator(versao: '1.0.0')),
+              Expanded(
+                child: ApiStatusIndicator(
+                  versao: '1.0.0',
+                  onTap: () => MainNavigationController.abrirTela(
+                    const AtendimentoCoraScreen(),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
