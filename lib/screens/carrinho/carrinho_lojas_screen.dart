@@ -117,7 +117,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
       endereco: (lojaData['endereco'] ?? '').toString(),
       cidade: (lojaData['cidade'] ?? '').toString(),
       bairro: (lojaData['bairro'] ?? '').toString(),
-      horario: (lojaData['horario'] ?? '').toString(),
       imagemUrl: _buildImageUrl((lojaData['urllogoloja'] ?? '').toString()),
       instagram: (lojaData['dsinstaloja'] ?? '').toString(),
       dsestiloloja: (lojaData['dsestiloloja'] ?? '').toString(),
