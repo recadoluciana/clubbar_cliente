@@ -159,14 +159,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               texto: 'Carteira',
             ),
 
-            if (logado)
-              _itemBarraNavegacao(
-                index: 3,
-                icone: Icon(
-                  currentIndex == 3 ? Icons.person : Icons.person_outline,
-                ),
-                texto: _primeiroNomeCliente,
+            _itemBarraNavegacao(
+              index: 3,
+              icone: Icon(
+                currentIndex == 3 ? Icons.person : Icons.person_outline,
               ),
+              texto: logado ? _primeiroNomeCliente : 'Perfil',
+            ),
 
             if (currentIndex == 0)
               const Expanded(child: ApiStatusIndicator(versao: '1.0.0')),
@@ -475,6 +474,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           mensagem = 'Faça login para acessar seu carrinho';
         } else if (index == 2) {
           mensagem = 'Faça login para acessar sua carteira';
+        } else if (index == 3) {
+          mensagem = 'Faça login para acessar o seu perfil.';
         }
 
         AppSnackBar.info(context, mensagem);
