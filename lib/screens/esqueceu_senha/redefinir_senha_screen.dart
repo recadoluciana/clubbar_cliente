@@ -49,7 +49,7 @@ class _RedefinirSenhaScreenState extends State<RedefinirSenhaScreen> {
 
       if (!mounted) return;
       AppSnackBar.sucesso(context, 'Senha redefinida com sucesso.');
-      Navigator.popUntil(context, (route) => route.isFirst);
+      Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));

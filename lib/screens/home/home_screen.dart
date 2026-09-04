@@ -19,9 +19,7 @@ import '../../config/app_config.dart';
 import '../../utils/app_snackbar.dart';
 
 class HomeScreen extends StatefulWidget {
-  final Future<void> Function()? onLoginChanged;
-
-  const HomeScreen({super.key, this.onLoginChanged});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -229,16 +227,11 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     await Share.share(texto);
   }
 
-  Future<void> abrirLogin() async {
-    final resultado = await Navigator.push(
+  void abrirLogin() {
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
-
-    if (resultado == true && mounted) {
-      await carregarHome();
-      await widget.onLoginChanged?.call();
-    }
   }
 
   String formatarDataEvento(String valor) {

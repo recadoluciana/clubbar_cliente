@@ -6,6 +6,7 @@ import '../../services/carteira_badge_notifier.dart';
 import '../../services/auth_storage.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../main/main_navigation_screen.dart';
 
 class PagamentoSucessoScreen extends StatefulWidget {
   final bool sucesso;
@@ -156,11 +157,13 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                   height: 54,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-
-                      Future.delayed(const Duration(milliseconds: 100), () {
-                        MainNavigationController.irParaHome();
-                      });
+                      MainNavigationController.irParaHome();
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const MainNavigationScreen(),
+                        ),
+                        (_) => false,
+                      );
                     },
                     icon: const Icon(Icons.home),
                     label: const Text(

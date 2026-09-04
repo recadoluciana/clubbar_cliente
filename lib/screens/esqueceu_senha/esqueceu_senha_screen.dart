@@ -66,10 +66,13 @@ class _EsqueceuSenhaScreenState extends State<EsqueceuSenhaScreen> {
       );
 
       if (!mounted) return;
-      await Navigator.push(
+      final senhaRedefinida = await Navigator.push<bool>(
         context,
         MaterialPageRoute(builder: (_) => RedefinirSenhaScreen(email: email)),
       );
+      if (senhaRedefinida == true && mounted) {
+        Navigator.pop(context, true);
+      }
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));

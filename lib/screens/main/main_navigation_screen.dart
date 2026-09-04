@@ -169,8 +169,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 texto: logado ? _primeiroNomeCliente : 'Perfil',
               ),
 
-              if (currentIndex == 0)
-                const Expanded(child: ApiStatusIndicator(versao: '1.0.0')),
+              const Expanded(child: ApiStatusIndicator(versao: '1.0.0')),
             ],
           ),
         ),
@@ -184,23 +183,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       return;
     }
 
+    final navegacaoAutorizada = await _selecionarAba(index);
+
+    if (!mounted || !navegacaoAutorizada) return;
+
     MainNavigationController.limparTelasInternas();
-
-    await _selecionarAba(index);
-
-    if (!mounted) return;
-
-    // Só altera o ValueNotifier se a navegação foi realmente autorizada.
-    // Exemplo: se precisava de login e o usuário cancelou, não troca a aba.
-    if (currentIndex == index) {
-      MainNavigationController.abaIndex.value = index;
-    }
+    MainNavigationController.abaIndex.value = index;
   }
 
   Widget _buildPage() {
     switch (currentIndex) {
       case 0:
-        return HomeScreen(onLoginChanged: _carregarSessao);
+        return const HomeScreen();
       case 1:
         return const CarrinhoLojasScreen();
       case 2:
@@ -208,7 +202,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       case 3:
         return const PerfilScreen();
       default:
-        return HomeScreen(onLoginChanged: _carregarSessao);
+        return const HomeScreen();
     }
   }
 
@@ -462,14 +456,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Future<void> _selecionarAba(int index) async {
+  Future<bool> _selecionarAba(int index) async {
     final exigeLogin = index == 1 || index == 2 || index == 3;
 
     if (exigeLogin) {
       final logado = await _estaLogado();
 
       if (!logado) {
-        if (!mounted) return;
+        if (!mounted) return false;
 
         String mensagem = 'Faça login para continuar';
 
@@ -482,15 +476,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         }
 
         AppSnackBar.info(context, mensagem);
-        return;
+        return false;
       }
     }
 
-    if (!mounted) return;
+    if (!mounted) return false;
 
     setState(() {
       currentIndex = index;
     });
+    return true;
   }
 
   @override
@@ -505,10 +500,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             valueListenable: MainNavigationController.telaInterna,
             builder: (context, telaInterna, _) {
               return PopScope(
-                canPop: telaInterna == null,
+                canPop: telaInterna == null && currentIndex == 0,
                 onPopInvokedWithResult: (didPop, _) {
                   if (!didPop) {
-                    MainNavigationController.fecharTelaInterna();
+                    if (telaInterna != null) {
+                      MainNavigationController.fecharTelaInterna();
+                    } else {
+                      MainNavigationController.irParaHome();
+                    }
                   }
                 },
                 child: telaInterna ?? _buildPage(),

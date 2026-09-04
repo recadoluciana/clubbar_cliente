@@ -81,13 +81,15 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                   return;
                 }
 
-                if (MainNavigationController.telaInterna.value != null) {
-                  MainNavigationController.fecharTelaInterna();
+                // Rotas temporárias (diálogos de fluxo, compra e pagamento)
+                // devem ser fechadas antes das telas internas da navegação.
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
                   return;
                 }
 
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
+                if (MainNavigationController.telaInterna.value != null) {
+                  MainNavigationController.fecharTelaInterna();
                 } else {
                   MainNavigationController.irParaHome();
                 }

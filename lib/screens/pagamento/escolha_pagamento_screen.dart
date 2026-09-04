@@ -9,7 +9,6 @@ import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
-import '../main/main_navigation_screen.dart';
 import 'pagamento_sucesso_screen.dart';
 import 'pix_pagamento_screen.dart';
 
@@ -283,7 +282,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           if (!mounted) return;
 
-          final retornoSucesso = await Navigator.pushReplacement(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (_) => PagamentoSucessoScreen(
@@ -296,15 +295,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               ),
             ),
           );
-
-          if (!mounted) return;
-          if (retornoSucesso == true) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-              (route) => false,
-            );
-          }
+          return;
         }
       }
     } catch (e) {
