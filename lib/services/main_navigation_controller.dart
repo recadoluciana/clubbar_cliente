@@ -31,4 +31,9 @@ class MainNavigationController {
     limparTelasInternas();
     abaIndex.value = 1;
   }
+
+  static void irParaCarteira() {
+    limparTelasInternas();
+    abaIndex.value = 2;
+  }
 }

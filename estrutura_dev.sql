@@ -492,7 +492,6 @@ CREATE TABLE `loja` (
   `dsbairroloja` varchar(120) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `sitloja` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ATIVA',
   `aberto24x7` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
-  `dshorarioloja` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `nrtelloja` varchar(25) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `nrdiavalidade` bigint NOT NULL DEFAULT '90',
   `cidade_id` bigint NOT NULL,

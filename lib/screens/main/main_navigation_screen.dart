@@ -68,22 +68,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                if (selecionado)
-                  Positioned(
-                    top: 0,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      width: 28,
-                      height: 3,
-                      decoration: BoxDecoration(
-                        color: Colors.amber,
-                        borderRadius: const BorderRadius.vertical(
-                          bottom: Radius.circular(4),
-                        ),
-                      ),
-                    ),
-                  ),
-
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,

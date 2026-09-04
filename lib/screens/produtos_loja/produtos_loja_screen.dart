@@ -17,7 +17,6 @@ import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
-import '../detalhe_loja/detalhe_loja_screen.dart';
 import 'produto_compartilhado_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
 import '../../widgets/clubbar_page_header.dart';
@@ -661,9 +660,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             return;
           }
 
-          MainNavigationController.abrirTela(
-            DetalheLojaScreen(loja: widget.loja),
-          );
+          MainNavigationController.fecharTelaInterna();
         },
       ),
 

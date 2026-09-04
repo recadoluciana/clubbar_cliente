@@ -7,7 +7,6 @@ class Loja {
   final String endereco;
   final String bairro;
   final String cidade;
-  final String horario;
   final String imagemUrl;
   final String fachadaUrl;
   final String instagram;
@@ -27,7 +26,6 @@ class Loja {
     required this.endereco,
     required this.bairro,
     required this.cidade,
-    required this.horario,
     required this.imagemUrl,
     this.fachadaUrl = '',
     required this.instagram,
@@ -61,7 +59,6 @@ class Loja {
       endereco: (json['endloja'] ?? '').toString(),
       bairro: (json['dsbairroloja'] ?? '').toString(),
       cidade: (json['nmcidade'] ?? '').toString(),
-      horario: (json['dshorarioloja'] ?? '').toString(),
       imagemUrl: buildUrl(path),
       fachadaUrl: buildUrl(fachadaPath),
       instagram: (json['dsinstaloja'] ?? '').toString(),

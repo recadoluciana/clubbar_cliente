@@ -5,6 +5,7 @@ import '../../models/evento_lote.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../services/main_navigation_controller.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import 'package:share_plus/share_plus.dart';
@@ -12,6 +13,7 @@ import '../../config/app_config.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
+import '../produtos_loja/produtos_loja_screen.dart';
 import 'participantes_reserva_screen.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
@@ -515,6 +517,87 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
+  Future<void> _abrirCarteiraIngressos(String orientacao) async {
+    final token = await authStorage.obterToken();
+    if (!mounted) return;
+    if (token == null || token.isEmpty) {
+      await direcionarParaLogin(
+        context,
+        mensagem: 'Faça login para acessar seus ingressos.',
+      );
+      return;
+    }
+    AppSnackBar.info(context, orientacao);
+    MainNavigationController.irParaCarteira();
+  }
+
+  Widget _politicaEvento() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Política do evento',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: Colors.blue.shade100),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Cancelamento de pedidos pagos',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 7),
+                const Text(
+                  'Cancelamentos de pedidos serão aceitos até 7 dias após a compra, desde que a solicitação seja enviada até 48 horas antes do início do evento.',
+                  style: TextStyle(fontSize: 14, height: 1.55),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => _abrirCarteiraIngressos(
+                      'Selecione a loja e use o botão Cancelar no ingresso desejado.',
+                    ),
+                    child: const Text('Saiba mais sobre o cancelamento'),
+                  ),
+                ),
+                const Divider(height: 24),
+                const Text(
+                  'Edição de participantes',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 7),
+                const Text(
+                  'Você poderá editar o participante de um ingresso apenas uma vez. Essa opção ficará disponível até 24 horas antes do início do evento.',
+                  style: TextStyle(fontSize: 14, height: 1.55),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: () => _abrirCarteiraIngressos(
+                      'Selecione a loja e use o botão Alterar participante no ingresso desejado.',
+                    ),
+                    child: const Text('Saiba como editar participantes'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ev = evento;
@@ -614,18 +697,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           const SizedBox(height: 8),
-                          Text(
-                            ev.local.trim().isEmpty
-                                ? 'Local não informado'
-                                : ev.local,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                          if (ev.local.trim().isNotEmpty &&
+                              ev.local.trim().toLowerCase() !=
+                                  ev.nomeLoja.trim().toLowerCase()) ...[
+                            Text(
+                              ev.local,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
+                            const SizedBox(height: 2),
+                          ],
                           Text(
                             [
                               ev.endereco.trim(),
@@ -640,6 +725,29 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               fontSize: 12,
                               height: 1.25,
                               color: Colors.grey.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: () {
+                                MainNavigationController.abrirTela(
+                                  ProdutosLojaScreen(loja: widget.loja),
+                                );
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 13,
+                                ),
+                              ),
+                              icon: const Icon(Icons.restaurant_menu_rounded),
+                              label: const Text(
+                                'Comprar produto',
+                                style: TextStyle(fontWeight: FontWeight.w800),
+                              ),
                             ),
                           ),
 
@@ -696,7 +804,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             children: [
                               const Expanded(
                                 child: Text(
-                                  'Lotes',
+                                  'Ingressos',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -740,10 +848,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
-                          _secaoPolitica(
-                            'Política de cancelamento',
-                            ev.politicaCancelamento,
-                          ),
+                          _politicaEvento(),
                           _secaoPolitica(
                             'Política de reembolso',
                             ev.politicaReembolso,

@@ -151,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final endereco = _normalizar(loja.endereco);
       final bairro = _normalizar(loja.bairro);
       final cidade = _normalizar(loja.cidade);
-      final horario = _normalizar(loja.horario);
       final instagram = _normalizar(loja.instagram);
       final dsestiloloja = _normalizar(loja.dsestiloloja);
 
@@ -159,7 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
           endereco.contains(q) ||
           bairro.contains(q) ||
           cidade.contains(q) ||
-          horario.contains(q) ||
           instagram.contains(q) ||
           dsestiloloja.contains(q);
     }).toList();
@@ -472,27 +470,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                       color: Colors.amber.shade800,
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 3),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.local_fire_department_rounded,
-                                  color: Colors.deepOrange,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 3),
-                                Expanded(
-                                  child: Text(
-                                    '${produto.quantidadeVendida} vendidos',
-                                    style: const TextStyle(
-                                      color: Colors.deepOrange,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -946,7 +923,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                       url: loja.imagemUrl,
                                       width: 84,
                                       height: 84,
-                                      borderRadius: 15,
+                                      borderRadius: 42,
                                       fallbackIcon: Icons.storefront,
                                     ),
                                     const SizedBox(width: 11),
@@ -1053,8 +1030,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                           ],
                                           const SizedBox(height: 2),
                                           Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: TextButton.icon(
+                                            alignment: Alignment.centerRight,
+                                            child: OutlinedButton.icon(
                                               onPressed: () =>
                                                   compartilharLoja(loja),
                                               icon: const Icon(
@@ -1062,15 +1039,21 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                                 size: 15,
                                               ),
                                               label: const Text('Compartilhar'),
-                                              style: TextButton.styleFrom(
+                                              style: OutlinedButton.styleFrom(
                                                 foregroundColor:
                                                     Colors.amber.shade900,
+                                                backgroundColor:
+                                                    Colors.amber.shade50,
+                                                side: BorderSide(
+                                                  color: Colors.amber.shade300,
+                                                ),
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                      horizontal: 6,
-                                                      vertical: 2,
+                                                      horizontal: 9,
+                                                      vertical: 3,
                                                     ),
-                                                minimumSize: const Size(0, 28),
+                                                minimumSize: const Size(0, 27),
+                                                shape: const StadiumBorder(),
                                                 tapTargetSize:
                                                     MaterialTapTargetSize
                                                         .shrinkWrap,

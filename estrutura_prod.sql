@@ -472,7 +472,6 @@ CREATE TABLE `loja` (
   `dsbairroloja` varchar(120) DEFAULT NULL,
   `sitloja` varchar(15) NOT NULL DEFAULT 'ATIVA',
   `aberto24x7` char(1) NOT NULL DEFAULT 'N',
-  `dshorarioloja` varchar(255) DEFAULT NULL,
   `nrtelloja` varchar(25) DEFAULT NULL,
   `nrdiavalidade` bigint NOT NULL DEFAULT '90',
   `dtcriacao` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

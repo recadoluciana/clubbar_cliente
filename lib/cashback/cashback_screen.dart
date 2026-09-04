@@ -88,7 +88,6 @@ class _CashbackScreenState extends State<CashbackScreen> {
   Widget _saldo({
     required String titulo,
     required String valor,
-    required String ajuda,
     required IconData icone,
     required Color cor,
   }) {
@@ -110,11 +109,6 @@ class _CashbackScreenState extends State<CashbackScreen> {
             Text(
               valor,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              ajuda,
-              style: const TextStyle(fontSize: 11, color: Colors.black54),
             ),
           ],
         ),
@@ -167,7 +161,6 @@ class _CashbackScreenState extends State<CashbackScreen> {
           _saldo(
             titulo: 'A liberar',
             valor: ValueFormatters.moeda(_numero(_dados?['saldo_pendente'])),
-            ajuda: 'Ainda não disponível',
             icone: Icons.hourglass_bottom_rounded,
             cor: Colors.orange,
           ),
@@ -175,9 +168,6 @@ class _CashbackScreenState extends State<CashbackScreen> {
           _saldo(
             titulo: 'Lojas com saldo',
             valor: '${_saldosPorLoja.length}',
-            ajuda: _saldosPorLoja.length == 1
-                ? 'estabelecimento'
-                : 'estabelecimentos',
             icone: Icons.storefront_rounded,
             cor: Colors.green,
           ),
@@ -203,12 +193,6 @@ class _CashbackScreenState extends State<CashbackScreen> {
             Text(
               'Você ainda não possui cashback.',
               style: TextStyle(fontWeight: FontWeight.w800),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Quando uma compra elegível gerar saldo, ele aparecerá aqui.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54),
             ),
           ],
         ),
@@ -420,11 +404,6 @@ class _CashbackScreenState extends State<CashbackScreen> {
                             fontSize: 19,
                             fontWeight: FontWeight.w900,
                           ),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          'Acompanhe os créditos, usos, liberações e cancelamentos.',
-                          style: TextStyle(color: Colors.black54),
                         ),
                         const SizedBox(height: 12),
                         SingleChildScrollView(
