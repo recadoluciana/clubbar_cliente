@@ -1081,6 +1081,21 @@ class ApiService {
     return Loja.fromJson(Map<String, dynamic>.from(data));
   }
 
+  Future<Map<String, dynamic>> buscarConteudoPublicoLoja(int lojaId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/lojas/$lojaId/conteudo-publico'),
+        headers: const {'Accept': 'application/json'},
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return Map<String, dynamic>.from(jsonDecode(response.body));
+      }
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
   Future<List<LojaHorario>> buscarHorariosLoja(int lojaId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/lojas/$lojaId/horarios'),

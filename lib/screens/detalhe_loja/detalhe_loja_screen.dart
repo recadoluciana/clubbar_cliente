@@ -9,6 +9,7 @@ import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
+import 'conteudo_loja_screen.dart';
 
 class DetalheLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -325,32 +326,6 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
                   ),
                 ),
 
-                if (loja.dsestiloloja.trim().isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.interests_outlined,
-                        size: 20,
-                        color: Colors.blue.shade700,
-                      ),
-                      const SizedBox(width: 7),
-                      Flexible(
-                        child: Text(
-                          loja.dsestiloloja.trim(),
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.blue.shade700,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-
                 const SizedBox(height: 10),
 
                 Row(
@@ -397,6 +372,29 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
                         ),
                       ),
                     ],
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      MainNavigationController.abrirTela(
+                        ConteudoLojaScreen(loja: loja),
+                      );
+                    },
+                    icon: const Icon(Icons.photo_library_outlined),
+                    label: const Text('Conteúdo do estabelecimento'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.blue.shade700,
+                      side: BorderSide(color: Colors.blue.shade600),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                   ),
                 ),
 
