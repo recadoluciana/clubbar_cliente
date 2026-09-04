@@ -207,27 +207,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   ),
                 ),
               ],
-              const SizedBox(height: 14),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.event_outlined,
-                    color: Colors.blue.shade700,
-                    size: 21,
-                  ),
-                  const SizedBox(width: 9),
-                  Expanded(
-                    child: Text(
-                      '${DateFormatters.dataHoraSimples(atracao.inicio)} até ${DateFormatters.dataHoraSimples(atracao.fim)}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
               if (atracao.descricao.trim().isNotEmpty) ...[
                 const SizedBox(height: 20),
                 const Text(
@@ -831,7 +810,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ],
                           Text(
                             [
-                              ev.endereco.trim(),
+                              [
+                                ev.endereco.trim(),
+                                ev.numeroEndereco.trim(),
+                              ].where((parte) => parte.isNotEmpty).join(', '),
                               ev.bairro.trim(),
                               ev.sgEstado.trim().isEmpty
                                   ? ev.nomeCidade.trim()
@@ -928,7 +910,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Icon(
-                                                      Icons.event_outlined,
+                                                      Icons
+                                                          .calendar_month_rounded,
                                                       size: 19,
                                                       color:
                                                           Colors.blue.shade700,

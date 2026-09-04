@@ -325,6 +325,32 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
                   ),
                 ),
 
+                if (loja.dsestiloloja.trim().isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.interests_outlined,
+                        size: 20,
+                        color: Colors.blue.shade700,
+                      ),
+                      const SizedBox(width: 7),
+                      Flexible(
+                        child: Text(
+                          loja.dsestiloloja.trim(),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.blue.shade700,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
                 const SizedBox(height: 10),
 
                 Row(

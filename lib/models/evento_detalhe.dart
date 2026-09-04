@@ -9,6 +9,7 @@ class EventoDetalhe {
   final String dataFim;
   final String local;
   final String endereco;
+  final String numeroEndereco;
   final String bairro;
   final String bannerUrl;
   final String status;
@@ -28,6 +29,7 @@ class EventoDetalhe {
     required this.dataFim,
     required this.local,
     required this.endereco,
+    this.numeroEndereco = '',
     required this.bairro,
     required this.bannerUrl,
     required this.status,
@@ -49,6 +51,7 @@ class EventoDetalhe {
       dataFim: (json['dtfimevento'] ?? '').toString(),
       local: (json['nmlocalevento'] ?? '').toString(),
       endereco: (json['dsendlocevento'] ?? '').toString(),
+      numeroEndereco: (json['nrendlocevento'] ?? '').toString(),
       bairro: (json['dsbairroloja'] ?? '').toString(),
       bannerUrl: (json['urlbannerevento'] ?? '').toString().trim(),
       status: (json['statusevento'] ?? '').toString(),

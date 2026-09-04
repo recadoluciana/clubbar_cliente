@@ -979,6 +979,7 @@ class ApiService {
           dataFim: evento.dataFim,
           local: evento.local,
           endereco: evento.endereco,
+          numeroEndereco: evento.numeroEndereco,
           bannerUrl: banner,
           status: evento.status,
           nomeLoja: evento.nomeLoja,

@@ -161,12 +161,14 @@ class _ParticipantesReservaScreenState
                       'Participante ${i + 1}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
+                    const SizedBox(height: 12),
                     TextField(
                       controller: nomes[i],
                       decoration: const InputDecoration(
                         labelText: 'Nome completo',
                       ),
                     ),
+                    const SizedBox(height: 14),
                     TextField(
                       controller: cpfs[i],
                       keyboardType: TextInputType.number,
