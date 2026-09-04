@@ -672,7 +672,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               children: [
                 ClubbarPageHeader(
                   titulo: widget.loja.nome,
-                  subtitulo: 'Cardápio e bebidas',
+                  subtitulo: 'Selecione o produto que deseja comprar',
+                  corTitulo: Colors.blue,
                   imagemAvatarUrl: widget.loja.imagemUrl,
                   tamanhoAvatar: 52,
                 ),
@@ -778,18 +779,21 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                               size: 30,
                             ),
                           )
-                        : Image.network(
-                            imagem,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) {
-                              return Container(
-                                color: Colors.grey.shade200,
-                                child: const Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 28,
-                                ),
-                              );
-                            },
+                        : ColoredBox(
+                            color: Colors.grey.shade50,
+                            child: Image.network(
+                              imagem,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, _, _) {
+                                return Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(
+                                    Icons.image_not_supported_outlined,
+                                    size: 28,
+                                  ),
+                                );
+                              },
+                            ),
                           ),
                   ),
 

@@ -9,7 +9,6 @@ import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
-import '../login/login_screen.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 
@@ -163,19 +162,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
 
     CartBadgeNotifier.atualizar(quantidade);
-  }
-
-  Future<void> _sair() async {
-    await authStorage.limparToken();
-    CartBadgeNotifier.atualizar(0);
-
-    if (!mounted) return;
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const LoginScreen(mostrarVoltar: false),
-      ),
-      (_) => false,
-    );
   }
 
   Future<void> aumentarQuantidade(ItemCarrinhoAgrupado item) async {
@@ -819,8 +805,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       child: ElevatedButton(
         onPressed: () => abrirEscolhaPagamento(),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber,
-          foregroundColor: Colors.black,
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
@@ -849,16 +835,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: ClubbarAppBar(
-        mostrarVoltar: true,
-        actions: [
-          IconButton(
-            tooltip: 'Sair',
-            onPressed: _sair,
-            icon: const Icon(Icons.meeting_room_outlined),
-          ),
-        ],
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
@@ -869,6 +846,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 ClubbarPageHeader(
                   titulo: widget.loja.nome,
                   subtitulo: subtitulo,
+                  corTitulo: Colors.blue,
                   icone: Icons.storefront_rounded,
                   imagemAvatarUrl: widget.loja.imagemUrl,
                 ),

@@ -536,6 +536,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
       padding: const EdgeInsets.fromLTRB(16, 7, 16, 0),
       child: TextField(
         controller: _buscaCtrl,
+        style: const TextStyle(fontSize: 13),
         onChanged: (value) {
           setState(() {
             termoBusca = value;
@@ -552,7 +553,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         },
         decoration: InputDecoration(
           hintText: 'bar, casa noturna, estilo musical, cidade, bairro',
-          hintStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+          hintStyle: TextStyle(fontSize: 12.5, color: Colors.grey.shade500),
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: termoBusca.isEmpty
               ? null

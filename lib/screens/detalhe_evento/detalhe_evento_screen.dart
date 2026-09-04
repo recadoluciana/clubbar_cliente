@@ -620,14 +620,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            height: 180,
+                            height: 210,
                             width: double.infinity,
                             clipBehavior: Clip.antiAlias,
                             decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(24),
                             ),
                             child: ev.bannerUrl.trim().isNotEmpty
-                                ? Image.network(ev.bannerUrl, fit: BoxFit.cover)
+                                ? Image.network(
+                                    ev.bannerUrl,
+                                    width: double.infinity,
+                                    fit: BoxFit.contain,
+                                  )
                                 : Container(
                                     color: Colors.grey.shade300,
                                     child: const Icon(
