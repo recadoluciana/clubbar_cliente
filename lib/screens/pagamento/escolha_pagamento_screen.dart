@@ -43,11 +43,13 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   final ApiService apiService = ApiService();
   final AuthStorage authStorage = AuthStorage();
 
-  bool carregandoPagamento = false;
+  String? _metodoPagamentoProcessando;
   bool carregandoCashback = false;
   bool usarCashback = false;
   double cashbackUtilizavel = 0;
   double saldoCashback = 0;
+
+  bool get carregandoPagamento => _metodoPagamentoProcessando != null;
 
   @override
   void initState() {
@@ -117,7 +119,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       );
       return;
     }
-    setState(() => carregandoPagamento = true);
+    setState(() => _metodoPagamentoProcessando = 'PIX');
     try {
       final clienteId = await authStorage.obterClienteId();
       if (clienteId == null || clienteId == 0) {
@@ -161,7 +163,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         ),
       );
     } finally {
-      if (mounted) setState(() => carregandoPagamento = false);
+      if (mounted) setState(() => _metodoPagamentoProcessando = null);
     }
   }
 
@@ -177,7 +179,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       );
       return;
     }
-    setState(() => carregandoPagamento = true);
+    setState(() => _metodoPagamentoProcessando = 'CARTAO');
 
     try {
       final clienteId = await authStorage.obterClienteId();
@@ -311,7 +313,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       );
     } finally {
       if (mounted) {
-        setState(() => carregandoPagamento = false);
+        setState(() => _metodoPagamentoProcessando = null);
       }
     }
   }
@@ -482,7 +484,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             height: 56,
             child: ElevatedButton.icon(
               onPressed: carregandoPagamento ? null : abrirPix,
-              icon: carregandoPagamento
+              icon: _metodoPagamentoProcessando == 'PIX'
                   ? const SizedBox(
                       width: 20,
                       height: 20,
@@ -509,7 +511,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             height: 56,
             child: ElevatedButton.icon(
               onPressed: carregandoPagamento ? null : abrirAsaas,
-              icon: carregandoPagamento
+              icon: _metodoPagamentoProcessando == 'CARTAO'
                   ? const SizedBox(
                       width: 20,
                       height: 20,

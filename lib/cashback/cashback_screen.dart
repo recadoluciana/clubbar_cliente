@@ -347,6 +347,44 @@ class _CashbackScreenState extends State<CashbackScreen> {
                 ),
               ],
             ),
+            if (status == 'PENDENTE' &&
+                '${item['liberacao'] ?? ''}'.trim().isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: .10),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: .35),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_month_rounded,
+                      size: 20,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Disponível em ${item['liberacao']}',
+                        style: TextStyle(
+                          color: Colors.orange.shade900,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (item['validade'] != null &&
                 '${item['validade']}'.isNotEmpty) ...[
               const SizedBox(height: 6),
