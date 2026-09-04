@@ -138,6 +138,119 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return DateFormatters.periodo(inicio, fim);
   }
 
+  void _abrirDetalhesAtracao(AtracaoEventoDetalhe atracao) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.72,
+        minChildSize: 0.45,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 18),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+              ),
+              if (atracao.bannerUrl.trim().isNotEmpty) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: Image.network(
+                      atracao.bannerUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: Colors.blue.shade50,
+                        child: Icon(
+                          Icons.music_note_rounded,
+                          size: 54,
+                          color: Colors.blue.shade700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+              ],
+              Text(
+                atracao.nome,
+                style: TextStyle(
+                  color: Colors.blue.shade700,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (atracao.estilo.trim().isNotEmpty) ...[
+                const SizedBox(height: 7),
+                Text(
+                  atracao.estilo,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 14),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.event_outlined,
+                    color: Colors.blue.shade700,
+                    size: 21,
+                  ),
+                  const SizedBox(width: 9),
+                  Expanded(
+                    child: Text(
+                      '${DateFormatters.dataHoraSimples(atracao.inicio)} até ${DateFormatters.dataHoraSimples(atracao.fim)}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (atracao.descricao.trim().isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text(
+                  'Sobre a atração',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  atracao.descricao,
+                  style: TextStyle(
+                    color: Colors.grey.shade800,
+                    fontSize: 14,
+                    height: 1.45,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<int?> _obterClienteIdLogado() async {
     final clienteId = await authStorage.obterClienteId();
     if (!mounted) return null;
@@ -767,38 +880,87 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                             const SizedBox(height: 10),
                             ...ev.atracoes.map(
-                              (atracao) => Container(
-                                width: double.infinity,
-                                margin: const EdgeInsets.only(bottom: 10),
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
+                              (atracao) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Material(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      atracao.nome,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                  child: InkWell(
+                                    onTap: () => _abrirDetalhesAtracao(atracao),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(14),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: Colors.blue.shade600,
+                                          width: 1.4,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  atracao.nome,
+                                                  style: const TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                if (atracao.estilo
+                                                    .trim()
+                                                    .isNotEmpty)
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          top: 3,
+                                                        ),
+                                                    child: Text(atracao.estilo),
+                                                  ),
+                                                const SizedBox(height: 8),
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.event_outlined,
+                                                      size: 19,
+                                                      color:
+                                                          Colors.blue.shade700,
+                                                    ),
+                                                    const SizedBox(width: 7),
+                                                    Expanded(
+                                                      child: Text(
+                                                        '${DateFormatters.dataHoraSimples(atracao.inicio)} até ${DateFormatters.dataHoraSimples(atracao.fim)}',
+                                                        style: TextStyle(
+                                                          color: Colors
+                                                              .grey
+                                                              .shade700,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: Colors.blue.shade700,
+                                            size: 28,
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    if (atracao.estilo.trim().isNotEmpty)
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 3),
-                                        child: Text(atracao.estilo),
-                                      ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      '${DateFormatters.dataHoraSimples(atracao.inicio)} até ${DateFormatters.dataHoraSimples(atracao.fim)}',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade700,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),

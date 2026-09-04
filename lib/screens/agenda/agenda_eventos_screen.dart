@@ -77,20 +77,26 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: Image.network(
-        url,
+      child: Container(
         width: 108,
         height: 78,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => Container(
+        color: Colors.grey.shade100,
+        child: Image.network(
+          url,
           width: 108,
           height: 78,
-          decoration: BoxDecoration(
-            color: Colors.grey.shade300,
-            borderRadius: BorderRadius.circular(12),
+          fit: BoxFit.contain,
+          alignment: Alignment.topCenter,
+          errorBuilder: (context, error, stackTrace) => Container(
+            width: 108,
+            height: 78,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(Icons.image_not_supported),
           ),
-          alignment: Alignment.center,
-          child: const Icon(Icons.image_not_supported),
         ),
       ),
     );

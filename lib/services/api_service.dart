@@ -952,6 +952,25 @@ class ApiService {
           banner = banner.replaceFirst('http://', 'https://');
         }
 
+        final atracoes = evento.atracoes.map((atracao) {
+          var bannerAtracao = atracao.bannerUrl.trim();
+          if (bannerAtracao.isNotEmpty && bannerAtracao.startsWith('/')) {
+            bannerAtracao = '$baseUrl$bannerAtracao';
+          }
+          if (bannerAtracao.startsWith('http://')) {
+            bannerAtracao = bannerAtracao.replaceFirst('http://', 'https://');
+          }
+          return AtracaoEventoDetalhe(
+            id: atracao.id,
+            nome: atracao.nome,
+            estilo: atracao.estilo,
+            descricao: atracao.descricao,
+            bannerUrl: bannerAtracao,
+            inicio: atracao.inicio,
+            fim: atracao.fim,
+          );
+        }).toList();
+
         return EventoDetalhe(
           id: evento.id,
           titulo: evento.titulo,
@@ -966,7 +985,10 @@ class ApiService {
           nomeCidade: evento.nomeCidade,
           sgEstado: evento.sgEstado,
           bairro: (data['dsbairroloja'] ?? '').toString(),
-          atracoes: evento.atracoes,
+          atracoes: atracoes,
+          politicaCancelamento: evento.politicaCancelamento,
+          politicaReembolso: evento.politicaReembolso,
+          politicaCashback: evento.politicaCashback,
         );
       }
 

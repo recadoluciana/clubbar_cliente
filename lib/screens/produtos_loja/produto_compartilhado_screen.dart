@@ -209,22 +209,28 @@ class _ProdutoCompartilhadoScreenState
                 if (imagemUrl.isNotEmpty)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(22),
-                    child: Image.network(
-                      imagemUrl,
+                    child: Container(
                       height: 260,
                       width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) {
-                        return Container(
-                          height: 220,
-                          width: double.infinity,
-                          color: Colors.grey.shade300,
-                          child: const Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 50,
-                          ),
-                        );
-                      },
+                      color: Colors.white,
+                      child: Image.network(
+                        imagemUrl,
+                        height: 260,
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.center,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 220,
+                            width: double.infinity,
+                            color: Colors.grey.shade300,
+                            child: const Icon(
+                              Icons.image_not_supported_outlined,
+                              size: 50,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 const SizedBox(height: 20),
