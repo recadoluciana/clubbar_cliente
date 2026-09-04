@@ -90,11 +90,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   double get taxaClubbarTotal => taxaProdutoSplit + taxaIngressoCliente;
 
+  bool get compraDeProdutos => widget.reservaIngressoId == null;
+
+  double get cashbackAplicado =>
+      compraDeProdutos && usarCashback ? cashbackUtilizavel : 0;
+
   double get totalPagar =>
       widget.totalProdutos +
       widget.totalIngressos +
       taxaIngressoCliente -
-      (usarCashback ? cashbackUtilizavel : 0);
+      cashbackAplicado;
 
   double get valorParceiro => totalPagar - taxaClubbarTotal;
 
@@ -334,6 +339,27 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     );
   }
 
+  Widget _linhaCashback() {
+    return Row(
+      children: [
+        const Expanded(
+          child: Text(
+            'Cashback',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+        ),
+        Text(
+          '- ${_moeda(cashbackAplicado)}',
+          style: const TextStyle(
+            color: Colors.red,
+            fontSize: 15,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _linhaResumoComIcone({
     required IconData icon,
     required String titulo,
@@ -369,7 +395,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             child: Text(
               widget.loja.nome,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+              style: const TextStyle(
+                color: Colors.blue,
+                fontSize: 23,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
 
@@ -397,54 +427,48 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             ),
             child: Column(
               children: [
-                _linhaResumoComIcone(
-                  icon: Icons.shopping_bag_outlined,
-                  titulo: 'Produtos',
-                  valor: widget.totalProdutos,
-                ),
-
-                const SizedBox(height: 16),
-
-                _linhaResumoComIcone(
-                  icon: Icons.confirmation_number_outlined,
-                  titulo: 'Ingressos',
-                  valor: widget.totalIngressos,
-                ),
-
-                const SizedBox(height: 10),
-
-                _linhaResumo(
-                  'Taxa de conveniência (${percentualTaxaIngresso.toStringAsFixed(0)}%)',
-                  taxaIngressoCliente,
-                ),
-
-                const Divider(height: 28),
-
-                if (widget.reservaIngressoId == null &&
-                    (carregandoCashback || saldoCashback > 0)) ...[
-                  const Divider(height: 28),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    value: usarCashback,
-                    onChanged: cashbackUtilizavel > 0 && !carregandoPagamento
-                        ? (value) => setState(() => usarCashback = value)
-                        : null,
-                    secondary: const Icon(
-                      Icons.savings_outlined,
-                      color: Colors.amber,
-                    ),
-                    title: const Text(
-                      'Usar saldo cashback',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      carregandoCashback
-                          ? 'Consultando saldo...'
-                          : 'Saldo: ${_moeda(saldoCashback)} • Uso nesta compra: ${_moeda(cashbackUtilizavel)}',
-                    ),
+                if (compraDeProdutos) ...[
+                  _linhaResumoComIcone(
+                    icon: Icons.shopping_bag_outlined,
+                    titulo: 'Produtos',
+                    valor: widget.totalProdutos,
                   ),
-                  if (usarCashback)
-                    _linhaResumo('Desconto cashback', -cashbackUtilizavel),
+                  const SizedBox(height: 16),
+                  _linhaCashback(),
+                  if (carregandoCashback || saldoCashback > 0) ...[
+                    const Divider(height: 24),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: usarCashback,
+                      onChanged: cashbackUtilizavel > 0 && !carregandoPagamento
+                          ? (value) => setState(() => usarCashback = value)
+                          : null,
+                      secondary: const Icon(
+                        Icons.savings_outlined,
+                        color: Colors.amber,
+                      ),
+                      title: const Text(
+                        'Usar saldo cashback',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        carregandoCashback
+                            ? 'Consultando saldo...'
+                            : 'Saldo: ${_moeda(saldoCashback)} • Uso nesta compra: ${_moeda(cashbackUtilizavel)}',
+                      ),
+                    ),
+                  ],
+                ] else ...[
+                  _linhaResumoComIcone(
+                    icon: Icons.confirmation_number_outlined,
+                    titulo: 'Ingressos',
+                    valor: widget.totalIngressos,
+                  ),
+                  const SizedBox(height: 10),
+                  _linhaResumo(
+                    'Taxa de conveniência (${percentualTaxaIngresso.toStringAsFixed(0)}%)',
+                    taxaIngressoCliente,
+                  ),
                 ],
                 const Divider(height: 28),
                 _linhaResumo('Total a pagar', totalPagar, destaque: true),

@@ -409,7 +409,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     }
 
     return SizedBox(
-      height: 174,
+      height: 150,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -418,7 +418,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         itemBuilder: (context, index) {
           final produto = produtosMaisVendidos[index];
           return SizedBox(
-            width: 132,
+            width: 124,
             child: Material(
               color: Colors.white,
               borderRadius: BorderRadius.circular(17),
@@ -433,8 +433,9 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   children: [
                     _imagemSegura(
                       url: produto.urlfotoproduto ?? '',
-                      width: 132,
-                      height: 85,
+                      width: 124,
+                      height: 76,
+                      fit: BoxFit.contain,
                       fallbackIcon: Icons.local_bar_outlined,
                     ),
                     Expanded(
@@ -457,7 +458,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                               children: [
                                 Icon(
                                   Icons.storefront_rounded,
-                                  color: Colors.amber.shade800,
+                                  color: Colors.blue,
                                   size: 13,
                                 ),
                                 const SizedBox(width: 4),
@@ -466,8 +467,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                     produto.nmloja,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: Colors.amber.shade800,
+                                    style: const TextStyle(
+                                      color: Colors.blue,
                                       fontSize: 10.5,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -536,7 +537,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
       padding: const EdgeInsets.fromLTRB(16, 7, 16, 0),
       child: TextField(
         controller: _buscaCtrl,
-        style: const TextStyle(fontSize: 13),
+        style: const TextStyle(fontSize: 14.5),
         onChanged: (value) {
           setState(() {
             termoBusca = value;
@@ -553,7 +554,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         },
         decoration: InputDecoration(
           hintText: 'bar, casa noturna, estilo musical, cidade, bairro',
-          hintStyle: TextStyle(fontSize: 12.5, color: Colors.grey.shade500),
+          hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: termoBusca.isEmpty
               ? null
@@ -691,6 +692,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                             child: Container(
                               margin: const EdgeInsets.symmetric(horizontal: 7),
                               decoration: BoxDecoration(
+                                color: Colors.black,
                                 borderRadius: BorderRadius.circular(21),
                                 boxShadow: [
                                   BoxShadow(
@@ -710,6 +712,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                       width: double.infinity,
                                       height: double.infinity,
                                       fallbackIcon: Icons.image_not_supported,
+                                      fit: BoxFit.contain,
                                     ),
                                     Container(
                                       decoration: const BoxDecoration(
@@ -725,8 +728,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                       ),
                                     ),
                                     Positioned(
-                                      top: 12,
-                                      left: 14,
+                                      right: 12,
+                                      bottom: 10,
                                       child: Container(
                                         padding: const EdgeInsets.fromLTRB(
                                           5,
@@ -779,7 +782,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                     Positioned(
                                       left: 15,
                                       right: 15,
-                                      bottom: 14,
+                                      bottom: 58,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,

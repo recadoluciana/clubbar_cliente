@@ -437,18 +437,20 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       return;
     }
 
+    if (itensCarrinho.any(
+      (item) => item.idtipoproduto.trim().toUpperCase() == 'I',
+    )) {
+      AppSnackBar.erro(
+        context,
+        'Ingressos não podem ser pagos pelo carrinho de produtos.',
+      );
+      return;
+    }
+
     double totalProdutos = 0;
-    double totalIngressos = 0;
 
     for (final item in itensCarrinho) {
-      final tipo = item.idtipoproduto.trim().toUpperCase();
-      final subtotal = item.precoFinal * item.quantidade;
-
-      if (tipo == 'I') {
-        totalIngressos += subtotal;
-      } else {
-        totalProdutos += subtotal;
-      }
+      totalProdutos += item.precoFinal * item.quantidade;
     }
 
     try {
@@ -462,7 +464,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           builder: (_) => EscolhaPagamentoScreen(
             loja: lojaAtualizada,
             totalProdutos: totalProdutos,
-            totalIngressos: totalIngressos,
           ),
         ),
       );

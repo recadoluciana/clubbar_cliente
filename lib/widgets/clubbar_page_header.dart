@@ -11,6 +11,7 @@ class ClubbarPageHeader extends StatelessWidget {
   final double tamanhoAvatar;
   final bool mostrarAvatar;
   final Color? corTitulo;
+  final Color? corIcone;
 
   // Conteúdo opcional do lado direito
   final Widget? trailing;
@@ -29,6 +30,7 @@ class ClubbarPageHeader extends StatelessWidget {
     this.tamanhoAvatar = 48,
     this.mostrarAvatar = true,
     this.corTitulo,
+    this.corIcone,
     this.trailing,
     this.imagemUrl,
     this.mostrarAba = false,
@@ -67,11 +69,11 @@ class ClubbarPageHeader extends StatelessWidget {
                 errorBuilder: (_, _, _) => Icon(
                   icone ?? Icons.storefront_rounded,
                   size: 24,
-                  color: Colors.black87,
+                  color: corIcone ?? Colors.black87,
                 ),
               )
             : icone != null
-            ? Icon(icone, size: 24, color: Colors.black87)
+            ? Icon(icone, size: 24, color: corIcone ?? Colors.black87)
             : Text(
                 _inicial,
                 style: const TextStyle(
