@@ -137,39 +137,42 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
       child: SafeArea(
         top: false,
-        child: Row(
-          children: [
-            _itemBarraNavegacao(
-              index: 0,
-              icone: Icon(
-                currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: [
+              _itemBarraNavegacao(
+                index: 0,
+                icone: Icon(
+                  currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
+                ),
+                texto: 'Home',
               ),
-              texto: 'Home',
-            ),
 
-            _itemBarraNavegacao(
-              index: 1,
-              icone: _iconeCarrinhoComBadge(selecionado: currentIndex == 1),
-              texto: 'Carrinho',
-            ),
-
-            _itemBarraNavegacao(
-              index: 2,
-              icone: _iconeCarteiraComBadge(selecionado: currentIndex == 2),
-              texto: 'Carteira',
-            ),
-
-            _itemBarraNavegacao(
-              index: 3,
-              icone: Icon(
-                currentIndex == 3 ? Icons.person : Icons.person_outline,
+              _itemBarraNavegacao(
+                index: 1,
+                icone: _iconeCarrinhoComBadge(selecionado: currentIndex == 1),
+                texto: 'Carrinho',
               ),
-              texto: logado ? _primeiroNomeCliente : 'Perfil',
-            ),
 
-            if (currentIndex == 0)
-              const Expanded(child: ApiStatusIndicator(versao: '1.0.0')),
-          ],
+              _itemBarraNavegacao(
+                index: 2,
+                icone: _iconeCarteiraComBadge(selecionado: currentIndex == 2),
+                texto: 'Carteira',
+              ),
+
+              _itemBarraNavegacao(
+                index: 3,
+                icone: Icon(
+                  currentIndex == 3 ? Icons.person : Icons.person_outline,
+                ),
+                texto: logado ? _primeiroNomeCliente : 'Perfil',
+              ),
+
+              if (currentIndex == 0)
+                const Expanded(child: ApiStatusIndicator(versao: '1.0.0')),
+            ],
+          ),
         ),
       ),
     );
