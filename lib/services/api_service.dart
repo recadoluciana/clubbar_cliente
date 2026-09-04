@@ -655,6 +655,13 @@ class ApiService {
     required String nome,
     String? telefone,
     String? cpf,
+    String? endereco,
+    String? numero,
+    String? complemento,
+    String? bairro,
+    String? cep,
+    String? cidade,
+    String? uf,
   }) async {
     try {
       final response = await http.put(
@@ -664,6 +671,15 @@ class ApiService {
           'nmcliente': nome,
           'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
           'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
+          'endcliente': endereco?.trim().isEmpty == true ? null : endereco,
+          'nrendcliente': numero?.trim().isEmpty == true ? null : numero,
+          'complcliente': complemento?.trim().isEmpty == true
+              ? null
+              : complemento,
+          'bairrocliente': bairro?.trim().isEmpty == true ? null : bairro,
+          'cepcliente': cep?.trim().isEmpty == true ? null : cep,
+          'cidadecliente': cidade?.trim().isEmpty == true ? null : cidade,
+          'ufcliente': uf?.trim().isEmpty == true ? null : uf,
         }),
       );
 

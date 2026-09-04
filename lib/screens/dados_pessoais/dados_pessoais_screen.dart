@@ -18,6 +18,13 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
   final _emailCtrl = TextEditingController();
   final _telefoneCtrl = TextEditingController();
   final _cpfCtrl = TextEditingController();
+  final _cepCtrl = TextEditingController();
+  final _enderecoCtrl = TextEditingController();
+  final _numeroCtrl = TextEditingController();
+  final _complementoCtrl = TextEditingController();
+  final _bairroCtrl = TextEditingController();
+  final _cidadeCtrl = TextEditingController();
+  final _ufCtrl = TextEditingController();
 
   final apiService = ApiService();
 
@@ -37,6 +44,13 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
     _emailCtrl.dispose();
     _telefoneCtrl.dispose();
     _cpfCtrl.dispose();
+    _cepCtrl.dispose();
+    _enderecoCtrl.dispose();
+    _numeroCtrl.dispose();
+    _complementoCtrl.dispose();
+    _bairroCtrl.dispose();
+    _cidadeCtrl.dispose();
+    _ufCtrl.dispose();
     super.dispose();
   }
 
@@ -103,6 +117,13 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
     return '(${n.substring(0, 2)}) ${n.substring(2, 7)}-${n.substring(7)}';
   }
 
+  String _formatarCEP(String valor) {
+    final numeros = _somenteNumeros(valor);
+    if (numeros.length <= 5) return numeros;
+    final n = numeros.length > 8 ? numeros.substring(0, 8) : numeros;
+    return '${n.substring(0, 5)}-${n.substring(5)}';
+  }
+
   Future<void> carregarDados() async {
     setState(() {
       carregando = true;
@@ -114,8 +135,17 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
 
       _nomeCtrl.text = (data['nmcliente'] ?? '').toString();
       _emailCtrl.text = (data['emailcliente'] ?? '').toString();
-      _telefoneCtrl.text = (data['nrtelcliente'] ?? '').toString();
-      _cpfCtrl.text = (data['nrcpfcliente'] ?? '').toString();
+      _telefoneCtrl.text = _formatarTelefone(
+        (data['nrtelcliente'] ?? '').toString(),
+      );
+      _cpfCtrl.text = _formatarCPF((data['nrcpfcliente'] ?? '').toString());
+      _cepCtrl.text = _formatarCEP((data['cepcliente'] ?? '').toString());
+      _enderecoCtrl.text = (data['endcliente'] ?? '').toString();
+      _numeroCtrl.text = (data['nrendcliente'] ?? '').toString();
+      _complementoCtrl.text = (data['complcliente'] ?? '').toString();
+      _bairroCtrl.text = (data['bairrocliente'] ?? '').toString();
+      _cidadeCtrl.text = (data['cidadecliente'] ?? '').toString();
+      _ufCtrl.text = (data['ufcliente'] ?? '').toString().toUpperCase();
     } catch (e) {
       erro = e.toString().replaceFirst('Exception: ', '');
     } finally {
@@ -141,6 +171,13 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
         nome: _nomeCtrl.text.trim(),
         telefone: _somenteNumeros(_telefoneCtrl.text),
         cpf: _somenteNumeros(_cpfCtrl.text),
+        endereco: _enderecoCtrl.text.trim(),
+        numero: _numeroCtrl.text.trim(),
+        complemento: _complementoCtrl.text.trim(),
+        bairro: _bairroCtrl.text.trim(),
+        cep: _somenteNumeros(_cepCtrl.text),
+        cidade: _cidadeCtrl.text.trim(),
+        uf: _ufCtrl.text.trim().toUpperCase(),
       );
 
       if (!mounted) return;
@@ -325,6 +362,182 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
 
                             return null;
                           },
+                        ),
+
+                        const SizedBox(height: 22),
+
+                        Card(
+                          elevation: 0,
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                            side: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.shade50,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        Icons.location_on_outlined,
+                                        color: Colors.blue.shade700,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    const Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Endereço',
+                                            style: TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          SizedBox(height: 2),
+                                          Text(
+                                            'Opcional. Você também poderá informá-lo no primeiro pagamento com cartão.',
+                                            style: TextStyle(
+                                              color: Colors.black54,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _cepCtrl,
+                                  keyboardType: TextInputType.number,
+                                  decoration: _decoracao(
+                                    label: 'CEP',
+                                    icon: Icons.markunread_mailbox_outlined,
+                                  ),
+                                  onChanged: (value) {
+                                    final formatado = _formatarCEP(value);
+                                    if (formatado != value) {
+                                      _cepCtrl.value = TextEditingValue(
+                                        text: formatado,
+                                        selection: TextSelection.collapsed(
+                                          offset: formatado.length,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  validator: (value) {
+                                    final numeros = _somenteNumeros(
+                                      value ?? '',
+                                    );
+                                    if (numeros.isNotEmpty &&
+                                        numeros.length != 8) {
+                                      return 'CEP inválido';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _enderecoCtrl,
+                                  textCapitalization: TextCapitalization.words,
+                                  decoration: _decoracao(
+                                    label: 'Logradouro',
+                                    icon: Icons.signpost_outlined,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: TextFormField(
+                                        controller: _numeroCtrl,
+                                        keyboardType:
+                                            TextInputType.streetAddress,
+                                        decoration: _decoracao(
+                                          label: 'Número',
+                                          icon: Icons.numbers,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      flex: 3,
+                                      child: TextFormField(
+                                        controller: _complementoCtrl,
+                                        textCapitalization:
+                                            TextCapitalization.sentences,
+                                        decoration: _decoracao(
+                                          label: 'Complemento',
+                                          icon: Icons.apartment_outlined,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                TextFormField(
+                                  controller: _bairroCtrl,
+                                  textCapitalization: TextCapitalization.words,
+                                  decoration: _decoracao(
+                                    label: 'Bairro',
+                                    icon: Icons.location_city_outlined,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _cidadeCtrl,
+                                        textCapitalization:
+                                            TextCapitalization.words,
+                                        decoration: _decoracao(
+                                          label: 'Cidade',
+                                          icon: Icons.domain_outlined,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    SizedBox(
+                                      width: 94,
+                                      child: TextFormField(
+                                        controller: _ufCtrl,
+                                        textCapitalization:
+                                            TextCapitalization.characters,
+                                        maxLength: 2,
+                                        decoration: _decoracao(
+                                          label: 'UF',
+                                          icon: Icons.map_outlined,
+                                        ).copyWith(counterText: ''),
+                                        validator: (value) {
+                                          final uf = value?.trim() ?? '';
+                                          if (uf.isNotEmpty && uf.length != 2) {
+                                            return 'UF inválida';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
 
                         const SizedBox(height: 24),
