@@ -107,20 +107,15 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
         child: InkWell(
           onTap: _mostrarDetalhes,
           child: SizedBox(
-            width: 58,
+            width: double.infinity,
             height: 56,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
+                SizedBox(
                   width: 25,
                   height: 25,
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
-                    shape: BoxShape.circle,
-                  ),
                   child: Image.asset(
                     'assets/images/corujao.png',
                     fit: BoxFit.contain,
@@ -128,7 +123,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
                 ),
                 const SizedBox(height: 1),
                 const Text(
-                  'About',
+                  'Cora',
                   maxLines: 1,
                   style: TextStyle(
                     color: Colors.black87,

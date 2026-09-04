@@ -168,7 +168,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 texto: _primeiroNomeCliente,
               ),
 
-            if (currentIndex == 0) const ApiStatusIndicator(versao: '1.0.0'),
+            if (currentIndex == 0)
+              const Expanded(child: ApiStatusIndicator(versao: '1.0.0')),
           ],
         ),
       ),
