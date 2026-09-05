@@ -82,6 +82,7 @@ class AtracaoEventoDetalhe {
   final String bannerUrl;
   final String inicio;
   final String fim;
+  final List<String> estilos;
 
   const AtracaoEventoDetalhe({
     required this.id,
@@ -91,17 +92,31 @@ class AtracaoEventoDetalhe {
     required this.bannerUrl,
     required this.inicio,
     required this.fim,
+    this.estilos = const [],
   });
 
   factory AtracaoEventoDetalhe.fromJson(Map<String, dynamic> json) {
+    final estilos = (json['estilos'] as List? ?? const [])
+        .whereType<Map>()
+        .map((item) => (item['nmestilomusical'] ?? '').toString().trim())
+        .where((nome) => nome.isNotEmpty)
+        .toList();
+    final estiloLegado = (json['dsestilomusical'] ?? '').toString();
     return AtracaoEventoDetalhe(
       id: EventoDetalhe._toInt(json['atracao_id'] ?? 0),
       nome: (json['nmatracao'] ?? 'Atração').toString(),
-      estilo: (json['dsestilomusical'] ?? '').toString(),
+      estilo: estilos.isNotEmpty ? estilos.join(', ') : estiloLegado,
       descricao: (json['dsatracao'] ?? '').toString(),
       bannerUrl: (json['urlbanneratracao'] ?? '').toString(),
       inicio: (json['dtinicioatracao'] ?? '').toString(),
       fim: (json['dtfimatracao'] ?? '').toString(),
+      estilos: estilos.isNotEmpty
+          ? estilos
+          : estiloLegado
+                .split(',')
+                .map((item) => item.trim())
+                .where((item) => item.isNotEmpty)
+                .toList(),
     );
   }
 }

@@ -968,6 +968,7 @@ class ApiService {
             bannerUrl: bannerAtracao,
             inicio: atracao.inicio,
             fim: atracao.fim,
+            estilos: atracao.estilos,
           );
         }).toList();
 

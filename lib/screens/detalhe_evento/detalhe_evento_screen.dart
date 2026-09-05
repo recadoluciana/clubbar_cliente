@@ -138,6 +138,61 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return DateFormatters.periodo(inicio, fim);
   }
 
+  MaterialColor _corEstilo(int indice) {
+    const cores = [
+      Colors.blue,
+      Colors.purple,
+      Colors.green,
+      Colors.deepOrange,
+      Colors.teal,
+      Colors.indigo,
+      Colors.pink,
+    ];
+    return cores[indice % cores.length];
+  }
+
+  Widget _badgesEstilos(AtracaoEventoDetalhe atracao) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: atracao.estilos.asMap().entries.map((item) {
+        final cor = _corEstilo(item.key);
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: cor.withValues(alpha: .12),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: cor.withValues(alpha: .45)),
+          ),
+          child: Text(
+            item.value,
+            style: TextStyle(
+              color: cor.shade700,
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _ordemAtracao(int indice) {
+    const nomes = [
+      'Primeira atração',
+      'Segunda atração',
+      'Terceira atração',
+      'Quarta atração',
+      'Quinta atração',
+      'Sexta atração',
+      'Sétima atração',
+      'Oitava atração',
+      'Nona atração',
+      'Décima atração',
+    ];
+    return indice < nomes.length ? nomes[indice] : '${indice + 1}ª atração';
+  }
+
   void _abrirDetalhesAtracao(AtracaoEventoDetalhe atracao) {
     showModalBottomSheet<void>(
       context: context,
@@ -197,15 +252,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              if (atracao.estilo.trim().isNotEmpty) ...[
-                const SizedBox(height: 7),
-                Text(
-                  atracao.estilo,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              if (atracao.estilos.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _badgesEstilos(atracao),
               ],
               if (atracao.descricao.trim().isNotEmpty) ...[
                 const SizedBox(height: 20),
@@ -693,6 +742,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   @override
   Widget build(BuildContext context) {
     final ev = evento;
+    final atracoesOrdenadas = [...?ev?.atracoes]
+      ..sort((a, b) {
+        final inicioA = DateTime.tryParse(a.inicio);
+        final inicioB = DateTime.tryParse(b.inicio);
+        if (inicioA == null || inicioB == null) {
+          return a.inicio.compareTo(b.inicio);
+        }
+        return inicioA.compareTo(inicioB);
+      });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
@@ -851,24 +909,27 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ),
 
-                          if (ev.atracoes.isNotEmpty) ...[
+                          if (atracoesOrdenadas.isNotEmpty) ...[
                             const SizedBox(height: 14),
-                            const Text(
-                              'Atrações',
-                              style: TextStyle(
+                            Text(
+                              atracoesOrdenadas.length == 1
+                                  ? 'Atração'
+                                  : 'Atrações',
+                              style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 10),
-                            ...ev.atracoes.map(
-                              (atracao) => Padding(
+                            ...atracoesOrdenadas.asMap().entries.map(
+                              (entrada) => Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: Material(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(16),
                                   child: InkWell(
-                                    onTap: () => _abrirDetalhesAtracao(atracao),
+                                    onTap: () =>
+                                        _abrirDetalhesAtracao(entrada.value),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
                                       width: double.infinity,
@@ -880,65 +941,106 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           width: 1.4,
                                         ),
                                       ),
-                                      child: Row(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  atracao.nome,
-                                                  style: const TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.bold,
+                                          if (atracoesOrdenadas.length > 1) ...[
+                                            Text(
+                                              _ordemAtracao(entrada.key),
+                                              style: TextStyle(
+                                                color: Colors.blue.shade700,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w900,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                          ],
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.schedule_rounded,
+                                                size: 19,
+                                                color: Colors.blue.shade700,
+                                              ),
+                                              const SizedBox(width: 7),
+                                              Expanded(
+                                                child: Text(
+                                                  'Horário: ${DateFormatters.dataHoraSimples(entrada.value.inicio)} até ${DateFormatters.dataHoraSimples(entrada.value.fim)}',
+                                                  style: TextStyle(
+                                                    color: Colors.grey.shade700,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w700,
                                                   ),
                                                 ),
-                                                if (atracao.estilo
-                                                    .trim()
-                                                    .isNotEmpty)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 3,
-                                                        ),
-                                                    child: Text(atracao.estilo),
-                                                  ),
-                                                const SizedBox(height: 8),
-                                                Row(
+                                              ),
+                                              Icon(
+                                                Icons.chevron_right_rounded,
+                                                color: Colors.blue.shade700,
+                                                size: 26,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                width: 54,
+                                                height: 54,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue.shade50,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                clipBehavior: Clip.antiAlias,
+                                                child:
+                                                    entrada.value.bannerUrl
+                                                        .trim()
+                                                        .isNotEmpty
+                                                    ? Image.network(
+                                                        entrada.value.bannerUrl,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder:
+                                                            (
+                                                              context,
+                                                              error,
+                                                              stackTrace,
+                                                            ) => const Icon(
+                                                              Icons.mic_rounded,
+                                                            ),
+                                                      )
+                                                    : const Icon(
+                                                        Icons.mic_rounded,
+                                                      ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.start,
                                                   children: [
-                                                    Icon(
-                                                      Icons
-                                                          .calendar_month_rounded,
-                                                      size: 19,
-                                                      color:
-                                                          Colors.blue.shade700,
-                                                    ),
-                                                    const SizedBox(width: 7),
-                                                    Expanded(
-                                                      child: Text(
-                                                        '${DateFormatters.dataHoraSimples(atracao.inicio)} até ${DateFormatters.dataHoraSimples(atracao.fim)}',
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .grey
-                                                              .shade700,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                        ),
+                                                    Text(
+                                                      entrada.value.nome,
+                                                      style: const TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.w900,
                                                       ),
                                                     ),
+                                                    if (entrada
+                                                        .value
+                                                        .estilos
+                                                        .isNotEmpty) ...[
+                                                      const SizedBox(height: 7),
+                                                      _badgesEstilos(
+                                                        entrada.value,
+                                                      ),
+                                                    ],
                                                   ],
                                                 ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Icon(
-                                            Icons.chevron_right_rounded,
-                                            color: Colors.blue.shade700,
-                                            size: 28,
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
