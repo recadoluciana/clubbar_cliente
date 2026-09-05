@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
+import '../../services/cep_service.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/perfil_page_header.dart';
@@ -27,10 +28,13 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
   final _ufCtrl = TextEditingController();
 
   final apiService = ApiService();
+  final _cepService = CepService();
 
   bool carregando = true;
   bool salvando = false;
+  bool consultandoCep = false;
   String? erro;
+  String? _ultimoCepConsultado;
 
   @override
   void initState() {
@@ -124,6 +128,35 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
     return '${n.substring(0, 5)}-${n.substring(5)}';
   }
 
+  Future<void> _buscarCep() async {
+    final cep = _somenteNumeros(_cepCtrl.text);
+    if (cep.length != 8 || consultandoCep || cep == _ultimoCepConsultado) {
+      return;
+    }
+    setState(() => consultandoCep = true);
+    try {
+      final endereco = await _cepService.buscar(cep);
+      if (!mounted) return;
+      setState(() {
+        _ultimoCepConsultado = cep;
+        _cepCtrl.text = _formatarCEP(endereco.cep);
+        if (endereco.logradouro.isNotEmpty) {
+          _enderecoCtrl.text = endereco.logradouro;
+        }
+        if (endereco.bairro.isNotEmpty) _bairroCtrl.text = endereco.bairro;
+        _cidadeCtrl.text = endereco.cidade;
+        _ufCtrl.text = endereco.uf;
+      });
+      FocusScope.of(context).nextFocus();
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => consultandoCep = false);
+    }
+  }
+
   Future<void> carregarDados() async {
     setState(() {
       carregando = true;
@@ -140,6 +173,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
       );
       _cpfCtrl.text = _formatarCPF((data['nrcpfcliente'] ?? '').toString());
       _cepCtrl.text = _formatarCEP((data['cepcliente'] ?? '').toString());
+      _ultimoCepConsultado = _somenteNumeros(_cepCtrl.text);
       _enderecoCtrl.text = (data['endcliente'] ?? '').toString();
       _numeroCtrl.text = (data['nrendcliente'] ?? '').toString();
       _complementoCtrl.text = (data['complcliente'] ?? '').toString();
@@ -422,12 +456,33 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                 TextFormField(
                                   controller: _cepCtrl,
                                   keyboardType: TextInputType.number,
-                                  decoration: _decoracao(
-                                    label: 'CEP',
-                                    icon: Icons.markunread_mailbox_outlined,
-                                  ),
+                                  decoration:
+                                      _decoracao(
+                                        label: 'CEP',
+                                        icon: Icons.markunread_mailbox_outlined,
+                                      ).copyWith(
+                                        suffixIcon: consultandoCep
+                                            ? const Padding(
+                                                padding: EdgeInsets.all(14),
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                              )
+                                            : IconButton(
+                                                tooltip: 'Buscar CEP',
+                                                onPressed: _buscarCep,
+                                                icon: const Icon(
+                                                  Icons.search_rounded,
+                                                ),
+                                              ),
+                                      ),
                                   onChanged: (value) {
                                     final formatado = _formatarCEP(value);
+                                    final numeros = _somenteNumeros(value);
+                                    if (numeros != _ultimoCepConsultado) {
+                                      _ultimoCepConsultado = null;
+                                    }
                                     if (formatado != value) {
                                       _cepCtrl.value = TextEditingValue(
                                         text: formatado,
@@ -436,7 +491,9 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                         ),
                                       );
                                     }
+                                    if (numeros.length == 8) _buscarCep();
                                   },
+                                  onFieldSubmitted: (_) => _buscarCep(),
                                   validator: (value) {
                                     final numeros = _somenteNumeros(
                                       value ?? '',

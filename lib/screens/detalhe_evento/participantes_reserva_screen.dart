@@ -8,6 +8,7 @@ import '../../utils/app_snackbar.dart';
 import '../../utils/cpf_utils.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
+import '../pagamento/pagamento_sucesso_screen.dart';
 
 class ParticipantesReservaScreen extends StatefulWidget {
   final Loja loja;
@@ -103,6 +104,17 @@ class _ParticipantesReservaScreenState
         participantes: participantes,
       );
       if (!mounted) return;
+      if (reserva['gratuito'] == true || reserva['venda_id'] != null) {
+        timer?.cancel();
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                const PagamentoSucessoScreen(sucesso: true, cashbackGerado: 0),
+          ),
+        );
+        return;
+      }
       await Navigator.push(
         context,
         MaterialPageRoute(

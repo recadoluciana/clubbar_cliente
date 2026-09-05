@@ -2,6 +2,9 @@ class EventoLote {
   final int loteId;
   final int eventoId;
   final String nome;
+  final String nomeSetor;
+  final int numeroLote;
+  final String tipoIngresso;
   final double preco;
   final int qtTotal;
   final int qtVendida;
@@ -14,6 +17,9 @@ class EventoLote {
     required this.loteId,
     required this.eventoId,
     required this.nome,
+    this.nomeSetor = '',
+    this.numeroLote = 1,
+    this.tipoIngresso = 'UNICO',
     required this.preco,
     required this.qtTotal,
     required this.qtVendida,
@@ -60,6 +66,9 @@ class EventoLote {
       loteId: _toInt(json['lote_id'] ?? 0),
       eventoId: _toInt(json['evento_id'] ?? 0),
       nome: (json['nmlote'] ?? '').toString(),
+      nomeSetor: (json['nmsetor'] ?? '').toString(),
+      numeroLote: _toInt(json['nrlote'] ?? 1),
+      tipoIngresso: (json['tipoingresso'] ?? 'UNICO').toString(),
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
