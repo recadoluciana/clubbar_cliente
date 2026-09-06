@@ -2,6 +2,7 @@ import 'package:clubbar_cliente/config/app_config.dart';
 
 class Produto {
   final int produtoId;
+  final int? cardapioItemId;
   final int organizacaoId;
   final int lojaId;
   final int categoriaId;
@@ -23,6 +24,7 @@ class Produto {
 
   Produto({
     required this.produtoId,
+    this.cardapioItemId,
     required this.organizacaoId,
     required this.lojaId,
     required this.categoriaId,
@@ -54,6 +56,7 @@ class Produto {
   factory Produto.fromJson(Map<String, dynamic> json) {
     return Produto(
       produtoId: json['produto_id'] ?? 0,
+      cardapioItemId: int.tryParse((json['cardapioitem_id'] ?? '').toString()),
       organizacaoId: json['organizacao_id'] ?? 0,
       lojaId: json['loja_id'] ?? 0,
       categoriaId: json['categoria_id'] ?? 0,

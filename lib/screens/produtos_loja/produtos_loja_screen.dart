@@ -334,6 +334,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
         produtoId: produto.produtoId,
+        cardapioItemId: produto.cardapioItemId,
         quantidade: 1,
         observacao: observacao,
       );

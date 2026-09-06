@@ -296,20 +296,17 @@ class ApiService {
   Future<List<Produto>> buscarProdutosPorLoja(int lojaId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/lojas/$lojaId/produtos'),
+        Uri.parse('$baseUrl/lojas/$lojaId/cardapio-publicado'),
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
-        if (data is List) {
-          return data.map((e) => Produto.fromJson(e)).toList();
-        }
-
-        if (data is Map && data['items'] is List) {
-          return (data['items'] as List)
-              .map((e) => Produto.fromJson(e))
+        if (data is Map && data['categorias'] is List) {
+          return (data['categorias'] as List)
+              .expand((categoria) => (categoria['itens'] as List? ?? const []))
+              .map((e) => Produto.fromJson(Map<String, dynamic>.from(e)))
               .toList();
         }
 
@@ -351,6 +348,7 @@ class ApiService {
     required int organizacaoId,
     required int lojaId,
     int? produtoId,
+    int? cardapioItemId,
     int? loteId,
     String idtipoproduto = 'P',
     int quantidade = 1,
@@ -367,6 +365,7 @@ class ApiService {
           'organizacao_id': organizacaoId,
           'loja_id': lojaId,
           'produto_id': produtoId,
+          'cardapioitem_id': cardapioItemId,
           'lote_id': loteId,
           'idtipoproduto': idtipoproduto,
           'qt': quantidade,
