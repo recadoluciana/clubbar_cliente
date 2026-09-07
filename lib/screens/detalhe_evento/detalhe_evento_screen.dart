@@ -872,7 +872,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 ? Image.network(
                                     ev.bannerUrl,
                                     width: double.infinity,
-                                    fit: BoxFit.contain,
+                                    height: double.infinity,
+                                    fit: BoxFit.cover,
                                   )
                                 : Container(
                                     color: Colors.grey.shade300,
