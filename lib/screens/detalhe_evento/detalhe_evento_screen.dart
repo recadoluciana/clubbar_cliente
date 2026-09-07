@@ -861,7 +861,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            height: 210,
+                            height: 260,
                             width: double.infinity,
                             clipBehavior: Clip.antiAlias,
                             decoration: BoxDecoration(
