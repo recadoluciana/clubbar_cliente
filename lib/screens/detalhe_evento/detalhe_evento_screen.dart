@@ -348,6 +348,30 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
     }
     if (confirmada != true || !mounted) return;
+    String? beneficio;
+    if (lote.tipoIngresso == 'MEIA_LEGAL') {
+      beneficio = await showDialog<String>(
+        context: context,
+        builder: (c) => SimpleDialog(
+          title: const Text('Qual é o benefício?'),
+          children: [
+            for (final item in const {
+              'ESTUDANTE': 'Estudante',
+              'JOVEM_BAIXA_RENDA': 'Jovem de baixa renda',
+              'PCD': 'Pessoa com deficiência',
+              'ACOMPANHANTE_PCD': 'Acompanhante de PcD',
+            }.entries)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(c, item.key),
+                child: Text(item.value),
+              ),
+          ],
+        ),
+      );
+      if (beneficio == null || !mounted) return;
+    } else if (lote.tipoIngresso == 'MEIA_IDOSO') {
+      beneficio = 'IDOSO';
+    }
     setState(() => processandoCompra = true);
     try {
       final clienteId = await _obterClienteIdLogado();
@@ -355,6 +379,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       final reserva = await apiService.criarReservaIngresso(
         clienteId: clienteId,
         loteId: lote.loteId,
+        lotePrecoId: lote.lotePrecoId,
+        tipoBeneficio: beneficio,
         quantidade: quantidade,
       );
       if (!mounted) return;
@@ -426,7 +452,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : vendaFutura
         ? Colors.amber.shade800
         : Colors.red;
-    final quantidade = _quantidadesLotes[lote.loteId] ?? 1;
+    final quantidade = _quantidadesLotes[lote.lotePrecoId] ?? 1;
     final taxaUnitaria = lote.preco * widget.loja.vrtaxaing / 100;
     final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
@@ -513,8 +539,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       onPressed: () {
                         if (quantidade > 1) {
                           setState(
-                            () =>
-                                _quantidadesLotes[lote.loteId] = quantidade - 1,
+                            () => _quantidadesLotes[lote.lotePrecoId] =
+                                quantidade - 1,
                           );
                         }
                       },
@@ -552,8 +578,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             (lote.semLimite ||
                                 quantidade < lote.qtDisponivel)) {
                           setState(
-                            () =>
-                                _quantidadesLotes[lote.loteId] = quantidade + 1,
+                            () => _quantidadesLotes[lote.lotePrecoId] =
+                                quantidade + 1,
                           );
                         }
                       },

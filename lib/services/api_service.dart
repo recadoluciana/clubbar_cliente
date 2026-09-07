@@ -388,6 +388,8 @@ class ApiService {
   Future<Map<String, dynamic>> criarReservaIngresso({
     required int clienteId,
     required int loteId,
+    required int lotePrecoId,
+    String? tipoBeneficio,
     required int quantidade,
   }) async {
     final response = await http.post(
@@ -396,6 +398,8 @@ class ApiService {
       body: jsonEncode({
         'cliente_id': clienteId,
         'lote_id': loteId,
+        'lotepreco_id': lotePrecoId,
+        'tipo_beneficio': tipoBeneficio,
         'quantidade': quantidade,
       }),
     );
@@ -1011,9 +1015,23 @@ class ApiService {
 
         if (data is! List) return [];
 
-        return data
-            .map((e) => EventoLote.fromJson(e as Map<String, dynamic>))
-            .toList();
+        final opcoes = <EventoLote>[];
+        for (final bruto in data) {
+          final lote = Map<String, dynamic>.from(bruto as Map);
+          for (final p in (lote['precos'] as List? ?? const [])) {
+            final preco = Map<String, dynamic>.from(p as Map);
+            opcoes.add(
+              EventoLote.fromJson({
+                ...lote,
+                ...preco,
+                'nmlote': '${lote['nmlote']} — ${preco['nmpreco']}',
+                'tipoingresso': preco['tipopreco'],
+                'vrprecolote': preco['vrpreco'],
+              }),
+            );
+          }
+        }
+        return opcoes;
       }
 
       throw Exception(_extrairMensagemHttp(response));

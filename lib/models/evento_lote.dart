@@ -1,10 +1,12 @@
 class EventoLote {
   final int loteId;
+  final int lotePrecoId;
   final int eventoId;
   final String nome;
   final String nomeSetor;
   final int numeroLote;
   final String tipoIngresso;
+  final bool exigeComprovante;
   final double preco;
   final int qtTotal;
   final int qtVendida;
@@ -15,11 +17,13 @@ class EventoLote {
 
   EventoLote({
     required this.loteId,
+    this.lotePrecoId = 0,
     required this.eventoId,
     required this.nome,
     this.nomeSetor = '',
     this.numeroLote = 1,
     this.tipoIngresso = 'UNICO',
+    this.exigeComprovante = false,
     required this.preco,
     required this.qtTotal,
     required this.qtVendida,
@@ -64,11 +68,13 @@ class EventoLote {
   factory EventoLote.fromJson(Map<String, dynamic> json) {
     return EventoLote(
       loteId: _toInt(json['lote_id'] ?? 0),
+      lotePrecoId: _toInt(json['lotepreco_id'] ?? 0),
       eventoId: _toInt(json['evento_id'] ?? 0),
       nome: (json['nmlote'] ?? '').toString(),
       nomeSetor: (json['nmsetor'] ?? '').toString(),
       numeroLote: _toInt(json['nrlote'] ?? 1),
       tipoIngresso: (json['tipoingresso'] ?? 'UNICO').toString(),
+      exigeComprovante: json['exigecomprovante'] == true,
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
