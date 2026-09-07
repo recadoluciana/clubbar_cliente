@@ -4,6 +4,7 @@ import '../../services/cep_service.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/perfil_page_header.dart';
+import '../../services/main_navigation_controller.dart';
 
 class DadosPessoaisScreen extends StatefulWidget {
   const DadosPessoaisScreen({super.key});
@@ -217,12 +218,10 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
       if (!mounted) return;
 
       AppSnackBar.sucesso(context, 'Dados atualizados com sucesso.');
-
-      Navigator.pop(context, true);
+      MainNavigationController.fecharTelaInterna();
     } catch (e) {
       if (!mounted) return;
-
-      AppSnackBar.erro(context, 'Erro ao atualizar dados.');
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) {
         setState(() {

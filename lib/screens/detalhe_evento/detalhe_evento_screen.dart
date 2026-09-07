@@ -814,12 +814,50 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text(
-                            ev.nomeLoja,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  ev.nomeLoja,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              FilledButton.icon(
+                                onPressed: () {
+                                  MainNavigationController.abrirTela(
+                                    ProdutosLojaScreen(loja: widget.loja),
+                                  );
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: Colors.amber,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 10,
+                                  ),
+                                  minimumSize: const Size(0, 40),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                icon: const Icon(
+                                  Icons.restaurant_menu_rounded,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  'Comprar produto',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 6),
                           Text(
@@ -885,30 +923,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               color: Colors.grey.shade700,
                             ),
                           ),
-                          const SizedBox(height: 14),
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton.icon(
-                              onPressed: () {
-                                MainNavigationController.abrirTela(
-                                  ProdutosLojaScreen(loja: widget.loja),
-                                );
-                              },
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 13,
-                                ),
-                              ),
-                              icon: const Icon(Icons.restaurant_menu_rounded),
-                              label: const Text(
-                                'Comprar produto',
-                                style: TextStyle(fontWeight: FontWeight.w800),
-                              ),
-                            ),
-                          ),
-
                           if (atracoesOrdenadas.isNotEmpty) ...[
                             const SizedBox(height: 14),
                             Text(
