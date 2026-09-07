@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import '../../config/app_config.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/app_version_text.dart';
 import '../../widgets/perfil_page_header.dart';
 
 class AtendimentoCoraScreen extends StatefulWidget {
@@ -138,8 +139,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
             _ambienteDev ? 'Desenvolvimento' : 'Produção',
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
           ),
-          const Text(
-            'Versão 1.0.0',
+          const AppVersionText(
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
           ),
         ],

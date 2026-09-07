@@ -3,14 +3,14 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../config/app_config.dart';
 
 class ApiStatusIndicator extends StatefulWidget {
-  final String versao;
   final VoidCallback? onTap;
 
-  const ApiStatusIndicator({super.key, required this.versao, this.onTap});
+  const ApiStatusIndicator({super.key, this.onTap});
 
   @override
   State<ApiStatusIndicator> createState() => _ApiStatusIndicatorState();
@@ -20,6 +20,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
   Timer? _timer;
   bool _online = false;
   bool _bancoOnline = false;
+  String _versao = '';
 
   bool get _ambienteDev =>
       AppConfig.isDev ||
@@ -29,8 +30,15 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
   @override
   void initState() {
     super.initState();
+    _carregarVersao();
     _consultar();
     _timer = Timer.periodic(const Duration(seconds: 30), (_) => _consultar());
+  }
+
+  Future<void> _carregarVersao() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() => _versao = '${info.version}+${info.buildNumber}');
   }
 
   @override
@@ -86,7 +94,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
             const SizedBox(height: 8),
             Text('Ambiente: ${_ambienteDev ? 'Desenvolvimento' : 'Produção'}'),
             const SizedBox(height: 8),
-            Text('Versão: ${widget.versao}'),
+            Text('Versão: $_versao'),
           ],
         ),
         actions: [

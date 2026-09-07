@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/main_navigation_controller.dart';
+import 'app_version_text.dart';
 
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titulo;
@@ -146,8 +147,8 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           const Padding(
             padding: EdgeInsets.only(right: 16),
             child: Center(
-              child: Text(
-                "v1.0.0",
+              child: AppVersionText(
+                prefix: 'v',
                 style: TextStyle(
                   color: Colors.white54,
                   fontSize: 10,

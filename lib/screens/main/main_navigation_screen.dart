@@ -157,7 +157,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
               Expanded(
                 child: ApiStatusIndicator(
-                  versao: '1.0.0',
                   onTap: () => MainNavigationController.abrirTela(
                     const AtendimentoCoraScreen(),
                   ),
