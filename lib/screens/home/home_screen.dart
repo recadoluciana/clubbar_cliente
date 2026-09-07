@@ -312,6 +312,68 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     );
   }
 
+  Widget _tituloEventosEmDestaque(List<Evento> eventos) {
+    final evento = eventos.isEmpty
+        ? null
+        : eventos[_paginaAtual.clamp(0, eventos.length - 1)];
+    final loja = evento == null ? null : _lojaDoEvento(evento);
+    final logo = evento == null
+        ? ''
+        : (evento.logoLojaUrl.isNotEmpty
+              ? evento.logoLojaUrl
+              : (loja?.imagemUrl ?? ''));
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          const Icon(Icons.celebration_outlined, size: 20),
+          const SizedBox(width: 7),
+          const Expanded(
+            child: Text(
+              'Eventos em destaque',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+          if (evento != null && evento.nomeLoja.isNotEmpty)
+            Container(
+              constraints: const BoxConstraints(maxWidth: 160),
+              padding: const EdgeInsets.fromLTRB(4, 4, 9, 4),
+              decoration: BoxDecoration(
+                color: Colors.black87,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipOval(
+                    child: _imagemSegura(
+                      url: logo,
+                      width: 28,
+                      height: 28,
+                      fallbackIcon: Icons.storefront_outlined,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      evento.nomeLoja,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _cardVazio(String texto) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -658,10 +720,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   _campoBusca(),
                   const SizedBox(height: 15),
 
-                  _secaoTitulo(
-                    'Eventos em destaque',
-                    Icons.celebration_outlined,
-                  ),
+                  _tituloEventosEmDestaque(destaquesFiltrados),
                   const SizedBox(height: 10),
 
                   if (erroEventos != null)
@@ -683,10 +742,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                           final evento = destaquesFiltrados[index];
 
                           final loja = _lojaDoEvento(evento);
-                          final logoLoja = evento.logoLojaUrl.isNotEmpty
-                              ? evento.logoLojaUrl
-                              : (loja?.imagemUrl ?? '');
-
                           return GestureDetector(
                             onTap: () => _abrirEvento(evento, loja),
                             child: Container(
@@ -728,61 +783,9 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                       ),
                                     ),
                                     Positioned(
-                                      right: 12,
-                                      bottom: 10,
-                                      child: Container(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          5,
-                                          5,
-                                          10,
-                                          5,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.68,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            24,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            ClipOval(
-                                              child: _imagemSegura(
-                                                url: logoLoja,
-                                                width: 34,
-                                                height: 34,
-                                                fallbackIcon:
-                                                    Icons.storefront_outlined,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            ConstrainedBox(
-                                              constraints: const BoxConstraints(
-                                                maxWidth: 180,
-                                              ),
-                                              child: Text(
-                                                evento.nomeLoja.isEmpty
-                                                    ? 'Estabelecimento'
-                                                    : evento.nomeLoja,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
                                       left: 15,
                                       right: 15,
-                                      bottom: 58,
+                                      bottom: 10,
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
@@ -885,6 +888,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     _listaProdutosMaisVendidos(),
                     const SizedBox(height: 20),
                   ],
+
+                  if (produtosMaisVendidos.isEmpty) const SizedBox(height: 20),
 
                   _secaoTitulo(
                     'Bares e Casas Noturnas',

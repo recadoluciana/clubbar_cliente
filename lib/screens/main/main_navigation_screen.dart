@@ -56,7 +56,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }) {
     final selecionado = currentIndex == index;
 
-    final corItem = selecionado ? Colors.black : Colors.black87;
+    final corIcone = selecionado ? Colors.amber.shade700 : Colors.black87;
+    const corTexto = Colors.black87;
 
     return Expanded(
       child: Material(
@@ -74,7 +75,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   children: [
                     IconTheme(
                       data: IconThemeData(
-                        color: corItem,
+                        color: corIcone,
                         size: selecionado ? 23 : 22,
                       ),
                       child: SizedBox(height: 25, child: Center(child: icone)),
@@ -89,7 +90,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: corItem,
+                        color: corTexto,
                         fontSize: 11,
                         height: 1,
                         fontWeight: selecionado

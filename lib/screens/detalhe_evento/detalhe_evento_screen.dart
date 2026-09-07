@@ -36,6 +36,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
   final Map<int, Map<String, dynamic>> _statusLotes = {};
+  final Map<int, int> _quantidadesLotes = {};
 
   bool carregando = true;
   bool processandoCompra = false;
@@ -89,13 +90,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   ''';
 
     await Share.share(texto);
-  }
-
-  int _toInt(dynamic valor) {
-    if (valor == null) return 0;
-    if (valor is int) return valor;
-    if (valor is double) return valor.toInt();
-    return int.tryParse(valor.toString()) ?? 0;
   }
 
   Future<void> carregarDados() async {
@@ -291,62 +285,68 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return clienteId;
   }
 
-  Future<void> iniciarReserva(EventoLote lote) async {
+  Future<void> iniciarReserva(
+    EventoLote lote, {
+    int? quantidadeSelecionada,
+  }) async {
     if (processandoCompra) return;
-    var quantidade = 1;
-    final confirmada = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Comprar ingressos'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                lote.nome,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              const Text('Quantos participantes?'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: quantidade > 1
-                        ? () => setDialogState(() => quantidade--)
-                        : null,
-                    icon: const Icon(Icons.remove_circle_outline),
-                  ),
-                  Text(
-                    '$quantidade',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+    var quantidade = quantidadeSelecionada ?? 1;
+    bool? confirmada = quantidadeSelecionada != null;
+    if (quantidadeSelecionada == null) {
+      confirmada = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Comprar ingressos'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  lote.nome,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                const Text('Quantos participantes?'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: quantidade > 1
+                          ? () => setDialogState(() => quantidade--)
+                          : null,
+                      icon: const Icon(Icons.remove_circle_outline),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: quantidade < 20
-                        ? () => setDialogState(() => quantidade++)
-                        : null,
-                    icon: const Icon(Icons.add_circle_outline),
-                  ),
-                ],
+                    Text(
+                      '$quantidade',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: quantidade < 20
+                          ? () => setDialogState(() => quantidade++)
+                          : null,
+                      icon: const Icon(Icons.add_circle_outline),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(dialogContext, true),
+                child: const Text('Continuar'),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Continuar'),
-            ),
-          ],
         ),
-      ),
-    );
+      );
+    }
     if (confirmada != true || !mounted) return;
     setState(() => processandoCompra = true);
     try {
@@ -376,37 +376,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     } finally {
       if (mounted) setState(() => processandoCompra = false);
     }
-  }
-
-  Widget miniGraficoLote({required int total, required int vendidos}) {
-    final vendidosAjustado = vendidos.clamp(0, total);
-    final percentualVendido = total <= 0 ? 0.0 : vendidosAjustado / total;
-
-    return SizedBox(
-      width: 58,
-      height: 58,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CircularProgressIndicator(
-            value: percentualVendido,
-            strokeWidth: 7,
-            backgroundColor: Colors.green.withValues(alpha: 0.25),
-            valueColor: const AlwaysStoppedAnimation<Color>(
-              Colors.red, // vendido
-            ),
-          ),
-          Text(
-            '${(percentualVendido * 100).round()}%',
-            style: TextStyle(
-              fontSize: 9,
-              color: Colors.grey.shade700,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget linhaInfo({
@@ -447,15 +416,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   Widget cardLote(EventoLote lote) {
-    final status = _statusLotes[lote.loteId];
-
-    final vendidos = _toInt(status?['qt_vendida']);
-    final total = _toInt(status?['qt_total'] ?? lote.qtTotal);
     final agora = DateTime.now();
     final vendaDisponivel = lote.podeComprarEm(agora);
 
-    final corBadge = vendaDisponivel ? Colors.green : Colors.red;
     final textoBadge = lote.situacaoVendaEm(agora);
+    final vendaFutura = textoBadge == 'Em breve';
+    final corBadge = vendaDisponivel
+        ? Colors.green
+        : vendaFutura
+        ? Colors.amber.shade800
+        : Colors.red;
+    final quantidade = _quantidadesLotes[lote.loteId] ?? 1;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -464,89 +435,124 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         borderRadius: BorderRadius.circular(22),
         elevation: 2,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Text(
+                'Escolha uma opção',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lote.nome,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (lote.nomeSetor.isNotEmpty ||
+                              lote.tipoIngresso != 'UNICO') ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              [
+                                lote.nomeSetor,
+                                lote.tipoIngresso == 'UNICO'
+                                    ? ''
+                                    : lote.tipoIngresso,
+                              ].where((e) => e.isNotEmpty).join(' • '),
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 5),
+                          Text(
+                            ValueFormatters.moeda(lote.preco),
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton.filled(
+                      onPressed: quantidade > 1
+                          ? () => setState(
+                              () => _quantidadesLotes[lote.loteId] =
+                                  quantidade - 1,
+                            )
+                          : null,
+                      icon: const Icon(Icons.remove, size: 18),
+                    ),
+                    SizedBox(
+                      width: 32,
+                      child: Text(
+                        '$quantidade',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                    IconButton.filled(
+                      onPressed:
+                          quantidade < 20 &&
+                              (lote.semLimite || quantidade < lote.qtDisponivel)
+                          ? () => setState(
+                              () => _quantidadesLotes[lote.loteId] =
+                                  quantidade + 1,
+                            )
+                          : null,
+                      icon: const Icon(Icons.add, size: 18),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
               Row(
                 children: [
-                  Column(
-                    children: [
-                      lote.semLimite
-                          ? const SizedBox(
-                              width: 58,
-                              height: 58,
-                              child: CircleAvatar(
-                                backgroundColor: Color(0xFFE8F5E9),
-                                child: Text(
-                                  '∞',
-                                  style: TextStyle(
-                                    fontSize: 28,
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            )
-                          : miniGraficoLote(total: total, vendidos: vendidos),
-                      const SizedBox(height: 4),
-                      Text(
-                        lote.semLimite ? 'Sem limite' : 'Taxa Ocupação',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: corBadge.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Text(
-                      lote.nome,
-                      style: const TextStyle(
-                        fontSize: 18,
+                      textoBadge,
+                      style: TextStyle(
+                        color: corBadge,
                         fontWeight: FontWeight.bold,
+                        fontSize: 10,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const Spacer(),
                   Text(
-                    ValueFormatters.moeda(lote.preco),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                    'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      fontSize: 10,
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(width: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: corBadge.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  textoBadge,
-                  style: TextStyle(
-                    color: corBadge,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              linhaInfo(
-                icone: Icons.date_range_outlined,
-                titulo: 'Vendas',
-                valor: formatarPeriodoVenda(
-                  lote.dataInicioVenda,
-                  lote.dataFimVenda,
-                ),
               ),
               const SizedBox(height: 14),
               Row(
@@ -555,7 +561,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     child: OutlinedButton.icon(
                       onPressed: !vendaDisponivel || processandoCompra
                           ? null
-                          : () => iniciarReserva(lote),
+                          : () => iniciarReserva(
+                              lote,
+                              quantidadeSelecionada: quantidade,
+                            ),
                       icon: const Icon(Icons.local_activity_outlined),
                       label: const Text('Comprar ingressos'),
                     ),
