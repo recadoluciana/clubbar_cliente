@@ -316,14 +316,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     final evento = eventos.isEmpty
         ? null
         : eventos[_paginaAtual.clamp(0, eventos.length - 1)];
-    final loja = evento == null ? null : _lojaDoEvento(evento);
-    final logo = evento == null
-        ? ''
-        : (evento.logoLojaUrl.isNotEmpty
-              ? evento.logoLojaUrl
-              : (loja?.imagemUrl ?? ''));
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.only(left: 16, right: 7),
       child: Row(
         children: [
           const Icon(Icons.celebration_outlined, size: 20),
@@ -337,7 +331,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
           if (evento != null && evento.nomeLoja.isNotEmpty)
             Container(
               constraints: const BoxConstraints(maxWidth: 160),
-              padding: const EdgeInsets.fromLTRB(4, 4, 9, 4),
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
               decoration: BoxDecoration(
                 color: Colors.black87,
                 borderRadius: BorderRadius.circular(22),
@@ -345,15 +339,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ClipOval(
-                    child: _imagemSegura(
-                      url: logo,
-                      width: 28,
-                      height: 28,
-                      fallbackIcon: Icons.storefront_outlined,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
                   Flexible(
                     child: Text(
                       evento.nomeLoja,
@@ -721,7 +706,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   const SizedBox(height: 15),
 
                   _tituloEventosEmDestaque(destaquesFiltrados),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 4),
 
                   if (erroEventos != null)
                     _cardErro(erroEventos!, carregarHome)

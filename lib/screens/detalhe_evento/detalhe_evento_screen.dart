@@ -427,6 +427,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? Colors.amber.shade800
         : Colors.red;
     final quantidade = _quantidadesLotes[lote.loteId] ?? 1;
+    final taxaUnitaria = lote.preco * widget.loja.vrtaxaing / 100;
+    final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -481,23 +483,49 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ],
                           const SizedBox(height: 5),
-                          Text(
-                            ValueFormatters.moeda(lote.preco),
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w900,
+                          RichText(
+                            text: TextSpan(
+                              style: const TextStyle(color: Colors.black87),
+                              children: [
+                                TextSpan(
+                                  text: ValueFormatters.moeda(lote.preco),
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text:
+                                      ' (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    IconButton.filled(
-                      onPressed: quantidade > 1
-                          ? () => setState(
-                              () => _quantidadesLotes[lote.loteId] =
-                                  quantidade - 1,
-                            )
-                          : null,
+                    IconButton(
+                      onPressed: () {
+                        if (quantidade > 1) {
+                          setState(
+                            () =>
+                                _quantidadesLotes[lote.loteId] = quantidade - 1,
+                          );
+                        }
+                      },
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        fixedSize: const Size(38, 38),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       icon: const Icon(Icons.remove, size: 18),
                     ),
                     SizedBox(
@@ -508,15 +536,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
-                    IconButton.filled(
-                      onPressed:
-                          quantidade < 20 &&
-                              (lote.semLimite || quantidade < lote.qtDisponivel)
-                          ? () => setState(
-                              () => _quantidadesLotes[lote.loteId] =
-                                  quantidade + 1,
-                            )
-                          : null,
+                    IconButton(
+                      onPressed: () {
+                        if (quantidade < 20 &&
+                            (lote.semLimite ||
+                                quantidade < lote.qtDisponivel)) {
+                          setState(
+                            () =>
+                                _quantidadesLotes[lote.loteId] = quantidade + 1,
+                          );
+                        }
+                      },
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        fixedSize: const Size(38, 38),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                       icon: const Icon(Icons.add, size: 18),
                     ),
                   ],
@@ -557,8 +595,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               const SizedBox(height: 14),
               Row(
                 children: [
+                  const Text(
+                    'Total a pagar',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                  const Spacer(),
+                  Text(
+                    ValueFormatters.moeda(totalPagar),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: FilledButton.icon(
                       onPressed: !vendaDisponivel || processandoCompra
                           ? null
                           : () => iniciarReserva(
@@ -567,6 +622,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                       icon: const Icon(Icons.local_activity_outlined),
                       label: const Text('Comprar ingressos'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        disabledForegroundColor: Colors.grey.shade600,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -1079,7 +1141,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             children: [
                               const Expanded(
                                 child: Text(
-                                  'Ingressos',
+                                  'Ingresso',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
