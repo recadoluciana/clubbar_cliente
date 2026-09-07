@@ -1156,10 +1156,17 @@ class ApiService {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return Map<String, dynamic>.from(data as Map);
     }
+
+    final detalhe = data is Map ? data['detail'] : null;
+    final mensagem = detalhe is String && detalhe.trim().isNotEmpty
+        ? detalhe
+        : detalhe is Map
+        ? (detalhe['description'] ?? detalhe['message'] ?? '').toString()
+        : 'Não foi possível cancelar o ingresso. Tente novamente.';
     throw Exception(
-      data is Map
-          ? data['detail'] ?? 'Erro ao cancelar ingresso'
-          : 'Erro ao cancelar ingresso',
+      mensagem.trim().isEmpty
+          ? 'Não foi possível cancelar o ingresso. Tente novamente.'
+          : mensagem,
     );
   }
 

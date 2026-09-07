@@ -754,12 +754,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
-            ),
+          MainNavigationController.abrirTela(
+            ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
           );
         },
         child: SizedBox(

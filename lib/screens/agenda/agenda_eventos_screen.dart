@@ -112,17 +112,8 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
           onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => DetalheEventoScreen(
-                  eventoId: evento.id,
-                  loja: widget.loja,
-                  onVoltar: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
+            MainNavigationController.abrirTela(
+              DetalheEventoScreen(eventoId: evento.id, loja: widget.loja),
             );
           },
           child: Padding(

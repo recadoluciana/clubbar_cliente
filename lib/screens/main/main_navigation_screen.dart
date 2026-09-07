@@ -247,11 +247,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         if (produtoId != null) {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ProdutoCompartilhadoScreen(produtoId: produtoId),
-            ),
+          MainNavigationController.abrirTela(
+            ProdutoCompartilhadoScreen(produtoId: produtoId),
           );
           return;
         }
