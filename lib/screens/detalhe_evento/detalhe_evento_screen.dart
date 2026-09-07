@@ -521,12 +521,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        fixedSize: const Size(38, 38),
+                        fixedSize: const Size(32, 32),
+                        minimumSize: const Size(32, 32),
+                        padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(7),
                         ),
                       ),
-                      icon: const Icon(Icons.remove, size: 18),
+                      icon: const Text(
+                        '−',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          height: 1,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
                     SizedBox(
                       width: 32,
@@ -550,12 +560,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.blue,
                         foregroundColor: Colors.white,
-                        fixedSize: const Size(38, 38),
+                        fixedSize: const Size(32, 32),
+                        minimumSize: const Size(32, 32),
+                        padding: EdgeInsets.zero,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(7),
                         ),
                       ),
-                      icon: const Icon(Icons.add, size: 18),
+                      icon: const Text(
+                        '+',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 19,
+                          height: 1,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
                   ],
                 ),
