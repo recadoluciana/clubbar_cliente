@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../screens/login/login_screen.dart';
+import '../services/auth_storage.dart';
+import '../services/cart_badge_notifier.dart';
+import '../services/carteira_badge_notifier.dart';
 import '../services/main_navigation_controller.dart';
 import 'app_version_text.dart';
 
@@ -58,6 +62,63 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _logoClubbar() {
     return Image.asset(logoPath, height: 40, fit: BoxFit.contain);
+  }
+
+  Future<void> _sair(BuildContext context) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sair do Clubbar'),
+        content: const Text('Deseja encerrar sua sessão?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Não'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.logout_rounded),
+            label: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !context.mounted) return;
+
+    await AuthStorage().limparToken();
+    CartBadgeNotifier.atualizar(0);
+    CarteiraBadgeNotifier.atualizar();
+    MainNavigationController.irParaHome();
+    if (!context.mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(mostrarVoltar: false),
+      ),
+      (_) => false,
+    );
+  }
+
+  Widget _botaoSair(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: AuthStorage().estaLogado(),
+      builder: (context, snapshot) {
+        if (snapshot.data != true) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: IconButton(
+            tooltip: 'Sair',
+            onPressed: () => _sair(context),
+            icon: const Icon(
+              Icons.logout_rounded,
+              color: Colors.white,
+              size: 25,
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -157,6 +218,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
+        _botaoSair(context),
       ],
     );
   }
