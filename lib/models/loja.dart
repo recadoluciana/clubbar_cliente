@@ -13,6 +13,7 @@ class Loja {
   final double vrtaxaprod;
   final double vrtaxaing;
   final String dsestiloloja;
+  final List<String> estilosMusicais;
   final String nrtelloja;
   final String sgEstado;
   final String numero;
@@ -32,6 +33,7 @@ class Loja {
     required this.vrtaxaprod,
     required this.vrtaxaing,
     required this.dsestiloloja,
+    this.estilosMusicais = const [],
     required this.nrtelloja,
     required this.sgEstado,
     this.numero = '',
@@ -52,6 +54,12 @@ class Loja {
     final path = (json['urllogoloja'] ?? '').toString();
     final fachadaPath = (json['urlfachadaloja'] ?? '').toString();
 
+    final estilos = (json['estilos'] as List? ?? const [])
+        .whereType<Map>()
+        .map((item) => (item['nmestilomusical'] ?? '').toString().trim())
+        .where((nome) => nome.isNotEmpty)
+        .toList(growable: false);
+
     return Loja(
       id: _toInt(json['loja_id'] ?? 0),
       organizacaoId: _toInt(json['organizacao_id'] ?? 0),
@@ -64,7 +72,10 @@ class Loja {
       instagram: (json['dsinstaloja'] ?? '').toString(),
       vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '0') ?? 0,
       vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '0') ?? 0,
-      dsestiloloja: (json['dsestiloloja'] ?? '').toString(),
+      dsestiloloja: estilos.isNotEmpty
+          ? estilos.join(', ')
+          : (json['dsestiloloja'] ?? '').toString(),
+      estilosMusicais: estilos,
       nrtelloja: (json['nrtelloja'] ?? '').toString(),
       sgEstado: (json['sgestado'] ?? '').toString(),
       numero: (json['nrendeloja'] ?? '').toString(),

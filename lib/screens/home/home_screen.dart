@@ -152,14 +152,18 @@ class _HomeScreenState extends State<HomeScreen> {
       final bairro = _normalizar(loja.bairro);
       final cidade = _normalizar(loja.cidade);
       final instagram = _normalizar(loja.instagram);
-      final dsestiloloja = _normalizar(loja.dsestiloloja);
+      final estilosMusicais = _normalizar(
+        loja.estilosMusicais.isNotEmpty
+            ? loja.estilosMusicais.join(' ')
+            : loja.dsestiloloja,
+      );
 
       return nome.contains(q) ||
           endereco.contains(q) ||
           bairro.contains(q) ||
           cidade.contains(q) ||
           instagram.contains(q) ||
-          dsestiloloja.contains(q);
+          estilosMusicais.contains(q);
     }).toList();
   }
 
