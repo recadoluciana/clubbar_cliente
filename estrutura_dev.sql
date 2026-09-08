@@ -647,7 +647,7 @@ CREATE TABLE `usuario` (
   `nmusuario` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
   `emailuser` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
   `senhahashuser` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `dscargo` enum('SUPERADMIN','ADMIN','GERENTE','CAIXA','BARMAN','GARCOM','PORTEIRO') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BARMAN',
+  `dscargo` enum('SUPERADMIN','ADMIN','MANAGER','CASHIER','BARMAN','WAITER','TICKETMAN') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BARMAN',
   `situsuario` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ATIVO',
   `dtcriacao` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `dtultatu` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,

@@ -629,7 +629,7 @@ CREATE TABLE `usuario` (
   `situsuario` varchar(15) NOT NULL DEFAULT 'ATIVO',
   `dtcriacao` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `dtultatu` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `dscargo` enum('SUPERADMIN','ADMIN','GERENTE','CAIXA','BARMAN','GARCOM','PORTEIRO') NOT NULL DEFAULT 'BARMAN',
+  `dscargo` enum('SUPERADMIN','ADMIN','MANAGER','CASHIER','BARMAN','WAITER','TICKETMAN') NOT NULL DEFAULT 'BARMAN',
   PRIMARY KEY (`usuario_id`),
   UNIQUE KEY `uk_usuario_email` (`emailuser`),
   KEY `fk_usuario_org` (`organizacao_id`),
