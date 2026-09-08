@@ -12,6 +12,8 @@ class ClubbarPageHeader extends StatelessWidget {
   final bool mostrarAvatar;
   final Color? corTitulo;
   final Color? corIcone;
+  final FontWeight pesoTitulo;
+  final FontWeight pesoSubtitulo;
 
   // Conteúdo opcional do lado direito
   final Widget? trailing;
@@ -31,6 +33,8 @@ class ClubbarPageHeader extends StatelessWidget {
     this.mostrarAvatar = true,
     this.corTitulo,
     this.corIcone,
+    this.pesoTitulo = FontWeight.w800,
+    this.pesoSubtitulo = FontWeight.w500,
     this.trailing,
     this.imagemUrl,
     this.mostrarAba = false,
@@ -158,7 +162,7 @@ class ClubbarPageHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: pesoTitulo,
                     color: corTitulo,
                   ),
                 ),
@@ -170,7 +174,7 @@ class ClubbarPageHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: pesoSubtitulo,
                     height: 1.25,
                   ),
                 ),

@@ -177,22 +177,11 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     padding: const EdgeInsets.only(bottom: 8),
     child: Row(
       children: [
-        Expanded(
-          child: Text(
-            nome,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
+        Expanded(child: Text(nome, style: const TextStyle())),
         if (online) ...[
           const Icon(Icons.circle, size: 10, color: Colors.green),
           const SizedBox(width: 6),
-          Text(
-            'Online',
-            style: TextStyle(
-              color: Colors.green.shade800,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          Text('Online', style: TextStyle(color: Colors.green.shade800)),
         ] else
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -203,11 +192,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
             ),
             child: Text(
               'Offline',
-              style: TextStyle(
-                color: Colors.red.shade800,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
+              style: TextStyle(color: Colors.red.shade800, fontSize: 11),
             ),
           ),
       ],
@@ -220,6 +205,34 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     border: Border.all(color: Colors.grey.shade200),
   );
 
+  Widget _apresentacaoCora() => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(16),
+    decoration: _decoracaoCard(),
+    child: Row(
+      children: [
+        Container(
+          width: 76,
+          height: 76,
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: Colors.amber.shade50,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.amber.shade300),
+          ),
+          child: Image.asset('assets/images/corujao.png', fit: BoxFit.contain),
+        ),
+        const SizedBox(width: 14),
+        const Expanded(
+          child: Text(
+            'Olá, sou Coralina Corrêa Murad, mas pode me chamar de Cora.',
+            style: TextStyle(fontSize: 16, height: 1.35),
+          ),
+        ),
+      ],
+    ),
+  );
+
   Widget _faq() => Container(
     decoration: _decoracaoCard(),
     child: Column(
@@ -227,39 +240,29 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
         const Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 4),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.help_outline_rounded, color: Colors.blue),
               SizedBox(width: 8),
-              Text(
-                'Dúvidas frequentes',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-              ),
+              Text('Dúvidas frequentes', style: TextStyle(fontSize: 17)),
             ],
           ),
         ),
         const ExpansionTile(
           tilePadding: EdgeInsets.symmetric(horizontal: 14),
           childrenPadding: EdgeInsets.fromLTRB(16, 0, 16, 14),
-          title: Text(
-            'Qual a versão do Clubbar?',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
+          title: Text('Qual a versão do Clubbar?'),
           children: [
             Align(
               alignment: Alignment.centerLeft,
-              child: AppVersionText(
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
+              child: AppVersionText(style: TextStyle()),
             ),
           ],
         ),
         ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 14),
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-          title: const Text(
-            'Como está meu acesso ao aplicativo?',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
+          title: const Text('Como está meu acesso ao aplicativo?'),
           children: [
             _statusAcesso('API do Clubbar', _apiOnline),
             _statusAcesso('Banco de dados', _bancoOnline),
@@ -267,7 +270,6 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 'Ambiente do banco: ${_dev ? 'Development' : 'Production'}',
-                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -276,10 +278,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
           (duvida) => ExpansionTile(
             tilePadding: const EdgeInsets.symmetric(horizontal: 14),
             childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-            title: Text(
-              duvida.pergunta,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+            title: Text(duvida.pergunta),
             children: [
               Align(
                 alignment: Alignment.centerLeft,
@@ -292,41 +291,66 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     ),
   );
 
+  Widget _avatarCora({double tamanho = 34}) => Container(
+    width: tamanho,
+    height: tamanho,
+    padding: EdgeInsets.all(tamanho * .1),
+    decoration: BoxDecoration(
+      color: Colors.amber.shade50,
+      shape: BoxShape.circle,
+      border: Border.all(color: Colors.amber.shade300),
+    ),
+    child: Image.asset('assets/images/corujao.png', fit: BoxFit.contain),
+  );
+
   Widget _bolha(_Mensagem item) => Align(
     alignment: item.cliente ? Alignment.centerRight : Alignment.centerLeft,
-    child: Container(
-      constraints: const BoxConstraints(maxWidth: 310),
-      margin: const EdgeInsets.only(bottom: 9),
-      padding: const EdgeInsets.fromLTRB(12, 9, 12, 7),
-      decoration: BoxDecoration(
-        color: item.cliente ? const Color(0xFFD9FDD3) : Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 3)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            item.cliente ? 'Você' : 'Cora',
-            style: TextStyle(
-              color: item.cliente
-                  ? Colors.green.shade800
-                  : Colors.blue.shade700,
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(item.texto),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              '${item.horario.hour.toString().padLeft(2, '0')}:${item.horario.minute.toString().padLeft(2, '0')}',
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-            ),
-          ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (!item.cliente) ...[
+          _avatarCora(tamanho: 34),
+          const SizedBox(width: 7),
         ],
-      ),
+        Flexible(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 310),
+            margin: const EdgeInsets.only(bottom: 9),
+            padding: const EdgeInsets.fromLTRB(12, 9, 12, 7),
+            decoration: BoxDecoration(
+              color: item.cliente ? const Color(0xFFD9FDD3) : Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 3),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.cliente ? 'Você' : 'Cora',
+                  style: TextStyle(
+                    color: item.cliente
+                        ? Colors.green.shade800
+                        : Colors.blue.shade700,
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(item.texto),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    '${item.horario.hour.toString().padLeft(2, '0')}:${item.horario.minute.toString().padLeft(2, '0')}',
+                    style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     ),
   );
 
@@ -339,16 +363,13 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     ),
     child: Column(
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(14, 12, 14, 6),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 8),
           child: Row(
             children: [
-              Icon(Icons.forum_outlined, color: Colors.blue),
-              SizedBox(width: 8),
-              Text(
-                'Conversa com a Cora',
-                style: TextStyle(fontWeight: FontWeight.w800),
-              ),
+              _avatarCora(tamanho: 38),
+              const SizedBox(width: 10),
+              const Text('Conversa com a Cora'),
             ],
           ),
         ),
@@ -425,13 +446,21 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
           subtitulo: 'Dúvidas frequentes e atendimento',
           mostrarAvatar: false,
           corTitulo: Colors.blue,
+          pesoTitulo: FontWeight.normal,
+          pesoSubtitulo: FontWeight.normal,
         ),
         Expanded(
           child: _carregando
               ? const Center(child: CircularProgressIndicator())
               : ListView(
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-                  children: [_faq(), const SizedBox(height: 14), _conversa()],
+                  children: [
+                    _apresentacaoCora(),
+                    const SizedBox(height: 14),
+                    _faq(),
+                    const SizedBox(height: 14),
+                    _conversa(),
+                  ],
                 ),
         ),
       ],
