@@ -122,6 +122,9 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
         headers: await _headers(),
         body: jsonEncode({'mensagem': mensagem}),
       );
+      if (resposta.statusCode == 401 || resposta.statusCode == 403) {
+        throw const _SessaoCoraException();
+      }
       if (resposta.statusCode != 201) throw Exception();
       final dados = jsonDecode(utf8.decode(resposta.bodyBytes));
       final novas = (dados['mensagens'] as List).map(
@@ -133,6 +136,16 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
         _mensagens.addAll(novas);
       });
       _rolarAteFinal();
+    } on _SessaoCoraException {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Sua sessão expirou. Entre novamente para falar com a Cora.',
+            ),
+          ),
+        );
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -160,35 +173,43 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     });
   }
 
-  Widget _status(String texto, bool online) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(Icons.circle, size: 9, color: online ? Colors.green : Colors.red),
-      const SizedBox(width: 5),
-      Text(
-        texto,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-      ),
-    ],
-  );
-
-  Widget _ambiente() => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-    decoration: _decoracaoCard(),
-    child: Wrap(
-      spacing: 18,
-      runSpacing: 8,
-      alignment: WrapAlignment.center,
+  Widget _statusAcesso(String nome, bool online) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Row(
       children: [
-        _status('API ${_apiOnline ? 'online' : 'offline'}', _apiOnline),
-        _status('Banco ${_bancoOnline ? 'online' : 'offline'}', _bancoOnline),
-        Text(
-          _dev ? 'Desenvolvimento' : 'Produção',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        Expanded(
+          child: Text(
+            nome,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
         ),
-        const AppVersionText(
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-        ),
+        if (online) ...[
+          const Icon(Icons.circle, size: 10, color: Colors.green),
+          const SizedBox(width: 6),
+          Text(
+            'Online',
+            style: TextStyle(
+              color: Colors.green.shade800,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ] else
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              border: Border.all(color: Colors.red),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Offline',
+              style: TextStyle(
+                color: Colors.red.shade800,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
       ],
     ),
   );
@@ -215,6 +236,41 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
               ),
             ],
           ),
+        ),
+        const ExpansionTile(
+          tilePadding: EdgeInsets.symmetric(horizontal: 14),
+          childrenPadding: EdgeInsets.fromLTRB(16, 0, 16, 14),
+          title: Text(
+            'Qual a versão do Clubbar?',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AppVersionText(
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14),
+          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          title: const Text(
+            'Como está meu acesso ao aplicativo?',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
+          children: [
+            _statusAcesso('API do Clubbar', _apiOnline),
+            _statusAcesso('Banco de dados', _bancoOnline),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Ambiente do banco: ${_dev ? 'Development' : 'Production'}',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
         ..._duvidas.map(
           (duvida) => ExpansionTile(
@@ -375,13 +431,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
               ? const Center(child: CircularProgressIndicator())
               : ListView(
                   padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-                  children: [
-                    _ambiente(),
-                    const SizedBox(height: 12),
-                    if (_duvidas.isNotEmpty) _faq(),
-                    const SizedBox(height: 14),
-                    _conversa(),
-                  ],
+                  children: [_faq(), const SizedBox(height: 14), _conversa()],
                 ),
         ),
       ],
@@ -419,4 +469,8 @@ class _Duvida {
     pergunta: json['pergunta']?.toString() ?? '',
     resposta: json['resposta']?.toString() ?? '',
   );
+}
+
+class _SessaoCoraException implements Exception {
+  const _SessaoCoraException();
 }
