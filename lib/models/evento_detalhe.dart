@@ -3,8 +3,6 @@ class EventoDetalhe {
   final String titulo;
   final String descricao;
   final String politicaCancelamento;
-  final String politicaReembolso;
-  final String politicaCashback;
   final String dataInicio;
   final String dataFim;
   final String local;
@@ -23,8 +21,6 @@ class EventoDetalhe {
     required this.titulo,
     required this.descricao,
     this.politicaCancelamento = '',
-    this.politicaReembolso = '',
-    this.politicaCashback = '',
     required this.dataInicio,
     required this.dataFim,
     required this.local,
@@ -45,8 +41,6 @@ class EventoDetalhe {
       titulo: (json['nmtituloevento'] ?? 'Evento').toString(),
       descricao: (json['dsdescevento'] ?? '').toString(),
       politicaCancelamento: (json['dspoliticacancelamento'] ?? '').toString(),
-      politicaReembolso: (json['dspoliticareembolso'] ?? '').toString(),
-      politicaCashback: (json['dspoliticacashback'] ?? '').toString(),
       dataInicio: (json['dtinicioevento'] ?? '').toString(),
       dataFim: (json['dtfimevento'] ?? '').toString(),
       local: (json['nmlocalevento'] ?? '').toString(),

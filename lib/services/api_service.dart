@@ -992,8 +992,6 @@ class ApiService {
           bairro: (data['dsbairroloja'] ?? '').toString(),
           atracoes: atracoes,
           politicaCancelamento: evento.politicaCancelamento,
-          politicaReembolso: evento.politicaReembolso,
-          politicaCashback: evento.politicaCashback,
         );
       }
 
