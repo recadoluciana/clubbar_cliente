@@ -88,6 +88,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       widget.totalProdutos * (percentualTaxaProduto / 100);
 
   double get taxaIngressoCliente =>
+      widget.taxaConveniencia ??
       widget.totalIngressos * (percentualTaxaIngresso / 100);
 
   double get taxaClubbarTotal => taxaProdutoSplit + taxaIngressoCliente;

@@ -453,7 +453,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? Colors.amber.shade800
         : Colors.red;
     final quantidade = _quantidadesLotes[lote.lotePrecoId] ?? 1;
-    final taxaUnitaria = lote.preco * widget.loja.vrtaxaing / 100;
+    final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
+    final taxaUnitaria = lote.preco <= 0
+        ? 0.0
+        : (taxaPercentual > widget.loja.vrtaxaminimaingresso
+              ? taxaPercentual
+              : widget.loja.vrtaxaminimaingresso);
     final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
     return Container(

@@ -12,6 +12,7 @@ class Loja {
   final String instagram;
   final double vrtaxaprod;
   final double vrtaxaing;
+  final double vrtaxaminimaingresso;
   final String dsestiloloja;
   final List<String> estilosMusicais;
   final String nrtelloja;
@@ -32,6 +33,7 @@ class Loja {
     required this.instagram,
     required this.vrtaxaprod,
     required this.vrtaxaing,
+    this.vrtaxaminimaingresso = 0,
     required this.dsestiloloja,
     this.estilosMusicais = const [],
     required this.nrtelloja,
@@ -72,6 +74,7 @@ class Loja {
       instagram: (json['dsinstaloja'] ?? '').toString(),
       vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '0') ?? 0,
       vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '0') ?? 0,
+      vrtaxaminimaingresso: double.tryParse(json['vrtaxaminimaingresso']?.toString() ?? '0') ?? 0,
       dsestiloloja: estilos.isNotEmpty
           ? estilos.join(', ')
           : (json['dsestiloloja'] ?? '').toString(),
