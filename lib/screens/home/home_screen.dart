@@ -1036,38 +1036,14 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                           const SizedBox(height: 2),
                                           Align(
                                             alignment: Alignment.centerLeft,
-                                            child: OutlinedButton.icon(
+                                            child: IconButton(
+                                              tooltip: 'Compartilhar',
+                                              color: Colors.blue,
+                                              iconSize: 28,
                                               onPressed: () =>
                                                   compartilharLoja(loja),
                                               icon: const Icon(
                                                 Icons.ios_share_rounded,
-                                                size: 15,
-                                              ),
-                                              label: const Text('Compartilhar'),
-                                              style: OutlinedButton.styleFrom(
-                                                foregroundColor: Colors.black,
-                                                backgroundColor:
-                                                    Colors.blue.shade300,
-                                                side: BorderSide(
-                                                  color: Colors.blue.shade300,
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 18,
-                                                      vertical: 3,
-                                                    ),
-                                                minimumSize: const Size(
-                                                  150,
-                                                  32,
-                                                ),
-                                                shape: const StadiumBorder(),
-                                                tapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
-                                                textStyle: const TextStyle(
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
                                               ),
                                             ),
                                           ),
