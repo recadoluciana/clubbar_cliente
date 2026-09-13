@@ -709,164 +709,171 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   _campoBusca(),
                   const SizedBox(height: 15),
 
-                  _tituloEventosEmDestaque(destaquesFiltrados),
-                  const SizedBox(height: 4),
+                  if (destaquesFiltrados.isNotEmpty || erroEventos != null) ...[
+                    _tituloEventosEmDestaque(destaquesFiltrados),
+                    const SizedBox(height: 4),
 
-                  if (erroEventos != null)
-                    _cardErro(erroEventos!, carregarHome)
-                  else if (destaquesFiltrados.isEmpty)
-                    _cardVazio('Nenhum evento encontrado.')
-                  else
-                    SizedBox(
-                      height: 210,
-                      child: PageView.builder(
-                        controller: _pageController,
-                        itemCount: destaquesFiltrados.length,
-                        onPageChanged: (index) {
-                          setState(() {
-                            _paginaAtual = index;
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          final evento = destaquesFiltrados[index];
+                    if (erroEventos != null)
+                      _cardErro(erroEventos!, carregarHome)
+                    else
+                      SizedBox(
+                        height: 210,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: destaquesFiltrados.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _paginaAtual = index;
+                            });
+                          },
+                          itemBuilder: (context, index) {
+                            final evento = destaquesFiltrados[index];
 
-                          final loja = _lojaDoEvento(evento);
-                          return GestureDetector(
-                            onTap: () => _abrirEvento(evento, loja),
-                            child: Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 7),
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(21),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.14),
-                                    blurRadius: 14,
-                                    offset: const Offset(0, 7),
-                                  ),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(21),
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    _imagemSegura(
-                                      url: evento.bannerUrl,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                      fallbackIcon: Icons.image_not_supported,
-                                      fit: BoxFit.contain,
-                                    ),
-                                    Container(
-                                      decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            Colors.transparent,
-                                            Colors.black54,
-                                            Colors.black87,
-                                          ],
-                                        ),
+                            final loja = _lojaDoEvento(evento);
+                            return GestureDetector(
+                              onTap: () => _abrirEvento(evento, loja),
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  borderRadius: BorderRadius.circular(21),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.14,
                                       ),
-                                    ),
-                                    Positioned(
-                                      left: 15,
-                                      right: 15,
-                                      bottom: 10,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            evento.titulo,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 19,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.calendar_month,
-                                                color: Colors.white,
-                                                size: 16,
-                                              ),
-                                              const SizedBox(width: 5),
-                                              Expanded(
-                                                child: Text(
-                                                  formatarDataEvento(
-                                                    evento.data,
-                                                  ),
-                                                  style: TextStyle(
-                                                    color: Colors.grey.shade200,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Row(
-                                            children: [
-                                              const Icon(
-                                                Icons.location_on_outlined,
-                                                color: Colors.white,
-                                                size: 16,
-                                              ),
-                                              const SizedBox(width: 5),
-                                              Expanded(
-                                                child: Text(
-                                                  evento.local.isEmpty
-                                                      ? 'Local não informado'
-                                                      : evento.local,
-                                                  style: TextStyle(
-                                                    color: Colors.grey.shade300,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                      blurRadius: 14,
+                                      offset: const Offset(0, 7),
                                     ),
                                   ],
                                 ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(21),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      _imagemSegura(
+                                        url: evento.bannerUrl,
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        fallbackIcon: Icons.image_not_supported,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      Container(
+                                        decoration: const BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black54,
+                                              Colors.black87,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        left: 15,
+                                        right: 15,
+                                        bottom: 10,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              evento.titulo,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 19,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.calendar_month,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                                const SizedBox(width: 5),
+                                                Expanded(
+                                                  child: Text(
+                                                    formatarDataEvento(
+                                                      evento.data,
+                                                    ),
+                                                    style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade200,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.location_on_outlined,
+                                                  color: Colors.white,
+                                                  size: 16,
+                                                ),
+                                                const SizedBox(width: 5),
+                                                Expanded(
+                                                  child: Text(
+                                                    evento.local.isEmpty
+                                                        ? 'Local não informado'
+                                                        : evento.local,
+                                                    style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade300,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
+                            );
+                          },
+                        ),
+                      ),
+
+                    if (destaquesFiltrados.length > 1) ...[
+                      const SizedBox(height: 9),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(destaquesFiltrados.length, (
+                          index,
+                        ) {
+                          final ativo = index == _paginaAtual;
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: ativo ? 18 : 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: ativo
+                                  ? Colors.amber
+                                  : Colors.grey.shade400,
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           );
-                        },
+                        }),
                       ),
-                    ),
-
-                  if (destaquesFiltrados.length > 1) ...[
-                    const SizedBox(height: 9),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(destaquesFiltrados.length, (
-                        index,
-                      ) {
-                        final ativo = index == _paginaAtual;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
-                          width: ativo ? 18 : 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            color: ativo ? Colors.amber : Colors.grey.shade400,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        );
-                      }),
-                    ),
+                    ],
                   ],
-
                   if (produtosMaisVendidos.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     _secaoTitulo(
@@ -1028,7 +1035,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                           ],
                                           const SizedBox(height: 2),
                                           Align(
-                                            alignment: Alignment.centerRight,
+                                            alignment: Alignment.centerLeft,
                                             child: OutlinedButton.icon(
                                               onPressed: () =>
                                                   compartilharLoja(loja),
@@ -1038,19 +1045,21 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                               ),
                                               label: const Text('Compartilhar'),
                                               style: OutlinedButton.styleFrom(
-                                                foregroundColor:
-                                                    Colors.amber.shade900,
+                                                foregroundColor: Colors.black,
                                                 backgroundColor:
-                                                    Colors.amber.shade50,
+                                                    Colors.blue.shade300,
                                                 side: BorderSide(
-                                                  color: Colors.amber.shade300,
+                                                  color: Colors.blue.shade300,
                                                 ),
                                                 padding:
                                                     const EdgeInsets.symmetric(
-                                                      horizontal: 9,
+                                                      horizontal: 18,
                                                       vertical: 3,
                                                     ),
-                                                minimumSize: const Size(0, 27),
+                                                minimumSize: const Size(
+                                                  150,
+                                                  32,
+                                                ),
                                                 shape: const StadiumBorder(),
                                                 tapTargetSize:
                                                     MaterialTapTargetSize
