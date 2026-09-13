@@ -709,7 +709,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   _campoBusca(),
                   const SizedBox(height: 15),
 
-                  if (destaquesFiltrados.isNotEmpty || erroEventos != null) ...[
+                  if (destaquesFiltrados.isNotEmpty) ...[
                     _tituloEventosEmDestaque(destaquesFiltrados),
                     const SizedBox(height: 4),
 
