@@ -441,10 +441,40 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Widget cardLote(EventoLote lote) {
+  List<List<EventoLote>> get _lotesAgrupados {
+    final grupos = <int, List<EventoLote>>{};
+    for (final lote in lotes) {
+      grupos.putIfAbsent(lote.loteId, () => []).add(lote);
+    }
+    return grupos.values.toList();
+  }
+
+  String _nomeModalidade(EventoLote lote) {
+    switch (lote.tipoIngresso) {
+      case 'INTEIRA':
+        return 'Inteira';
+      case 'MEIA_LEGAL':
+        return 'Meia-entrada';
+      case 'MEIA_IDOSO':
+        return 'Pessoa idosa';
+      default:
+        return lote.tipoIngresso
+            .replaceAll('_', ' ')
+            .toLowerCase()
+            .split(' ')
+            .map(
+              (parte) => parte.isEmpty
+                  ? parte
+                  : '${parte[0].toUpperCase()}${parte.substring(1)}',
+            )
+            .join(' ');
+    }
+  }
+
+  Widget cardLote(List<EventoLote> opcoes) {
+    final lote = opcoes.first;
     final agora = DateTime.now();
     final vendaDisponivel = lote.podeComprarEm(agora);
-
     final textoBadge = lote.situacaoVendaEm(agora);
     final vendaFutura = textoBadge == 'Em breve';
     final corBadge = vendaDisponivel
@@ -452,14 +482,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : vendaFutura
         ? Colors.amber.shade800
         : Colors.red;
-    final quantidade = _quantidadesLotes[lote.lotePrecoId] ?? 1;
-    final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
-    final taxaUnitaria = lote.preco <= 0
-        ? 0.0
-        : (taxaPercentual > widget.loja.vrtaxaminimaingresso
-              ? taxaPercentual
-              : widget.loja.vrtaxaminimaingresso);
-    final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -472,148 +494,33 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Escolha uma opção',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            lote.nome,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          lote.nome,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
                           ),
-                          if (lote.nomeSetor.isNotEmpty ||
-                              lote.tipoIngresso != 'UNICO') ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              [
-                                lote.nomeSetor,
-                                lote.tipoIngresso == 'UNICO'
-                                    ? ''
-                                    : lote.tipoIngresso,
-                              ].where((e) => e.isNotEmpty).join(' • '),
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 5),
-                          RichText(
-                            text: TextSpan(
-                              style: const TextStyle(color: Colors.black87),
-                              children: [
-                                TextSpan(
-                                  text: ValueFormatters.moeda(lote.preco),
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text:
-                                      ' (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                        ),
+                        if (lote.nomeSetor.isNotEmpty) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            lote.nomeSetor,
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 12,
                             ),
                           ),
                         ],
-                      ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: () {
-                        if (quantidade > 1) {
-                          setState(
-                            () => _quantidadesLotes[lote.lotePrecoId] =
-                                quantidade - 1,
-                          );
-                        }
-                      },
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        fixedSize: const Size(32, 32),
-                        minimumSize: const Size(32, 32),
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                      icon: const Text(
-                        '−',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          height: 1,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 32,
-                      child: Text(
-                        '$quantidade',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        if (quantidade < 20 &&
-                            (lote.semLimite ||
-                                quantidade < lote.qtDisponivel)) {
-                          setState(
-                            () => _quantidadesLotes[lote.lotePrecoId] =
-                                quantidade + 1,
-                          );
-                        }
-                      },
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        fixedSize: const Size(32, 32),
-                        minimumSize: const Size(32, 32),
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
-                        ),
-                      ),
-                      icon: const Text(
-                        '+',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 19,
-                          height: 1,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
+                  ),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -632,62 +539,206 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       ),
                     ),
                   ),
-                  const Spacer(),
-                  Text(
-                    'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontSize: 10,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
                 ],
               ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  const Text(
-                    'Total a pagar',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-                  ),
-                  const Spacer(),
-                  Text(
-                    ValueFormatters.moeda(totalPagar),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 6),
+              Text(
+                'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 10,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: !vendaDisponivel || processandoCompra
-                          ? null
-                          : () => iniciarReserva(
-                              lote,
-                              quantidadeSelecionada: quantidade,
-                            ),
-                      icon: const Icon(Icons.local_activity_outlined),
-                      label: const Text('Comprar ingressos'),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.green.shade700,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey.shade300,
-                        disabledForegroundColor: Colors.grey.shade600,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                ],
+              ...opcoes.map(
+                (opcao) => _opcaoPreco(opcao, vendaDisponivel: vendaDisponivel),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _opcaoPreco(EventoLote lote, {required bool vendaDisponivel}) {
+    final quantidade = _quantidadesLotes[lote.lotePrecoId] ?? 1;
+    final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
+    final taxaUnitaria = lote.preco <= 0
+        ? 0.0
+        : (taxaPercentual > widget.loja.vrtaxaminimaingresso
+              ? taxaPercentual
+              : widget.loja.vrtaxaminimaingresso);
+    final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.grey.shade50,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _nomeModalidade(lote),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (lote.exigeComprovante) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Comprovante obrigatório',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 5),
+                    RichText(
+                      text: TextSpan(
+                        style: const TextStyle(color: Colors.black87),
+                        children: [
+                          TextSpan(
+                            text: ValueFormatters.moeda(lote.preco),
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          TextSpan(
+                            text:
+                                ' (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  if (quantidade > 1) {
+                    setState(
+                      () =>
+                          _quantidadesLotes[lote.lotePrecoId] = quantidade - 1,
+                    );
+                  }
+                },
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  fixedSize: const Size(32, 32),
+                  minimumSize: const Size(32, 32),
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+                icon: const Text(
+                  '−',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 32,
+                child: Text(
+                  '$quantidade',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  if (quantidade < 20 &&
+                      (lote.semLimite || quantidade < lote.qtDisponivel)) {
+                    setState(
+                      () =>
+                          _quantidadesLotes[lote.lotePrecoId] = quantidade + 1,
+                    );
+                  }
+                },
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  fixedSize: const Size(32, 32),
+                  minimumSize: const Size(32, 32),
+                  padding: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+                icon: const Text(
+                  '+',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 19,
+                    height: 1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Text(
+                'Total a pagar',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+              const Spacer(),
+              Text(
+                ValueFormatters.moeda(totalPagar),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: !vendaDisponivel || processandoCompra
+                  ? null
+                  : () =>
+                        iniciarReserva(lote, quantidadeSelecionada: quantidade),
+              icon: const Icon(Icons.local_activity_outlined),
+              label: const Text('Comprar ingresso'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.green.shade700,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey.shade300,
+                disabledForegroundColor: Colors.grey.shade600,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1174,7 +1225,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           if (lotes.isEmpty)
                             estadoVazioLotes()
                           else
-                            ...lotes.map(cardLote),
+                            ..._lotesAgrupados.map(cardLote),
                           const SizedBox(height: 24),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[

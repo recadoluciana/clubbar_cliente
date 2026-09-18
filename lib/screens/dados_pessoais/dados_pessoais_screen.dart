@@ -367,7 +367,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                           controller: _cpfCtrl,
                           keyboardType: TextInputType.number,
                           decoration: _decoracao(
-                            label: 'CPF',
+                            label: 'CPF *',
                             icon: Icons.badge_outlined,
                           ),
                           onChanged: (value) {
@@ -386,7 +386,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                             final v = value?.trim() ?? '';
 
                             if (v.isEmpty) {
-                              return null;
+                              return 'Informe seu CPF';
                             }
 
                             if (!_validarCPF(v)) {

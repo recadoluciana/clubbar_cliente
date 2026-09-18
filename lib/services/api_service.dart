@@ -685,7 +685,7 @@ class ApiService {
   Future<void> atualizarMeuPerfil({
     required String nome,
     String? telefone,
-    String? cpf,
+    required String cpf,
     String? endereco,
     String? numero,
     String? complemento,
@@ -701,7 +701,7 @@ class ApiService {
         body: jsonEncode({
           'nmcliente': nome,
           'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
-          'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
+          'nrcpfcliente': cpf,
           'endcliente': endereco?.trim().isEmpty == true ? null : endereco,
           'nrendcliente': numero?.trim().isEmpty == true ? null : numero,
           'complcliente': complemento?.trim().isEmpty == true
@@ -1050,7 +1050,7 @@ class ApiService {
               EventoLote.fromJson({
                 ...lote,
                 ...preco,
-                'nmlote': '${lote['nmlote']} — ${preco['nmpreco']}',
+                'nmlote': '${lote['nmlote']}',
                 'tipoingresso': preco['tipopreco'],
                 'vrprecolote': preco['vrpreco'],
               }),
