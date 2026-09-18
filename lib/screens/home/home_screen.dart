@@ -477,7 +477,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 onTap: () => MainNavigationController.abrirTela(
-                  ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
+                  ProdutoCompartilhadoScreen(produtoId: produto.produtoId, lojaId: produto.lojaId),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

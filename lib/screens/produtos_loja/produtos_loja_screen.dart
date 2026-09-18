@@ -264,11 +264,17 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       ]);
 
       categorias = resultados[0] as List<Categoria>;
-      produtos = resultados[1] as List<Produto>;
+      produtos = (resultados[1] as List<Produto>)
+          .where((produto) => produto.sitproduto.toUpperCase() == 'ATIVO')
+          .toList();
+      final categoriasComProdutos = produtos.map((produto) => produto.categoriaId).toSet();
+      categorias = categorias
+          .where((categoria) => categoriasComProdutos.contains(categoria.id))
+          .toList();
 
-      if (categorias.isNotEmpty) {
-        categoriaSelecionadaId ??= categorias.first.id;
-      }
+      categoriaSelecionadaId = categorias.any((categoria) => categoria.id == categoriaSelecionadaId)
+          ? categoriaSelecionadaId
+          : categorias.isNotEmpty ? categorias.first.id : null;
 
       setState(() {
         carregando = false;
@@ -564,7 +570,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               children: [
                 Icon(
                   CategoriaIconUtils.porNome(categoria.nome),
-                  color: selecionada ? Colors.black : Colors.grey.shade700,
+                  color: CategoriaIconUtils.corPorNome(categoria.nome),
                   size: 18,
                 ),
                 const SizedBox(height: 3),
@@ -755,7 +761,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       child: InkWell(
         onTap: () {
           MainNavigationController.abrirTela(
-            ProdutoCompartilhadoScreen(produtoId: produto.produtoId),
+            ProdutoCompartilhadoScreen(produtoId: produto.produtoId, lojaId: widget.loja.id),
           );
         },
         child: SizedBox(

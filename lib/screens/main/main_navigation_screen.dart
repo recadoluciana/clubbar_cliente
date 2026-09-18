@@ -247,8 +247,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         if (produtoId != null) {
+          if (lojaId == null || lojaId <= 0) {
+            if (mounted) AppSnackBar.erro(context, 'O link do produto não informa a loja.');
+            return;
+          }
           MainNavigationController.abrirTela(
-            ProdutoCompartilhadoScreen(produtoId: produtoId),
+            ProdutoCompartilhadoScreen(produtoId: produtoId, lojaId: lojaId),
           );
           return;
         }

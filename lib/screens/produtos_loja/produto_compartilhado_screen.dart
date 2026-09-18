@@ -15,8 +15,9 @@ import 'package:clubbar_cliente/config/app_config.dart';
 
 class ProdutoCompartilhadoScreen extends StatefulWidget {
   final int produtoId;
+  final int lojaId;
 
-  const ProdutoCompartilhadoScreen({super.key, required this.produtoId});
+  const ProdutoCompartilhadoScreen({super.key, required this.produtoId, required this.lojaId});
 
   @override
   State<ProdutoCompartilhadoScreen> createState() =>
@@ -91,9 +92,10 @@ class _ProdutoCompartilhadoScreenState
     try {
       final prod = await apiService.buscarProdutoCompartilhado(
         produtoId: widget.produtoId,
+        lojaId: widget.lojaId,
       );
 
-      final lojaDados = await apiService.buscarDadosLoja(prod['loja_id']);
+      final lojaDados = await apiService.buscarDadosLoja(widget.lojaId);
 
       if (!mounted) return;
 
@@ -140,6 +142,7 @@ class _ProdutoCompartilhadoScreenState
         organizacaoId: loja!.organizacaoId,
         lojaId: loja!.id,
         produtoId: produto!['produto_id'],
+        cardapioItemId: produto!['cardapioitem_id'],
         quantidade: quantidade,
         observacao: _observacaoCtrl.text.trim(),
       );

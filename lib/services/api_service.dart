@@ -1313,9 +1313,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> buscarProdutoCompartilhado({
     required int produtoId,
+    required int lojaId,
   }) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/buscar_produto/$produtoId'),
+      Uri.parse('$baseUrl/lojas/$lojaId/cardapio-publicado'),
       headers: const {'Accept': 'application/json'},
     );
 
@@ -1323,7 +1324,16 @@ class ApiService {
       throw Exception(_extrairMensagemHttp(response));
     }
 
-    return Map<String, dynamic>.from(jsonDecode(response.body));
+    final cardapio = Map<String, dynamic>.from(jsonDecode(response.body));
+    for (final categoria in cardapio['categorias'] as List? ?? const []) {
+      for (final item in categoria['itens'] as List? ?? const []) {
+        final produto = Map<String, dynamic>.from(item as Map);
+        if (int.tryParse('${produto['produto_id']}') == produtoId) {
+          return produto;
+        }
+      }
+    }
+    throw Exception('Este produto não está disponível no cardápio publicado desta loja.');
   }
 
   Future<Map<String, dynamic>> buscarQuantidadeVendidaLote({
