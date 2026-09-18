@@ -62,6 +62,18 @@ class ApiService {
           return detail;
         }
 
+        if (detail is Map) {
+          final errors = detail['errors'];
+          if (errors is List) {
+            final mensagens = errors
+                .whereType<Map>()
+                .map((erro) => erro['description']?.toString().trim() ?? '')
+                .where((mensagem) => mensagem.isNotEmpty)
+                .toList();
+            if (mensagens.isNotEmpty) return mensagens.join('\n');
+          }
+        }
+
         final message = data['message'];
         if (message is String && message.trim().isNotEmpty) {
           return message;
@@ -542,7 +554,14 @@ class ApiService {
     required String email,
     required String senha,
     String? telefone,
-    String? cpf,
+    required String cpf,
+    required String endereco,
+    required String numero,
+    String? complemento,
+    required String bairro,
+    required String cep,
+    required String cidade,
+    required String uf,
   }) async {
     try {
       final body = {
@@ -550,7 +569,16 @@ class ApiService {
         'emailcliente': email,
         'senhahashcli': senha,
         'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
-        'nrcpfcliente': cpf?.trim().isEmpty == true ? null : cpf,
+        'nrcpfcliente': cpf,
+        'endcliente': endereco,
+        'nrendcliente': numero,
+        'complcliente': complemento?.trim().isEmpty == true
+            ? null
+            : complemento,
+        'bairrocliente': bairro,
+        'cepcliente': cep,
+        'cidadecliente': cidade,
+        'ufcliente': uf,
       };
 
       final response = await http.post(
@@ -1333,7 +1361,9 @@ class ApiService {
         }
       }
     }
-    throw Exception('Este produto não está disponível no cardápio publicado desta loja.');
+    throw Exception(
+      'Este produto não está disponível no cardápio publicado desta loja.',
+    );
   }
 
   Future<Map<String, dynamic>> buscarQuantidadeVendidaLote({

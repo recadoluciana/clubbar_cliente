@@ -11,6 +11,8 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import 'pagamento_sucesso_screen.dart';
 import 'pix_pagamento_screen.dart';
+import '../dados_pessoais/dados_pessoais_screen.dart';
+import '../../services/main_navigation_controller.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -110,6 +112,43 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     return 'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
   }
 
+  Future<void> _mostrarErroPix(Object erro) async {
+    final mensagem = erro.toString().replaceFirst('Exception: ', '');
+    final exigeDocumento =
+        mensagem.toLowerCase().contains('cpf') ||
+        mensagem.toLowerCase().contains('cnpj');
+    if (!exigeDocumento) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensagem), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
+    final atualizar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Complete seus dados'),
+        content: const Text(
+          'Para gerar o PIX, o Asaas exige um CPF válido. Atualize seus Dados pessoais e tente novamente.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Agora não'),
+          ),
+          FilledButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.badge_rounded),
+            label: const Text('Atualizar dados'),
+          ),
+        ],
+      ),
+    );
+    if (atualizar == true) {
+      MainNavigationController.abrirTela(const DadosPessoaisScreen());
+    }
+  }
+
   Future<void> abrirPix() async {
     if (totalPagar < 5.00) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -157,12 +196,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceFirst('Exception: ', '')),
-          backgroundColor: Colors.red,
-        ),
-      );
+      await _mostrarErroPix(e);
     } finally {
       if (mounted) setState(() => _metodoPagamentoProcessando = null);
     }

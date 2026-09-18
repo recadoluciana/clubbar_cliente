@@ -3,6 +3,7 @@ import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../services/cep_service.dart';
 
 class CadastroClienteScreen extends StatefulWidget {
   const CadastroClienteScreen({super.key});
@@ -21,12 +22,22 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
   final _confirmarSenhaCtrl = TextEditingController();
   final _telefoneCtrl = TextEditingController();
   final _cpfCtrl = TextEditingController();
+  final _cepCtrl = TextEditingController();
+  final _enderecoCtrl = TextEditingController();
+  final _numeroCtrl = TextEditingController();
+  final _complementoCtrl = TextEditingController();
+  final _bairroCtrl = TextEditingController();
+  final _cidadeCtrl = TextEditingController();
+  final _ufCtrl = TextEditingController();
 
   final apiService = ApiService();
+  final _cepService = CepService();
 
   bool _carregando = false;
   bool _obscureSenha = true;
   bool _obscureConfirmarSenha = true;
+  bool _consultandoCep = false;
+  String? _ultimoCepConsultado;
 
   @override
   void dispose() {
@@ -37,6 +48,13 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
     _confirmarSenhaCtrl.dispose();
     _telefoneCtrl.dispose();
     _cpfCtrl.dispose();
+    _cepCtrl.dispose();
+    _enderecoCtrl.dispose();
+    _numeroCtrl.dispose();
+    _complementoCtrl.dispose();
+    _bairroCtrl.dispose();
+    _cidadeCtrl.dispose();
+    _ufCtrl.dispose();
     super.dispose();
   }
 
@@ -103,6 +121,40 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
 
     final cortado = numeros.substring(0, 11);
     return '(${cortado.substring(0, 2)}) ${cortado.substring(2, 7)}-${cortado.substring(7)}';
+  }
+
+  String _formatarCEP(String valor) {
+    final numeros = _somenteNumeros(valor);
+    if (numeros.length <= 5) return numeros;
+    final n = numeros.length > 8 ? numeros.substring(0, 8) : numeros;
+    return '${n.substring(0, 5)}-${n.substring(5)}';
+  }
+
+  Future<void> _buscarCep() async {
+    final cep = _somenteNumeros(_cepCtrl.text);
+    if (cep.length != 8 || _consultandoCep || cep == _ultimoCepConsultado) {
+      return;
+    }
+    setState(() => _consultandoCep = true);
+    try {
+      final endereco = await _cepService.buscar(cep);
+      if (!mounted) return;
+      setState(() {
+        _ultimoCepConsultado = cep;
+        _cepCtrl.text = _formatarCEP(endereco.cep);
+        _enderecoCtrl.text = endereco.logradouro;
+        _bairroCtrl.text = endereco.bairro;
+        _cidadeCtrl.text = endereco.cidade;
+        _ufCtrl.text = endereco.uf;
+      });
+      FocusScope.of(context).nextFocus();
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _consultandoCep = false);
+    }
   }
 
   String? sugerirEmail(String email) {
@@ -214,6 +266,13 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
         senha: _senhaCtrl.text,
         telefone: _somenteNumeros(_telefoneCtrl.text),
         cpf: _somenteNumeros(_cpfCtrl.text),
+        endereco: _enderecoCtrl.text.trim(),
+        numero: _numeroCtrl.text.trim(),
+        complemento: _complementoCtrl.text.trim(),
+        bairro: _bairroCtrl.text.trim(),
+        cep: _somenteNumeros(_cepCtrl.text),
+        cidade: _cidadeCtrl.text.trim(),
+        uf: _ufCtrl.text.trim().toUpperCase(),
       );
 
       if (!mounted) return;
@@ -276,6 +335,30 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.verified_user_outlined,
+                            color: Colors.blue.shade700,
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'O CPF e o endereço completo são necessários para realizar compras via PIX e cartão de crédito. Essas informações serão solicitadas somente neste cadastro e reutilizadas com segurança nas suas compras.',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
                     TextFormField(
                       controller: _nomeCtrl,
                       textCapitalization: TextCapitalization.words,
@@ -386,11 +469,147 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                       validator: (value) {
                         final v = value?.trim() ?? '';
 
-                        if (v.isEmpty) return null;
+                        if (v.isEmpty) return 'Informe seu CPF';
                         if (!_validarCPF(v)) return 'CPF inválido';
 
                         return null;
                       },
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _cepCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration:
+                          _decoracao(
+                            label: 'CEP',
+                            icon: Icons.pin_drop_outlined,
+                          ).copyWith(
+                            suffixIcon: _consultandoCep
+                                ? const Padding(
+                                    padding: EdgeInsets.all(14),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : IconButton(
+                                    onPressed: _buscarCep,
+                                    icon: const Icon(Icons.search_rounded),
+                                  ),
+                          ),
+                      onChanged: (value) {
+                        final formatado = _formatarCEP(value);
+                        if (formatado != value) {
+                          _cepCtrl.value = TextEditingValue(
+                            text: formatado,
+                            selection: TextSelection.collapsed(
+                              offset: formatado.length,
+                            ),
+                          );
+                        }
+                        final numeros = _somenteNumeros(formatado);
+                        if (numeros.length == 8) _buscarCep();
+                      },
+                      onFieldSubmitted: (_) => _buscarCep(),
+                      validator: (value) =>
+                          _somenteNumeros(value ?? '').length == 8
+                          ? null
+                          : 'Informe um CEP válido',
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _enderecoCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: _decoracao(
+                        label: 'Endereço',
+                        icon: Icons.route_outlined,
+                      ),
+                      validator: (value) => (value?.trim().isEmpty ?? true)
+                          ? 'Informe seu endereço'
+                          : null,
+                    ),
+                    const SizedBox(height: 14),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _numeroCtrl,
+                            keyboardType: TextInputType.streetAddress,
+                            decoration: _decoracao(
+                              label: 'Número',
+                              icon: Icons.numbers_rounded,
+                            ),
+                            validator: (value) =>
+                                (value?.trim().isEmpty ?? true)
+                                ? 'Informe o número'
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _complementoCtrl,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: _decoracao(
+                              label: 'Complemento',
+                              icon: Icons.apartment_rounded,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    TextFormField(
+                      controller: _bairroCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: _decoracao(
+                        label: 'Bairro',
+                        icon: Icons.location_city_outlined,
+                      ),
+                      validator: (value) => (value?.trim().isEmpty ?? true)
+                          ? 'Informe seu bairro'
+                          : null,
+                    ),
+                    const SizedBox(height: 14),
+
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: TextFormField(
+                            controller: _cidadeCtrl,
+                            textCapitalization: TextCapitalization.words,
+                            decoration: _decoracao(
+                              label: 'Cidade',
+                              icon: Icons.location_on_outlined,
+                            ),
+                            validator: (value) =>
+                                (value?.trim().isEmpty ?? true)
+                                ? 'Informe sua cidade'
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _ufCtrl,
+                            textCapitalization: TextCapitalization.characters,
+                            maxLength: 2,
+                            decoration: _decoracao(
+                              label: 'UF',
+                              icon: Icons.map_outlined,
+                            ).copyWith(counterText: ''),
+                            validator: (value) => value?.trim().length == 2
+                                ? null
+                                : 'UF inválida',
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 14),
 
