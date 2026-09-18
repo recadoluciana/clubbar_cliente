@@ -1,3 +1,6 @@
+-- ARQUIVO HISTÓRICO. NÃO EXECUTAR PARA RECRIAR O BANCO CLUBBAR.
+-- O schema vigente está em api_clubbar/scripts/database/create/create_schema.sql.
+-- Esta cópia contém tabelas e colunas anteriores à estrutura de cardápios da organização.
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
