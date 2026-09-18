@@ -97,6 +97,14 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   bool get compraDeProdutos => widget.reservaIngressoId == null;
 
+  String get _mensagemPagamentoNaoConcluido => compraDeProdutos
+      ? 'Pagamento não concluído. O carrinho foi mantido.'
+      : 'Pagamento do ingresso não concluído.';
+
+  String get _mensagemPagamentoNaoConfirmado => compraDeProdutos
+      ? 'Pagamento não confirmado. O carrinho foi mantido.'
+      : 'Pagamento do ingresso não confirmado.';
+
   double get cashbackAplicado =>
       compraDeProdutos && usarCashback ? cashbackUtilizavel : 0;
 
@@ -205,9 +213,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   Future<void> abrirAsaas() async {
     if (totalPagar < 5.00) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'O pagamento mínimo é R\$5,00. Adicione mais itens ao carrinho para prosseguir com o pagamento.',
+            compraDeProdutos
+                ? 'O pagamento mínimo é R\$ 5,00. Adicione mais itens ao carrinho para prosseguir.'
+                : 'O pagamento mínimo é R\$ 5,00.',
           ),
           backgroundColor: Colors.red,
         ),
@@ -258,8 +268,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         if (resultado != true) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Pagamento nao concluido. O carrinho foi mantido.'),
+            SnackBar(
+              content: Text(_mensagemPagamentoNaoConcluido),
               backgroundColor: Colors.red,
             ),
           );
@@ -300,10 +310,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           if (!confirmado) {
             if (!mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Pagamento nao confirmado. O carrinho foi mantido.',
-                ),
+              SnackBar(
+                content: Text(_mensagemPagamentoNaoConfirmado),
                 backgroundColor: Colors.red,
               ),
             );

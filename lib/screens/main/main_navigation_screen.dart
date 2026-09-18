@@ -248,7 +248,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       try {
         if (produtoId != null) {
           if (lojaId == null || lojaId <= 0) {
-            if (mounted) AppSnackBar.erro(context, 'O link do produto não informa a loja.');
+            if (mounted)
+              AppSnackBar.erro(
+                context,
+                'O link do produto não informa a loja.',
+              );
             return;
           }
           MainNavigationController.abrirTela(
@@ -295,6 +299,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       final response = await api.consultarCheckoutAsaas(checkoutId: checkoutId);
 
       final status = (response['status'] ?? '').toString().toUpperCase();
+      final compraDeIngresso =
+          (response['tipo_compra'] ?? '').toString().toUpperCase() ==
+          'INGRESSO';
 
       final clienteId = await AuthStorage().obterClienteId();
 
@@ -314,10 +321,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           const PagamentoSucessoScreen(sucesso: true),
         );
       } else {
-        MainNavigationController.irParaCarrinho();
+        if (!compraDeIngresso) {
+          MainNavigationController.irParaCarrinho();
+        }
         AppSnackBar.erro(
           context,
-          'Pagamento nao confirmado. O carrinho foi mantido.',
+          compraDeIngresso
+              ? 'Pagamento do ingresso não confirmado.'
+              : 'Pagamento não confirmado. O carrinho foi mantido.',
         );
       }
     } catch (_) {

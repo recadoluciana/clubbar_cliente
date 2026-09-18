@@ -42,6 +42,16 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   late final Duration _duracaoValidade;
   Duration _tempoRestante = Duration.zero;
 
+  bool get _compraDeIngresso => widget.reservaIngressoId != null;
+
+  String get _mensagemPagamentoNaoConcluido => _compraDeIngresso
+      ? 'Pagamento do ingresso não concluído.'
+      : 'Pagamento não concluído. O carrinho foi mantido.';
+
+  String get _mensagemPixExpirado => _compraDeIngresso
+      ? 'O QR Code PIX do ingresso expirou. Faça uma nova tentativa de pagamento.'
+      : 'O QR Code PIX expirou. O carrinho foi mantido para uma nova tentativa.';
+
   @override
   void initState() {
     super.initState();
@@ -185,10 +195,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         _timerStatus?.cancel();
         _timerExpiracao?.cancel();
         if (!mounted) return;
-        AppSnackBar.erro(
-          context,
-          'Pagamento não concluído. O carrinho foi mantido.',
-        );
+        AppSnackBar.erro(context, _mensagemPagamentoNaoConcluido);
         Navigator.pop(context, false);
       } else if (validacaoFinal) {
         _encerrarComoExpirado();
@@ -210,10 +217,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     _confirmacaoProcessada = true;
     _timerStatus?.cancel();
     _timerExpiracao?.cancel();
-    AppSnackBar.aviso(
-      context,
-      'O QR Code PIX expirou. O carrinho foi mantido para uma nova tentativa.',
-    );
+    AppSnackBar.aviso(context, _mensagemPixExpirado);
     Navigator.pop(context, false);
   }
 
