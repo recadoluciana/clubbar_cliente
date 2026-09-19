@@ -374,66 +374,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     }
   }
 
-  Future<void> abrirDialogObservacao(Produto produto) async {
-    final controller = TextEditingController();
-
-    if (clienteId == null || clienteId == 0) {
-      await direcionarParaLogin(
-        context,
-        mensagem: 'Faça login para adicionar itens ao carrinho.',
-      );
-      return;
-    }
-
-    final resultado = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFFF6F6F6), // mesmo fundo da tela
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Text(
-            produto.nmproduto,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-          ),
-          content: TextField(
-            controller: controller,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Ex.: sem cebola, bem passado, tirar gelo...',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, null),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFF6F6F6),
-                foregroundColor: Colors.black,
-              ),
-              child: const Text('Cancelar'),
-            ),
-
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                foregroundColor: Colors.black,
-              ),
-              child: const Text('Adicionar'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (resultado == null) return;
-
-    await adicionarProdutoAoCarrinho(produto, observacao: resultado);
-  }
-
   List<Produto> get produtosFiltrados {
     final pesquisa = termoBusca.trim().toLowerCase();
 
@@ -729,12 +669,12 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             );
           },
           child: SizedBox(
-            height: 150,
+            height: 124,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
-                  width: 132,
+                  width: 110,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -788,7 +728,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+                    padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -821,17 +761,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             ),
                           ],
                         ),
-                        if (produto.nmcategoria.trim().isNotEmpty)
-                          Text(
-                            produto.nmcategoria,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         if (temDesconto) ...[
                           Text(
                             ValueFormatters.moeda(produto.vrprecoprod),
@@ -870,9 +800,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: SizedBox(
-                            height: 34,
+                            height: 30,
                             child: ElevatedButton.icon(
-                              onPressed: () => abrirDialogObservacao(produto),
+                              onPressed: () =>
+                                  adicionarProdutoAoCarrinho(produto),
                               icon: const Icon(
                                 Icons.add_shopping_cart_rounded,
                                 size: 15,
