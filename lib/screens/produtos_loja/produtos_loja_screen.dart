@@ -762,26 +762,46 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ],
                         ),
                         const SizedBox(height: 2),
-                        if (temDesconto) ...[
+                        if (temDesconto)
+                          Text.rich(
+                            TextSpan(
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 10,
+                              ),
+                              children: [
+                                const TextSpan(text: 'de '),
+                                TextSpan(
+                                  text: ValueFormatters.moeda(
+                                    produto.vrprecoprod,
+                                  ),
+                                  style: const TextStyle(
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                                const TextSpan(text: ' por '),
+                                TextSpan(
+                                  text: ValueFormatters.moeda(precoAtual),
+                                  style: TextStyle(
+                                    color: Colors.green.shade700,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        else
                           Text(
-                            ValueFormatters.moeda(produto.vrprecoprod),
+                            ValueFormatters.moeda(precoAtual),
                             style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 10,
-                              decoration: TextDecoration.lineThrough,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
                             ),
                           ),
-                        ],
-                        Text(
-                          ValueFormatters.moeda(precoAtual),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w900,
-                            color: temDesconto
-                                ? Colors.green.shade700
-                                : Colors.black,
-                          ),
-                        ),
 
                         const SizedBox(height: 3),
                         Text(
