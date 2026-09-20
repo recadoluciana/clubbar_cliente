@@ -481,6 +481,10 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                     final numeros = _somenteNumeros(value);
                                     if (numeros != _ultimoCepConsultado) {
                                       _ultimoCepConsultado = null;
+                                      _enderecoCtrl.clear();
+                                      _bairroCtrl.clear();
+                                      _cidadeCtrl.clear();
+                                      _ufCtrl.clear();
                                     }
                                     if (formatado != value) {
                                       _cepCtrl.value = TextEditingValue(
@@ -507,11 +511,16 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                 const SizedBox(height: 12),
                                 TextFormField(
                                   controller: _enderecoCtrl,
+                                  readOnly: true,
                                   textCapitalization: TextCapitalization.words,
-                                  decoration: _decoracao(
-                                    label: 'Logradouro',
-                                    icon: Icons.signpost_outlined,
-                                  ),
+                                  decoration:
+                                      _decoracao(
+                                        label: 'Logradouro',
+                                        icon: Icons.signpost_outlined,
+                                      ).copyWith(
+                                        helperText:
+                                            'Preenchido automaticamente pelo CEP',
+                                      ),
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
@@ -547,6 +556,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                 const SizedBox(height: 12),
                                 TextFormField(
                                   controller: _bairroCtrl,
+                                  readOnly: true,
                                   textCapitalization: TextCapitalization.words,
                                   decoration: _decoracao(
                                     label: 'Bairro',
@@ -557,22 +567,11 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: TextFormField(
-                                        controller: _cidadeCtrl,
-                                        textCapitalization:
-                                            TextCapitalization.words,
-                                        decoration: _decoracao(
-                                          label: 'Cidade',
-                                          icon: Icons.domain_outlined,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
                                     SizedBox(
                                       width: 94,
                                       child: TextFormField(
                                         controller: _ufCtrl,
+                                        readOnly: true,
                                         textCapitalization:
                                             TextCapitalization.characters,
                                         maxLength: 2,
@@ -587,6 +586,19 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                           }
                                           return null;
                                         },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: TextFormField(
+                                        controller: _cidadeCtrl,
+                                        readOnly: true,
+                                        textCapitalization:
+                                            TextCapitalization.words,
+                                        decoration: _decoracao(
+                                          label: 'Cidade',
+                                          icon: Icons.domain_outlined,
+                                        ),
                                       ),
                                     ),
                                   ],
