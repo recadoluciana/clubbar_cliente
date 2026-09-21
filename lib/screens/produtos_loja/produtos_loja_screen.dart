@@ -669,7 +669,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             );
           },
           child: SizedBox(
-            height: 124,
+            height: 116,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -808,7 +808,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           produto.dsproduto.trim().isEmpty
                               ? 'Sem descrição'
                               : produto.dsproduto,
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 10,
@@ -816,7 +816,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             color: Colors.grey.shade700,
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
                           child: SizedBox(
