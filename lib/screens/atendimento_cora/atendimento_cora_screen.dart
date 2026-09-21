@@ -402,7 +402,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
           ),
           Container(
             color: Colors.white,
-            child: const TabBar(
+            child: TabBar(
               labelColor: Color(0xFF1877C9),
               unselectedLabelColor: Colors.black54,
               indicatorColor: Color(0xFF1877C9),
@@ -413,7 +413,11 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
                   text: 'Dúvidas frequentes',
                 ),
                 Tab(
-                  icon: Icon(Icons.chat_bubble_outline_rounded),
+                  icon: Image.asset(
+                    'assets/images/corujao.png',
+                    width: 24,
+                    height: 24,
+                  ),
                   text: 'Cora responde',
                 ),
               ],
