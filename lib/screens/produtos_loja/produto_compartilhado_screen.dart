@@ -17,7 +17,11 @@ class ProdutoCompartilhadoScreen extends StatefulWidget {
   final int produtoId;
   final int lojaId;
 
-  const ProdutoCompartilhadoScreen({super.key, required this.produtoId, required this.lojaId});
+  const ProdutoCompartilhadoScreen({
+    super.key,
+    required this.produtoId,
+    required this.lojaId,
+  });
 
   @override
   State<ProdutoCompartilhadoScreen> createState() =>
@@ -251,22 +255,22 @@ class _ProdutoCompartilhadoScreenState
               ),
             )
           : ListView(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
               children: [
                 if (imagemUrl.isNotEmpty)
                   Stack(
                     children: [
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(18),
                         child: Container(
-                          height: 260,
+                          height: 220,
                           width: double.infinity,
                           color: Colors.white,
                           child: Image.network(
                             imagemUrl,
-                            height: 260,
+                            height: 220,
                             width: double.infinity,
-                            fit: BoxFit.contain,
+                            fit: BoxFit.cover,
                             alignment: Alignment.center,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
@@ -299,48 +303,51 @@ class _ProdutoCompartilhadoScreenState
                               seloDesconto,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
                         ),
                     ],
                   ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 Text(
                   p?['nmproduto']?.toString() ?? '',
                   style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 5),
                 if (loja != null)
                   Text(
                     loja!.nome,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 if ((p?['dsproduto'] ?? '').toString().isNotEmpty)
                   Text(
                     p?['dsproduto']?.toString() ?? '',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey.shade800,
-                      height: 1.4,
+                      fontSize: 14,
+                      color: Colors.grey.shade700,
+                      height: 1.35,
                     ),
                   ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Row(
                     children: [
@@ -348,8 +355,8 @@ class _ProdutoCompartilhadoScreenState
                         child: Text(
                           descontoAtivo ? 'Preço promocional' : 'Preço',
                           style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -370,8 +377,8 @@ class _ProdutoCompartilhadoScreenState
                               descontoAtivo ? precoFinal : precoOriginal,
                             ),
                             style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w900,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
                               color: descontoAtivo
                                   ? Colors.green.shade700
                                   : Colors.black,
@@ -382,12 +389,12 @@ class _ProdutoCompartilhadoScreenState
                     ],
                   ),
                 ),
-                const SizedBox(height: 26),
+                const SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
