@@ -806,8 +806,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       child: ElevatedButton(
         onPressed: () => abrirEscolhaPagamento(),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.amber,
-          foregroundColor: Colors.black,
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),
