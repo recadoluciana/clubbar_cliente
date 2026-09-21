@@ -40,10 +40,19 @@ class AppConfig {
     }
   }
 
-  static const String appWebUrl = String.fromEnvironment(
-    'APP_WEB_URL',
-    defaultValue: 'https://app.clubbar.com.br',
-  );
+  /// Endereço público do Clubbar Client para links compartilhados.
+  static String get appWebUrl {
+    const urlInformada = String.fromEnvironment(
+      'APP_WEB_URL',
+      defaultValue: '',
+    );
+    if (urlInformada.trim().isNotEmpty) {
+      return _removerBarraFinal(urlInformada.trim());
+    }
+    return isDev
+        ? 'https://clubbarclient-desenvolvimento.up.railway.app'
+        : 'https://app.clubbar.com.br';
+  }
 
   static const String siteUrl = String.fromEnvironment(
     'SITE_URL',

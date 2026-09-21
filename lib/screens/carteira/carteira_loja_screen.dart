@@ -106,8 +106,8 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       // Validade do item da venda
       validade: (item['dtexpiraitvenda_fmt'] ?? '').toString().trim(),
 
-      urlApp: 'https://clubbar.com.br/app',
-      urlWeb: 'https://app.clubbar.com.br',
+      urlApp: AppConfig.appWebUrl,
+      urlWeb: AppConfig.appWebUrl,
     );
 
     if (!mounted) return;
@@ -124,7 +124,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
     final texto =
         '🎁 Você ganhou um presente através do app Clubbar!\n'
-        'app.clubbar.com.br\n\n'
+        '${AppConfig.appWebUrl}\n\n'
         '$nomeProduto\n'
         '📍 ${widget.nomeLoja}\n\n'
         'Apresente o QR Code ao atendente.';
