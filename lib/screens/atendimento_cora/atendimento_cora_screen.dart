@@ -177,7 +177,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
         const SizedBox(width: 14),
         const Expanded(
           child: Text(
-            'Olá, sou Coralina Corrêa Murad, mas pode me chamar de Cora.',
+            'Olá, sou Coralina, mas pode me chamar de Cora.',
             style: TextStyle(fontSize: 16, height: 1.35),
           ),
         ),
@@ -385,34 +385,62 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: const Color(0xFFF6F6F6),
-    appBar: const ClubbarAppBar(mostrarVoltar: true),
-    body: Column(
-      children: [
-        const ClubbarPageHeader(
-          titulo: 'Cora responde',
-          subtitulo: 'Dúvidas frequentes e atendimento',
-          mostrarAvatar: false,
-          corTitulo: Colors.blue,
-          pesoTitulo: FontWeight.normal,
-          pesoSubtitulo: FontWeight.normal,
-        ),
-        Expanded(
-          child: _carregando
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-                  children: [
-                    _apresentacaoCora(),
-                    const SizedBox(height: 14),
-                    _faq(),
-                    const SizedBox(height: 14),
-                    _conversa(),
-                  ],
+  Widget build(BuildContext context) => DefaultTabController(
+    length: 2,
+    child: Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      body: Column(
+        children: [
+          const ClubbarPageHeader(
+            titulo: 'Cora responde',
+            subtitulo: 'Dúvidas frequentes e atendimento',
+            mostrarAvatar: false,
+            corTitulo: Colors.blue,
+            pesoTitulo: FontWeight.normal,
+            pesoSubtitulo: FontWeight.normal,
+          ),
+          Container(
+            color: Colors.white,
+            child: const TabBar(
+              labelColor: Color(0xFF1877C9),
+              unselectedLabelColor: Colors.black54,
+              indicatorColor: Color(0xFF1877C9),
+              indicatorWeight: 3,
+              tabs: [
+                Tab(
+                  icon: Icon(Icons.help_outline_rounded),
+                  text: 'Dúvidas frequentes',
                 ),
-        ),
-      ],
+                Tab(
+                  icon: Icon(Icons.chat_bubble_outline_rounded),
+                  text: 'Cora responde',
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: _carregando
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    children: [
+                      ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                        children: [_faq()],
+                      ),
+                      ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                        children: [
+                          _apresentacaoCora(),
+                          const SizedBox(height: 14),
+                          _conversa(),
+                        ],
+                      ),
+                    ],
+                  ),
+          ),
+        ],
+      ),
     ),
   );
 }
