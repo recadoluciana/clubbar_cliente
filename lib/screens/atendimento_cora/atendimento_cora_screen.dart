@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 
 import '../../config/app_config.dart';
 import '../../services/auth_storage.dart';
-import '../../widgets/app_version_text.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 
@@ -22,14 +21,9 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
   List<_Mensagem> _mensagens = [];
   List<_Duvida> _duvidas = [];
   bool _carregando = true;
+  bool _carregandoDuvidas = true;
+  bool _erroDuvidas = false;
   bool _enviando = false;
-  bool _apiOnline = false;
-  bool _bancoOnline = false;
-
-  bool get _dev =>
-      AppConfig.isDev ||
-      AppConfig.apiBaseUrl.contains('desenvolvimento') ||
-      AppConfig.apiBaseUrl.contains('localhost');
 
   @override
   void initState() {
@@ -46,21 +40,23 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
   }
 
   Future<void> _carregar() async {
-    await Future.wait([
-      _consultarAmbiente(),
-      _buscarDuvidas(),
-      _buscarMensagens(),
-    ]);
+    await Future.wait([_buscarDuvidas(), _buscarMensagens()]);
     if (mounted) setState(() => _carregando = false);
     _rolarAteFinal();
   }
 
   Future<void> _buscarDuvidas() async {
+    if (mounted) {
+      setState(() {
+        _carregandoDuvidas = true;
+        _erroDuvidas = false;
+      });
+    }
     try {
-      final resposta = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/cora/duvidas'),
-      );
-      if (resposta.statusCode != 200) return;
+      final resposta = await http
+          .get(Uri.parse('${AppConfig.apiBaseUrl}/cora/duvidas'))
+          .timeout(const Duration(seconds: 8));
+      if (resposta.statusCode != 200) throw Exception();
       final lista = jsonDecode(utf8.decode(resposta.bodyBytes)) as List;
       if (mounted) {
         setState(
@@ -69,7 +65,11 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
               .toList(),
         );
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) setState(() => _erroDuvidas = true);
+    } finally {
+      if (mounted) setState(() => _carregandoDuvidas = false);
+    }
   }
 
   Future<void> _buscarMensagens() async {
@@ -88,28 +88,6 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
         );
       }
     } catch (_) {}
-  }
-
-  Future<void> _consultarAmbiente() async {
-    try {
-      final resposta = await http
-          .get(Uri.parse('${AppConfig.apiBaseUrl}/health'))
-          .timeout(const Duration(seconds: 5));
-      final dados = resposta.statusCode == 200
-          ? jsonDecode(resposta.body) as Map<String, dynamic>
-          : <String, dynamic>{};
-      if (!mounted) return;
-      setState(() {
-        _apiOnline = resposta.statusCode == 200 && dados['api'] == 'online';
-        _bancoOnline = dados['database'] == 'online';
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _apiOnline = false;
-        _bancoOnline = false;
-      });
-    }
   }
 
   Future<void> _enviar() async {
@@ -173,32 +151,6 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     });
   }
 
-  Widget _statusAcesso(String nome, bool online) => Padding(
-    padding: const EdgeInsets.only(bottom: 8),
-    child: Row(
-      children: [
-        Expanded(child: Text(nome, style: const TextStyle())),
-        if (online) ...[
-          const Icon(Icons.circle, size: 10, color: Colors.green),
-          const SizedBox(width: 6),
-          Text('Online', style: TextStyle(color: Colors.green.shade800)),
-        ] else
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              border: Border.all(color: Colors.red),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Offline',
-              style: TextStyle(color: Colors.red.shade800, fontSize: 11),
-            ),
-          ),
-      ],
-    ),
-  );
-
   BoxDecoration _decoracaoCard() => BoxDecoration(
     color: Colors.white,
     borderRadius: BorderRadius.circular(16),
@@ -248,32 +200,29 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
             ],
           ),
         ),
-        const ExpansionTile(
-          tilePadding: EdgeInsets.symmetric(horizontal: 14),
-          childrenPadding: EdgeInsets.fromLTRB(16, 0, 16, 14),
-          title: Text('Qual a versão do Clubbar?'),
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: AppVersionText(style: TextStyle()),
+        if (_carregandoDuvidas)
+          const Padding(
+            padding: EdgeInsets.all(20),
+            child: CircularProgressIndicator(),
+          )
+        else if (_erroDuvidas)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+            child: Column(
+              children: [
+                const Text(
+                  'Não foi possível carregar as dúvidas frequentes.',
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: _buscarDuvidas,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Tentar novamente'),
+                ),
+              ],
             ),
-          ],
-        ),
-        ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 14),
-          childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-          title: const Text('Como está meu acesso ao aplicativo?'),
-          children: [
-            _statusAcesso('API do Clubbar', _apiOnline),
-            _statusAcesso('Banco de dados', _bancoOnline),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Ambiente do banco: ${_dev ? 'Development' : 'Production'}',
-              ),
-            ),
-          ],
-        ),
+          ),
         ..._duvidas.map(
           (duvida) => ExpansionTile(
             tilePadding: const EdgeInsets.symmetric(horizontal: 14),

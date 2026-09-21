@@ -10,6 +10,7 @@ import '../../utils/app_snackbar.dart';
 import '../../widgets/perfil_page_header.dart';
 import '../../cashback/cashback_screen.dart';
 import '../../services/main_navigation_controller.dart';
+import 'informacoes_aplicativo_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -167,6 +168,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     MainNavigationController.abrirTela(const CashbackScreen());
                   },
                   iconColor: Colors.green,
+                ),
+
+                const SizedBox(height: 10),
+
+                _itemAcao(
+                  icon: Icons.info_outline_rounded,
+                  titulo: 'Sobre o aplicativo',
+                  onTap: () {
+                    MainNavigationController.abrirTela(
+                      const InformacoesAplicativoScreen(),
+                    );
+                  },
+                  iconColor: Colors.blueGrey,
                 ),
 
                 const SizedBox(height: 10),
