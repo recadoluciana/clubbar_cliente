@@ -15,7 +15,7 @@ class PresenteImageGenerator {
     required String imagemUrl,
     required String dadosQr,
     String validade = '',
-    String urlApp = 'https://clubbar.com.br/app',
+    String urlApp = 'https://app.clubbar.com.br',
     String urlWeb = 'https://app.clubbar.com.br',
   }) async {
     try {
@@ -90,7 +90,7 @@ class PresenteImageGenerator {
 
       _desenharDivisor(canvas: canvas, paint: paint, y: 1450);
 
-      _desenharMarketing(canvas: canvas);
+      _desenharMarketing(canvas: canvas, urlClient: urlWeb);
 
       await _desenharAreaDivulgacao(
         canvas: canvas,
@@ -290,7 +290,7 @@ class PresenteImageGenerator {
 
     _desenharTexto(
       canvas,
-      texto: 'Apresente este QR Code para o atendende',
+      texto: 'Apresente este QR Code para o atendente',
       posicao: const Offset(84, 890),
       larguraMaxima: 912,
       tamanho: 30,
@@ -355,13 +355,16 @@ class PresenteImageGenerator {
     canvas.drawLine(Offset(110, y), Offset(970, y), paint);
   }
 
-  static void _desenharMarketing({required Canvas canvas}) {
+  static void _desenharMarketing({
+    required Canvas canvas,
+    required String urlClient,
+  }) {
     _desenharTexto(
       canvas,
-      texto: 'Gostou deste presente?',
+      texto: 'Gostou deste presente? Acesse o Clubbar Client:',
       posicao: const Offset(84, 1300),
       larguraMaxima: 912,
-      tamanho: 36,
+      tamanho: 29,
       cor: Colors.black,
       peso: FontWeight.w900,
       alinhamento: TextAlign.center,
@@ -369,11 +372,11 @@ class PresenteImageGenerator {
 
     _desenharTexto(
       canvas,
-      texto: 'https://app.clubbar.com.br',
-      posicao: const Offset(120 + 362, 1300),
+      texto: urlClient,
+      posicao: const Offset(84, 1340),
       larguraMaxima: 912,
-      tamanho: 36,
-      cor: Colors.black,
+      tamanho: 24,
+      cor: Colors.blue,
       peso: FontWeight.w900,
       alinhamento: TextAlign.center,
     );
@@ -382,12 +385,12 @@ class PresenteImageGenerator {
       canvas,
       texto:
           'Conheça o aplicativo Clubbar, para bares e casas noturnas.\nBaixe o app e aproveite promoções, descontos e benefícios exclusivos.',
-      posicao: const Offset(118, 1350),
+      posicao: const Offset(118, 1380),
       larguraMaxima: 844,
-      tamanho: 23,
+      tamanho: 20,
       cor: Colors.black,
       peso: FontWeight.w600,
-      maxLines: 3,
+      maxLines: 2,
       alinhamento: TextAlign.center,
     );
   }

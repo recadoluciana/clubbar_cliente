@@ -90,6 +90,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       imagemUrl: _buildImageUrl((item['urlfotoproduto'] ?? '').toString()),
       dadosQr: 'CLUBBAR-INGRESSO:$token',
       validade: dataEvento,
+      urlApp: AppConfig.appWebUrl,
+      urlWeb: AppConfig.appWebUrl,
     );
     if (!mounted) return;
     if (imagem == null) {
