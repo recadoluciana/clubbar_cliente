@@ -669,7 +669,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             );
           },
           child: SizedBox(
-            height: 116,
+            height: 128,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -728,7 +728,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 ),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                    padding: const EdgeInsets.fromLTRB(12, 8, 8, 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
