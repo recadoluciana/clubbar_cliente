@@ -351,8 +351,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     } catch (e) {
       if (!mounted) return;
 
+      final erro = e.toString().toLowerCase();
+      final mensagem =
+          erro.contains('recebimentos ainda') ||
+              erro.contains('temporariamente indisponível')
+          ? 'Esta compra não pode ser concluída neste momento. O estabelecimento está temporariamente indisponível para pagamentos. Tente novamente mais tarde.'
+          : e.toString().replaceFirst('Exception: ', '');
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(content: Text(mensagem), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) {
