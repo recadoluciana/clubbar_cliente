@@ -798,21 +798,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Future<void> _abrirCarteiraIngressos(String orientacao) async {
-    final token = await authStorage.obterToken();
-    if (!mounted) return;
-    if (token == null || token.isEmpty) {
-      await direcionarParaLogin(
-        context,
-        mensagem: 'Faça login para acessar seus ingressos.',
-      );
-      return;
-    }
-    AppSnackBar.info(context, orientacao);
-    MainNavigationController.irParaCarteira();
-  }
-
   Widget _politicaEvento() {
+    final detalhe = evento;
+    final politicaLoja = detalhe?.politicaLoja.trim() ?? '';
+    final politicaEvento = detalhe?.politicaCancelamento.trim() ?? '';
+    final orientacoesAcesso = detalhe?.orientacoesAcessoLoja.trim() ?? '';
+    if (politicaLoja.isEmpty &&
+        politicaEvento.isEmpty &&
+        orientacoesAcesso.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Padding(
       padding: const EdgeInsets.only(top: 20),
       child: Column(
@@ -834,43 +829,42 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Cancelamento de pedidos pagos',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 7),
-                const Text(
-                  'Cancelamentos de pedidos serão aceitos até 7 dias após a compra, desde que a solicitação seja enviada até 48 horas antes do início do evento.',
-                  style: TextStyle(fontSize: 14, height: 1.55),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: () => _abrirCarteiraIngressos(
-                      'Selecione a loja e use o botão Cancelar no ingresso desejado.',
-                    ),
-                    child: const Text('Saiba mais sobre o cancelamento'),
+                if (politicaLoja.isNotEmpty) ...[
+                  const Text(
+                    'Política da loja',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
                   ),
-                ),
-                const Divider(height: 24),
-                const Text(
-                  'Edição de participantes',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 7),
-                const Text(
-                  'Você poderá editar o participante de um ingresso apenas uma vez. Essa opção ficará disponível até 24 horas antes do início do evento.',
-                  style: TextStyle(fontSize: 14, height: 1.55),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: () => _abrirCarteiraIngressos(
-                      'Selecione a loja e use o botão Alterar participante no ingresso desejado.',
-                    ),
-                    child: const Text('Saiba como editar participantes'),
+                  const SizedBox(height: 7),
+                  Text(
+                    politicaLoja,
+                    style: const TextStyle(fontSize: 14, height: 1.55),
                   ),
-                ),
+                ],
+                if (politicaEvento.isNotEmpty) ...[
+                  if (politicaLoja.isNotEmpty) const Divider(height: 24),
+                  const Text(
+                    'Política deste evento',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    politicaEvento,
+                    style: const TextStyle(fontSize: 14, height: 1.55),
+                  ),
+                ],
+                if (orientacoesAcesso.isNotEmpty) ...[
+                  if (politicaLoja.isNotEmpty || politicaEvento.isNotEmpty)
+                    const Divider(height: 24),
+                  const Text(
+                    'Orientações de entrada e acesso',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    orientacoesAcesso,
+                    style: const TextStyle(fontSize: 14, height: 1.55),
+                  ),
+                ],
               ],
             ),
           ),

@@ -3,6 +3,8 @@ class EventoDetalhe {
   final String titulo;
   final String descricao;
   final String politicaCancelamento;
+  final String politicaLoja;
+  final String orientacoesAcessoLoja;
   final String dataInicio;
   final String dataFim;
   final String local;
@@ -21,6 +23,8 @@ class EventoDetalhe {
     required this.titulo,
     required this.descricao,
     this.politicaCancelamento = '',
+    this.politicaLoja = '',
+    this.orientacoesAcessoLoja = '',
     required this.dataInicio,
     required this.dataFim,
     required this.local,
@@ -36,11 +40,17 @@ class EventoDetalhe {
   });
 
   factory EventoDetalhe.fromJson(Map<String, dynamic> json) {
+    final politicaLoja = Map<String, dynamic>.from(
+      json['politica_loja'] as Map? ?? const {},
+    );
     return EventoDetalhe(
       id: _toInt(json['evento_id'] ?? json['id'] ?? 0),
       titulo: (json['nmtituloevento'] ?? 'Evento').toString(),
       descricao: (json['dsdescevento'] ?? '').toString(),
       politicaCancelamento: (json['dspoliticacancelamento'] ?? '').toString(),
+      politicaLoja: (politicaLoja['dspoliticaingresso'] ?? '').toString(),
+      orientacoesAcessoLoja: (politicaLoja['dsorientacoesacesso'] ?? '')
+          .toString(),
       dataInicio: (json['dtinicioevento'] ?? '').toString(),
       dataFim: (json['dtfimevento'] ?? '').toString(),
       local: (json['nmlocalevento'] ?? '').toString(),

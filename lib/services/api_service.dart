@@ -1020,6 +1020,8 @@ class ApiService {
           bairro: (data['dsbairroloja'] ?? '').toString(),
           atracoes: atracoes,
           politicaCancelamento: evento.politicaCancelamento,
+          politicaLoja: evento.politicaLoja,
+          orientacoesAcessoLoja: evento.orientacoesAcessoLoja,
         );
       }
 
