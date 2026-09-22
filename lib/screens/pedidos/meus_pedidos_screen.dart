@@ -387,6 +387,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     final dataCancelamento = (item['dtcancelamento'] ?? '').toString().trim();
     final idReembolso = (item['idreembolso'] ?? '').toString().trim();
     final reembolso = item['vrreembolso'];
+    final taxa = item['vrtaxaitvenda'] ?? 0;
     final historico = (item['historico_participantes'] as List? ?? [])
         .map((valor) => Map<String, dynamic>.from(valor as Map))
         .toList();
@@ -456,10 +457,13 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
+                        if (!ingresso)
+                          _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
                         _chipInfo(
                           'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
                         ),
+                        if (ingresso)
+                          _chipInfo('Taxa: ${ValueFormatters.moeda(taxa)}'),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -473,11 +477,17 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
 
               return Row(
                 children: [
-                  _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
-                  const SizedBox(width: 8),
+                  if (!ingresso) ...[
+                    _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
+                    const SizedBox(width: 8),
+                  ],
                   _chipInfo(
                     'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
                   ),
+                  if (ingresso) ...[
+                    const SizedBox(width: 8),
+                    _chipInfo('Taxa: ${ValueFormatters.moeda(taxa)}'),
+                  ],
                   const Spacer(),
                   _badgeEntrega(item),
                 ],
