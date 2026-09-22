@@ -212,6 +212,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   Future<void> _abrirDialogAlterarParticipante(
     Map<String, dynamic> item,
   ) async {
+    final dataEvento = _dataEvento(item);
+    if (dataEvento == null ||
+        DateTime.now().isAfter(
+          dataEvento.subtract(const Duration(hours: 48)),
+        )) {
+      AppSnackBar.erro(
+        context,
+        'A transferência só pode ser realizada até 48 horas antes do início do evento.',
+      );
+      return;
+    }
     final nomeController = TextEditingController(
       text: (item['nmparticipante'] ?? '').toString(),
     );
@@ -220,65 +231,115 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       text: _formatarCpf((item['cpfparticipante'] ?? '').toString()),
     );
 
-    final resultado = await showDialog<Map<String, String>>(
+    final tipoPreco = (item['tipopreco'] ?? '').toString().toUpperCase();
+    final ehMeiaEntrada = tipoPreco.startsWith('MEIA');
+    bool confirmouMeiaEntrada = false;
+
+    final resultado = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
       builder: (_) {
-        return AlertDialog(
-          title: const Text('Alterar participante'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nomeController,
-                textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
-                  labelText: 'Nome do participante',
-                  border: OutlineInputBorder(),
-                ),
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) => AlertDialog(
+            title: const Text('Transferir ingresso'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'A transferência é gratuita e ficará registrada no histórico do ingresso.',
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: nomeController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Nome do novo participante',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: cpfController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'CPF do novo participante',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  if (ehMeiaEntrada) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'Este ingresso é de meia-entrada. O novo participante precisa ter direito à meia-entrada e apresentar o comprovante na entrada.',
+                      ),
+                    ),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: confirmouMeiaEntrada,
+                      onChanged: (valor) => setDialogState(
+                        () => confirmouMeiaEntrada = valor ?? false,
+                      ),
+                      title: const Text(
+                        'Confirmo que o novo participante tem direito à meia-entrada.',
+                      ),
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: cpfController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'CPF do participante',
-                  border: OutlineInputBorder(),
-                ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final nome = nomeController.text.trim();
+                  final cpf = cpfController.text.replaceAll(
+                    RegExp(r'[^0-9]'),
+                    '',
+                  );
+
+                  if (nome.isEmpty || cpf.isEmpty) {
+                    AppSnackBar.erro(
+                      dialogContext,
+                      'Informe nome e CPF do novo participante.',
+                    );
+                    return;
+                  }
+
+                  if (!CpfUtils.validar(cpf)) {
+                    AppSnackBar.erro(
+                      dialogContext,
+                      'CPF do participante inválido.',
+                    );
+                    return;
+                  }
+                  if (ehMeiaEntrada && !confirmouMeiaEntrada) {
+                    AppSnackBar.erro(
+                      dialogContext,
+                      'Confirme o direito à meia-entrada do novo participante.',
+                    );
+                    return;
+                  }
+
+                  Navigator.pop(dialogContext, {
+                    'nome': nome,
+                    'cpf': cpf,
+                    'confirmar_meia_entrada': confirmouMeiaEntrada,
+                  });
+                },
+                child: const Text('Transferir'),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final nome = nomeController.text.trim();
-                final cpf = cpfController.text.replaceAll(
-                  RegExp(r'[^0-9]'),
-                  '',
-                );
-
-                if (nome.isEmpty || cpf.isEmpty) {
-                  AppSnackBar.erro(
-                    context,
-                    'Informe nome e CPF do participante.',
-                  );
-                  return;
-                }
-
-                if (!CpfUtils.validar(cpf)) {
-                  AppSnackBar.erro(context, 'CPF do cliente inválido.');
-                  return;
-                }
-
-                Navigator.pop(context, {'nome': nome, 'cpf': cpf});
-              },
-              child: const Text('Salvar'),
-            ),
-          ],
         );
       },
     );
@@ -299,6 +360,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         itvendaId: itvendaId,
         nmparticipante: resultado['nome']!,
         cpfparticipante: resultado['cpf']!,
+        confirmarMeiaEntrada: resultado['confirmar_meia_entrada'] == true,
       );
 
       if (!mounted) return;
@@ -308,11 +370,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         item['cpfparticipante'] = resultado['cpf'];
       });
 
-      AppSnackBar.sucesso(context, 'Participante alterado com sucesso.');
+      AppSnackBar.sucesso(context, 'Ingresso transferido com sucesso.');
     } catch (e) {
       if (!mounted) return;
 
-      AppSnackBar.erro(context, 'Erro ao alterar participante.');
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     }
   }
 
@@ -457,6 +519,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
+    final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
 
     final valor = double.tryParse('${item['vrunititvenda'] ?? 0}') ?? 0;
 
@@ -518,6 +581,19 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             height: 1.15,
                           ),
                         ),
+                        if (tipoIngresso.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            tipoIngresso,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 5),
                         Text(
                           dataEvento.isEmpty
@@ -639,7 +715,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         ),
 
                         IconButton(
-                          tooltip: 'Alterar participante',
+                          tooltip: 'Transferir ingresso',
                           onPressed: () =>
                               _abrirDialogAlterarParticipante(item),
                           style: IconButton.styleFrom(

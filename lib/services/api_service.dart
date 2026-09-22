@@ -1170,6 +1170,7 @@ class ApiService {
     required int itvendaId,
     required String nmparticipante,
     required String cpfparticipante,
+    required bool confirmarMeiaEntrada,
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/entregas/itvenda/$itvendaId/participante'),
@@ -1177,6 +1178,7 @@ class ApiService {
       body: jsonEncode({
         'nmparticipante': nmparticipante,
         'cpfparticipante': cpfparticipante,
+        'confirmar_meia_entrada': confirmarMeiaEntrada,
       }),
     );
 
