@@ -293,6 +293,34 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     );
   }
 
+  Widget _badgeSituacaoItem(Map<String, dynamic> item) {
+    final situacao = (item['sititvenda'] ?? 'ATIVO').toString().toUpperCase();
+    final dados = switch (situacao) {
+      'CANCELAMENTO_SOLICITADO' => (
+        'Cancelamento solicitado',
+        Colors.orange.shade800,
+        Colors.orange.withOpacity(0.12),
+      ),
+      'CANCELADO' => ('Cancelado', Colors.red, Colors.red.withOpacity(0.10)),
+      _ => ('Ativo', Colors.green.shade700, Colors.green.withOpacity(0.10)),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: dados.$3,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        dados.$1,
+        style: TextStyle(
+          color: dados.$2,
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
   Widget _chipInfo(String texto) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -351,6 +379,17 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         (item['nmuserentregaitvenda'] ?? item['userentregaitvenda'] ?? '')
             .toString();
     final dataEntrega = (item['dtentregaitvenda'] ?? '').toString();
+    final ingresso = _isIngresso(item);
+    final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
+    final lote = (item['lote'] ?? '').toString().trim();
+    final participante = (item['nmparticipante'] ?? '').toString().trim();
+    final cpfParticipante = (item['cpfparticipante'] ?? '').toString().trim();
+    final dataCancelamento = (item['dtcancelamento'] ?? '').toString().trim();
+    final idReembolso = (item['idreembolso'] ?? '').toString().trim();
+    final reembolso = item['vrreembolso'];
+    final historico = (item['historico_participantes'] as List? ?? [])
+        .map((valor) => Map<String, dynamic>.from(valor as Map))
+        .toList();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -376,6 +415,34 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               ),
               const SizedBox(width: 8),
               _badgeTipo(item),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _badgeSituacaoItem(item),
+              if (ingresso && tipoIngresso.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'Tipo: $tipoIngresso',
+                    style: TextStyle(
+                      color: Colors.blue.shade800,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              if (ingresso && lote.isNotEmpty) _chipInfo('Lote: $lote'),
             ],
           ),
           const SizedBox(height: 10),
@@ -422,6 +489,70 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             Text(
               'Observação: $obs',
               style: TextStyle(color: Colors.grey.shade700, height: 1.35),
+            ),
+          ],
+          if (ingresso && participante.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              'Participante atual: $participante${cpfParticipante.isEmpty ? '' : ' • CPF: $cpfParticipante'}',
+              style: TextStyle(
+                color: Colors.blue.shade900,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+          if (ingresso && historico.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Participantes anteriores',
+              style: TextStyle(
+                color: Colors.grey.shade800,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            ...historico.map((registro) {
+              final nome = (registro['nmparticipanteanterior'] ?? '')
+                  .toString()
+                  .trim();
+              final cpf = (registro['cpfparticipanteanterior'] ?? '')
+                  .toString()
+                  .trim();
+              final data = (registro['dttransferencia'] ?? '')
+                  .toString()
+                  .trim();
+              return Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Text(
+                  '• ${nome.isEmpty ? 'Não informado' : nome}${cpf.isEmpty ? '' : ' • CPF: $cpf'}${data.isEmpty ? '' : ' • transferido em $data'}',
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                ),
+              );
+            }),
+          ],
+          if (dataCancelamento.isNotEmpty ||
+              reembolso != null ||
+              idReembolso.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red.withOpacity(0.18)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (dataCancelamento.isNotEmpty)
+                    Text('Cancelamento: $dataCancelamento'),
+                  if (reembolso != null)
+                    Text('Reembolso: ${ValueFormatters.moeda(reembolso)}'),
+                  if (idReembolso.isNotEmpty)
+                    Text('Código do reembolso: $idReembolso'),
+                ],
+              ),
             ),
           ],
           if (entreguePor.isNotEmpty || dataEntrega.isNotEmpty) ...[
