@@ -35,6 +35,7 @@ class CarteiraLojaScreen extends StatefulWidget {
 class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   late List<Map<String, dynamic>> itensTela;
   final ApiService _apiService = ApiService();
+  bool _atualizando = false;
 
   static final String baseUrl = AppConfig.apiBaseUrl;
 
@@ -81,6 +82,24 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     }
 
     return 'CLUBBAR-PRODUTO:$token';
+  }
+
+  Future<void> _atualizarItens() async {
+    if (_atualizando || widget.onAtualizar == null) return;
+
+    setState(() => _atualizando = true);
+    try {
+      final novosItens = await widget.onAtualizar!();
+      CarteiraBadgeNotifier.atualizar();
+      if (!mounted) return;
+      setState(() => itensTela = novosItens);
+    } catch (_) {
+      if (mounted) {
+        AppSnackBar.erro(context, 'Não foi possível atualizar a carteira.');
+      }
+    } finally {
+      if (mounted) setState(() => _atualizando = false);
+    }
   }
 
   Future<void> _compartilharPresente(Map<String, dynamic> item) async {
@@ -672,24 +691,28 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
             subtitulo:
                 '${widget.nomeLoja} • $totalUnidades item(ns) disponível(is)',
             icone: Icons.inventory_2_rounded,
-            imagemUrl: widget.logoLoja,
+            imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
+            trailing: IconButton(
+              tooltip: 'Atualizar carteira',
+              onPressed: _atualizando ? null : _atualizarItens,
+              icon: _atualizando
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                    )
+                  : const Icon(Icons.refresh_rounded),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.92),
+                foregroundColor: Colors.black87,
+                elevation: 2,
+              ),
+            ),
           ),
 
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async {
-                if (widget.onAtualizar == null) return;
-
-                final novosItens = await widget.onAtualizar!();
-
-                CarteiraBadgeNotifier.atualizar();
-
-                if (!mounted) return;
-
-                setState(() {
-                  itensTela = novosItens;
-                });
-              },
+              onRefresh: _atualizarItens,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
