@@ -317,7 +317,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               Row(
                 children: [
                   _atalhoCarteira(
-                    titulo: 'Produtos',
+                    titulo: 'Meus produtos',
                     quantidade: totalProdutos,
                     icone: Icons.shopping_bag_rounded,
                     cor: const Color(0xFFD18A00),
@@ -341,7 +341,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                   const SizedBox(width: 10),
 
                   _atalhoCarteira(
-                    titulo: 'Ingressos',
+                    titulo: 'Meus ingressos',
                     quantidade: totalIngressos,
                     icone: Icons.confirmation_number_rounded,
                     cor: Colors.blue,
