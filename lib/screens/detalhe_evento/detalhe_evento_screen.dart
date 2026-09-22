@@ -15,6 +15,7 @@ import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import 'participantes_reserva_screen.dart';
+import '../pagamento/politica_compra_screen.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -799,76 +800,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   Widget _politicaEvento() {
-    final detalhe = evento;
-    final politicaLoja = detalhe?.politicaLoja.trim() ?? '';
-    final politicaEvento = detalhe?.politicaCancelamento.trim() ?? '';
-    final orientacoesAcesso = detalhe?.orientacoesAcessoLoja.trim() ?? '';
-    if (politicaLoja.isEmpty &&
-        politicaEvento.isEmpty &&
-        orientacoesAcesso.isEmpty) {
-      return const SizedBox.shrink();
-    }
     return Padding(
       padding: const EdgeInsets.only(top: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Política do evento',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: Colors.blue.shade100),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (politicaLoja.isNotEmpty) ...[
-                  const Text(
-                    'Política da loja',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    politicaLoja,
-                    style: const TextStyle(fontSize: 14, height: 1.55),
-                  ),
-                ],
-                if (politicaEvento.isNotEmpty) ...[
-                  if (politicaLoja.isNotEmpty) const Divider(height: 24),
-                  const Text(
-                    'Política deste evento',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    politicaEvento,
-                    style: const TextStyle(fontSize: 14, height: 1.55),
-                  ),
-                ],
-                if (orientacoesAcesso.isNotEmpty) ...[
-                  if (politicaLoja.isNotEmpty || politicaEvento.isNotEmpty)
-                    const Divider(height: 24),
-                  const Text(
-                    'Orientações de entrada e acesso',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    orientacoesAcesso,
-                    style: const TextStyle(fontSize: 14, height: 1.55),
-                  ),
-                ],
-              ],
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
             ),
           ),
-        ],
+          icon: const Icon(Icons.policy_outlined),
+          label: const Text('Política de compra de ingresso'),
+        ),
       ),
     );
   }

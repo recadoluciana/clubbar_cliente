@@ -64,12 +64,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         .toList();
   }
 
-  DateTime? _dataEvento(Map<String, dynamic> item) =>
-      DateTime.tryParse((item['dtinicioevento'] ?? '').toString());
-
-  DateTime? _dataCompra(Map<String, dynamic> item) =>
-      DateTime.tryParse((item['dtcriacao'] ?? '').toString());
-
   Future<void> _compartilharIngresso(Map<String, dynamic> item) async {
     final token = (item['qrtokenitvenda'] ?? '').toString().trim();
     final itvendaId = int.tryParse('${item['itvenda_id'] ?? 0}') ?? 0;
@@ -124,28 +118,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   }
 
   Future<void> _cancelarIngresso(Map<String, dynamic> item) async {
-    final dataEvento = _dataEvento(item);
-    final dataCompra = _dataCompra(item);
-    if (dataEvento == null || dataCompra == null) {
-      AppSnackBar.erro(context, 'Data da compra ou do evento não informada.');
-      return;
-    }
-    final agora = DateTime.now();
-    final dentroDosSeteDias = !agora.isAfter(
-      dataCompra.add(const Duration(days: 7)),
-    );
-    final antesDasQuarentaEOitoHoras = !agora.isAfter(
-      dataEvento.subtract(const Duration(hours: 48)),
-    );
-    if (!dentroDosSeteDias || !antesDasQuarentaEOitoHoras) {
-      AppSnackBar.erro(
-        context,
-        'Cancelamento não permitido. O ingresso só pode ser cancelado em até '
-        '7 dias após a compra e com no mínimo 48 horas de antecedência do '
-        'início do evento.',
-      );
-      return;
-    }
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -212,17 +184,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   Future<void> _abrirDialogAlterarParticipante(
     Map<String, dynamic> item,
   ) async {
-    final dataEvento = _dataEvento(item);
-    if (dataEvento == null ||
-        DateTime.now().isAfter(
-          dataEvento.subtract(const Duration(hours: 48)),
-        )) {
-      AppSnackBar.erro(
-        context,
-        'A transferência só pode ser realizada até 48 horas antes do início do evento.',
-      );
-      return;
-    }
     final nomeController = TextEditingController(
       text: (item['nmparticipante'] ?? '').toString(),
     );
