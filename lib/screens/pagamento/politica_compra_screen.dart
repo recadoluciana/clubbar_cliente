@@ -7,7 +7,9 @@ import '../../services/api_service.dart';
 import '../../widgets/clubbar_app_bar.dart';
 
 class PoliticaCompraScreen extends StatefulWidget {
-  const PoliticaCompraScreen({super.key});
+  final String tipo;
+
+  const PoliticaCompraScreen({super.key, this.tipo = 'INGRESSO'});
 
   @override
   State<PoliticaCompraScreen> createState() => _PoliticaCompraScreenState();
@@ -30,7 +32,9 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
     });
     try {
       final resposta = await http.get(
-        Uri.parse('${ApiService.baseUrl}/politicas/compra/vigente'),
+        Uri.parse(
+          '${ApiService.baseUrl}/politicas/compra/vigente?tipo=${widget.tipo}',
+        ),
       );
       if (resposta.statusCode != 200) {
         throw Exception('Não foi possível carregar a política de compra.');
@@ -88,7 +92,7 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
             padding: const EdgeInsets.all(20),
             children: [
               Text(
-                _politica!['titulo']?.toString() ?? 'Política de Compra',
+                _politica!['titulo']?.toString() ?? 'Política de compra',
                 style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w800,

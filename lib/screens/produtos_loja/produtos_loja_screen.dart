@@ -20,6 +20,7 @@ import '../../services/main_navigation_controller.dart';
 import 'produto_compartilhado_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../pagamento/politica_compra_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -598,6 +599,23 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   corTitulo: Colors.blue,
                   imagemAvatarUrl: widget.loja.imagemUrl,
                   tamanhoAvatar: 52,
+                ),
+
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 12, top: 4),
+                    child: TextButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const PoliticaCompraScreen(tipo: 'PRODUTO'),
+                        ),
+                      ),
+                      icon: const Icon(Icons.policy_outlined),
+                      label: const Text('Política de compra de produto'),
+                    ),
+                  ),
                 ),
 
                 Padding(
