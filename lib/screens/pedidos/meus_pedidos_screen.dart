@@ -426,7 +426,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _badgeSituacaoItem(item),
               if (ingresso && tipoIngresso.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -451,7 +450,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           ),
           if (badgeSituacao != null) ...[
             const SizedBox(height: 8),
-            Align(alignment: Alignment.centerRight, child: badgeSituacao!),
+            Align(alignment: Alignment.centerRight, child: badgeSituacao),
           ],
           const SizedBox(height: 10),
           LayoutBuilder(
