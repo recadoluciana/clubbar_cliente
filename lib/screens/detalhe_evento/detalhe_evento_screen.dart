@@ -172,20 +172,42 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  String _ordemAtracao(int indice) {
-    const nomes = [
-      'Primeira atração',
-      'Segunda atração',
-      'Terceira atração',
-      'Quarta atração',
-      'Quinta atração',
-      'Sexta atração',
-      'Sétima atração',
-      'Oitava atração',
-      'Nona atração',
-      'Décima atração',
-    ];
-    return indice < nomes.length ? nomes[indice] : '${indice + 1}ª atração';
+  Widget _numeroAtracao(int indice) {
+    final cor = _corEstilo(indice);
+    return Container(
+      width: 54,
+      height: 54,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: cor.shade100, shape: BoxShape.circle),
+      child: Text(
+        '${indice + 1}',
+        style: TextStyle(
+          color: cor.shade700,
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+
+  String _duracaoPrevista(AtracaoEventoDetalhe atracao) {
+    try {
+      final inicio = DateTime.parse(atracao.inicio).toLocal();
+      final fim = DateTime.parse(atracao.fim).toLocal();
+      final duracao = fim.difference(inicio);
+      if (duracao.inMinutes <= 0) return 'Duração prevista não informada';
+
+      final horas = duracao.inHours;
+      final minutos = duracao.inMinutes.remainder(60);
+      final texto = horas == 0
+          ? '$minutos min'
+          : minutos == 0
+          ? '${horas}h'
+          : '${horas}h ${minutos}min';
+      return 'Duração prevista: $texto';
+    } catch (_) {
+      return 'Duração prevista não informada';
+    }
   }
 
   void _abrirDetalhesAtracao(AtracaoEventoDetalhe atracao) {
@@ -1038,17 +1060,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          if (atracoesOrdenadas.length > 1) ...[
-                                            Text(
-                                              _ordemAtracao(entrada.key),
-                                              style: TextStyle(
-                                                color: Colors.blue.shade700,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w900,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                          ],
                                           Row(
                                             children: [
                                               Icon(
@@ -1059,7 +1070,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                               const SizedBox(width: 7),
                                               Expanded(
                                                 child: Text(
-                                                  'Horário: ${DateFormatters.dataHoraSimples(entrada.value.inicio)} até ${DateFormatters.dataHoraSimples(entrada.value.fim)}',
+                                                  _duracaoPrevista(
+                                                    entrada.value,
+                                                  ),
                                                   style: TextStyle(
                                                     color: Colors.grey.shade700,
                                                     fontSize: 12,
@@ -1079,34 +1092,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              Container(
-                                                width: 54,
-                                                height: 54,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.blue.shade50,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                clipBehavior: Clip.antiAlias,
-                                                child:
-                                                    entrada.value.bannerUrl
-                                                        .trim()
-                                                        .isNotEmpty
-                                                    ? Image.network(
-                                                        entrada.value.bannerUrl,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder:
-                                                            (
-                                                              context,
-                                                              error,
-                                                              stackTrace,
-                                                            ) => const Icon(
-                                                              Icons.mic_rounded,
-                                                            ),
-                                                      )
-                                                    : const Icon(
-                                                        Icons.mic_rounded,
-                                                      ),
-                                              ),
+                                              _numeroAtracao(entrada.key),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
