@@ -293,7 +293,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     );
   }
 
-  Widget _badgeSituacaoItem(Map<String, dynamic> item) {
+  Widget? _badgeSituacaoItem(Map<String, dynamic> item) {
     final situacao = (item['sititvenda'] ?? 'ATIVO').toString().toUpperCase();
     final dados = switch (situacao) {
       'CANCELAMENTO_SOLICITADO' => (
@@ -302,8 +302,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         Colors.orange.withOpacity(0.12),
       ),
       'CANCELADO' => ('Cancelado', Colors.red, Colors.red.withOpacity(0.10)),
-      _ => ('Ativo', Colors.green.shade700, Colors.green.withOpacity(0.10)),
+      _ => null,
     };
+    if (dados == null) return null;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -388,6 +390,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     final idReembolso = (item['idreembolso'] ?? '').toString().trim();
     final reembolso = item['vrreembolso'];
     final taxa = item['vrtaxaitvenda'] ?? 0;
+    final badgeSituacao = _badgeSituacaoItem(item);
     final historico = (item['historico_participantes'] as List? ?? [])
         .map((valor) => Map<String, dynamic>.from(valor as Map))
         .toList();
@@ -446,6 +449,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               if (ingresso && lote.isNotEmpty) _chipInfo('Lote: $lote'),
             ],
           ),
+          if (badgeSituacao != null) ...[
+            const SizedBox(height: 8),
+            Align(alignment: Alignment.centerRight, child: badgeSituacao!),
+          ],
           const SizedBox(height: 10),
           LayoutBuilder(
             builder: (context, constraints) {
