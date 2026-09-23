@@ -596,7 +596,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const PoliticaCompraScreen()),
+                MaterialPageRoute(
+                  builder: (_) => PoliticaCompraScreen(
+                    tipo: compraDeProdutos ? 'PRODUTO' : 'INGRESSO',
+                  ),
+                ),
               );
             },
             icon: const Icon(Icons.policy_outlined),
