@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
@@ -213,6 +215,31 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       logado = token != null && token.isNotEmpty;
       nomeCliente = nome ?? '';
     });
+    if (logado) {
+      unawaited(_reconciliarPagamentosPendentes());
+    }
+  }
+
+  Future<void> _reconciliarPagamentosPendentes() async {
+    try {
+      final resultado = await apiService.reconciliarPagamentosPendentesAsaas();
+      final confirmados =
+          resultado['pagamentos_confirmados'] as List? ?? const [];
+      if (confirmados.isEmpty) return;
+      await carregarBadgeCarrinho();
+      await carregarBadgeCarteira();
+      if (mounted) {
+        AppSnackBar.sucesso(
+          context,
+          confirmados.length == 1
+              ? 'Seu pagamento pendente foi confirmado.'
+              : '${confirmados.length} pagamentos pendentes foram confirmados.',
+        );
+      }
+    } catch (_) {
+      // A confirmação automática continua pelo webhook; esta é apenas uma
+      // verificação de segurança ao reabrir o aplicativo.
+    }
   }
 
   Future<bool> _estaLogado() async {
@@ -248,11 +275,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       try {
         if (produtoId != null) {
           if (lojaId == null || lojaId <= 0) {
-            if (mounted)
+            if (mounted) {
               AppSnackBar.erro(
                 context,
                 'O link do produto não informa a loja.',
               );
+            }
             return;
           }
           MainNavigationController.abrirTela(
