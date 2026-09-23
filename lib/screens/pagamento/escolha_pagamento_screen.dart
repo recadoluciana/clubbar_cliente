@@ -353,9 +353,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
       final erro = e.toString().toLowerCase();
       final mensagem =
-          erro.contains('recebimentos ainda') ||
+          erro.contains('asaas_pendente') ||
+              erro.contains('recebimentos ainda') ||
               erro.contains('temporariamente indisponível')
-          ? 'Esta compra não pode ser concluída neste momento. O estabelecimento está temporariamente indisponível para pagamentos. Tente novamente mais tarde.'
+          ? 'Esta compra ainda não pode ser concluída porque o estabelecimento está finalizando a configuração de recebimentos. Tente novamente após a aprovação ou entre em contato com o estabelecimento.'
           : e.toString().replaceFirst('Exception: ', '');
 
       ScaffoldMessenger.of(context).showSnackBar(
