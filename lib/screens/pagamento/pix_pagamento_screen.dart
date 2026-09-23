@@ -84,7 +84,15 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     final valor =
         widget.pagamento['expiration_date'] ??
         widget.pagamento['pix_expiration_date'];
-    final data = DateTime.tryParse(valor?.toString() ?? '');
+    var texto = valor?.toString().trim() ?? '';
+    if (texto.isNotEmpty &&
+        !RegExp(
+          r'(Z|[+-]\d{2}:?\d{2})$',
+          caseSensitive: false,
+        ).hasMatch(texto)) {
+      texto = '${texto}Z';
+    }
+    final data = DateTime.tryParse(texto);
     if (data == null) return DateTime.now().add(const Duration(minutes: 5));
     return data.isUtc ? data.toLocal() : data;
   }

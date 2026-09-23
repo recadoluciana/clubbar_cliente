@@ -1263,6 +1263,20 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  Future<Map<String, dynamic>> reconciliarPagamentosPendentesAsaas() async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/asaas/reconciliar-pendentes'),
+      headers: await _headersAutenticado(),
+    );
+    final data = response.body.trim().isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(data as Map);
+  }
+
   Future<Map<String, dynamic>> criarPixAsaas({
     required int clienteId,
     required int organizacaoId,
