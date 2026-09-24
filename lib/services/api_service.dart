@@ -405,7 +405,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/reservas-ingressos'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _headersAutenticado(),
       body: jsonEncode({
         'cliente_id': clienteId,
         'lote_id': loteId,
@@ -426,7 +426,7 @@ class ApiService {
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/reservas-ingressos/$reservaId/participantes'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _headersAutenticado(),
       body: jsonEncode({'participantes': participantes}),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -441,7 +441,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/reservas-ingressos/$reservaId/pix'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _headersAutenticado(),
       body: jsonEncode({'cliente_id': clienteId, 'parcelas': 1}),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -457,7 +457,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/reservas-ingressos/$reservaId/checkout'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _headersAutenticado(),
       body: jsonEncode({'cliente_id': clienteId, 'parcelas': parcelas}),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -474,6 +474,7 @@ class ApiService {
       Uri.parse(
         '$baseUrl/reservas-ingressos/$reservaId/status?cliente_id=$clienteId',
       ),
+      headers: await _headersAutenticado(),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
@@ -1066,7 +1067,7 @@ class ApiService {
   }) async {
     final url = Uri.parse('$baseUrl/pagamentos/asaas/status/$checkoutId');
 
-    final response = await http.get(url);
+    final response = await http.get(url, headers: await _headersAutenticado());
 
     final data = jsonDecode(response.body);
 
@@ -1216,10 +1217,7 @@ class ApiService {
   }) async {
     final response = await http.get(
       Uri.parse('$baseUrl/pagamentos/asaas/status/$pagamentoId'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: await _headersAutenticado(),
     );
 
     final data = jsonDecode(response.body);
@@ -1256,7 +1254,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pix'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _headersAutenticado(),
       body: jsonEncode({
         'cliente_id': clienteId,
         'organizacao_id': organizacaoId,
@@ -1286,7 +1284,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pagar-asaas'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await _headersAutenticado(),
       body: jsonEncode({
         'cliente_id': clienteId,
         'organizacao_id': organizacaoId,
