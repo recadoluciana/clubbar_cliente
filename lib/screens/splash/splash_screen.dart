@@ -136,7 +136,7 @@ class _SplashScreenState extends State<SplashScreen>
                 height: 240,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.amber.withOpacity(0.07),
+                  color: Colors.amber.withValues(alpha: 0.07),
                 ),
               ),
             ),
@@ -148,7 +148,7 @@ class _SplashScreenState extends State<SplashScreen>
                 height: 280,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple.withOpacity(0.10),
+                  color: Colors.deepPurple.withValues(alpha: 0.10),
                 ),
               ),
             ),
@@ -197,7 +197,9 @@ class _SplashScreenState extends State<SplashScreen>
                                         shape: BoxShape.circle,
                                         gradient: RadialGradient(
                                           colors: [
-                                            Colors.amber.withOpacity(0.22),
+                                            Colors.amber.withValues(
+                                              alpha: 0.22,
+                                            ),
                                             Colors.transparent,
                                           ],
                                         ),
@@ -210,15 +212,15 @@ class _SplashScreenState extends State<SplashScreen>
                                         borderRadius: BorderRadius.circular(30),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.amber.withOpacity(
-                                              0.20,
+                                            color: Colors.amber.withValues(
+                                              alpha: 0.20,
                                             ),
                                             blurRadius: 36,
                                             spreadRadius: 4,
                                           ),
                                           BoxShadow(
-                                            color: Colors.black.withOpacity(
-                                              0.30,
+                                            color: Colors.black.withValues(
+                                              alpha: 0.30,
                                             ),
                                             blurRadius: 22,
                                             offset: const Offset(0, 14),
@@ -268,7 +270,7 @@ class _SplashScreenState extends State<SplashScreen>
                             Text(
                               'Sua balada começa aqui',
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.80),
+                                color: Colors.white.withValues(alpha: 0.80),
                                 fontSize: 20,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -350,8 +352,8 @@ class _ParticlesPainter extends CustomPainter {
       final radius = 1.5 + random.nextDouble() * 2.8;
 
       paint.color = (i % 3 == 0)
-          ? Colors.amber.withOpacity(0.20)
-          : Colors.white.withOpacity(0.12);
+          ? Colors.amber.withValues(alpha: 0.20)
+          : Colors.white.withValues(alpha: 0.12);
 
       canvas.drawCircle(Offset(x, y), radius, paint);
     }

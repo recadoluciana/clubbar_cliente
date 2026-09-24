@@ -74,7 +74,8 @@ class Loja {
       instagram: (json['dsinstaloja'] ?? '').toString(),
       vrtaxaprod: double.tryParse(json['vrtaxaprod']?.toString() ?? '0') ?? 0,
       vrtaxaing: double.tryParse(json['vrtaxaing']?.toString() ?? '0') ?? 0,
-      vrtaxaminimaingresso: double.tryParse(json['vrtaxaminimaingresso']?.toString() ?? '0') ?? 0,
+      vrtaxaminimaingresso:
+          double.tryParse(json['vrtaxaminimaingresso']?.toString() ?? '0') ?? 0,
       dsestiloloja: estilos.isNotEmpty
           ? estilos.join(', ')
           : (json['dsestiloloja'] ?? '').toString(),

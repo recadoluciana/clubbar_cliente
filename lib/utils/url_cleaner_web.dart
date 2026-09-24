@@ -1,8 +1,7 @@
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 
 void limparUrlWeb() {
   Future.delayed(const Duration(milliseconds: 300), () {
-    html.window.history.replaceState(null, 'Clubbar', '/');
+    web.window.history.replaceState(null, 'Clubbar', '/');
   });
 }

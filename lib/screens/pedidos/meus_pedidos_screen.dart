@@ -254,8 +254,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     final ingresso = _isIngresso(item);
     final cor = ingresso ? Colors.blue : Colors.amber.shade800;
     final fundo = ingresso
-        ? Colors.blue.withOpacity(0.10)
-        : Colors.amber.withOpacity(0.15);
+        ? Colors.blue.withValues(alpha: 0.10)
+        : Colors.amber.withValues(alpha: 0.15);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -278,8 +278,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: entregue
-            ? Colors.green.withOpacity(0.10)
-            : Colors.red.withOpacity(0.10),
+            ? Colors.green.withValues(alpha: 0.10)
+            : Colors.red.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
@@ -299,9 +299,13 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       'CANCELAMENTO_SOLICITADO' => (
         'Cancelamento solicitado',
         Colors.orange.shade800,
-        Colors.orange.withOpacity(0.12),
+        Colors.orange.withValues(alpha: 0.12),
       ),
-      'CANCELADO' => ('Cancelado', Colors.red, Colors.red.withOpacity(0.10)),
+      'CANCELADO' => (
+        'Cancelado',
+        Colors.red,
+        Colors.red.withValues(alpha: 0.10),
+      ),
       _ => null,
     };
     if (dados == null) return null;
@@ -343,7 +347,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: Colors.amber.withOpacity(0.15),
+          color: Colors.amber.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Icon(Icons.storefront_outlined, color: Colors.amber.shade800),
@@ -362,7 +366,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.15),
+              color: Colors.amber.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
@@ -433,7 +437,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.10),
+                    color: Colors.blue.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -554,9 +558,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.06),
+                color: Colors.red.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.red.withOpacity(0.18)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.18)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,31 +652,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _estadoVazio() {
-    return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.receipt_long_outlined,
-            size: 64,
-            color: Colors.grey.shade400,
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            'Você ainda não tem nenuma compra.',
-            style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-        ],
       ),
     );
   }

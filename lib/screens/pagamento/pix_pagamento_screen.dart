@@ -9,6 +9,7 @@ import '../../services/api_service.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/pix_expiration.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import 'pagamento_sucesso_screen.dart';
@@ -18,6 +19,7 @@ class PixPagamentoScreen extends StatefulWidget {
   final Map<String, dynamic> pagamento;
   final int? reservaIngressoId;
   final int? clienteId;
+  final ApiService? apiService;
 
   const PixPagamentoScreen({
     super.key,
@@ -25,6 +27,7 @@ class PixPagamentoScreen extends StatefulWidget {
     required this.pagamento,
     this.reservaIngressoId,
     this.clienteId,
+    this.apiService,
   });
 
   @override
@@ -32,12 +35,13 @@ class PixPagamentoScreen extends StatefulWidget {
 }
 
 class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
-  final apiService = ApiService();
+  late final ApiService apiService = widget.apiService ?? ApiService();
   Timer? _timerStatus;
   Timer? _timerExpiracao;
   bool _consultando = false;
   bool _confirmacaoProcessada = false;
   bool _expiracaoPendente = false;
+  bool _verificandoAposExpiracao = false;
   late final DateTime _expiraEm;
   late final Duration _duracaoValidade;
   Duration _tempoRestante = Duration.zero;
@@ -55,7 +59,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   @override
   void initState() {
     super.initState();
-    _expiraEm = _obterDataExpiracao();
+    _expiraEm = obterExpiracaoPix(widget.pagamento);
     final duracaoInicial = _expiraEm.difference(DateTime.now());
     _duracaoValidade = duracaoInicial.isNegative
         ? Duration.zero
@@ -78,23 +82,6 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     _timerStatus?.cancel();
     _timerExpiracao?.cancel();
     super.dispose();
-  }
-
-  DateTime _obterDataExpiracao() {
-    final valor =
-        widget.pagamento['expiration_date'] ??
-        widget.pagamento['pix_expiration_date'];
-    var texto = valor?.toString().trim() ?? '';
-    if (texto.isNotEmpty &&
-        !RegExp(
-          r'(Z|[+-]\d{2}:?\d{2})$',
-          caseSensitive: false,
-        ).hasMatch(texto)) {
-      texto = '${texto}Z';
-    }
-    final data = DateTime.tryParse(texto);
-    if (data == null) return DateTime.now().add(const Duration(minutes: 5));
-    return data.isUtc ? data.toLocal() : data;
   }
 
   void _atualizarTempoRestante() {
@@ -149,7 +136,9 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
   Future<void> _consultarPagamento({bool validacaoFinal = false}) async {
     if (pagamentoId.isEmpty || _confirmacaoProcessada) {
-      if (validacaoFinal) _encerrarComoExpirado();
+      if (validacaoFinal && !_confirmacaoProcessada) {
+        _iniciarVerificacaoPendente();
+      }
       return;
     }
     if (_consultando) {
@@ -206,10 +195,10 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         AppSnackBar.erro(context, _mensagemPagamentoNaoConcluido);
         Navigator.pop(context, false);
       } else if (validacaoFinal) {
-        _encerrarComoExpirado();
+        _iniciarVerificacaoPendente();
       }
     } catch (_) {
-      if (validacaoFinal) _encerrarComoExpirado();
+      if (validacaoFinal) _iniciarVerificacaoPendente();
       // Enquanto houver tempo, a proxima consulta tenta novamente.
     } finally {
       _consultando = false;
@@ -217,6 +206,18 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         _expiracaoPendente = false;
         unawaited(_consultarPagamento(validacaoFinal: true));
       }
+    }
+  }
+
+  void _iniciarVerificacaoPendente() {
+    if (_confirmacaoProcessada || !mounted) return;
+    setState(() => _verificandoAposExpiracao = true);
+    _timerStatus?.cancel();
+    if (pagamentoId.isNotEmpty) {
+      _timerStatus = Timer.periodic(
+        const Duration(seconds: 10),
+        (_) => _consultarPagamento(validacaoFinal: true),
+      );
     }
   }
 
@@ -405,6 +406,21 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                 const SizedBox(height: 12),
 
                 _barraExpiracao(),
+
+                if (_verificandoAposExpiracao) ...[
+                  const SizedBox(height: 12),
+                  const Text(
+                    'O tempo do QR Code terminou, mas a confirmação do pagamento ainda não foi verificada. Não pague novamente até conferir a compra na carteira.',
+                    style: TextStyle(color: Colors.deepOrange),
+                  ),
+                  TextButton.icon(
+                    onPressed: _consultando
+                        ? null
+                        : () => _consultarPagamento(validacaoFinal: true),
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Verificar pagamento agora'),
+                  ),
+                ],
 
                 const SizedBox(height: 12),
 

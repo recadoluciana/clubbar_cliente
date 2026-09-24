@@ -477,41 +477,13 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     }
   }
 
-  Widget _botaoContinuarComprando() {
-    return SizedBox(
-      height: 54,
-      child: OutlinedButton.icon(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ProdutosLojaScreen(loja: widget.loja),
-            ),
-          );
-        },
-        icon: const Icon(Icons.storefront_outlined),
-        label: const Text(
-          'Continuar comprando',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.black,
-          side: const BorderSide(color: Colors.black26),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _imagemProduto(String url, {bool ingresso = false}) {
     if (url.isEmpty) {
       return Container(
         width: 58,
         height: 58,
         decoration: BoxDecoration(
-          color: Colors.amber.withOpacity(0.15),
+          color: Colors.amber.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Icon(
@@ -534,7 +506,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           width: 58,
           height: 58,
           decoration: BoxDecoration(
-            color: Colors.amber.withOpacity(0.15),
+            color: Colors.amber.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(Icons.image_not_supported, color: Colors.amber.shade800),
@@ -915,7 +887,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   color: const Color(0xFFF6F6F6),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 12,
                       offset: const Offset(0, -4),
                     ),
