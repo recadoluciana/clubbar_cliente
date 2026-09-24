@@ -82,7 +82,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: (iconColor ?? Colors.amber).withOpacity(0.12),
+                  color: (iconColor ?? Colors.amber).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(icon, color: iconColor ?? Colors.amber.shade800),
@@ -217,7 +217,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: corIcone.withOpacity(0.15),
+            color: corIcone.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: corIcone),

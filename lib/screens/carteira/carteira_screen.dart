@@ -178,7 +178,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         width: 68,
         height: 68,
         decoration: BoxDecoration(
-          color: Colors.amber.withOpacity(0.14),
+          color: Colors.amber.withValues(alpha: 0.14),
           shape: BoxShape.circle,
           border: Border.all(color: Colors.amber.shade200, width: 2),
         ),
@@ -202,7 +202,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         border: Border.all(color: Colors.grey.shade200, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -250,7 +250,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.15),
+        shadowColor: Colors.black.withValues(alpha: 0.15),
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
@@ -297,7 +297,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.15),
+                      color: Colors.amber.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -365,56 +365,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _botaoCarteira({
-    required String texto,
-    required bool ativo,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: ativo ? onTap : null,
-      borderRadius: BorderRadius.circular(28),
-      child: Container(
-        height: 42,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: BoxDecoration(
-          color: ativo ? const Color(0xFFFFF4E3) : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(22),
-          boxShadow: ativo
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.12),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : [],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                texto,
-                textAlign: TextAlign.left,
-                style: TextStyle(
-                  color: ativo ? const Color(0xFF7A5A00) : Colors.grey.shade600,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-
-            if (ativo)
-              const Icon(
-                Icons.chevron_right,
-                color: Color(0xFF7A5A00),
-                size: 20,
-              ),
-          ],
         ),
       ),
     );
@@ -512,7 +462,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
     return Expanded(
       child: Material(
-        color: ativo ? cor.withOpacity(0.10) : Colors.grey.shade100,
+        color: ativo ? cor.withValues(alpha: 0.10) : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           onTap: ativo ? onTap : null,
@@ -523,7 +473,9 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: ativo ? cor.withOpacity(0.30) : Colors.grey.shade200,
+                color: ativo
+                    ? cor.withValues(alpha: 0.30)
+                    : Colors.grey.shade200,
               ),
             ),
             child: Column(
@@ -535,7 +487,9 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: ativo ? cor.withOpacity(0.16) : Colors.white,
+                        color: ativo
+                            ? cor.withValues(alpha: 0.16)
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(11),
                       ),
                       child: Icon(

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'http_with_timeout.dart' as http;
 
 class EnderecoCep {
   final String cep;

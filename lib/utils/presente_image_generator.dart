@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/http_with_timeout.dart' as http;
 import 'package:qr_flutter/qr_flutter.dart';
 
 class PresenteImageGenerator {
@@ -573,8 +573,8 @@ class PresenteImageGenerator {
       version: QrVersions.auto,
       errorCorrectionLevel: QrErrorCorrectLevel.M,
       gapless: false,
-      color: Colors.black,
-      emptyColor: Colors.white,
+      eyeStyle: const QrEyeStyle(color: Colors.black),
+      dataModuleStyle: const QrDataModuleStyle(color: Colors.black),
     );
 
     final byteData = await painter.toImageData(

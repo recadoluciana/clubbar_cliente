@@ -3,7 +3,7 @@ import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:http/http.dart' as http;
+import '../../services/http_with_timeout.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 import '../../models/categoria.dart';
@@ -473,7 +473,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 6,
                 offset: const Offset(0, 2),
               ),

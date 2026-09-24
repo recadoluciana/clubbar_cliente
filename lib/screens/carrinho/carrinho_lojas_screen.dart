@@ -77,7 +77,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
         width: 58,
         height: 58,
         decoration: BoxDecoration(
-          color: Colors.amber.withOpacity(0.15),
+          color: Colors.amber.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(18),
         ),
         child: Icon(Icons.storefront_outlined, color: Colors.amber.shade800),
@@ -96,7 +96,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.15),
+              color: Colors.amber.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(

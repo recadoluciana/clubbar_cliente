@@ -50,6 +50,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   bool usarCashback = false;
   double cashbackUtilizavel = 0;
   double saldoCashback = 0;
+  bool falhaConsultaCashback = false;
 
   bool get carregandoPagamento => _metodoPagamentoProcessando != null;
 
@@ -73,9 +74,19 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       );
       if (mounted) {
         setState(() {
+          falhaConsultaCashback = false;
           cashbackUtilizavel =
               double.tryParse('${dados['valor_utilizavel']}') ?? 0;
           saldoCashback = double.tryParse('${dados['saldo_disponivel']}') ?? 0;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          falhaConsultaCashback = true;
+          usarCashback = false;
+          cashbackUtilizavel = 0;
+          saldoCashback = 0;
         });
       }
     } finally {
@@ -121,7 +132,18 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Future<void> _mostrarErroPix(Object erro) async {
-    final mensagem = erro.toString().replaceFirst('Exception: ', '');
+    final mensagem = apiService.mensagemErroAmigavel(erro);
+    if (erro.toString().toLowerCase().contains('timeout')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'A conexão demorou. Antes de gerar outro PIX, confira se a compra apareceu na carteira.',
+          ),
+          backgroundColor: Colors.deepOrange,
+        ),
+      );
+      return;
+    }
     final exigeDocumento =
         mensagem.toLowerCase().contains('cpf') ||
         mensagem.toLowerCase().contains('cnpj');
@@ -352,10 +374,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (!mounted) return;
 
       final erro = e.toString().toLowerCase();
-      final mensagem =
-          erro.contains('asaas_pendente') ||
-              erro.contains('recebimentos ainda') ||
-              erro.contains('temporariamente indisponível')
+      final mensagem = erro.contains('timeout')
+          ? 'A conexão demorou. Antes de tentar pagar novamente, confira se a compra apareceu na carteira.'
+          : erro.contains('asaas_pendente') ||
+                erro.contains('recebimentos ainda') ||
+                erro.contains('temporariamente indisponível')
           ? 'Esta compra ainda não pode ser concluída porque o estabelecimento está finalizando a configuração de recebimentos. Tente novamente após a aprovação ou entre em contato com o estabelecimento.'
           : e.toString().replaceFirst('Exception: ', '');
 
@@ -488,6 +511,14 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   ),
                   const SizedBox(height: 16),
                   _linhaCashback(),
+                  if (falhaConsultaCashback)
+                    TextButton.icon(
+                      onPressed: _carregarCashback,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text(
+                        'Não foi possível consultar o cashback. Tentar novamente',
+                      ),
+                    ),
                   if (carregandoCashback || saldoCashback > 0) ...[
                     const Divider(height: 24),
                     SwitchListTile(

@@ -233,7 +233,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.12),
+                        color: Colors.amber.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -489,7 +489,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       child: Material(
         color: Colors.white,
         elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.12),
+        shadowColor: Colors.black.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -503,8 +503,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    Colors.blue.withOpacity(0.12),
-                    Colors.amber.withOpacity(0.10),
+                    Colors.blue.withValues(alpha: 0.12),
+                    Colors.amber.withValues(alpha: 0.10),
                   ],
                 ),
               ),
@@ -518,7 +518,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(17),
-                      border: Border.all(color: Colors.blue.withOpacity(0.20)),
+                      border: Border.all(
+                        color: Colors.blue.withValues(alpha: 0.20),
+                      ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(14),
@@ -610,9 +612,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(13),
                     decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.06),
+                      color: Colors.blue.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.blue.withOpacity(0.16)),
+                      border: Border.all(
+                        color: Colors.blue.withValues(alpha: 0.16),
+                      ),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -621,7 +625,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.12),
+                            color: Colors.blue.withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -680,7 +684,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           onPressed: () =>
                               _abrirDialogAlterarParticipante(item),
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.amber.withOpacity(0.18),
+                            backgroundColor: Colors.amber.withValues(
+                              alpha: 0.18,
+                            ),
                             foregroundColor: Colors.black87,
                           ),
                           icon: const Icon(Icons.edit_outlined, size: 19),
@@ -799,7 +805,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: Colors.amber.withOpacity(0.14),
+      color: Colors.amber.withValues(alpha: 0.14),
       alignment: Alignment.center,
       child: Icon(
         Icons.confirmation_number_outlined,
