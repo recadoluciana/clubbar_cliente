@@ -57,6 +57,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         clienteId: idCliente,
         lojaId: 0,
       );
+      if (!mounted) return;
 
       final resumo = _agruparPorLoja(itens);
 

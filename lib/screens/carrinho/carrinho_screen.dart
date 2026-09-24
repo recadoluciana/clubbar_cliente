@@ -230,6 +230,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
       );
+      if (!mounted) return;
 
       carrinhoId = data['carrinho_id'] as int? ?? 0;
 
