@@ -52,4 +52,5 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/ai-registration.properties
     - assets/images/
