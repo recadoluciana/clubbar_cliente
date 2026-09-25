@@ -313,6 +313,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     int? quantidadeSelecionada,
   }) async {
     if (processandoCompra) return;
+    if (!lote.semLimite && lote.qtDisponivel <= 0) {
+      await carregarStatusLotes();
+      if (mounted) {
+        AppSnackBar.aviso(context, 'Este lote acabou de esgotar. Atualizamos as opções disponíveis.');
+      }
+      return;
+    }
     var quantidade = quantidadeSelecionada ?? 1;
     bool? confirmada = quantidadeSelecionada != null;
     if (quantidadeSelecionada == null) {
@@ -347,7 +354,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: quantidade < 20
+                      onPressed: quantidade < 20 &&
+                              (lote.semLimite || quantidade < lote.qtDisponivel)
                           ? () => setDialogState(() => quantidade++)
                           : null,
                       icon: const Icon(Icons.add_circle_outline),
@@ -371,6 +379,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
     }
     if (confirmada != true || !mounted) return;
+    if (!lote.semLimite && quantidade > lote.qtDisponivel) {
+      await carregarStatusLotes();
+      if (mounted) {
+        AppSnackBar.aviso(context, 'A quantidade escolhida não está mais disponível neste lote.');
+      }
+      return;
+    }
     String? beneficio;
     if (lote.tipoIngresso == 'MEIA_LEGAL') {
       beneficio = await showDialog<String>(
@@ -565,6 +580,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ],
               ),
               const SizedBox(height: 6),
+              if (!lote.semLimite)
+                Text(
+                  '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} disponível${lote.qtDisponivel == 1 ? '' : 'eis'} neste lote',
+                  style: TextStyle(
+                    color: lote.qtDisponivel > 0 ? Colors.grey.shade700 : Colors.red,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              if (!lote.semLimite) const SizedBox(height: 4),
               Text(
                 'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
                 style: TextStyle(

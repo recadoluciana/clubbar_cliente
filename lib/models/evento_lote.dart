@@ -10,6 +10,8 @@ class EventoLote {
   final double preco;
   final int qtTotal;
   final int qtVendida;
+  final int qtReservada;
+  final int? qtCapacidadeRestante;
   final bool semLimite;
   final String status;
   final String dataInicioVenda;
@@ -27,6 +29,8 @@ class EventoLote {
     required this.preco,
     required this.qtTotal,
     required this.qtVendida,
+    this.qtReservada = 0,
+    this.qtCapacidadeRestante,
     required this.semLimite,
     required this.status,
     required this.dataInicioVenda,
@@ -34,7 +38,7 @@ class EventoLote {
   });
 
   int get qtDisponivel {
-    final disponivel = qtTotal - qtVendida;
+    final disponivel = qtCapacidadeRestante ?? (qtTotal - qtVendida - qtReservada);
     return disponivel < 0 ? 0 : disponivel;
   }
 
@@ -78,7 +82,13 @@ class EventoLote {
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
-      semLimite: json['qttotallote'] == null,
+      // Um lote de capacidade restante também vem sem qttotallote, mas é
+      // limitado pela lotação do setor recebida da API.
+      semLimite: json['qttotallote'] == null && json['qtcapacidaderestante'] == null,
+      qtReservada: _toInt(json['qtreservadalote'] ?? 0),
+      qtCapacidadeRestante: json['qtcapacidaderestante'] == null
+          ? null
+          : _toInt(json['qtcapacidaderestante']),
       status: (json['statuslote'] ?? 'ATIVO').toString(),
       dataInicioVenda: (json['dtiniciovenda'] ?? '').toString(),
       dataFimVenda: (json['dtfimvenda'] ?? '').toString(),
