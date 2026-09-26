@@ -1,5 +1,6 @@
 class EventoLote {
   final int loteId;
+  final int loteGlobalId;
   final int lotePrecoId;
   final int eventoId;
   final String nome;
@@ -19,6 +20,7 @@ class EventoLote {
 
   EventoLote({
     required this.loteId,
+    this.loteGlobalId = 0,
     this.lotePrecoId = 0,
     required this.eventoId,
     required this.nome,
@@ -72,6 +74,7 @@ class EventoLote {
   factory EventoLote.fromJson(Map<String, dynamic> json) {
     return EventoLote(
       loteId: _toInt(json['lote_id'] ?? 0),
+      loteGlobalId: _toInt(json['loteglobal_id'] ?? 0),
       lotePrecoId: _toInt(json['lotepreco_id'] ?? 0),
       eventoId: _toInt(json['evento_id'] ?? 0),
       nome: (json['nmlote'] ?? '').toString(),
@@ -82,13 +85,11 @@ class EventoLote {
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
-      // Um lote de capacidade restante também vem sem qttotallote, mas é
-      // limitado pela lotação do setor recebida da API.
-      semLimite: json['qttotallote'] == null && json['qtcapacidaderestante'] == null,
+      semLimite: false,
       qtReservada: _toInt(json['qtreservadalote'] ?? 0),
-      qtCapacidadeRestante: json['qtcapacidaderestante'] == null
+      qtCapacidadeRestante: json['qtdisponivel'] == null
           ? null
-          : _toInt(json['qtcapacidaderestante']),
+          : _toInt(json['qtdisponivel']),
       status: (json['statuslote'] ?? 'ATIVO').toString(),
       dataInicioVenda: (json['dtiniciovenda'] ?? '').toString(),
       dataFimVenda: (json['dtfimvenda'] ?? '').toString(),
