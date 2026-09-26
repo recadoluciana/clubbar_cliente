@@ -479,12 +479,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  List<List<EventoLote>> get _lotesAgrupados {
-    final grupos = <int, List<EventoLote>>{};
+  List<List<List<EventoLote>>> get _lotesGlobaisAgrupados {
+    final porGlobal = <int, List<EventoLote>>{};
     for (final lote in lotes) {
-      grupos.putIfAbsent(lote.loteId, () => []).add(lote);
+      porGlobal.putIfAbsent(lote.loteGlobalId == 0 ? lote.loteId : lote.loteGlobalId, () => []).add(lote);
     }
-    return grupos.values.toList();
+    return porGlobal.values.map((opcoesDoGlobal) {
+      final porSetor = <int, List<EventoLote>>{};
+      for (final opcao in opcoesDoGlobal) {
+        porSetor.putIfAbsent(opcao.loteId, () => []).add(opcao);
+      }
+      return porSetor.values.toList();
+    }).toList();
   }
 
   String _nomeModalidade(EventoLote lote) {
@@ -509,7 +515,27 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }
   }
 
-  Widget cardLote(List<EventoLote> opcoes) {
+  Widget cardLoteGlobal(List<List<EventoLote>> setores) {
+    final lote = setores.first.first;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.green.shade200),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(lote.nome, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 3),
+        Text('Lote vigente para todos os setores', style: TextStyle(color: Colors.green.shade800, fontSize: 12, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        ...setores.map((opcoes) => cardLote(opcoes, exibirNomeLote: false)),
+      ]),
+    );
+  }
+
+  Widget cardLote(List<EventoLote> opcoes, {bool exibirNomeLote = true}) {
     final lote = opcoes.first;
     final agora = DateTime.now();
     final vendaDisponivel = lote.podeComprarEm(agora);
@@ -539,15 +565,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          lote.nome,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                        if (exibirNomeLote)
+                          Text(
+                            lote.nome,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
                         if (lote.nomeSetor.isNotEmpty) ...[
-                          const SizedBox(height: 3),
+                          if (exibirNomeLote) const SizedBox(height: 3),
                           Text(
                             lote.nomeSetor,
                             style: TextStyle(
@@ -1174,7 +1201,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           if (lotes.isEmpty)
                             estadoVazioLotes()
                           else
-                            ..._lotesAgrupados.map(cardLote),
+                            ..._lotesGlobaisAgrupados.map(cardLoteGlobal),
                           const SizedBox(height: 24),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
