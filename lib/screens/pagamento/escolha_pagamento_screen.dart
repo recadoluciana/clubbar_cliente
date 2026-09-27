@@ -894,9 +894,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               );
             },
             icon: const Icon(Icons.policy_outlined),
-            label: const Text(
-              'Política de Compra - Clique aqui',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            label: Text(
+              compraDeProdutos
+                  ? 'Política de compra de produto'
+                  : 'Política de compra de ingresso',
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ],
