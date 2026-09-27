@@ -9,6 +9,7 @@ import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
+import '../../services/cep_service.dart';
 import 'pagamento_sucesso_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
@@ -221,6 +222,46 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     final ufCtrl = TextEditingController(
       text: (perfil['ufcliente'] ?? '').toString().toUpperCase(),
     );
+    var consultandoCep = false;
+    String? ultimoCepConsultado;
+
+    Future<void> buscarCep(StateSetter setSheetState) async {
+      final cep = cepCtrl.text.replaceAll(RegExp(r'[^0-9]'), '');
+      if (cep.length != 8 || consultandoCep || cep == ultimoCepConsultado) {
+        return;
+      }
+
+      setSheetState(() => consultandoCep = true);
+      try {
+        final endereco = await CepService().buscar(cep);
+        if (!mounted) return;
+
+        setSheetState(() {
+          ultimoCepConsultado = cep;
+          if (endereco.logradouro.isNotEmpty) {
+            enderecoCtrl.text = endereco.logradouro;
+          }
+          if (endereco.bairro.isNotEmpty) {
+            bairroCtrl.text = endereco.bairro;
+          }
+          cidadeCtrl.text = endereco.cidade;
+          ufCtrl.text = endereco.uf;
+        });
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceFirst('Exception: ', '')),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setSheetState(() => consultandoCep = false);
+        }
+      }
+    }
 
     final salvo = await showModalBottomSheet<bool>(
       context: context,
@@ -265,10 +306,33 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                       TextFormField(
                         controller: cepCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: campo(
-                          'CEP',
-                          icone: Icons.pin_drop_outlined,
-                        ),
+                        decoration: campo('CEP', icone: Icons.pin_drop_outlined)
+                            .copyWith(
+                              suffixIcon: consultandoCep
+                                  ? const Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : IconButton(
+                                      tooltip: 'Buscar CEP',
+                                      onPressed: () => buscarCep(setSheetState),
+                                      icon: const Icon(Icons.search_rounded),
+                                    ),
+                            ),
+                        onChanged: (value) {
+                          final cep = value.replaceAll(RegExp(r'[^0-9]'), '');
+                          if (cep != ultimoCepConsultado) {
+                            ultimoCepConsultado = null;
+                          }
+                          if (cep.length == 8) buscarCep(setSheetState);
+                        },
+                        onFieldSubmitted: (_) => buscarCep(setSheetState),
                         validator: (value) =>
                             value?.replaceAll(RegExp(r'[^0-9]'), '').length == 8
                             ? null
