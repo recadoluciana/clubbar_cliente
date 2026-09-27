@@ -822,18 +822,19 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ),
 
                         const SizedBox(height: 3),
-                        Text(
-                          produto.dsproduto.trim().isEmpty
-                              ? 'Sem descrição'
-                              : produto.dsproduto,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 10,
-                            height: 1.2,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
+                        if (produto.dsproduto.trim().isNotEmpty)
+                          Text(
+                            produto.dsproduto,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              height: 1.2,
+                              color: Colors.grey.shade700,
+                            ),
+                          )
+                        else
+                          const SizedBox(height: 12),
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
