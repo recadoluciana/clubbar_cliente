@@ -389,7 +389,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     length: 2,
     child: Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: const ClubbarAppBar(),
       body: Column(
         children: [
           const ClubbarPageHeader(
