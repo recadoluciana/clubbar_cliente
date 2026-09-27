@@ -118,14 +118,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   }
 
   Future<void> _cancelarIngresso(Map<String, dynamic> item) async {
+    final valorCortesia = _valorDoIngresso(item) <= 0;
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Cancelar ingresso'),
-        content: const Text(
-          'Deseja cancelar somente este ingresso? O valor correspondente a '
-          'este item será solicitado como reembolso pelo mesmo meio de '
-          'pagamento. Os demais ingressos continuarão disponíveis.',
+        content: Text(
+          valorCortesia
+              ? 'Deseja cancelar este ingresso de cortesia? Cortesias não têm reembolso. Os demais ingressos continuarão disponíveis.'
+              : 'Deseja cancelar somente este ingresso? O valor correspondente a este item será solicitado como reembolso pelo mesmo meio de pagamento. Os demais ingressos continuarão disponíveis.',
         ),
         actions: [
           TextButton(
@@ -146,7 +147,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     if (confirmado != true || !mounted) return;
     try {
       final itvendaId = int.parse('${item['itvenda_id']}');
-      await apiService.cancelarIngresso(itvendaId: itvendaId);
+      final resultado = await apiService.cancelarIngresso(itvendaId: itvendaId);
       if (!mounted) return;
       setState(() {
         itensTela.removeWhere(
@@ -156,12 +157,22 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       CarteiraBadgeNotifier.atualizar();
       AppSnackBar.sucesso(
         context,
-        'Ingresso cancelado. O reembolso deste item foi solicitado com sucesso.',
+        resultado['mensagem']?.toString() ??
+            (valorCortesia
+                ? 'Ingresso de cortesia cancelado.'
+                : 'Ingresso cancelado. O reembolso deste item foi solicitado com sucesso.'),
       );
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     }
+  }
+
+  double _valorDoIngresso(Map<String, dynamic> item) {
+    final unitario = double.tryParse('${item['vrunititvenda'] ?? 0}') ?? 0;
+    final quantidade = int.tryParse('${item['qtitvenda'] ?? 1}') ?? 1;
+    final taxa = double.tryParse('${item['vrtaxaitvenda'] ?? 0}') ?? 0;
+    return (unitario * quantidade) + taxa;
   }
 
   String _formatarCpf(String cpf) {
