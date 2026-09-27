@@ -9,8 +9,9 @@ import '../config/app_config.dart';
 
 class ApiStatusIndicator extends StatefulWidget {
   final VoidCallback? onTap;
+  final bool selecionado;
 
-  const ApiStatusIndicator({super.key, this.onTap});
+  const ApiStatusIndicator({super.key, this.onTap, this.selecionado = false});
 
   @override
   State<ApiStatusIndicator> createState() => _ApiStatusIndicatorState();
@@ -128,6 +129,8 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
                   child: Image.asset(
                     'assets/images/corujao.png',
                     fit: BoxFit.contain,
+                    color: widget.selecionado ? Colors.amber.shade700 : null,
+                    colorBlendMode: BlendMode.srcIn,
                   ),
                 ),
                 const SizedBox(height: 1),

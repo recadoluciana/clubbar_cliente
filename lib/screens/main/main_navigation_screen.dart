@@ -55,8 +55,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     required int index,
     required Widget icone,
     required String texto,
+    bool? estaSelecionado,
   }) {
-    final selecionado = currentIndex == index;
+    final selecionado = estaSelecionado ?? currentIndex == index;
 
     final corIcone = selecionado ? Colors.amber.shade700 : Colors.black87;
     const corTexto = Colors.black87;
@@ -111,63 +112,80 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _barraNavegacao() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            children: [
-              _itemBarraNavegacao(
-                index: 0,
-                icone: Icon(
-                  currentIndex == 0 ? Icons.home_rounded : Icons.home_outlined,
-                ),
-                texto: 'Home',
-              ),
+    return ValueListenableBuilder<Widget?>(
+      valueListenable: MainNavigationController.telaInterna,
+      builder: (context, telaInterna, _) {
+        final coraAtiva = telaInterna is AtendimentoCoraScreen;
 
-              _itemBarraNavegacao(
-                index: 1,
-                icone: _iconeCarrinhoComBadge(selecionado: currentIndex == 1),
-                texto: 'Carrinho',
-              ),
-
-              _itemBarraNavegacao(
-                index: 2,
-                icone: _iconeCarteiraComBadge(selecionado: currentIndex == 2),
-                texto: 'Carteira',
-              ),
-
-              _itemBarraNavegacao(
-                index: 3,
-                icone: Icon(
-                  currentIndex == 3 ? Icons.person : Icons.person_outline,
-                ),
-                texto: logado ? _primeiroNomeCliente : 'Perfil',
-              ),
-
-              Expanded(
-                child: ApiStatusIndicator(
-                  onTap: () => MainNavigationController.abrirTela(
-                    const AtendimentoCoraScreen(),
-                  ),
-                ),
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              top: BorderSide(color: Colors.grey.shade200, width: 1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
               ),
             ],
           ),
-        ),
-      ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                children: [
+                  _itemBarraNavegacao(
+                    index: 0,
+                    icone: Icon(
+                      currentIndex == 0
+                          ? Icons.home_rounded
+                          : Icons.home_outlined,
+                    ),
+                    texto: 'Home',
+                  ),
+
+                  _itemBarraNavegacao(
+                    index: 1,
+                    icone: _iconeCarrinhoComBadge(
+                      selecionado: currentIndex == 1,
+                    ),
+                    texto: 'Carrinho',
+                  ),
+
+                  _itemBarraNavegacao(
+                    index: 2,
+                    icone: _iconeCarteiraComBadge(
+                      selecionado: currentIndex == 2,
+                    ),
+                    texto: 'Carteira',
+                  ),
+
+                  _itemBarraNavegacao(
+                    index: 3,
+                    icone: Icon(
+                      currentIndex == 3 ? Icons.person : Icons.person_outline,
+                    ),
+                    texto: logado ? _primeiroNomeCliente : 'Perfil',
+                    estaSelecionado: currentIndex == 3 && !coraAtiva,
+                  ),
+
+                  Expanded(
+                    child: ApiStatusIndicator(
+                      selecionado: coraAtiva,
+                      onTap: () => MainNavigationController.abrirTela(
+                        const AtendimentoCoraScreen(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
