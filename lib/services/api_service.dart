@@ -682,6 +682,28 @@ class ApiService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> listarEstados() async {
+    final response = await http.get(Uri.parse('$baseUrl/localidades/estados'));
+    if (response.statusCode != 200) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    final dados = jsonDecode(response.body) as List;
+    return dados.map((item) => Map<String, dynamic>.from(item)).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> listarCidadesPorEstado(
+    int estadoId,
+  ) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/localidades/estados/$estadoId/cidades'),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    final dados = jsonDecode(response.body) as List;
+    return dados.map((item) => Map<String, dynamic>.from(item)).toList();
+  }
+
   Future<void> atualizarMeuPerfil({
     required String nome,
     String? telefone,
