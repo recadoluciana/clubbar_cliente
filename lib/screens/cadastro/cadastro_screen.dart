@@ -361,6 +361,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
         _numeroCtrl.text.trim().isNotEmpty &&
         _bairroCtrl.text.trim().isNotEmpty &&
         _cidadeCtrl.text.trim().isNotEmpty &&
+        _cidadeIdSelecionada != null &&
         _ufCtrl.text.trim().length == 2;
     if (enderecoInformado && !enderecoCompleto) {
       AppSnackBar.aviso(
@@ -809,48 +810,83 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   flex: 2,
-                                  child: DropdownButtonFormField<int>(
-                                    initialValue: _cidadeIdSelecionada,
-                                    isExpanded: true,
-                                    decoration: _decoracao(
-                                      label: 'Cidade',
-                                      icon: Icons.location_on_outlined,
+                                  child: Autocomplete<Map<String, dynamic>>(
+                                    key: ValueKey(
+                                      '$_estadoIdSelecionado-$_cidadeIdSelecionada',
                                     ),
-                                    hint: Text(
-                                      _estadoIdSelecionado == null
-                                          ? 'Selecione a UF primeiro'
-                                          : _carregandoCidades
-                                          ? 'Carregando cidades...'
-                                          : 'Selecione',
+                                    initialValue: TextEditingValue(
+                                      text: _cidadeCtrl.text,
                                     ),
-                                    items: _cidades
-                                        .map(
-                                          (cidade) => DropdownMenuItem<int>(
-                                            value: cidade['cidade_id'] as int,
-                                            child: Text(
-                                              cidade['nmcidade'].toString(),
-                                            ),
-                                          ),
-                                        )
-                                        .toList(),
-                                    onChanged:
-                                        _estadoIdSelecionado == null ||
-                                            _carregandoCidades
-                                        ? null
-                                        : (cidadeId) {
-                                            final cidade = _cidades.where(
-                                              (item) =>
-                                                  item['cidade_id'] == cidadeId,
-                                            );
-                                            setState(() {
-                                              _cidadeIdSelecionada = cidadeId;
-                                              _cidadeCtrl.text = cidade.isEmpty
-                                                  ? ''
-                                                  : (cidade.first['nmcidade'] ??
-                                                            '')
-                                                        .toString();
-                                            });
+                                    displayStringForOption: (cidade) =>
+                                        (cidade['nmcidade'] ?? '').toString(),
+                                    optionsBuilder: (texto) {
+                                      if (_estadoIdSelecionado == null ||
+                                          _carregandoCidades) {
+                                        return const Iterable<
+                                          Map<String, dynamic>
+                                        >.empty();
+                                      }
+                                      final consulta = texto.text
+                                          .trim()
+                                          .toLowerCase();
+                                      if (consulta.isEmpty) {
+                                        return const Iterable<
+                                          Map<String, dynamic>
+                                        >.empty();
+                                      }
+                                      return _cidades
+                                          .where(
+                                            (cidade) =>
+                                                (cidade['nmcidade'] ?? '')
+                                                    .toString()
+                                                    .toLowerCase()
+                                                    .startsWith(consulta),
+                                          )
+                                          .take(20);
+                                    },
+                                    onSelected: (cidade) {
+                                      setState(() {
+                                        _cidadeIdSelecionada =
+                                            cidade['cidade_id'] as int?;
+                                        _cidadeCtrl.text =
+                                            (cidade['nmcidade'] ?? '')
+                                                .toString();
+                                      });
+                                    },
+                                    fieldViewBuilder:
+                                        (
+                                          context,
+                                          controller,
+                                          focusNode,
+                                          onFieldSubmitted,
+                                        ) => TextFormField(
+                                          controller: controller,
+                                          focusNode: focusNode,
+                                          enabled:
+                                              _estadoIdSelecionado != null &&
+                                              !_carregandoCidades,
+                                          textCapitalization:
+                                              TextCapitalization.words,
+                                          decoration:
+                                              _decoracao(
+                                                label: 'Cidade',
+                                                icon:
+                                                    Icons.location_on_outlined,
+                                              ).copyWith(
+                                                hintText:
+                                                    _estadoIdSelecionado == null
+                                                    ? 'Selecione a UF primeiro'
+                                                    : _carregandoCidades
+                                                    ? 'Carregando cidades...'
+                                                    : 'Digite as primeiras letras',
+                                              ),
+                                          onChanged: (valor) {
+                                            _cidadeCtrl.text = valor;
+                                            _cidadeIdSelecionada = null;
                                           },
+                                          onFieldSubmitted: (_) =>
+                                              onFieldSubmitted(),
+                                        ),
                                   ),
                                 ),
                               ],
