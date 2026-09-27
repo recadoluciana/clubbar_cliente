@@ -924,17 +924,29 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Widget _politicaEvento() {
     return Padding(
       padding: const EdgeInsets.only(top: 20),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: TextButton.icon(
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+              ),
+            ),
+            icon: const Icon(Icons.policy_outlined),
+            label: const Text(
+              'Política de compra de ingresso',
+              style: TextStyle(fontSize: 15),
             ),
           ),
-          icon: const Icon(Icons.policy_outlined),
-          label: const Text('Política de compra de ingresso'),
-        ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(48, 0, 16, 4),
+            child: Text(
+              'Para cancelamento e alteração de participante, acesse o ingresso em sua Carteira/Ingressos.',
+              style: TextStyle(fontSize: 15),
+            ),
+          ),
+        ],
       ),
     );
   }
