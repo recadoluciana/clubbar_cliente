@@ -555,13 +555,13 @@ class ApiService {
     required String senha,
     String? telefone,
     required String cpf,
-    required String endereco,
-    required String numero,
+    String? endereco,
+    String? numero,
     String? complemento,
-    required String bairro,
-    required String cep,
-    required String cidade,
-    required String uf,
+    String? bairro,
+    String? cep,
+    String? cidade,
+    String? uf,
   }) async {
     try {
       final body = {
@@ -570,15 +570,15 @@ class ApiService {
         'senhahashcli': senha,
         'nrtelcliente': telefone?.trim().isEmpty == true ? null : telefone,
         'nrcpfcliente': cpf,
-        'endcliente': endereco,
-        'nrendcliente': numero,
+        'endcliente': endereco?.trim().isEmpty == true ? null : endereco,
+        'nrendcliente': numero?.trim().isEmpty == true ? null : numero,
         'complcliente': complemento?.trim().isEmpty == true
             ? null
             : complemento,
-        'bairrocliente': bairro,
-        'cepcliente': cep,
-        'cidadecliente': cidade,
-        'ufcliente': uf,
+        'bairrocliente': bairro?.trim().isEmpty == true ? null : bairro,
+        'cepcliente': cep?.trim().isEmpty == true ? null : cep,
+        'cidadecliente': cidade?.trim().isEmpty == true ? null : cidade,
+        'ufcliente': uf?.trim().isEmpty == true ? null : uf,
       };
 
       final response = await http.post(
@@ -718,6 +718,39 @@ class ApiService {
         return;
       }
 
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
+  Future<void> salvarEnderecoCobranca({
+    required String endereco,
+    required String numero,
+    String? complemento,
+    required String bairro,
+    required String cep,
+    required String cidade,
+    required String uf,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/clientes/me/endereco-cobranca'),
+        headers: await _headersAutenticado(),
+        body: jsonEncode({
+          'endcliente': endereco.trim(),
+          'nrendcliente': numero.trim(),
+          'complcliente': complemento?.trim().isEmpty == true
+              ? null
+              : complemento,
+          'bairrocliente': bairro.trim(),
+          'cepcliente': cep.trim(),
+          'cidadecliente': cidade.trim(),
+          'ufcliente': uf.trim().toUpperCase(),
+        }),
+      );
+
+      if (response.statusCode == 200) return;
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
       throw Exception(mensagemErroAmigavel(e));

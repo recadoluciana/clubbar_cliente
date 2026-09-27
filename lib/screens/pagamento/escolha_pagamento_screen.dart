@@ -179,11 +179,271 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
   }
 
+  bool _temEnderecoCobrancaCompleto(Map<String, dynamic> perfil) {
+    final cep = (perfil['cepcliente'] ?? '').toString().replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
+    return [
+          perfil['endcliente'],
+          perfil['nrendcliente'],
+          perfil['bairrocliente'],
+          perfil['cidadecliente'],
+          perfil['ufcliente'],
+        ].every((campo) => (campo ?? '').toString().trim().isNotEmpty) &&
+        cep.length == 8;
+  }
+
+  Future<bool> _garantirEnderecoParaCartao() async {
+    final perfil = await apiService.buscarMeuPerfil();
+    if (_temEnderecoCobrancaCompleto(perfil)) return true;
+    if (!mounted) return false;
+
+    final formKey = GlobalKey<FormState>();
+    final cepCtrl = TextEditingController(
+      text: (perfil['cepcliente'] ?? '').toString(),
+    );
+    final enderecoCtrl = TextEditingController(
+      text: (perfil['endcliente'] ?? '').toString(),
+    );
+    final numeroCtrl = TextEditingController(
+      text: (perfil['nrendcliente'] ?? '').toString(),
+    );
+    final complementoCtrl = TextEditingController(
+      text: (perfil['complcliente'] ?? '').toString(),
+    );
+    final bairroCtrl = TextEditingController(
+      text: (perfil['bairrocliente'] ?? '').toString(),
+    );
+    final cidadeCtrl = TextEditingController(
+      text: (perfil['cidadecliente'] ?? '').toString(),
+    );
+    final ufCtrl = TextEditingController(
+      text: (perfil['ufcliente'] ?? '').toString().toUpperCase(),
+    );
+
+    final salvo = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        var salvando = false;
+        InputDecoration campo(String label, {IconData? icone}) =>
+            InputDecoration(
+              labelText: label,
+              prefixIcon: icone == null ? null : Icon(icone),
+              border: const OutlineInputBorder(),
+            );
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) => SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                20 + MediaQuery.viewInsetsOf(context).bottom,
+              ),
+              child: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Endereço para pagamento com cartão',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Você informa uma vez e o endereço fica salvo para as próximas compras com cartão.',
+                      ),
+                      const SizedBox(height: 18),
+                      TextFormField(
+                        controller: cepCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: campo(
+                          'CEP',
+                          icone: Icons.pin_drop_outlined,
+                        ),
+                        validator: (value) =>
+                            value?.replaceAll(RegExp(r'[^0-9]'), '').length == 8
+                            ? null
+                            : 'Informe um CEP válido',
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: enderecoCtrl,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: campo(
+                          'Logradouro',
+                          icone: Icons.signpost_outlined,
+                        ),
+                        validator: (value) => (value ?? '').trim().isEmpty
+                            ? 'Informe o logradouro'
+                            : null,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: numeroCtrl,
+                              decoration: campo('Número'),
+                              validator: (value) => (value ?? '').trim().isEmpty
+                                  ? 'Informe o número'
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              controller: complementoCtrl,
+                              textCapitalization: TextCapitalization.words,
+                              decoration: campo('Complemento (opcional)'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: bairroCtrl,
+                        textCapitalization: TextCapitalization.words,
+                        decoration: campo('Bairro'),
+                        validator: (value) => (value ?? '').trim().isEmpty
+                            ? 'Informe o bairro'
+                            : null,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: TextFormField(
+                              controller: cidadeCtrl,
+                              textCapitalization: TextCapitalization.words,
+                              decoration: campo('Cidade'),
+                              validator: (value) => (value ?? '').trim().isEmpty
+                                  ? 'Informe a cidade'
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: ufCtrl,
+                              maxLength: 2,
+                              textCapitalization: TextCapitalization.characters,
+                              decoration: campo('UF').copyWith(counterText: ''),
+                              validator: (value) =>
+                                  (value ?? '').trim().length == 2
+                                  ? null
+                                  : 'UF inválida',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: salvando
+                                  ? null
+                                  : () => Navigator.pop(sheetContext, false),
+                              child: const Text('Agora não'),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: FilledButton.icon(
+                              onPressed: salvando
+                                  ? null
+                                  : () async {
+                                      if (!formKey.currentState!.validate()) {
+                                        return;
+                                      }
+                                      setSheetState(() => salvando = true);
+                                      try {
+                                        await apiService.salvarEnderecoCobranca(
+                                          endereco: enderecoCtrl.text,
+                                          numero: numeroCtrl.text,
+                                          complemento: complementoCtrl.text,
+                                          bairro: bairroCtrl.text,
+                                          cep: cepCtrl.text.replaceAll(
+                                            RegExp(r'[^0-9]'),
+                                            '',
+                                          ),
+                                          cidade: cidadeCtrl.text,
+                                          uf: ufCtrl.text,
+                                        );
+                                        if (context.mounted) {
+                                          Navigator.pop(sheetContext, true);
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                apiService.mensagemErroAmigavel(
+                                                  e,
+                                                ),
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      } finally {
+                                        if (context.mounted) {
+                                          setSheetState(() => salvando = false);
+                                        }
+                                      }
+                                    },
+                              icon: salvando
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(Icons.save_outlined),
+                              label: const Text('Salvar e continuar'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    cepCtrl.dispose();
+    enderecoCtrl.dispose();
+    numeroCtrl.dispose();
+    complementoCtrl.dispose();
+    bairroCtrl.dispose();
+    cidadeCtrl.dispose();
+    ufCtrl.dispose();
+    return salvo == true;
+  }
+
   Future<void> abrirPix() async {
-    if (totalPagar < 5.00) {
+    if (totalPagar <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('O pagamento mínimo é R\$ 5,00.'),
+          content: Text('O valor do pagamento deve ser maior que zero.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -233,14 +493,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Future<void> abrirAsaas() async {
-    if (totalPagar < 5.00) {
+    if (totalPagar <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            compraDeProdutos
-                ? 'O pagamento mínimo é R\$ 5,00. Adicione mais itens ao carrinho para prosseguir.'
-                : 'O pagamento mínimo é R\$ 5,00.',
-          ),
+        const SnackBar(
+          content: Text('O valor do pagamento deve ser maior que zero.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -254,6 +510,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (clienteId == null || clienteId == 0) {
         throw Exception('Cliente não identificado');
       }
+
+      if (!await _garantirEnderecoParaCartao()) return;
 
       final resposta = widget.reservaIngressoId != null
           ? await apiService.criarCheckoutReserva(
@@ -601,7 +859,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                     )
                   : const Icon(Icons.account_balance_wallet_outlined, size: 24),
               label: const Text(
-                'Pagamento cartão débito ou crédito',
+                'Pagamento com cartão de crédito',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
