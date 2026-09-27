@@ -1,6 +1,59 @@
 import 'package:flutter/material.dart';
 
 class CategoriaIconUtils {
+  static const _iconesPorCodigo = <String, IconData>{
+    'category': Icons.category_rounded,
+    'water_drop': Icons.water_drop_rounded,
+    'local_drink': Icons.local_drink_rounded,
+    'local_cafe': Icons.local_cafe_rounded,
+    'bolt': Icons.bolt_rounded,
+    'sports_bar': Icons.sports_bar_rounded,
+    'no_drinks': Icons.no_drinks_rounded,
+    'local_bar': Icons.local_bar_rounded,
+    'liquor': Icons.liquor_rounded,
+    'wine_bar': Icons.wine_bar_rounded,
+    'coffee': Icons.coffee_rounded,
+    'emoji_nature': Icons.emoji_nature_rounded,
+    'emoji_food_beverage': Icons.emoji_food_beverage_rounded,
+    'soup_kitchen': Icons.soup_kitchen_rounded,
+    'tapas': Icons.tapas_rounded,
+    'restaurant': Icons.restaurant_rounded,
+    'lunch_dining': Icons.lunch_dining_rounded,
+    'skillet': Icons.fastfood_rounded,
+    'kebab_dining': Icons.kebab_dining_rounded,
+    'outdoor_grill': Icons.outdoor_grill_rounded,
+    'fastfood': Icons.fastfood_rounded,
+    'local_pizza': Icons.local_pizza_rounded,
+    'dinner_dining': Icons.dinner_dining_rounded,
+    'eco': Icons.eco_rounded,
+    'room_service': Icons.room_service_rounded,
+    'groups': Icons.groups_rounded,
+    'child_care': Icons.child_care_rounded,
+    'restaurant_menu': Icons.restaurant_menu_rounded,
+    'set_meal': Icons.set_meal_rounded,
+    'grass': Icons.grass_rounded,
+    'cake': Icons.cake_rounded,
+    'cookie': Icons.cookie_rounded,
+    'icecream': Icons.icecream_rounded,
+    'inventory_2': Icons.inventory_2_rounded,
+    'sell': Icons.sell_rounded,
+    'celebration': Icons.celebration_rounded,
+    'event_seat': Icons.event_seat_rounded,
+    'table_restaurant': Icons.table_restaurant_rounded,
+    'event': Icons.event_rounded,
+    'festival': Icons.festival_rounded,
+    'checkroom': Icons.checkroom_rounded,
+    'redeem': Icons.redeem_rounded,
+    'more_horiz': Icons.more_horiz_rounded,
+  };
+
+  /// Usa o ícone definido na categoria. A regra pelo nome só atende dados
+  /// antigos que ainda não possuam o código de ícone.
+  static IconData porCategoria(String nome, String? codigoIcone) {
+    final codigo = codigoIcone?.trim().toLowerCase();
+    return _iconesPorCodigo[codigo] ?? porNome(nome);
+  }
+
   static Color corPorNome(String nome) {
     final texto = nome.trim().toLowerCase();
     if (texto.contains('cerveja') || texto.contains('chopp')) {
