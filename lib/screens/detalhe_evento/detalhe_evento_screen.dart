@@ -942,7 +942,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           const Padding(
             padding: EdgeInsets.fromLTRB(48, 0, 16, 4),
             child: Text(
-              'Para cancelamento e alteração de participante, acesse o ingresso em sua Carteira/Ingressos.',
+              'Para cancelamento e alteração de participante, acesse o ingresso em Carteira/Ingressos.',
               style: TextStyle(fontSize: 15),
             ),
           ),
