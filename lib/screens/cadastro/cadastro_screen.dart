@@ -223,6 +223,29 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
+    final enderecoInformado = [
+      _cepCtrl.text,
+      _enderecoCtrl.text,
+      _numeroCtrl.text,
+      _bairroCtrl.text,
+      _cidadeCtrl.text,
+      _ufCtrl.text,
+    ].any((campo) => campo.trim().isNotEmpty);
+    final enderecoCompleto =
+        _somenteNumeros(_cepCtrl.text).length == 8 &&
+        _enderecoCtrl.text.trim().isNotEmpty &&
+        _numeroCtrl.text.trim().isNotEmpty &&
+        _bairroCtrl.text.trim().isNotEmpty &&
+        _cidadeCtrl.text.trim().isNotEmpty &&
+        _ufCtrl.text.trim().length == 2;
+    if (enderecoInformado && !enderecoCompleto) {
+      AppSnackBar.aviso(
+        context,
+        'Preencha o endereço completo ou deixe os campos em branco. Ele será necessário apenas para cartão.',
+      );
+      return;
+    }
+
     String email = _emailCtrl.text.trim();
 
     final sugestao = sugerirEmail(email);
@@ -266,13 +289,25 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
         senha: _senhaCtrl.text,
         telefone: _somenteNumeros(_telefoneCtrl.text),
         cpf: _somenteNumeros(_cpfCtrl.text),
-        endereco: _enderecoCtrl.text.trim(),
-        numero: _numeroCtrl.text.trim(),
+        endereco: _enderecoCtrl.text.trim().isEmpty
+            ? null
+            : _enderecoCtrl.text.trim(),
+        numero: _numeroCtrl.text.trim().isEmpty
+            ? null
+            : _numeroCtrl.text.trim(),
         complemento: _complementoCtrl.text.trim(),
-        bairro: _bairroCtrl.text.trim(),
-        cep: _somenteNumeros(_cepCtrl.text),
-        cidade: _cidadeCtrl.text.trim(),
-        uf: _ufCtrl.text.trim().toUpperCase(),
+        bairro: _bairroCtrl.text.trim().isEmpty
+            ? null
+            : _bairroCtrl.text.trim(),
+        cep: _somenteNumeros(_cepCtrl.text).isEmpty
+            ? null
+            : _somenteNumeros(_cepCtrl.text),
+        cidade: _cidadeCtrl.text.trim().isEmpty
+            ? null
+            : _cidadeCtrl.text.trim(),
+        uf: _ufCtrl.text.trim().isEmpty
+            ? null
+            : _ufCtrl.text.trim().toUpperCase(),
       );
 
       if (!mounted) return;
@@ -352,7 +387,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Text(
-                              'O CPF e o endereço completo são necessários para realizar compras via PIX e cartão de crédito. Essas informações serão solicitadas somente neste cadastro e reutilizadas com segurança nas suas compras.',
+                              'O CPF é necessário para pagamentos. O endereço é opcional agora e será solicitado apenas na primeira compra com cartão.',
                             ),
                           ),
                         ],
@@ -511,10 +546,12 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                         if (numeros.length == 8) _buscarCep();
                       },
                       onFieldSubmitted: (_) => _buscarCep(),
-                      validator: (value) =>
-                          _somenteNumeros(value ?? '').length == 8
-                          ? null
-                          : 'Informe um CEP válido',
+                      validator: (value) {
+                        final cep = _somenteNumeros(value ?? '');
+                        return cep.isEmpty || cep.length == 8
+                            ? null
+                            : 'Informe um CEP válido';
+                      },
                     ),
                     const SizedBox(height: 14),
 
@@ -525,9 +562,6 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                         label: 'Endereço',
                         icon: Icons.route_outlined,
                       ),
-                      validator: (value) => (value?.trim().isEmpty ?? true)
-                          ? 'Informe seu endereço'
-                          : null,
                     ),
                     const SizedBox(height: 14),
 
@@ -542,10 +576,6 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                               label: 'Número',
                               icon: Icons.numbers_rounded,
                             ),
-                            validator: (value) =>
-                                (value?.trim().isEmpty ?? true)
-                                ? 'Informe o número'
-                                : null,
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -570,9 +600,6 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                         label: 'Bairro',
                         icon: Icons.location_city_outlined,
                       ),
-                      validator: (value) => (value?.trim().isEmpty ?? true)
-                          ? 'Informe seu bairro'
-                          : null,
                     ),
                     const SizedBox(height: 14),
 
@@ -588,10 +615,6 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                               label: 'Cidade',
                               icon: Icons.location_on_outlined,
                             ),
-                            validator: (value) =>
-                                (value?.trim().isEmpty ?? true)
-                                ? 'Informe sua cidade'
-                                : null,
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -604,9 +627,12 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                               label: 'UF',
                               icon: Icons.map_outlined,
                             ).copyWith(counterText: ''),
-                            validator: (value) => value?.trim().length == 2
-                                ? null
-                                : 'UF inválida',
+                            validator: (value) {
+                              final uf = value?.trim() ?? '';
+                              return uf.isEmpty || uf.length == 2
+                                  ? null
+                                  : 'UF inválida';
+                            },
                           ),
                         ),
                       ],
