@@ -485,7 +485,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  CategoriaIconUtils.porNome(categoria.nome),
+                  CategoriaIconUtils.porCategoria(
+                    categoria.nome,
+                    categoria.icone,
+                  ),
                   color: CategoriaIconUtils.corPorNome(categoria.nome),
                   size: 18,
                 ),
