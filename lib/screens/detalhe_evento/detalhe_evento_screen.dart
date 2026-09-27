@@ -316,7 +316,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     if (!lote.semLimite && lote.qtDisponivel <= 0) {
       await carregarStatusLotes();
       if (mounted) {
-        AppSnackBar.aviso(context, 'Este lote acabou de esgotar. Atualizamos as opções disponíveis.');
+        AppSnackBar.aviso(
+          context,
+          'Este lote acabou de esgotar. Atualizamos as opções disponíveis.',
+        );
       }
       return;
     }
@@ -354,7 +357,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: quantidade < 20 &&
+                      onPressed:
+                          quantidade < 20 &&
                               (lote.semLimite || quantidade < lote.qtDisponivel)
                           ? () => setDialogState(() => quantidade++)
                           : null,
@@ -382,7 +386,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     if (!lote.semLimite && quantidade > lote.qtDisponivel) {
       await carregarStatusLotes();
       if (mounted) {
-        AppSnackBar.aviso(context, 'A quantidade escolhida não está mais disponível neste lote.');
+        AppSnackBar.aviso(
+          context,
+          'A quantidade escolhida não está mais disponível neste lote.',
+        );
       }
       return;
     }
@@ -482,7 +489,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   List<List<List<EventoLote>>> get _lotesGlobaisAgrupados {
     final porGlobal = <int, List<EventoLote>>{};
     for (final lote in lotes) {
-      porGlobal.putIfAbsent(lote.loteGlobalId == 0 ? lote.loteId : lote.loteGlobalId, () => []).add(lote);
+      porGlobal
+          .putIfAbsent(
+            lote.loteGlobalId == 0 ? lote.loteId : lote.loteGlobalId,
+            () => [],
+          )
+          .add(lote);
     }
     return porGlobal.values.map((opcoesDoGlobal) {
       final porSetor = <int, List<EventoLote>>{};
@@ -525,13 +537,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: Colors.green.shade200),
       ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(lote.nome, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900)),
-        const SizedBox(height: 3),
-        Text('Lote vigente para todos os setores', style: TextStyle(color: Colors.green.shade800, fontSize: 12, fontWeight: FontWeight.w700)),
-        const SizedBox(height: 10),
-        ...setores.map((opcoes) => cardLote(opcoes, exibirNomeLote: false)),
-      ]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            lote.nome,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            'Lote vigente para todos os setores',
+            style: TextStyle(
+              color: Colors.green.shade800,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...setores.map((opcoes) => cardLote(opcoes, exibirNomeLote: false)),
+        ],
+      ),
     );
   }
 
@@ -611,7 +636,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 Text(
                   '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} disponível${lote.qtDisponivel == 1 ? '' : 'eis'} neste lote',
                   style: TextStyle(
-                    color: lote.qtDisponivel > 0 ? Colors.grey.shade700 : Colors.red,
+                    color: lote.qtDisponivel > 0
+                        ? Colors.grey.shade700
+                        : Colors.red,
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                   ),
@@ -715,6 +742,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       () =>
                           _quantidadesLotes[lote.lotePrecoId] = quantidade - 1,
                     );
+                  } else {
+                    AppSnackBar.aviso(
+                      context,
+                      'A quantidade mínima é 1 ingresso.',
+                    );
                   }
                 },
                 style: IconButton.styleFrom(
@@ -752,6 +784,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     setState(
                       () =>
                           _quantidadesLotes[lote.lotePrecoId] = quantidade + 1,
+                    );
+                  } else if (!lote.semLimite &&
+                      quantidade >= lote.qtDisponivel) {
+                    final disponivel = lote.qtDisponivel;
+                    AppSnackBar.aviso(
+                      context,
+                      disponivel <= 0
+                          ? 'Não há mais ingressos disponíveis neste lote.'
+                          : disponivel == 1
+                          ? 'Há apenas 1 ingresso disponível neste lote.'
+                          : 'Há apenas $disponivel ingressos disponíveis neste lote.',
+                    );
+                  } else {
+                    AppSnackBar.aviso(
+                      context,
+                      'Você pode comprar no máximo 20 ingressos por vez.',
                     );
                   }
                 },
