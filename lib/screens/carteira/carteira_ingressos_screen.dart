@@ -769,14 +769,14 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.info_outline_rounded,
+                        Icons.error_outline_rounded,
                         size: 14,
                         color: Colors.grey.shade600,
                       ),
                       const SizedBox(width: 5),
                       Flexible(
                         child: Text(
-                          'Apresente o QR Code na portaria do evento.',
+                          'Apresente o QR Code na portaria do evento',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.grey.shade600,
