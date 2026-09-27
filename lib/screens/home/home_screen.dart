@@ -877,7 +877,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                       ),
                     ],
                   ],
-                  if (produtosMaisVendidos.isNotEmpty) ...[
+                  if (termoBusca.trim().isEmpty &&
+                      produtosMaisVendidos.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     _secaoTitulo(
                       'Produtos mais vendidos',
@@ -888,7 +889,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     const SizedBox(height: 20),
                   ],
 
-                  if (produtosMaisVendidos.isEmpty) const SizedBox(height: 20),
+                  if (termoBusca.trim().isEmpty && produtosMaisVendidos.isEmpty)
+                    const SizedBox(height: 20),
 
                   _secaoTitulo(
                     'Bares e Casas Noturnas',
