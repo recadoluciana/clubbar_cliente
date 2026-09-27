@@ -901,6 +901,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
+          if (!compraDeProdutos)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(32, 0, 32, 8),
+              child: Text(
+                'Para cancelamento e alteração de participante, acesse o ingresso em Carteira/Ingressos',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15),
+              ),
+            ),
         ],
       ),
     );
