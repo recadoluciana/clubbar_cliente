@@ -928,8 +928,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: widget.nomeLoja,
-            subtitulo: subtituloAux,
+            titulo: 'Carteira de Ingressos',
+            subtitulo: '${widget.nomeLoja} - $subtituloAux',
             icone: Icons.storefront_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
             tamanhoAvatar: 58,
