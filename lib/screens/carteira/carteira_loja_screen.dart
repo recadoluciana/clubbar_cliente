@@ -520,78 +520,58 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 const SizedBox(height: 16),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 44,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _abrirQrOuRetirada(context, item),
-                          icon: const Icon(Icons.qr_code_2_rounded, size: 18),
-                          label: const Text(
-                            'Retirar',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF7A5A00),
-                            side: const BorderSide(color: Color(0xFFE0C36A)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _abrirQrOuRetirada(context, item),
+                    icon: const Icon(Icons.qr_code_2_rounded, size: 22),
+                    label: const Text(
+                      'Exibir produto e QR Code',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
-
-                    const SizedBox(width: 10),
-
-                    Expanded(
-                      child: SizedBox(
-                        height: 44,
-                        child: ElevatedButton.icon(
-                          onPressed: () => _confirmarCompartilhamento(item),
-                          icon: const Icon(
-                            Icons.card_giftcard_rounded,
-                            size: 18,
-                          ),
-                          label: const Text(
-                            'Presentear',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            foregroundColor: Colors.black,
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                  ],
+                  ),
                 ),
 
                 const SizedBox(height: 10),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 42,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _cancelarCompra(item),
-                    icon: const Icon(Icons.cancel_outlined, size: 18),
-                    label: const Text(
-                      'Cancelar compra',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _confirmarCompartilhamento(item),
+                        icon: const Icon(Icons.card_giftcard_rounded, size: 18),
+                        label: const Text('Presentear'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF7A5A00),
+                          side: const BorderSide(color: Color(0xFFE0C36A)),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _cancelarCompra(item),
+                        icon: const Icon(Icons.cancel_outlined, size: 18),
+                        label: const Text('Cancelar compra'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
