@@ -181,6 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
       resizeToAvoidBottomInset: true,
       appBar: ClubbarAppBar(
         mostrarVoltar: widget.mostrarVoltar,
+        mostrarSessao: false,
         onVoltar: widget.mostrarVoltar
             ? () {
                 MainNavigationController.irParaHome();

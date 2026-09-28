@@ -229,13 +229,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     await Share.share(texto);
   }
 
-  void abrirLogin() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
-  }
-
   String formatarDataEvento(String valor) {
     if (valor.trim().isEmpty) return 'Data não informada';
 
@@ -657,24 +650,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: ClubbarAppBar(
-        mostrarVoltar: false,
-        actions: [
-          if (!logado)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: TextButton.icon(
-                onPressed: abrirLogin,
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
-                icon: const Icon(Icons.login_rounded, size: 21),
-                label: const Text(
-                  'Login',
-                  style: TextStyle(fontWeight: FontWeight.w800),
-                ),
-              ),
-            ),
-        ],
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: false),
       body: RefreshIndicator(
         onRefresh: carregarHome,
         child: carregando
