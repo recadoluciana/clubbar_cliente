@@ -25,4 +25,13 @@ void main() {
     final expiracao = obterExpiracaoPix({}, agora: agora);
     expect(expiracao.toUtc(), DateTime.utc(2026, 9, 23, 12, 5));
   });
+
+  test('aceita o prazo global de quinze minutos para ingressos', () {
+    final expiracao = obterExpiracaoPix(
+      {'expiration_date': '2026-09-23T12:15:00Z'},
+      agora: agora,
+      duracaoMaxima: const Duration(minutes: 15),
+    );
+    expect(expiracao.toUtc(), DateTime.utc(2026, 9, 23, 12, 15));
+  });
 }
