@@ -1215,6 +1215,32 @@ class ApiService {
     throw Exception(data['detail'] ?? 'Erro ao alterar participante');
   }
 
+  Future<Map<String, dynamic>> validarAlteracaoParticipanteItVenda({
+    required int itvendaId,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/entregas/itvenda/$itvendaId/participante/elegibilidade',
+      ),
+      headers: await _headersAutenticado(),
+    );
+
+    final data = response.body.trim().isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body);
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return Map<String, dynamic>.from(data as Map);
+    }
+
+    final detalhe = data is Map ? data['detail'] : null;
+    throw Exception(
+      detalhe is String && detalhe.trim().isNotEmpty
+          ? detalhe
+          : 'Não foi possível validar a alteração de participante',
+    );
+  }
+
   Future<Map<String, dynamic>> cancelarIngresso({
     required int itvendaId,
   }) async {
