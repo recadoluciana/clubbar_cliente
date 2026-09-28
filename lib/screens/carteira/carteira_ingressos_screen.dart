@@ -85,9 +85,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       dadosQr: 'CLUBBAR-INGRESSO:$token',
       validade: dataEvento,
       nomeParticipante: (item['nmparticipante'] ?? '').toString(),
-      cpfParticipante: _formatarCpf(
-        (item['cpfparticipante'] ?? '').toString(),
-      ),
+      cpfParticipante: _formatarCpf((item['cpfparticipante'] ?? '').toString()),
       urlApp: AppConfig.appWebUrl,
       urlWeb: AppConfig.appWebUrl,
     );
@@ -211,10 +209,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       );
     } catch (e) {
       if (mounted) {
-        AppSnackBar.erro(
-          context,
-          e.toString().replaceFirst('Exception: ', ''),
-        );
+        AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
       }
       return;
     }
@@ -295,7 +290,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar'),
+                child: const Text('Cancelar compra'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -528,10 +523,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final ultimaAlteracao = historicoParticipantes.isEmpty
         ? null
         : historicoParticipantes.last;
-    final nomeAnterior =
-        (ultimaAlteracao?['nmparticipanteanterior'] ?? '').toString().trim();
-    final nomeNovo =
-        (ultimaAlteracao?['nmparticipantenovo'] ?? '').toString().trim();
+    final nomeAnterior = (ultimaAlteracao?['nmparticipanteanterior'] ?? '')
+        .toString()
+        .trim();
+    final nomeNovo = (ultimaAlteracao?['nmparticipantenovo'] ?? '')
+        .toString()
+        .trim();
 
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
