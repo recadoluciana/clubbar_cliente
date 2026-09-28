@@ -21,6 +21,16 @@ class PerfilScreen extends StatefulWidget {
 
 class _PerfilScreenState extends State<PerfilScreen> {
   final authStorage = AuthStorage();
+  late final Future<String> _nomeCliente;
+
+  @override
+  void initState() {
+    super.initState();
+    _nomeCliente = authStorage.obterNmcliente().then((nome) {
+      final nomeLimpo = nome?.trim() ?? '';
+      return nomeLimpo.isEmpty ? 'Cliente Clubbar' : nomeLimpo;
+    });
+  }
 
   Future<void> fazerLogout() async {
     await authStorage.limparToken();
@@ -122,11 +132,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       body: Column(
         children: [
-          const ClubbarPageHeader(
-            titulo: 'Perfil',
-            subtitulo: '',
-            mostrarAvatar: false,
-            corTitulo: Colors.blue,
+          FutureBuilder<String>(
+            future: _nomeCliente,
+            builder: (context, snapshot) => ClubbarPageHeader(
+              titulo: 'Perfil',
+              subtitulo: snapshot.data ?? '',
+              mostrarAvatar: false,
+              corTitulo: Colors.blue,
+            ),
           ),
 
           Expanded(
