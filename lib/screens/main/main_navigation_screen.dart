@@ -116,6 +116,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       valueListenable: MainNavigationController.telaInterna,
       builder: (context, telaInterna, _) {
         final coraAtiva = telaInterna is AtendimentoCoraScreen;
+        final homeSelecionada = currentIndex == 0 && !coraAtiva;
+        final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
+        final carteiraSelecionada = currentIndex == 2 && !coraAtiva;
 
         return Container(
           decoration: BoxDecoration(
@@ -140,27 +143,30 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   _itemBarraNavegacao(
                     index: 0,
                     icone: Icon(
-                      currentIndex == 0
+                      homeSelecionada
                           ? Icons.home_rounded
                           : Icons.home_outlined,
                     ),
                     texto: 'Home',
+                    estaSelecionado: homeSelecionada,
                   ),
 
                   _itemBarraNavegacao(
                     index: 1,
                     icone: _iconeCarrinhoComBadge(
-                      selecionado: currentIndex == 1,
+                      selecionado: carrinhoSelecionado,
                     ),
                     texto: 'Carrinho',
+                    estaSelecionado: carrinhoSelecionado,
                   ),
 
                   _itemBarraNavegacao(
                     index: 2,
                     icone: _iconeCarteiraComBadge(
-                      selecionado: currentIndex == 2,
+                      selecionado: carteiraSelecionada,
                     ),
                     texto: 'Carteira',
+                    estaSelecionado: carteiraSelecionada,
                   ),
 
                   _itemBarraNavegacao(
