@@ -85,13 +85,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       dadosQr: 'CLUBBAR-INGRESSO:$token',
       validade: dataEvento,
       nomeParticipante: (item['nmparticipante'] ?? '').toString(),
-<<<<<<< HEAD
-      cpfParticipante: _formatarCpf(
-        (item['cpfparticipante'] ?? '').toString(),
-      ),
-=======
       cpfParticipante: _formatarCpf((item['cpfparticipante'] ?? '').toString()),
->>>>>>> develop
       urlApp: AppConfig.appWebUrl,
       urlWeb: AppConfig.appWebUrl,
     );
@@ -215,14 +209,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       );
     } catch (e) {
       if (mounted) {
-<<<<<<< HEAD
-        AppSnackBar.erro(
-          context,
-          e.toString().replaceFirst('Exception: ', ''),
-        );
-=======
         AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
->>>>>>> develop
       }
       return;
     }
@@ -536,19 +523,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final ultimaAlteracao = historicoParticipantes.isEmpty
         ? null
         : historicoParticipantes.last;
-<<<<<<< HEAD
-    final nomeAnterior =
-        (ultimaAlteracao?['nmparticipanteanterior'] ?? '').toString().trim();
-    final nomeNovo =
-        (ultimaAlteracao?['nmparticipantenovo'] ?? '').toString().trim();
-=======
     final nomeAnterior = (ultimaAlteracao?['nmparticipanteanterior'] ?? '')
         .toString()
         .trim();
     final nomeNovo = (ultimaAlteracao?['nmparticipantenovo'] ?? '')
         .toString()
         .trim();
->>>>>>> develop
 
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
