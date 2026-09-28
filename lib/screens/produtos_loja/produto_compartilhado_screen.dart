@@ -33,7 +33,6 @@ class _ProdutoCompartilhadoScreenState
   final apiService = ApiService();
   final authStorage = AuthStorage();
   final _quantidadeCtrl = TextEditingController(text: '1');
-  final _observacaoCtrl = TextEditingController();
 
   bool carregando = true;
   bool adicionando = false;
@@ -46,7 +45,6 @@ class _ProdutoCompartilhadoScreenState
   @override
   void dispose() {
     _quantidadeCtrl.dispose();
-    _observacaoCtrl.dispose();
     super.dispose();
   }
 
@@ -148,7 +146,9 @@ class _ProdutoCompartilhadoScreenState
         produtoId: produto!['produto_id'],
         cardapioItemId: produto!['cardapioitem_id'],
         quantidade: quantidade,
-        observacao: _observacaoCtrl.text.trim(),
+        // A observação continua suportada pelo carrinho, mas não é solicitada
+        // nesta tela neste momento.
+        observacao: '',
       );
 
       final total = await apiService.buscarQuantidadeCarrinho(
@@ -270,7 +270,7 @@ class _ProdutoCompartilhadoScreenState
                             imagemUrl,
                             height: 220,
                             width: double.infinity,
-                            fit: BoxFit.cover,
+                            fit: BoxFit.contain,
                             alignment: Alignment.center,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
@@ -465,28 +465,6 @@ class _ProdutoCompartilhadoScreenState
                             ),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 18),
-                      TextField(
-                        controller: _observacaoCtrl,
-                        minLines: 2,
-                        maxLines: 4,
-                        maxLength: 255,
-                        textCapitalization: TextCapitalization.sentences,
-                        decoration: InputDecoration(
-                          labelText: 'Observação (opcional)',
-                          hintText: 'Ex.: sem gelo, pouco açúcar...',
-                          alignLabelWithHint: true,
-                          prefixIcon: const Padding(
-                            padding: EdgeInsets.only(bottom: 40),
-                            child: Icon(Icons.notes_rounded),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade50,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
                       ),
                     ],
                   ),
