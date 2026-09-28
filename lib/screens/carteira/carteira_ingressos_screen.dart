@@ -84,6 +84,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       imagemUrl: _buildImageUrl((item['urlfotoproduto'] ?? '').toString()),
       dadosQr: 'CLUBBAR-INGRESSO:$token',
       validade: dataEvento,
+      nomeParticipante: (item['nmparticipante'] ?? '').toString(),
+      cpfParticipante: _formatarCpf(
+        (item['cpfparticipante'] ?? '').toString(),
+      ),
       urlApp: AppConfig.appWebUrl,
       urlWeb: AppConfig.appWebUrl,
     );

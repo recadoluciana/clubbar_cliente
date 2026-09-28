@@ -15,6 +15,8 @@ class PresenteImageGenerator {
     required String imagemUrl,
     required String dadosQr,
     String validade = '',
+    String nomeParticipante = '',
+    String cpfParticipante = '',
     String urlApp = 'https://app.clubbar.com.br',
     String urlWeb = 'https://app.clubbar.com.br',
   }) async {
@@ -79,6 +81,8 @@ class PresenteImageGenerator {
         nomeLoja: nomeLojaFinal,
         nomeRemetente: nomeRemetente,
         validade: validade,
+        nomeParticipante: nomeParticipante,
+        cpfParticipante: cpfParticipante,
         ehIngresso: ehIngresso,
       );
 
@@ -86,6 +90,7 @@ class PresenteImageGenerator {
         canvas: canvas,
         paint: paint,
         dadosQr: qrPrincipal,
+        ehIngresso: ehIngresso,
       );
 
       _desenharDivisor(canvas: canvas, paint: paint, y: 1450);
@@ -234,6 +239,8 @@ class PresenteImageGenerator {
     required String nomeLoja,
     required String nomeRemetente,
     required String validade,
+    required String nomeParticipante,
+    required String cpfParticipante,
     required bool ehIngresso,
   }) {
     _desenharTexto(
@@ -278,7 +285,7 @@ class PresenteImageGenerator {
       texto: validade.trim().isEmpty
           ? 'Data não informada'
           : ehIngresso
-          ? 'Evento: ${validade.trim()}'
+          ? 'Data do evento: ${validade.trim()}'
           : 'Válido até ${validade.trim()}',
       posicao: const Offset(84, 850),
       larguraMaxima: 912,
@@ -288,10 +295,36 @@ class PresenteImageGenerator {
       alinhamento: TextAlign.center,
     );
 
+    if (ehIngresso && nomeParticipante.trim().isNotEmpty) {
+      _desenharTexto(
+        canvas,
+        texto: 'Participante: ${nomeParticipante.trim()}',
+        posicao: const Offset(84, 890),
+        larguraMaxima: 912,
+        tamanho: 28,
+        cor: Colors.black,
+        peso: FontWeight.w800,
+        alinhamento: TextAlign.center,
+      );
+    }
+
+    if (ehIngresso && cpfParticipante.trim().isNotEmpty) {
+      _desenharTexto(
+        canvas,
+        texto: 'CPF: ${cpfParticipante.trim()}',
+        posicao: const Offset(84, 925),
+        larguraMaxima: 912,
+        tamanho: 28,
+        cor: Colors.black,
+        peso: FontWeight.w800,
+        alinhamento: TextAlign.center,
+      );
+    }
+
     _desenharTexto(
       canvas,
       texto: 'Apresente este QR Code para o atendente',
-      posicao: const Offset(84, 890),
+      posicao: Offset(84, ehIngresso ? 960 : 890),
       larguraMaxima: 912,
       tamanho: 30,
       cor: Colors.red,
@@ -304,15 +337,17 @@ class PresenteImageGenerator {
     required Canvas canvas,
     required Paint paint,
     required String dadosQr,
+    required bool ehIngresso,
   }) async {
-    const tamanhoQr = 300.0;
-    //350.0;
+    final tamanhoQr = ehIngresso ? 270.0 : 300.0;
     const margemQr = 30.0;
-    const tamanhoAreaQr = tamanhoQr + (margemQr * 2);
+    final tamanhoAreaQr = tamanhoQr + (margemQr * 2);
+    final inicioAreaBranca = ehIngresso ? 980.0 : 990.0;
+    final inicioQr = ehIngresso ? 1010.0 : 960.0;
 
-    const areaBrancaQr = Rect.fromLTWH(
+    final areaBrancaQr = Rect.fromLTWH(
       (1080 - tamanhoAreaQr) / 2,
-      960 + margemQr,
+      inicioAreaBranca,
       tamanhoAreaQr,
       tamanhoAreaQr,
     );
@@ -326,9 +361,9 @@ class PresenteImageGenerator {
       throw Exception('Não foi possível gerar o QR Code principal.');
     }
 
-    const areaQr = Rect.fromLTWH(
+    final areaQr = Rect.fromLTWH(
       (1080 - tamanhoQr) / 2,
-      930 + margemQr,
+      inicioQr,
       tamanhoQr,
       tamanhoQr,
     );
