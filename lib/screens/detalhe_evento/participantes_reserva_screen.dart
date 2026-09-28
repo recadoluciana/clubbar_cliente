@@ -47,7 +47,7 @@ class _ParticipantesReservaScreenState
     }
     expiraEm =
         DateTime.tryParse('${widget.reserva['data_expiracao']}') ??
-        DateTime.now().add(const Duration(minutes: 5));
+        DateTime.now().add(const Duration(minutes: 15));
     _tick();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
@@ -60,7 +60,7 @@ class _ParticipantesReservaScreenState
       timer?.cancel();
       AppSnackBar.erro(
         context,
-        'O tempo para preencher os participantes expirou.',
+        'O tempo para concluir a compra de ingressos expirou.',
       );
       Navigator.pop(context);
     }
@@ -129,6 +129,7 @@ class _ParticipantesReservaScreenState
                 int.parse('${reserva['quantidade']}'),
             totalPagar: double.tryParse('${reserva['valor_total']}'),
             reservaIngressoId: int.parse('${reserva['reserva_ingresso_id']}'),
+            reservaExpiracao: expiraEm,
           ),
         ),
       );
@@ -155,7 +156,7 @@ class _ParticipantesReservaScreenState
           ),
           const SizedBox(height: 6),
           Text(
-            'Preencha os participantes em $minutos:$segundos',
+            'Tempo para concluir a compra: $minutos:$segundos',
             style: const TextStyle(
               color: Colors.red,
               fontWeight: FontWeight.bold,

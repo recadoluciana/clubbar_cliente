@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart';
@@ -14,6 +16,7 @@ import 'pagamento_sucesso_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../utils/app_snackbar.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -26,6 +29,7 @@ class EscolhaPagamentoScreen extends StatefulWidget {
 
   final VoidCallback? onVoltar;
   final int? reservaIngressoId;
+  final DateTime? reservaExpiracao;
 
   const EscolhaPagamentoScreen({
     super.key,
@@ -36,6 +40,7 @@ class EscolhaPagamentoScreen extends StatefulWidget {
     this.totalPagar,
     this.onVoltar,
     this.reservaIngressoId,
+    this.reservaExpiracao,
   });
 
   @override
@@ -52,15 +57,83 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   double cashbackUtilizavel = 0;
   double saldoCashback = 0;
   bool falhaConsultaCashback = false;
+  Timer? _timerReserva;
+  Duration _tempoReservaRestante = Duration.zero;
+  bool _reservaExpirada = false;
 
   bool get carregandoPagamento => _metodoPagamentoProcessando != null;
+
+  String get _tempoReservaFormatado {
+    final minutos = _tempoReservaRestante.inMinutes;
+    final segundos = _tempoReservaRestante.inSeconds.remainder(60);
+    return '${minutos.toString().padLeft(2, '0')}:'
+        '${segundos.toString().padLeft(2, '0')}';
+  }
+
+  Widget _barraTempoReserva() {
+    if (widget.reservaExpiracao == null) return const SizedBox.shrink();
+    final urgente = _tempoReservaRestante <= const Duration(minutes: 2);
+    final cor = urgente ? Colors.red : Colors.amber.shade800;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: cor.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cor.withValues(alpha: 0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.timer_outlined, color: cor),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Tempo para concluir a compra: $_tempoReservaFormatado',
+              style: TextStyle(fontWeight: FontWeight.w800, color: cor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
+    if (widget.reservaExpiracao != null) {
+      _timerReserva = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) => _atualizarTempoReserva(),
+      );
+      _atualizarTempoReserva();
+    }
     if (widget.reservaIngressoId == null && widget.totalProdutos > 0) {
       _carregarCashback();
     }
+  }
+
+  @override
+  void dispose() {
+    _timerReserva?.cancel();
+    super.dispose();
+  }
+
+  void _atualizarTempoReserva() {
+    final expiracao = widget.reservaExpiracao;
+    if (expiracao == null || _reservaExpirada) return;
+
+    final restante = expiracao.difference(DateTime.now());
+    final atualizado = restante.isNegative ? Duration.zero : restante;
+    if (mounted) setState(() => _tempoReservaRestante = atualizado);
+    if (atualizado > Duration.zero) return;
+
+    _reservaExpirada = true;
+    _timerReserva?.cancel();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AppSnackBar.aviso(context, 'O tempo para concluir a compra expirou.');
+      Navigator.pop(context, false);
+    });
   }
 
   Future<void> _carregarCashback() async {
@@ -504,6 +577,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Future<void> abrirPix() async {
+    if (_reservaExpirada) return;
     if (totalPagar <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -557,6 +631,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Future<void> abrirAsaas() async {
+    if (_reservaExpirada) return;
     if (totalPagar <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -802,6 +877,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ),
 
           const SizedBox(height: 16),
+
+          _barraTempoReserva(),
 
           const Text(
             'Resumo da compra',

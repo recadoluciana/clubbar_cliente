@@ -59,7 +59,12 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   @override
   void initState() {
     super.initState();
-    _expiraEm = obterExpiracaoPix(widget.pagamento);
+    _expiraEm = obterExpiracaoPix(
+      widget.pagamento,
+      duracaoMaxima: _compraDeIngresso
+          ? const Duration(minutes: 15)
+          : const Duration(minutes: 5),
+    );
     final duracaoInicial = _expiraEm.difference(DateTime.now());
     _duracaoValidade = duracaoInicial.isNegative
         ? Duration.zero
@@ -262,7 +267,9 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'QR Code expira em $_tempoRestanteFormatado',
+                  _compraDeIngresso
+                      ? 'Tempo para concluir a compra: $_tempoRestanteFormatado'
+                      : 'QR Code expira em $_tempoRestanteFormatado',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
