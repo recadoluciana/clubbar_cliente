@@ -195,6 +195,28 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   Future<void> _abrirDialogAlterarParticipante(
     Map<String, dynamic> item,
   ) async {
+    final itvendaId = int.tryParse('${item['itvenda_id'] ?? 0}') ?? 0;
+    if (itvendaId == 0) {
+      AppSnackBar.erro(context, 'Item da venda inválido');
+      return;
+    }
+
+    try {
+      await apiService.validarAlteracaoParticipanteItVenda(
+        itvendaId: itvendaId,
+      );
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.erro(
+          context,
+          e.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
     final nomeController = TextEditingController(
       text: (item['nmparticipante'] ?? '').toString(),
     );
@@ -322,12 +344,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     if (resultado == null) return;
 
     try {
-      final itvendaId = int.tryParse('${item['itvenda_id'] ?? 0}') ?? 0;
-
-      if (itvendaId == 0) {
-        throw Exception('Item da venda inválido');
-      }
-
       await apiService.alterarParticipanteItVenda(
         itvendaId: itvendaId,
         nmparticipante: resultado['nome']!,
@@ -338,6 +354,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       if (!mounted) return;
 
       setState(() {
+        final historico = (item['historico_participantes'] as List? ?? [])
+            .whereType<Map>()
+            .map((registro) => Map<String, dynamic>.from(registro))
+            .toList();
+        historico.add({
+          'nmparticipanteanterior': item['nmparticipante'],
+          'cpfparticipanteanterior': item['cpfparticipante'],
+          'nmparticipantenovo': resultado['nome'],
+          'cpfparticipantenovo': resultado['cpf'],
+        });
+        item['historico_participantes'] = historico;
         item['nmparticipante'] = resultado['nome'];
         item['cpfparticipante'] = resultado['cpf'];
       });
@@ -488,6 +515,19 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final cpfParticipante = cpfOriginal.isEmpty
         ? ''
         : _formatarCpf(cpfOriginal);
+
+    final historicoParticipantes =
+        (item['historico_participantes'] as List? ?? [])
+            .whereType<Map>()
+            .map((registro) => Map<String, dynamic>.from(registro))
+            .toList();
+    final ultimaAlteracao = historicoParticipantes.isEmpty
+        ? null
+        : historicoParticipantes.last;
+    final nomeAnterior =
+        (ultimaAlteracao?['nmparticipanteanterior'] ?? '').toString().trim();
+    final nomeNovo =
+        (ultimaAlteracao?['nmparticipantenovo'] ?? '').toString().trim();
 
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
@@ -686,6 +726,33 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                   ),
                                 ),
                               ],
+
+                              if (nomeAnterior.isNotEmpty &&
+                                  nomeNovo.isNotEmpty) ...[
+                                const SizedBox(height: 7),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.swap_horiz_rounded,
+                                      size: 16,
+                                      color: Colors.amber.shade800,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        'Alterado de $nomeAnterior para $nomeNovo',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                          height: 1.25,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -740,11 +807,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () => _compartilharIngresso(item),
-                          icon: const Icon(Icons.ios_share_rounded),
-                          label: const Text('Compartilhar'),
+                          icon: const Icon(Icons.card_giftcard_rounded),
+                          label: const Text('Presentear'),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.blue.shade700,
-                            side: BorderSide(color: Colors.blue.shade200),
+                            foregroundColor: const Color(0xFF7A5A00),
+                            side: const BorderSide(color: Color(0xFFE0C36A)),
                           ),
                         ),
                       ),
