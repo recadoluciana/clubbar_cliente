@@ -8,6 +8,7 @@ import '../../services/auth_storage.dart';
 import '../carteira/carteira_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
+import '../login/login_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
@@ -54,6 +55,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     required Widget icone,
     required String texto,
     bool? estaSelecionado,
+    VoidCallback? onTap,
   }) {
     final selecionado = estaSelecionado ?? currentIndex == index;
 
@@ -64,7 +66,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _aoTocarNaAba(index),
+          onTap: onTap ?? () => _aoTocarNaAba(index),
           child: SizedBox(
             height: 56,
             child: Stack(
@@ -178,6 +180,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       ),
                     ),
                   ),
+
+                  if (logado)
+                    _itemBarraNavegacao(
+                      index: -1,
+                      icone: const Icon(
+                        Icons.logout_rounded,
+                        color: Colors.red,
+                      ),
+                      texto: 'Sair',
+                      estaSelecionado: false,
+                      onTap: _sair,
+                    ),
                 ],
               ),
             ),
@@ -199,6 +213,42 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     MainNavigationController.limparTelasInternas();
     MainNavigationController.abaIndex.value = index;
+  }
+
+  Future<void> _sair() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sair do Clubbar'),
+        content: const Text('Deseja encerrar sua sessão?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Não'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            icon: const Icon(Icons.logout_rounded),
+            label: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar != true || !mounted) return;
+
+    await authStorage.limparToken();
+    CartBadgeNotifier.limpar();
+    CarteiraBadgeNotifier.atualizar();
+    MainNavigationController.irParaHome();
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const LoginScreen(mostrarVoltar: false),
+      ),
+      (_) => false,
+    );
   }
 
   Widget _buildPage() {
