@@ -7,7 +7,7 @@ import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../pedidos/meus_pedidos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
-import '../../widgets/perfil_page_header.dart';
+import '../../widgets/clubbar_page_header.dart';
 import '../../cashback/cashback_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import 'informacoes_aplicativo_screen.dart';
@@ -116,10 +116,18 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       extendBodyBehindAppBar: false,
-      appBar: const ClubbarAppBar(),
+      appBar: const ClubbarAppBar(
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
       body: Column(
         children: [
-          const PerfilPageHeader(subtitulo: 'Perfil'),
+          const ClubbarPageHeader(
+            titulo: 'Perfil',
+            subtitulo: '',
+            mostrarAvatar: false,
+            corTitulo: Colors.blue,
+          ),
 
           Expanded(
             child: ListView(

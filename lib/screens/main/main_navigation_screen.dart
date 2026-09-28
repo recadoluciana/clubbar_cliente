@@ -9,6 +9,7 @@ import '../carteira/carteira_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
 import '../login/login_screen.dart';
+import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
@@ -115,6 +116,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return ValueListenableBuilder<Widget?>(
       valueListenable: MainNavigationController.telaInterna,
       builder: (context, telaInterna, _) {
+        if (telaInterna is PerfilScreen) {
+          return const SizedBox.shrink();
+        }
+
         final coraAtiva = telaInterna is AtendimentoCoraScreen;
         final homeSelecionada = currentIndex == 0 && !coraAtiva;
         final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
