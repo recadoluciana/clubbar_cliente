@@ -16,6 +16,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String logoPath;
   final VoidCallback? onVoltar;
   final List<Widget> actions;
+  final bool mostrarSessao;
 
   const ClubbarAppBar({
     super.key,
@@ -28,6 +29,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.logoPath = 'assets/images/clubbar_topbar.png',
     this.onVoltar,
     this.actions = const [],
+    this.mostrarSessao = true,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -121,6 +123,57 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  Future<_SessaoAppBar> _carregarSessao() async {
+    final armazenamento = AuthStorage();
+    return _SessaoAppBar(
+      logado: await armazenamento.estaLogado(),
+      nome: await armazenamento.obterNmcliente() ?? '',
+    );
+  }
+
+  String _primeiroNome(String nome) {
+    final partes = nome.trim().split(RegExp(r'\s+'));
+    if (partes.isEmpty || partes.first.isEmpty) return 'Perfil';
+    final primeiro = partes.first.toLowerCase();
+    return '${primeiro[0].toUpperCase()}${primeiro.substring(1)}';
+  }
+
+  Widget _botaoSessao(BuildContext context) {
+    return FutureBuilder<_SessaoAppBar>(
+      future: _carregarSessao(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const SizedBox(width: 8);
+        }
+        final sessao = snapshot.data;
+        if (sessao?.logado == true) {
+          return TextButton.icon(
+            onPressed: () {
+              MainNavigationController.limparTelasInternas();
+              MainNavigationController.abaIndex.value = 3;
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            icon: const Icon(Icons.person_outline_rounded, size: 20),
+            label: Text(
+              _primeiroNome(sessao?.nome ?? ''),
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          );
+        }
+        return TextButton.icon(
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const LoginScreen(mostrarVoltar: true),
+            ),
+          ),
+          style: TextButton.styleFrom(foregroundColor: Colors.white),
+          icon: const Icon(Icons.login_rounded, size: 21),
+          label: const Text('Login', style: TextStyle(fontWeight: FontWeight.w800)),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool temTitulo = titulo != null && titulo!.trim().isNotEmpty;
@@ -186,6 +239,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
       actions: [
         ...actions,
+        if (mostrarSessao) _botaoSessao(context),
         if (mostrarCarrinho)
           Padding(
             padding: const EdgeInsets.only(right: 10),
@@ -222,4 +276,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       ],
     );
   }
+}
+
+class _SessaoAppBar {
+  final bool logado;
+  final String nome;
+
+  const _SessaoAppBar({required this.logado, required this.nome});
 }

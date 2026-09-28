@@ -151,32 +151,36 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     estaSelecionado: homeSelecionada,
                   ),
 
-                  _itemBarraNavegacao(
-                    index: 1,
-                    icone: _iconeCarrinhoComBadge(
-                      selecionado: carrinhoSelecionado,
+                  if (logado) ...[
+                    _itemBarraNavegacao(
+                      index: 1,
+                      icone: _iconeCarrinhoComBadge(
+                        selecionado: carrinhoSelecionado,
+                      ),
+                      texto: 'Carrinho',
+                      estaSelecionado: carrinhoSelecionado,
                     ),
-                    texto: 'Carrinho',
-                    estaSelecionado: carrinhoSelecionado,
-                  ),
 
-                  _itemBarraNavegacao(
-                    index: 2,
-                    icone: _iconeCarteiraComBadge(
-                      selecionado: carteiraSelecionada,
+                    _itemBarraNavegacao(
+                      index: 2,
+                      icone: _iconeCarteiraComBadge(
+                        selecionado: carteiraSelecionada,
+                      ),
+                      texto: 'Carteira',
+                      estaSelecionado: carteiraSelecionada,
                     ),
-                    texto: 'Carteira',
-                    estaSelecionado: carteiraSelecionada,
-                  ),
 
-                  _itemBarraNavegacao(
-                    index: 3,
-                    icone: Icon(
-                      currentIndex == 3 ? Icons.person : Icons.person_outline,
+                    _itemBarraNavegacao(
+                      index: 3,
+                      icone: Icon(
+                        currentIndex == 3
+                            ? Icons.person
+                            : Icons.person_outline,
+                      ),
+                      texto: _primeiroNomeCliente,
+                      estaSelecionado: currentIndex == 3 && !coraAtiva,
                     ),
-                    texto: logado ? _primeiroNomeCliente : 'Perfil',
-                    estaSelecionado: currentIndex == 3 && !coraAtiva,
-                  ),
+                  ],
 
                   Expanded(
                     child: ApiStatusIndicator(
