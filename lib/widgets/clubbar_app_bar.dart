@@ -16,6 +16,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onVoltar;
   final List<Widget> actions;
   final bool mostrarSessao;
+  final bool mostrarPerfil;
 
   const ClubbarAppBar({
     super.key,
@@ -29,6 +30,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onVoltar,
     this.actions = const [],
     this.mostrarSessao = true,
+    this.mostrarPerfil = false,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -89,6 +91,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
         }
         final sessao = snapshot.data;
         if (sessao?.logado == true) {
+          if (!mostrarPerfil) return const SizedBox.shrink();
           return TextButton.icon(
             onPressed: () {
               MainNavigationController.abrirTela(const PerfilScreen());

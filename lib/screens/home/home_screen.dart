@@ -650,7 +650,10 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: false),
+      appBar: const ClubbarAppBar(
+        mostrarVoltar: false,
+        mostrarPerfil: true,
+      ),
       body: RefreshIndicator(
         onRefresh: carregarHome,
         child: carregando
