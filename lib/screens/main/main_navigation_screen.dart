@@ -13,7 +13,6 @@ import '../perfil/perfil_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
-import '../pagamento/pagamento_sucesso_screen.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
@@ -405,9 +404,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       if (!mounted) return;
 
       if (status == 'PAGO') {
-        MainNavigationController.abrirTela(
-          const PagamentoSucessoScreen(sucesso: true),
-        );
+        // O checkout do cartão já confirma o pagamento ao cliente. Ao voltar
+        // para o Clubbar, evita repetir uma segunda tela de sucesso.
+        MainNavigationController.irParaHome();
       } else {
         if (!compraDeIngresso) {
           MainNavigationController.irParaCarrinho();

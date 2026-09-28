@@ -12,7 +12,6 @@ import 'asaas_checkout_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/cep_service.dart';
-import 'pagamento_sucesso_screen.dart';
 import 'pix_pagamento_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../../services/main_navigation_controller.dart';
@@ -751,19 +750,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           if (!mounted) return;
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PagamentoSucessoScreen(
-                sucesso: true,
-                cashbackGerado:
-                    double.tryParse(
-                      '${confirmacao?['cashback_gerado'] ?? 0}',
-                    ) ??
-                    0,
-              ),
-            ),
-          );
+          // O cartão já apresenta a confirmação no checkout do Asaas.
+          // Retornamos ao início sem exibir uma segunda confirmação no app.
+          MainNavigationController.irParaHome();
+          Navigator.of(context).popUntil((rota) => rota.isFirst);
           return;
         }
       }
