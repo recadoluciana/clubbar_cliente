@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/login/login_screen.dart';
+import '../screens/perfil/perfil_screen.dart';
 import '../services/auth_storage.dart';
 import '../services/cart_badge_notifier.dart';
 import '../services/carteira_badge_notifier.dart';
@@ -149,11 +150,14 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
         if (sessao?.logado == true) {
           return TextButton.icon(
             onPressed: () {
-              MainNavigationController.limparTelasInternas();
-              MainNavigationController.abaIndex.value = 3;
+              MainNavigationController.abrirTela(const PerfilScreen());
             },
             style: TextButton.styleFrom(foregroundColor: Colors.white),
-            icon: const Icon(Icons.person_outline_rounded, size: 20),
+            icon: const Icon(
+              Icons.person_rounded,
+              size: 20,
+              color: Colors.amber,
+            ),
             label: Text(
               _primeiroNome(sessao?.nome ?? ''),
               style: const TextStyle(fontWeight: FontWeight.w800),
