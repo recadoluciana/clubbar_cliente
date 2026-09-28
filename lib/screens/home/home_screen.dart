@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final lojasFuture = apiService.buscarLojas();
       final eventosFuture = apiService.buscarEventos();
-      final produtosFuture = apiService.buscarProdutosMaisVendidos();
+      final produtosFuture = apiService.buscarProdutosMaisVendidos(limite: 10);
 
       try {
         lojas = await lojasFuture;
@@ -860,7 +860,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                       produtosMaisVendidos.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     _secaoTitulo(
-                      'Produtos mais vendidos',
+                      'Top 10 de produtos mais vendidos',
                       Icons.local_fire_department_outlined,
                     ),
                     const SizedBox(height: 10),
