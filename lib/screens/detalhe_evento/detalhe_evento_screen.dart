@@ -175,17 +175,49 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Widget _numeroAtracao(int indice) {
     final cor = _corEstilo(indice);
     return Container(
-      width: 54,
-      height: 54,
+      width: 30,
+      height: 30,
       alignment: Alignment.center,
       decoration: BoxDecoration(color: cor.shade100, shape: BoxShape.circle),
       child: Text(
         '${indice + 1}',
         style: TextStyle(
           color: cor.shade700,
-          fontSize: 22,
+          fontSize: 14,
           fontWeight: FontWeight.w900,
         ),
+      ),
+    );
+  }
+
+  Widget _fotoAtracao(AtracaoEventoDetalhe atracao) {
+    final imagem = atracao.bannerUrl.trim();
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox(
+        width: 68,
+        height: 68,
+        child: imagem.isEmpty
+            ? Container(
+                color: Colors.blue.shade50,
+                child: Icon(
+                  Icons.music_note_rounded,
+                  color: Colors.blue.shade700,
+                  size: 30,
+                ),
+              )
+            : Image.network(
+                imagem,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.blue.shade50,
+                  child: Icon(
+                    Icons.music_note_rounded,
+                    color: Colors.blue.shade700,
+                    size: 30,
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -1205,6 +1237,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               _numeroAtracao(entrada.key),
+                                              const SizedBox(width: 10),
+                                              _fotoAtracao(entrada.value),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
