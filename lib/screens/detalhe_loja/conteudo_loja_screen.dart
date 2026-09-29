@@ -125,12 +125,7 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
     final descricao = (_conteudo['dsdetalhadaloja'] ?? '').toString().trim();
     final fotos = _lista('fotos');
     final videos = _lista('videos');
-    final publicacoes = _lista('publicacoes');
-    final vazio =
-        descricao.isEmpty &&
-        fotos.isEmpty &&
-        videos.isEmpty &&
-        publicacoes.isEmpty;
+    final vazio = descricao.isEmpty && fotos.isEmpty && videos.isEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
@@ -194,7 +189,7 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
                                 Icon(Icons.photo_library_outlined, size: 48),
                                 SizedBox(height: 10),
                                 Text(
-                                  'O estabelecimento ainda não publicou conteúdo.',
+                                  'O estabelecimento ainda não adicionou conteúdo.',
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -288,66 +283,6 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
                                         _abrirLink('${video['url'] ?? ''}'),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        if (publicacoes.isNotEmpty)
-                          _card(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _titulo('Publicações', Icons.article_rounded),
-                                ...publicacoes.map((publicacao) {
-                                  final imagem = _url(publicacao['imagem']);
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        if (imagem.isNotEmpty) ...[
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                            child: Image.network(
-                                              imagem,
-                                              width: double.infinity,
-                                              height: 180,
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                        ],
-                                        Text(
-                                          '${publicacao['titulo'] ?? ''}',
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                        if ('${publicacao['descricao'] ?? ''}'
-                                            .trim()
-                                            .isNotEmpty) ...[
-                                          const SizedBox(height: 5),
-                                          Text('${publicacao['descricao']}'),
-                                        ],
-                                        if ('${publicacao['data_publicacao'] ?? ''}'
-                                            .trim()
-                                            .isNotEmpty) ...[
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            '${publicacao['data_publicacao']}',
-                                            style: const TextStyle(
-                                              color: Colors.black54,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  );
-                                }),
                               ],
                             ),
                           ),
