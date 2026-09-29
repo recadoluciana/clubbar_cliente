@@ -304,6 +304,12 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     Map<String, dynamic> item,
   ) async {
     final qrData = _montarDadosQr(item);
+    final nomeLoja = (item['nmloja'] ?? '').toString().trim().isNotEmpty
+        ? (item['nmloja'] ?? '').toString().trim()
+        : widget.nomeLoja;
+    final imagemProduto = _buildImageUrl(
+      (item['urlfotoproduto'] ?? '').toString(),
+    );
 
     if (qrData.isEmpty) {
       AppSnackBar.erro(
@@ -326,22 +332,67 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'Retirada do produto',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                Text(
-                  (item['nmproduto'] ?? '').toString(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                SizedBox(
+                  width: double.infinity,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 42),
+                        child: Text(
+                          nomeLoja,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          tooltip: 'Fechar',
+                          onPressed: () => Navigator.pop(dialogContext),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
+                const SizedBox(height: 14),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 54,
+                      height: 54,
+                      child: imagemProduto.isEmpty
+                          ? _placeholderItem(item)
+                          : ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: Image.network(
+                                imagemProduto,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) =>
+                                    _placeholderItem(item),
+                              ),
+                            ),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        (item['nmproduto'] ?? '').toString(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
                 if ((item['dsobsitvenda'] ?? '')
                     .toString()
                     .trim()
@@ -370,36 +421,10 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 const SizedBox(height: 16),
 
-                const Text(
-                  'Apresente este QR Code para o atendente.',
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 20),
-
                 QrImageView(
                   data: qrData,
                   size: 220,
                   backgroundColor: Colors.white,
-                ),
-
-                const SizedBox(height: 20),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
-                    child: const Text('Fechar'),
-                  ),
                 ),
               ],
             ),
