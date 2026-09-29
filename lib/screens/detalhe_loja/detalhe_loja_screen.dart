@@ -372,21 +372,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   ],
                 ),
 
-                if (loja.nrtelloja.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(Icons.phone_outlined),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(_telefoneFormatado())),
-                    ],
-                  ),
-                ],
-
-                const SizedBox(height: 8),
-
-                _horarioAtendimento(context),
-
                 const SizedBox(height: 8),
 
                 InkWell(
@@ -410,6 +395,21 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     ],
                   ),
                 ),
+
+                if (loja.nrtelloja.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.phone_outlined),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(_telefoneFormatado())),
+                    ],
+                  ),
+                ],
+
+                const SizedBox(height: 8),
+
+                _horarioAtendimento(context),
 
                 const SizedBox(height: 15),
 
