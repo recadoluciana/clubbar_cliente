@@ -131,8 +131,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final titulo = _normalizar(evento.titulo);
       final local = _normalizar(evento.local);
       final data = _normalizar(evento.data);
+      final atracoes = evento.atracoes
+          .map((atracao) => _normalizar(atracao.nome))
+          .join(' ');
 
-      return titulo.contains(q) || local.contains(q) || data.contains(q);
+      return titulo.contains(q) ||
+          local.contains(q) ||
+          data.contains(q) ||
+          atracoes.contains(q);
     }).toList();
   }
 
@@ -289,6 +295,77 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
             child: const CircularProgressIndicator(strokeWidth: 2),
           );
         },
+      ),
+    );
+  }
+
+  Widget _atracoesDoEvento(Evento evento) {
+    final atracoesVisiveis = evento.atracoes
+        .where((atracao) => atracao.nome.isNotEmpty)
+        .take(3)
+        .toList();
+    if (atracoesVisiveis.isEmpty) return const SizedBox.shrink();
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final atracao in atracoesVisiveis) ...[
+            Container(
+              constraints: const BoxConstraints(maxWidth: 138),
+              padding: const EdgeInsets.fromLTRB(4, 4, 8, 4),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.68),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipOval(
+                    child: _imagemSegura(
+                      url: atracao.imagemUrl,
+                      width: 27,
+                      height: 27,
+                      fallbackIcon: Icons.music_note_rounded,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      atracao.nome,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+          ],
+          if (evento.atracoes.length > atracoesVisiveis.length)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.68),
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '+${evento.atracoes.length - atracoesVisiveis.length}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -600,7 +677,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
           iniciarCarousel();
         },
         decoration: InputDecoration(
-          hintText: 'bar, casa noturna, estilo musical, cidade, bairro',
+          hintText: 'bar, casa noturna, atração, cidade, bairro',
           hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: termoBusca.isEmpty
@@ -650,10 +727,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(
-        mostrarVoltar: false,
-        mostrarPerfil: true,
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: false, mostrarPerfil: true),
       body: RefreshIndicator(
         onRefresh: carregarHome,
         child: carregando
@@ -756,6 +830,13 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                           ),
                                         ),
                                       ),
+                                      if (evento.atracoes.isNotEmpty)
+                                        Positioned(
+                                          top: 10,
+                                          left: 10,
+                                          right: 10,
+                                          child: _atracoesDoEvento(evento),
+                                        ),
                                       Positioned(
                                         left: 15,
                                         right: 15,

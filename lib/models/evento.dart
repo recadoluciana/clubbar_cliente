@@ -1,3 +1,28 @@
+class AtracaoEvento {
+  final int id;
+  final String nome;
+  final String imagemUrl;
+
+  const AtracaoEvento({
+    required this.id,
+    required this.nome,
+    this.imagemUrl = '',
+  });
+
+  factory AtracaoEvento.fromJson(Map<String, dynamic> json) {
+    return AtracaoEvento(
+      id: Evento._toInt(json['atracao_id'] ?? json['id'] ?? 0),
+      nome: (json['nmatracao'] ?? json['nome'] ?? '').toString().trim(),
+      imagemUrl: (json['urlbanneratracao'] ?? json['imagem_url'] ?? '')
+          .toString()
+          .trim(),
+    );
+  }
+
+  AtracaoEvento comImagemUrl(String url) =>
+      AtracaoEvento(id: id, nome: nome, imagemUrl: url);
+}
+
 class Evento {
   final int id;
   final String titulo;
@@ -11,6 +36,7 @@ class Evento {
   final String nomeLoja;
   final String logoLojaUrl;
   final int totalVendasLoja;
+  final List<AtracaoEvento> atracoes;
 
   Evento({
     required this.id,
@@ -23,6 +49,7 @@ class Evento {
     required this.nomeLoja,
     this.logoLojaUrl = '',
     this.totalVendasLoja = 0,
+    this.atracoes = const [],
   });
 
   factory Evento.fromJson(Map<String, dynamic> json) {
@@ -39,6 +66,12 @@ class Evento {
       nomeLoja: (json['nmloja'] ?? '').toString(),
       logoLojaUrl: (json['urllogoloja'] ?? '').toString().trim(),
       totalVendasLoja: _toInt(json['total_vendas_loja'] ?? 0),
+      atracoes: (json['atracoes'] as List? ?? const [])
+          .whereType<Map>()
+          .map(
+            (item) => AtracaoEvento.fromJson(Map<String, dynamic>.from(item)),
+          )
+          .toList(),
     );
   }
 
