@@ -210,6 +210,16 @@ class ApiService {
               : evento.logoLojaUrl.startsWith('http')
               ? evento.logoLojaUrl
               : '$baseUrl${evento.logoLojaUrl}';
+          final atracoes = evento.atracoes.map((atracao) {
+            var imagem = atracao.imagemUrl;
+            if (imagem.isNotEmpty && !imagem.startsWith('http')) {
+              imagem = '$baseUrl$imagem';
+            }
+            if (imagem.startsWith('http://')) {
+              imagem = imagem.replaceFirst('http://', 'https://');
+            }
+            return atracao.comImagemUrl(imagem);
+          }).toList();
 
           return Evento(
             id: evento.id,
@@ -222,6 +232,7 @@ class ApiService {
             nomeLoja: evento.nomeLoja,
             logoLojaUrl: logoLoja,
             totalVendasLoja: evento.totalVendasLoja,
+            atracoes: atracoes,
           );
         }).toList();
       }
@@ -1003,6 +1014,7 @@ class ApiService {
             lojaId: evento.lojaId,
             organizacaoId: evento.organizacaoId,
             nomeLoja: evento.nomeLoja,
+            atracoes: evento.atracoes,
           );
         }).toList();
       }
