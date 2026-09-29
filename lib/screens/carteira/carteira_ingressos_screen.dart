@@ -51,7 +51,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   ) {
     final hoje = DateTime.now();
     final inicioHoje = DateTime(hoje.year, hoje.month, hoje.day);
-    return itens
+    final ingressos = itens
         .where((item) {
           final data = DateTime.tryParse(
             (item['dtinicioevento'] ?? '').toString(),
@@ -62,6 +62,22 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         })
         .map((item) => Map<String, dynamic>.from(item))
         .toList();
+
+    ingressos.sort((primeiro, segundo) {
+      final dataPrimeiro = DateTime.tryParse(
+        (primeiro['dtinicioevento'] ?? '').toString(),
+      );
+      final dataSegundo = DateTime.tryParse(
+        (segundo['dtinicioevento'] ?? '').toString(),
+      );
+
+      if (dataPrimeiro == null && dataSegundo == null) return 0;
+      if (dataPrimeiro == null) return 1;
+      if (dataSegundo == null) return -1;
+      return dataPrimeiro.compareTo(dataSegundo);
+    });
+
+    return ingressos;
   }
 
   Future<void> _compartilharIngresso(Map<String, dynamic> item) async {
