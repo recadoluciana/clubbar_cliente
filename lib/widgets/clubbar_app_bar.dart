@@ -30,7 +30,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onVoltar,
     this.actions = const [],
     this.mostrarSessao = true,
-    this.mostrarPerfil = false,
+    this.mostrarPerfil = true,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
