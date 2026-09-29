@@ -14,8 +14,6 @@ import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../login/login_screen.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../../services/main_navigation_controller.dart';
-import 'package:share_plus/share_plus.dart';
-import '../../config/app_config.dart';
 import '../../utils/app_snackbar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -212,27 +210,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       (_) => false,
     );
-  }
-
-  Future<void> compartilharLoja(Loja loja) async {
-    final cidadeEstado = loja.sgEstado.isNotEmpty
-        ? '${loja.cidade} - ${loja.sgEstado}'
-        : loja.cidade;
-
-    final texto =
-        '''
-🍻 ${loja.nome}
-
-📍 ${loja.endereco}
-${loja.bairro}
-$cidadeEstado
-
-🍺 Conheça esta casa pelo Clubbar
-
-${AppConfig.appWebUrl}/?loja_id=${loja.id}
-''';
-
-    await Share.share(texto);
   }
 
   String formatarDataEvento(String valor) {
@@ -1098,20 +1075,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                                               ],
                                             ),
                                           ],
-                                          const SizedBox(height: 2),
-                                          Align(
-                                            alignment: Alignment.centerLeft,
-                                            child: IconButton(
-                                              tooltip: 'Compartilhar',
-                                              color: Colors.blue,
-                                              iconSize: 28,
-                                              onPressed: () =>
-                                                  compartilharLoja(loja),
-                                              icon: const Icon(
-                                                Icons.ios_share_rounded,
-                                              ),
-                                            ),
-                                          ),
                                         ],
                                       ),
                                     ),
