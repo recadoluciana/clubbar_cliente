@@ -231,7 +231,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final resultado = await showDialog<Map<String, dynamic>>(
       context: context,
       barrierDismissible: false,
-      builder: (_) {
+      builder: (dialogContext) {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) => AlertDialog(
             title: const Text('Transferir ingresso'),
@@ -435,7 +435,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     await showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (_) {
+      builder: (dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -450,12 +450,31 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    nomeEstabelecimento,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  SizedBox(
+                    width: double.infinity,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 42),
+                          child: Text(
+                            nomeEstabelecimento,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: IconButton(
+                            tooltip: 'Fechar',
+                            onPressed: () => Navigator.pop(dialogContext),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -522,21 +541,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     data: qrData,
                     size: 210,
                     backgroundColor: Colors.white,
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: const Text('Fechar'),
-                    ),
                   ),
                 ],
               ),
