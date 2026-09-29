@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../config/app_config.dart';
 import '../../models/loja.dart';
 import '../../models/loja_horario.dart';
 import '../../services/api_service.dart';
@@ -58,6 +60,28 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
     if (context.mounted) {
       AppSnackBar.erro(context, 'Não foi possível abrir o Instagram.');
     }
+  }
+
+  Future<void> _compartilharLoja() async {
+    final cidadeEstado = loja.sgEstado.isNotEmpty
+        ? '${loja.cidade} - ${loja.sgEstado}'
+        : loja.cidade;
+    final endereco = [
+      loja.endereco.trim(),
+      loja.numero.trim(),
+    ].where((texto) => texto.isNotEmpty).join(', ');
+
+    await Share.share('''
+🍻 ${loja.nome}
+
+📍 $endereco
+${loja.bairro}
+$cidadeEstado
+
+🍺 Conheça esta casa pelo Clubbar
+
+${AppConfig.appWebUrl}/?loja_id=${loja.id}
+''');
   }
 
   Widget _imagemRede({
@@ -315,15 +339,27 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Text(
-                    loja.nome,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        loja.nome,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
                     ),
-                  ),
+                    IconButton(
+                      tooltip: 'Compartilhar ${loja.nome}',
+                      onPressed: _compartilharLoja,
+                      color: Colors.blue.shade700,
+                      icon: const Icon(Icons.ios_share_rounded, size: 28),
+                    ),
+                  ],
                 ),
 
                 const SizedBox(height: 10),
