@@ -397,6 +397,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         : numeroLote.isNotEmpty
         ? 'Lote $numeroLote'
         : 'Não informado';
+    final setor = _primeiroTexto(item, const [
+      'nmsetor',
+      'nmsetoringresso',
+      'setor',
+    ], padrao: 'Não informado');
     final preco = _primeiroTexto(item, const [
       'nmpreco',
       'nmprecoingresso',
@@ -413,10 +418,14 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     ], padrao: 'Não informada');
     final localEvento = _primeiroTexto(item, const [
       'nmlocalevento',
-    ], padrao: 'Não informado');
+      'nmloja',
+    ], padrao: nomeEstabelecimento);
     final enderecoEvento = _primeiroTexto(item, const [
       'dsendlocevento',
-    ], padrao: 'Não informado');
+      'endereco_estabelecimento',
+      'endloja',
+      'dsinstaloja',
+    ], padrao: 'Endereço do estabelecimento');
 
     if (token.isEmpty) {
       AppSnackBar.erro(context, 'QR Code não disponível para este item.');
@@ -460,6 +469,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   ),
                   const SizedBox(height: 8),
                   _detalheIngresso('Lote', loteExibicao),
+                  _detalheIngresso('Setor', setor),
                   _detalheIngresso('Modalidade', modalidade),
                   _detalheIngresso('Data e hora', dataEvento),
                   _detalheIngresso('Local', localEvento),
