@@ -1,6 +1,6 @@
 {
-    "name": "clubbar_cliente",
-    "short_name": "clubbar_cliente",
+    "name": "Clubbar Client",
+    "short_name": "Clubbar Client",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
