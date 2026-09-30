@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -71,7 +72,8 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
       loja.numero.trim(),
     ].where((texto) => texto.isNotEmpty).join(', ');
 
-    await Share.share('''
+    final texto =
+        '''
 🍻 ${loja.nome}
 
 📍 $endereco
@@ -81,7 +83,25 @@ $cidadeEstado
 🍺 Conheça esta casa pelo Clubbar
 
 ${AppConfig.appWebUrl}/?loja_id=${loja.id}
-''');
+''';
+
+    try {
+      await Share.share(texto, subject: 'Conheça ${loja.nome} no Clubbar');
+    } catch (_) {
+      // Alguns navegadores de computador não disponibilizam a folha nativa de
+      // compartilhamento. Neles, copiar o conteúdo mantém a ação utilizável.
+      try {
+        await Clipboard.setData(ClipboardData(text: texto));
+        if (!mounted) return;
+        AppSnackBar.info(
+          context,
+          'O link da loja foi copiado. Cole-o no WhatsApp, e-mail ou onde preferir.',
+        );
+      } catch (_) {
+        if (!mounted) return;
+        AppSnackBar.erro(context, 'Não foi possível compartilhar esta loja.');
+      }
+    }
   }
 
   Widget _imagemRede({
