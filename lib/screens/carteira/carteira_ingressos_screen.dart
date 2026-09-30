@@ -9,6 +9,7 @@ import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/presente_image_generator.dart';
+import '../../utils/share_image_file.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
@@ -119,10 +120,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     try {
       await Share.shareXFiles(
         [
-          XFile.fromData(
+          await ShareImageFile.prepare(
             imagem,
-            name: 'ingresso_clubbar_$itvendaId.png',
-            mimeType: 'image/png',
+            fileName: 'ingresso_clubbar_$itvendaId.png',
           ),
         ],
         text: texto,

@@ -7,6 +7,7 @@ import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../utils/presente_image_generator.dart';
+import '../../utils/share_image_file.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 import '../../services/api_service.dart';
 
@@ -153,10 +154,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     try {
       await Share.shareXFiles(
         [
-          XFile.fromData(
+          await ShareImageFile.prepare(
             imagem,
-            name: 'presente_clubbar_$itvendaId.png',
-            mimeType: 'image/png',
+            fileName: 'presente_clubbar_$itvendaId.png',
           ),
         ],
         text: texto,
