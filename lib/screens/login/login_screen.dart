@@ -23,6 +23,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final senhaController = TextEditingController();
+  final senhaFocusNode = FocusNode();
 
   final apiService = ApiService();
   final authStorage = AuthStorage();
@@ -62,6 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _timerCoruja?.cancel();
     emailController.dispose();
     senhaController.dispose();
+    senhaFocusNode.dispose();
     super.dispose();
   }
 
@@ -255,23 +257,45 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 16),
                             TextField(
                               controller: senhaController,
+                              focusNode: senhaFocusNode,
                               obscureText: obscureSenha,
                               decoration: campoDecoracao(
                                 label: 'Senha',
                                 icon: Icons.lock_outline,
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      obscureSenha = !obscureSenha;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    obscureSenha
-                                        ? Icons.visibility_off_outlined
-                                        : Icons.visibility_outlined,
-                                  ),
+                                suffixIcon: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (senhaController.text.isNotEmpty)
+                                      IconButton(
+                                        tooltip: 'Limpar senha',
+                                        onPressed: () {
+                                          senhaController.clear();
+                                          setState(() {});
+                                          senhaFocusNode.requestFocus();
+                                        },
+                                        icon: const Icon(Icons.clear_rounded),
+                                      ),
+                                    IconButton(
+                                      tooltip: obscureSenha
+                                          ? 'Mostrar senha'
+                                          : 'Ocultar senha',
+                                      onPressed: () {
+                                        setState(() {
+                                          obscureSenha = !obscureSenha;
+                                        });
+                                      },
+                                      icon: Icon(
+                                        obscureSenha
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
+                              onChanged: (_) {
+                                setState(() {});
+                              },
                               onSubmitted: (_) => fazerLogin(),
                             ),
                             const SizedBox(height: 18),
