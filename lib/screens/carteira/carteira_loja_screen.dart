@@ -502,7 +502,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            (item['nmproduto'] ?? '').toString(),
+                            '#${item['itvenda_id'] ?? ''} - ${(item['nmproduto'] ?? '').toString()}',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
