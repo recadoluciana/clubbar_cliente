@@ -711,6 +711,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     } else if (lote.tipoIngresso == 'MEIA_IDOSO') {
       beneficio = 'IDOSO';
     }
+    const nomesBeneficios = {
+      'ESTUDANTE': 'Estudante',
+      'JOVEM_BAIXA_RENDA': 'Jovem de baixa renda',
+      'PCD': 'Pessoa com deficiência',
+      'ACOMPANHANTE_PCD': 'Acompanhante de PcD',
+      'IDOSO': 'Pessoa idosa',
+    };
     setState(() => processandoCompra = true);
     try {
       final clienteId = await _obterClienteIdLogado();
@@ -730,6 +737,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             loja: widget.loja,
             reserva: reserva,
             nomeEvento: evento?.titulo ?? lote.nome,
+            dataHoraEvento: DateFormatters.dataHoraSimples(
+              evento?.dataInicio ?? '',
+            ),
+            nomeLote: lote.nome,
+            nomeSetor: lote.nomeSetor.trim().isEmpty
+                ? 'Setor não informado'
+                : lote.nomeSetor,
+            modalidade: _nomeModalidade(lote),
+            beneficio: nomesBeneficios[beneficio] ?? 'Não se aplica',
           ),
         ),
       );
