@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../services/carteira_badge_notifier.dart';
@@ -118,7 +119,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         'Recebido de: ${widget.nomeCliente}\n\n'
         'Apresente o QR Code na entrada junto com seu documento de identificação.';
     try {
-      await Share.shareXFiles(
+      final resultado = await Share.shareXFiles(
         [
           await ShareImageFile.prepare(
             imagem,
@@ -128,10 +129,25 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         text: texto,
         subject: 'Ingresso Clubbar',
       );
-    } catch (_) {
-      if (mounted) {
-        AppSnackBar.erro(context, 'Não foi possível compartilhar o ingresso.');
+      if (resultado.status == ShareResultStatus.unavailable) {
+        await _copiarMensagemDoIngresso(texto);
       }
+    } catch (_) {
+      await _copiarMensagemDoIngresso(texto);
+    }
+  }
+
+  Future<void> _copiarMensagemDoIngresso(String texto) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: texto));
+      if (!mounted) return;
+      AppSnackBar.info(
+        context,
+        'A mensagem do ingresso foi copiada. Cole-a no WhatsApp, e-mail ou onde preferir.',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      AppSnackBar.erro(context, 'Não foi possível compartilhar o ingresso.');
     }
   }
 

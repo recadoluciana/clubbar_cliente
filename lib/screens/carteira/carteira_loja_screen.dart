@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
@@ -152,7 +153,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         'Apresente o QR Code ao atendente.';
 
     try {
-      await Share.shareXFiles(
+      final resultado = await Share.shareXFiles(
         [
           await ShareImageFile.prepare(
             imagem,
@@ -162,9 +163,24 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         text: texto,
         subject: 'Presente Clubbar',
       );
-    } catch (e) {
-      if (!mounted) return;
+      if (resultado.status == ShareResultStatus.unavailable) {
+        await _copiarMensagemDoPresente(texto);
+      }
+    } catch (_) {
+      await _copiarMensagemDoPresente(texto);
+    }
+  }
 
+  Future<void> _copiarMensagemDoPresente(String texto) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: texto));
+      if (!mounted) return;
+      AppSnackBar.info(
+        context,
+        'A mensagem do presente foi copiada. Cole-a no WhatsApp, e-mail ou onde preferir.',
+      );
+    } catch (_) {
+      if (!mounted) return;
       AppSnackBar.erro(context, 'Não foi possível compartilhar o presente.');
     }
   }
