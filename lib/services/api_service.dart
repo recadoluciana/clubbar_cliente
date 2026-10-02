@@ -1095,7 +1095,7 @@ class ApiService {
   Future<List<EventoLote>> buscarLotesDoEvento(int eventoId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/eventos/$eventoId/lotes'),
+        Uri.parse('$baseUrl/eventos/$eventoId/lotes_todos'),
         headers: {'Content-Type': 'application/json'},
       );
 

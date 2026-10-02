@@ -40,6 +40,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   final Map<int, int> _quantidadesLotes = {};
 
   bool carregando = true;
+  bool atualizandoLotes = false;
   bool processandoCompra = false;
   String? erro;
 
@@ -65,6 +66,29 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> atualizarLotes() async {
+    if (atualizandoLotes) return;
+    setState(() => atualizandoLotes = true);
+    try {
+      final listaLotes = await apiService.buscarLotesDoEvento(widget.eventoId);
+      if (!mounted) return;
+      setState(() {
+        lotes = listaLotes;
+        _statusLotes.clear();
+      });
+      await carregarStatusLotes();
+      if (mounted) {
+        AppSnackBar.sucesso(context, 'Informações dos lotes atualizadas.');
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+      }
+    } finally {
+      if (mounted) setState(() => atualizandoLotes = false);
     }
   }
 
@@ -942,12 +966,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             'Nenhum lote disponível',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Este evento ainda não possui lotes cadastrados.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey.shade700),
-          ),
         ],
       ),
     );
@@ -1281,12 +1299,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             children: [
                               const Expanded(
                                 child: Text(
-                                  'Ingresso',
+                                  'Ingressos',
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                              ),
+                              TextButton.icon(
+                                onPressed: atualizandoLotes
+                                    ? null
+                                    : atualizarLotes,
+                                icon: atualizandoLotes
+                                    ? const SizedBox.square(
+                                        dimension: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(Icons.refresh, size: 18),
+                                label: const Text('Atualizar lotes'),
                               ),
                             ],
                           ),
