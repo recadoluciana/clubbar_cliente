@@ -34,6 +34,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Timer? _timerCoruja;
 
+  void _liberarFocoSenha() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    senhaFocusNode.unfocus();
+  }
+
+  void _preservarCredenciais(String email, String senha) {
+    emailController.value = TextEditingValue(
+      text: email,
+      selection: TextSelection.collapsed(offset: email.length),
+    );
+    senhaController.value = TextEditingValue(
+      text: senha,
+      selection: TextSelection.collapsed(offset: senha.length),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -140,6 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       if (!mounted) return;
 
+      _preservarCredenciais(email, senha);
       AppSnackBar.erro(context, traduzirErro(e.toString()));
     } finally {
       if (mounted) {
@@ -339,6 +356,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               children: [
                                 TextButton(
                                   onPressed: () async {
+                                    _liberarFocoSenha();
                                     final ok = await Navigator.push(
                                       context,
                                       MaterialPageRoute(
@@ -348,6 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     );
 
                                     if (!context.mounted) return;
+                                    _liberarFocoSenha();
                                     if (ok == true) {
                                       AppSnackBar.aviso(
                                         context,
@@ -361,14 +380,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 TextButton(
                                   onPressed: carregando
                                       ? null
-                                      : () {
-                                          Navigator.push(
+                                      : () async {
+                                          _liberarFocoSenha();
+                                          await Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (_) =>
                                                   const EsqueceuSenhaScreen(),
                                             ),
                                           );
+                                          if (!context.mounted) return;
+                                          _liberarFocoSenha();
                                         },
                                   child: const Text('Esqueceu a senha?'),
                                 ),
