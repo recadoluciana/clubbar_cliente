@@ -104,6 +104,11 @@ class _ModalidadesIngressoScreenState
         ? lote.qtDisponivelCotaLegal
         : lote.qtDisponivel;
     final modalidadeDisponivel = !ehMeiaLegal || disponivelModalidade > 0;
+    final podeDiminuir = quantidade > 1;
+    final podeAumentar =
+        quantidade < 20 &&
+        (lote.semLimite || quantidade < lote.qtDisponivel) &&
+        (!ehMeiaLegal || quantidade < disponivelModalidade);
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
         ? 0.0
@@ -163,12 +168,21 @@ class _ModalidadesIngressoScreenState
                 const Text('Quantidade'),
                 const Spacer(),
                 IconButton.filled(
-                  onPressed: quantidade <= 1
+                  tooltip: 'Diminuir quantidade',
+                  onPressed: !podeDiminuir
                       ? null
                       : () => setState(
                           () => _quantidades[lote.lotePrecoId] = quantidade - 1,
                         ),
-                  icon: const Icon(Icons.remove),
+                  icon: Text(
+                    '−',
+                    style: TextStyle(
+                      color: podeDiminuir ? Colors.black : Colors.grey.shade700,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                    ),
+                  ),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.amareloCerveja,
                     foregroundColor: Colors.black,
@@ -185,16 +199,21 @@ class _ModalidadesIngressoScreenState
                   ),
                 ),
                 IconButton.filled(
-                  onPressed:
-                      quantidade >= 20 ||
-                          (!lote.semLimite &&
-                              quantidade >= lote.qtDisponivel) ||
-                          (ehMeiaLegal && quantidade >= disponivelModalidade)
+                  tooltip: 'Aumentar quantidade',
+                  onPressed: !podeAumentar
                       ? null
                       : () => setState(
                           () => _quantidades[lote.lotePrecoId] = quantidade + 1,
                         ),
-                  icon: const Icon(Icons.add),
+                  icon: Text(
+                    '+',
+                    style: TextStyle(
+                      color: podeAumentar ? Colors.black : Colors.grey.shade700,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                    ),
+                  ),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.amareloCerveja,
                     foregroundColor: Colors.black,
