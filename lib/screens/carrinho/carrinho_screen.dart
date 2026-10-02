@@ -238,10 +238,25 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           .map((e) => ItemCarrinho.fromJson(e as Map<String, dynamic>))
           .toList();
 
+      final precosAtualizados =
+          (data['precos_atualizados'] as List? ?? const []);
+
       setState(() {
         itensCarrinho = lista;
         carregando = false;
       });
+      if (precosAtualizados.isNotEmpty && mounted) {
+        final nomes = precosAtualizados
+            .map((e) => (e as Map<String, dynamic>)['nmproduto']?.toString())
+            .whereType<String>()
+            .join(', ');
+        AppSnackBar.aviso(
+          context,
+          nomes.isEmpty
+              ? 'Os preços do carrinho foram atualizados para os valores atuais.'
+              : 'Preço atualizado para o valor atual: $nomes.',
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
