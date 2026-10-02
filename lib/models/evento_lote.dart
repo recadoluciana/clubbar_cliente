@@ -40,7 +40,8 @@ class EventoLote {
   });
 
   int get qtDisponivel {
-    final disponivel = qtCapacidadeRestante ?? (qtTotal - qtVendida - qtReservada);
+    final disponivel =
+        qtCapacidadeRestante ?? (qtTotal - qtVendida - qtReservada);
     return disponivel < 0 ? 0 : disponivel;
   }
 
@@ -62,6 +63,7 @@ class EventoLote {
       return 'Esgotado';
     }
     if (statusNormalizado == 'INATIVO') return 'Indisponível';
+    if (statusNormalizado == 'AGUARDANDO') return 'Em breve';
     if (statusNormalizado == 'ENCERRADO') return 'Vendas encerradas';
 
     final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
