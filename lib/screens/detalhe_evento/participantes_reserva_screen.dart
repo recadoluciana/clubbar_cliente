@@ -14,12 +14,22 @@ class ParticipantesReservaScreen extends StatefulWidget {
   final Loja loja;
   final Map<String, dynamic> reserva;
   final String nomeEvento;
+  final String dataHoraEvento;
+  final String nomeLote;
+  final String nomeSetor;
+  final String modalidade;
+  final String beneficio;
 
   const ParticipantesReservaScreen({
     super.key,
     required this.loja,
     required this.reserva,
     required this.nomeEvento,
+    required this.dataHoraEvento,
+    required this.nomeLote,
+    required this.nomeSetor,
+    required this.modalidade,
+    required this.beneficio,
   });
 
   @override
@@ -140,6 +150,50 @@ class _ParticipantesReservaScreenState
     }
   }
 
+  Widget _contador(String minutos, String segundos) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(Icons.timer_outlined, color: Colors.red, size: 19),
+        const SizedBox(width: 6),
+        Text(
+          'Tempo para concluir a compra: $minutos:$segundos',
+          style: const TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _linhaResumo(IconData icone, String titulo, String valor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 9),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icone, size: 19, color: Colors.black87),
+          const SizedBox(width: 9),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                style: const TextStyle(color: Colors.black87, height: 1.3),
+                children: [
+                  TextSpan(
+                    text: '$titulo: ',
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  TextSpan(text: valor),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
@@ -155,11 +209,45 @@ class _ParticipantesReservaScreenState
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 6),
-          Text(
-            'Tempo para concluir a compra: $minutos:$segundos',
-            style: const TextStyle(
-              color: Colors.red,
-              fontWeight: FontWeight.bold,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: _contador(minutos, segundos),
+          ),
+          const SizedBox(height: 14),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 7),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Confira os ingressos escolhidos',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 14),
+                  _linhaResumo(
+                    Icons.event_outlined,
+                    'Data e hora',
+                    widget.dataHoraEvento,
+                  ),
+                  _linhaResumo(
+                    Icons.confirmation_number_outlined,
+                    'Lote',
+                    widget.nomeLote,
+                  ),
+                  _linhaResumo(Icons.place_outlined, 'Setor', widget.nomeSetor),
+                  _linhaResumo(
+                    Icons.sell_outlined,
+                    'Modalidade',
+                    widget.modalidade,
+                  ),
+                  _linhaResumo(
+                    Icons.verified_user_outlined,
+                    'Benefício',
+                    widget.beneficio,
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -202,6 +290,9 @@ class _ParticipantesReservaScreenState
               minimumSize: const Size.fromHeight(54),
             ),
           ),
+          const SizedBox(height: 12),
+          _contador(minutos, segundos),
+          const SizedBox(height: 12),
         ],
       ),
     );
