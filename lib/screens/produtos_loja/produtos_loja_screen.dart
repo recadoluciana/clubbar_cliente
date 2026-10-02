@@ -36,6 +36,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   final authStorage = AuthStorage();
 
   bool carregando = true;
+  bool semCardapioPublicado = false;
   String? erro;
 
   List<Categoria> categorias = [];
@@ -253,6 +254,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     setState(() {
       carregando = true;
       erro = null;
+      semCardapioPublicado = false;
     });
 
     try {
@@ -287,8 +289,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       await carregarQuantidadeCarrinho();
     } catch (e) {
+      final mensagem = apiService.mensagemErroAmigavel(e);
+      final semCardapio = mensagem.toLowerCase().contains(
+        'nenhum cardápio publicado',
+      );
       setState(() {
-        erro = e.toString().replaceFirst('Exception: ', '');
+        semCardapioPublicado = semCardapio;
+        erro = semCardapio
+            ? 'Este estabelecimento ainda não possui cardápio publicado.'
+            : mensagem.replaceFirst('Exception: ', '');
         carregando = false;
       });
     }
@@ -549,18 +558,25 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const Icon(Icons.cloud_off, size: 56),
+            Icon(
+              semCardapioPublicado
+                  ? Icons.restaurant_menu_outlined
+                  : Icons.cloud_off,
+              size: 56,
+            ),
             const SizedBox(height: 14),
             Text(
               erro ?? 'Erro ao carregar produtos',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: carregarDados,
-              child: const Text('Tentar novamente'),
-            ),
+            if (!semCardapioPublicado) ...[
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: carregarDados,
+                child: const Text('Tentar novamente'),
+              ),
+            ],
           ],
         ),
       ),
