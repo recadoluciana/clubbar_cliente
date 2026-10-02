@@ -863,9 +863,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ],
               ),
               const SizedBox(height: 6),
-              if (!lote.semLimite)
+              if (lote.semLimite)
                 Text(
-                  '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'restante' : 'restantes'} neste preço',
+                  'Este preço utiliza todo o saldo restante do setor',
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                )
+              else
+                Text(
+                  vendaDisponivel
+                      ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste preço'
+                      : 'Cota não utilizada: ${lote.qtDisponivel}',
                   style: TextStyle(
                     color: lote.qtDisponivel > 0
                         ? Colors.grey.shade700
@@ -874,7 +885,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-              if (!lote.semLimite) const SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
                 'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
                 style: TextStyle(

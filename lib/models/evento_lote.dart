@@ -90,7 +90,7 @@ class EventoLote {
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
-      semLimite: false,
+      semLimite: json['usarcapacidaderestante'] == true,
       qtReservada: _toInt(json['qtreservadalote'] ?? 0),
       qtCapacidadeRestante: json['qtdisponivel'] == null
           ? null
