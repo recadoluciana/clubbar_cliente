@@ -5,6 +5,7 @@ class EventoLote {
   final int eventoId;
   final String nome;
   final String nomeSetor;
+  final String descricaoSetor;
   final int numeroLote;
   final String tipoIngresso;
   final bool exigeComprovante;
@@ -25,6 +26,7 @@ class EventoLote {
     required this.eventoId,
     required this.nome,
     this.nomeSetor = '',
+    this.descricaoSetor = '',
     this.numeroLote = 1,
     this.tipoIngresso = 'UNICO',
     this.exigeComprovante = false,
@@ -81,6 +83,7 @@ class EventoLote {
       eventoId: _toInt(json['evento_id'] ?? 0),
       nome: (json['nmlote'] ?? '').toString(),
       nomeSetor: (json['nmsetor'] ?? '').toString(),
+      descricaoSetor: (json['dssetor'] ?? '').toString(),
       numeroLote: _toInt(json['nrlote'] ?? 1),
       tipoIngresso: (json['tipoingresso'] ?? 'UNICO').toString(),
       exigeComprovante: json['exigecomprovante'] == true,
