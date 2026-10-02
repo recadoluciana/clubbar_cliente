@@ -9,7 +9,7 @@ class ClubbarApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Clubbar',
+      title: 'Clubbar Client',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.amareloCerveja),
         appBarTheme: const AppBarTheme(
