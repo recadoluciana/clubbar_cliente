@@ -771,19 +771,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             lote.nome,
             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
           ),
-          const SizedBox(height: 3),
-          Text(
-            situacao == 'Disponível'
-                ? 'Preço vigente para todos os setores'
-                : situacao == 'Em breve'
-                ? 'Próximo preço'
-                : 'Preço anterior',
-            style: TextStyle(
-              color: Colors.green.shade800,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+          if (situacao == 'Disponível' || situacao == 'Em breve') ...[
+            const SizedBox(height: 3),
+            Text(
+              situacao == 'Disponível'
+                  ? 'Preço vigente para todos os setores'
+                  : 'Próximo preço',
+              style: TextStyle(
+                color: Colors.green.shade800,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 10),
           ...setores.map((opcoes) => cardLote(opcoes, exibirNomeLote: false)),
         ],
