@@ -10,6 +10,7 @@ import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
+import '../../core/theme/app_colors.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
@@ -97,6 +98,12 @@ class _ModalidadesIngressoScreenState
 
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
+    final ehMeiaLegal =
+        lote.aplicaCotaLegal || lote.tipoIngresso == 'MEIA_LEGAL';
+    final disponivelModalidade = ehMeiaLegal
+        ? lote.qtDisponivelCotaLegal
+        : lote.qtDisponivel;
+    final modalidadeDisponivel = !ehMeiaLegal || disponivelModalidade > 0;
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
         ? 0.0
@@ -124,6 +131,27 @@ class _ModalidadesIngressoScreenState
                   style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ),
+            if (ehMeiaLegal) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Cota legal do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'} (40% da capacidade)',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                '${lote.qtDisponivelCotaLegal} ingresso${lote.qtDisponivelCotaLegal == 1 ? '' : 's'} disponíve${lote.qtDisponivelCotaLegal == 1 ? 'l' : 'is'} nesta cota',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: lote.qtDisponivelCotaLegal > 0
+                      ? Colors.green.shade700
+                      : Colors.red,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
             const SizedBox(height: 8),
             Text(
               '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
@@ -141,6 +169,12 @@ class _ModalidadesIngressoScreenState
                           () => _quantidades[lote.lotePrecoId] = quantidade - 1,
                         ),
                   icon: const Icon(Icons.remove),
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.amareloCerveja,
+                    foregroundColor: Colors.black,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade600,
+                  ),
                 ),
                 SizedBox(
                   width: 40,
@@ -153,12 +187,20 @@ class _ModalidadesIngressoScreenState
                 IconButton.filled(
                   onPressed:
                       quantidade >= 20 ||
-                          (!lote.semLimite && quantidade >= lote.qtDisponivel)
+                          (!lote.semLimite &&
+                              quantidade >= lote.qtDisponivel) ||
+                          (ehMeiaLegal && quantidade >= disponivelModalidade)
                       ? null
                       : () => setState(
                           () => _quantidades[lote.lotePrecoId] = quantidade + 1,
                         ),
                   icon: const Icon(Icons.add),
+                  style: IconButton.styleFrom(
+                    backgroundColor: AppColors.amareloCerveja,
+                    foregroundColor: Colors.black,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),
@@ -183,7 +225,8 @@ class _ModalidadesIngressoScreenState
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: !vendaDisponivel || _processando
+                onPressed:
+                    !vendaDisponivel || _processando || !modalidadeDisponivel
                     ? null
                     : () async {
                         setState(() => _processando = true);
@@ -195,6 +238,12 @@ class _ModalidadesIngressoScreenState
                       },
                 icon: const Icon(Icons.local_activity_outlined),
                 label: const Text('Comprar ingresso'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.amareloCerveja,
+                  foregroundColor: Colors.black,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                ),
               ),
             ),
           ],
@@ -668,7 +717,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       await carregarStatusLotes();
     } catch (e) {
       if (mounted) {
-        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+        final mensagem = apiService.mensagemErroAmigavel(e);
+        if (lote.tipoIngresso == 'MEIA_LEGAL' &&
+            mensagem.toLowerCase().contains('cota legal')) {
+          AppSnackBar.erro(
+            context,
+            'A cota legal de meia-entrada foi atingida. '
+            'Cota do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'}; '
+            'disponíveis agora: ${lote.qtDisponivelCotaLegal}.',
+          );
+        } else {
+          AppSnackBar.erro(context, mensagem);
+        }
       }
     } finally {
       if (mounted) setState(() => processandoCompra = false);
