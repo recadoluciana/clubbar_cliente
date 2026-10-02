@@ -9,6 +9,10 @@ class EventoLote {
   final int numeroLote;
   final String tipoIngresso;
   final bool exigeComprovante;
+  final bool aplicaCotaLegal;
+  final int cotaLegal;
+  final int qtVendidaCotaLegal;
+  final int qtReservadaCotaLegal;
   final double preco;
   final int qtTotal;
   final int qtVendida;
@@ -30,6 +34,10 @@ class EventoLote {
     this.numeroLote = 1,
     this.tipoIngresso = 'UNICO',
     this.exigeComprovante = false,
+    this.aplicaCotaLegal = false,
+    this.cotaLegal = 0,
+    this.qtVendidaCotaLegal = 0,
+    this.qtReservadaCotaLegal = 0,
     required this.preco,
     required this.qtTotal,
     required this.qtVendida,
@@ -44,6 +52,11 @@ class EventoLote {
   int get qtDisponivel {
     final disponivel =
         qtCapacidadeRestante ?? (qtTotal - qtVendida - qtReservada);
+    return disponivel < 0 ? 0 : disponivel;
+  }
+
+  int get qtDisponivelCotaLegal {
+    final disponivel = cotaLegal - qtVendidaCotaLegal - qtReservadaCotaLegal;
     return disponivel < 0 ? 0 : disponivel;
   }
 
@@ -87,6 +100,10 @@ class EventoLote {
       numeroLote: _toInt(json['nrlote'] ?? 1),
       tipoIngresso: (json['tipoingresso'] ?? 'UNICO').toString(),
       exigeComprovante: json['exigecomprovante'] == true,
+      aplicaCotaLegal: json['aplicacotalegal'] == true,
+      cotaLegal: _toInt(json['cotalegal'] ?? 0),
+      qtVendidaCotaLegal: _toInt(json['qtvendidacotalegal'] ?? 0),
+      qtReservadaCotaLegal: _toInt(json['qtreservadacotalegal'] ?? 0),
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
