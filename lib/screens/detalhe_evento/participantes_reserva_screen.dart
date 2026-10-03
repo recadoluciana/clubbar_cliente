@@ -167,29 +167,20 @@ class _ParticipantesReservaScreenState
     );
   }
 
-  Widget _linhaResumo(IconData icone, String titulo, String valor) {
+  Widget _linhaResumo(String titulo, String valor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 9),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icone, size: 19, color: Colors.black87),
-          const SizedBox(width: 9),
-          Expanded(
-            child: Text.rich(
-              TextSpan(
-                style: const TextStyle(color: Colors.black87, height: 1.3),
-                children: [
-                  TextSpan(
-                    text: '$titulo: ',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  TextSpan(text: valor),
-                ],
-              ),
+      child: Text.rich(
+        TextSpan(
+          style: const TextStyle(color: Colors.black87, height: 1.3),
+          children: [
+            TextSpan(
+              text: '$titulo: ',
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
-          ),
-        ],
+            TextSpan(text: valor),
+          ],
+        ),
       ),
     );
   }
@@ -215,6 +206,7 @@ class _ParticipantesReservaScreenState
           ),
           const SizedBox(height: 14),
           Card(
+            color: Colors.white,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 7),
               child: Column(
@@ -225,27 +217,11 @@ class _ParticipantesReservaScreenState
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
                   ),
                   const SizedBox(height: 14),
-                  _linhaResumo(
-                    Icons.event_outlined,
-                    'Data e hora',
-                    widget.dataHoraEvento,
-                  ),
-                  _linhaResumo(
-                    Icons.confirmation_number_outlined,
-                    'Lote',
-                    widget.nomeLote,
-                  ),
-                  _linhaResumo(Icons.place_outlined, 'Setor', widget.nomeSetor),
-                  _linhaResumo(
-                    Icons.sell_outlined,
-                    'Modalidade',
-                    widget.modalidade,
-                  ),
-                  _linhaResumo(
-                    Icons.verified_user_outlined,
-                    'Benefício',
-                    widget.beneficio,
-                  ),
+                  _linhaResumo('Data e hora', widget.dataHoraEvento),
+                  _linhaResumo('Lote', widget.nomeLote),
+                  _linhaResumo('Setor', widget.nomeSetor),
+                  _linhaResumo('Modalidade', widget.modalidade),
+                  _linhaResumo('Benefício', widget.beneficio),
                 ],
               ),
             ),

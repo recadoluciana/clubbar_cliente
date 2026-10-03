@@ -45,23 +45,16 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   @override
   void initState() {
     super.initState();
-    itensTela = _somenteIngressosFuturos(widget.itens);
+    itensTela = _ordenarIngressos(widget.itens);
   }
 
-  List<Map<String, dynamic>> _somenteIngressosFuturos(
+  bool _ingressoEncerrado(Map<String, dynamic> item) =>
+      item['ingresso_encerrado'] == true;
+
+  List<Map<String, dynamic>> _ordenarIngressos(
     List<Map<String, dynamic>> itens,
   ) {
-    final hoje = DateTime.now();
-    final inicioHoje = DateTime(hoje.year, hoje.month, hoje.day);
     final ingressos = itens
-        .where((item) {
-          final data = DateTime.tryParse(
-            (item['dtinicioevento'] ?? '').toString(),
-          );
-          if (data == null) return true;
-          final diaEvento = DateTime(data.year, data.month, data.day);
-          return !diaEvento.isBefore(inicioHoje);
-        })
         .map((item) => Map<String, dynamic>.from(item))
         .toList();
 
@@ -591,7 +584,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       if (!mounted) return;
 
       setState(() {
-        itensTela = _somenteIngressosFuturos(novosItens);
+        itensTela = _ordenarIngressos(novosItens);
       });
     }
   }
@@ -623,6 +616,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   }
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
+    final encerrado = _ingressoEncerrado(item);
     final nomeIngresso = (item['nmevento'] ?? item['nmproduto'] ?? 'Ingresso')
         .toString()
         .trim();
@@ -716,6 +710,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             height: 1.15,
                           ),
                         ),
+                        if (encerrado) ...[
+                          const SizedBox(height: 5),
+                          const Text(
+                            'Evento encerrado',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                         if (tipoIngresso.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
@@ -880,8 +885,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
                         IconButton(
                           tooltip: 'Transferir ingresso',
-                          onPressed: () =>
-                              _abrirDialogAlterarParticipante(item),
+                          onPressed: encerrado
+                              ? null
+                              : () => _abrirDialogAlterarParticipante(item),
                           style: IconButton.styleFrom(
                             backgroundColor: Colors.amber.withValues(
                               alpha: 0.18,
@@ -895,86 +901,85 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   ),
 
                   const SizedBox(height: 14),
-
-                  // Botão principal
-                  SizedBox(
-                    width: double.infinity,
-                    height: 46,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _abrirQrOuRetirada(context, item),
-                      icon: const Icon(Icons.qr_code_2_rounded, size: 22),
-                      label: const Text(
-                        'Exibir ingresso e QR Code',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w800,
-                        ),
+                  if (encerrado)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(13),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+                      child: const Text(
+                        'Este ingresso é apenas histórico e não pode mais ser utilizado, apresentado, transferido ou cancelado.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    )
+                  else ...[
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _abrirQrOuRetirada(context, item),
+                        icon: const Icon(Icons.qr_code_2_rounded, size: 22),
+                        label: const Text(
+                          'Exibir ingresso e QR Code',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _compartilharIngresso(item),
-                          icon: const Icon(Icons.card_giftcard_rounded),
-                          label: const Text('Presentear'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF7A5A00),
-                            side: const BorderSide(color: Color(0xFFE0C36A)),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _compartilharIngresso(item),
+                            icon: const Icon(Icons.card_giftcard_rounded),
+                            label: const Text('Presentear'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF7A5A00),
+                              side: const BorderSide(color: Color(0xFFE0C36A)),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _cancelarIngresso(item),
-                          icon: const Icon(Icons.cancel_outlined),
-                          label: const Text('Cancelar'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red.shade700,
-                            side: BorderSide(color: Colors.red.shade200),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _cancelarIngresso(item),
+                            icon: const Icon(Icons.cancel_outlined),
+                            label: const Text('Cancelar'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.red.shade700,
+                              side: BorderSide(color: Colors.red.shade200),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline_rounded,
-                        size: 14,
-                        color: Colors.grey.shade600,
-                      ),
-                      const SizedBox(width: 5),
-                      Flexible(
-                        child: Text(
-                          'Apresente o QR Code na portaria do evento',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Center(
+                      child: Text(
+                        'Apresente o QR Code na portaria do evento',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -1098,7 +1103,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final totalUnidades = itensTela.fold<int>(0, (total, item) {
+    final ativos = itensTela
+        .where((item) => !_ingressoEncerrado(item))
+        .toList();
+    final encerrados = itensTela.where(_ingressoEncerrado).toList();
+    final totalUnidades = ativos.fold<int>(0, (total, item) {
       final quantidade = int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0;
 
       return total + quantidade;
@@ -1135,7 +1144,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 if (!mounted) return;
 
                 setState(() {
-                  itensTela = _somenteIngressosFuturos(novosItens);
+                  itensTela = _ordenarIngressos(novosItens);
                 });
               },
               child: ListView(
@@ -1144,8 +1153,36 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 children: [
                   if (itensTela.isEmpty)
                     _estadoVazio()
-                  else
-                    ...itensTela.map((item) => _itemCard(context, item)),
+                  else ...[
+                    if (ativos.isNotEmpty) ...[
+                      const Text(
+                        'Ingressos disponíveis',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...ativos.map((item) => _itemCard(context, item)),
+                    ],
+                    if (encerrados.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Ingressos encerrados',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Histórico de ingressos que não podem mais ser utilizados.',
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                      const SizedBox(height: 12),
+                      ...encerrados.map((item) => _itemCard(context, item)),
+                    ],
+                  ],
                 ],
               ),
             ),
