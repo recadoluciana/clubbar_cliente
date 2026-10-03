@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final authStorage = AuthStorage();
   final apiService = ApiService();
 
-  final PageController _pageController = PageController(viewportFraction: 0.86);
+  final PageController _pageController = PageController(viewportFraction: 1);
   final TextEditingController _buscaCtrl = TextEditingController();
 
   Timer? _timer;
@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       try {
         eventos = await eventosFuture;
-        eventosCarrossel = eventos.take(10).toList(growable: false);
+        eventosCarrossel = List.unmodifiable(eventos);
       } catch (e) {
         eventos = [];
         eventosCarrossel = [];
@@ -142,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Evento> get destaquesFiltrados {
     if (termoBusca.trim().isEmpty) return eventosCarrossel;
-    return eventosFiltrados.take(10).toList(growable: false);
+    return eventosFiltrados;
   }
 
   List<Loja> get lojasFiltradas {
@@ -892,25 +892,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     if (destaquesFiltrados.length > 1) ...[
                       const SizedBox(height: 9),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(destaquesFiltrados.length, (
-                          index,
-                        ) {
-                          final ativo = index == _paginaAtual;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            width: ativo ? 18 : 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: ativo
-                                  ? Colors.amber
-                                  : Colors.grey.shade400,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          );
-                        }),
+                      Text(
+                        '${_paginaAtual + 1} de ${destaquesFiltrados.length}',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ],
