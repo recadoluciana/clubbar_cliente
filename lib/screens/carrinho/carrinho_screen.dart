@@ -8,7 +8,6 @@ import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../produtos_loja/produtos_loja_screen.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 
@@ -838,38 +837,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   corTitulo: Colors.blue,
                   icone: Icons.storefront_rounded,
                   imagemAvatarUrl: widget.loja.imagemUrl,
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 42,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ProdutosLojaScreen(loja: widget.loja),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.storefront_outlined, size: 18),
-                      label: const Text(
-                        'Continuar comprando',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.black,
-                        backgroundColor: Colors.amber.shade600,
-                        side: BorderSide(color: Colors.amber.shade800),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    ),
-                  ),
                 ),
 
                 Expanded(
