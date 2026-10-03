@@ -52,6 +52,13 @@ class Evento {
     this.atracoes = const [],
   });
 
+  bool get jaIniciado {
+    final inicio = DateTime.tryParse(data);
+    if (inicio == null) return false;
+    final inicioLocal = inicio.isUtc ? inicio.toLocal() : inicio;
+    return !DateTime.now().isBefore(inicioLocal);
+  }
+
   factory Evento.fromJson(Map<String, dynamic> json) {
     return Evento(
       id: _toInt(json['evento_id'] ?? json['id'] ?? 0),

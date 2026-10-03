@@ -1227,6 +1227,30 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
+                          if (ev.jaIniciado) ...[
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Evento já iniciado',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 10),
                           Text(
                             formatarDataHora(ev.dataInicio),
