@@ -386,6 +386,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             .toString();
     final dataEntrega = (item['dtentregaitvenda'] ?? '').toString();
     final ingresso = _isIngresso(item);
+    final dataEvento = (item['dtinicioevento'] ?? '').toString().trim();
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
     final lote = (item['lote'] ?? '').toString().trim();
     final participante = (item['nmparticipante'] ?? '').toString().trim();
@@ -425,6 +426,17 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               _badgeTipo(item),
             ],
           ),
+          if (ingresso && dataEvento.isNotEmpty) ...[
+            const SizedBox(height: 5),
+            Text(
+              'Data do evento: $dataEvento',
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -629,7 +641,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Compra: ${(pedido['dtcriacao'] ?? '').toString()}',
+                          'Data da compra: ${(pedido['dtcriacao'] ?? '').toString()}',
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 13,
