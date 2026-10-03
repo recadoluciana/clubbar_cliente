@@ -1,13 +1,39 @@
+class BeneficioIngresso {
+  final int id;
+  final String codigo;
+  final String nome;
+  final bool exigeComprovante;
+
+  const BeneficioIngresso({
+    required this.id,
+    required this.codigo,
+    required this.nome,
+    required this.exigeComprovante,
+  });
+
+  factory BeneficioIngresso.fromJson(Map<String, dynamic> json) =>
+      BeneficioIngresso(
+        id: EventoLote._toInt(json['beneficio_id'] ?? 0),
+        codigo: '${json['cdbeneficio'] ?? ''}',
+        nome: '${json['nmbeneficio'] ?? ''}',
+        exigeComprovante: json['exigecomprovante'] == true,
+      );
+}
+
 class EventoLote {
   final int loteId;
   final int loteGlobalId;
   final int lotePrecoId;
+  final int modalidadeId;
   final int eventoId;
   final String nome;
   final String nomeSetor;
   final String descricaoSetor;
   final int numeroLote;
   final String tipoIngresso;
+  final String nomeModalidade;
+  final bool exigeBeneficio;
+  final List<BeneficioIngresso> beneficios;
   final bool exigeComprovante;
   final bool aplicaCotaLegal;
   final int cotaLegal;
@@ -27,12 +53,16 @@ class EventoLote {
     required this.loteId,
     this.loteGlobalId = 0,
     this.lotePrecoId = 0,
+    this.modalidadeId = 0,
     required this.eventoId,
     required this.nome,
     this.nomeSetor = '',
     this.descricaoSetor = '',
     this.numeroLote = 1,
     this.tipoIngresso = 'UNICO',
+    this.nomeModalidade = 'Ingresso',
+    this.exigeBeneficio = false,
+    this.beneficios = const [],
     this.exigeComprovante = false,
     this.aplicaCotaLegal = false,
     this.cotaLegal = 0,
@@ -93,12 +123,22 @@ class EventoLote {
       loteId: _toInt(json['lote_id'] ?? 0),
       loteGlobalId: _toInt(json['loteglobal_id'] ?? 0),
       lotePrecoId: _toInt(json['lotepreco_id'] ?? 0),
+      modalidadeId: _toInt(json['modalidade_id'] ?? 0),
       eventoId: _toInt(json['evento_id'] ?? 0),
       nome: (json['nmlote'] ?? '').toString(),
       nomeSetor: (json['nmsetor'] ?? '').toString(),
       descricaoSetor: (json['dssetor'] ?? '').toString(),
       numeroLote: _toInt(json['nrlote'] ?? 1),
       tipoIngresso: (json['tipoingresso'] ?? 'UNICO').toString(),
+      nomeModalidade: (json['nmpreco'] ?? 'Ingresso').toString(),
+      exigeBeneficio: json['exigebeneficio'] == true,
+      beneficios: (json['beneficios'] as List? ?? const [])
+          .map(
+            (item) => BeneficioIngresso.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
+          .toList(growable: false),
       exigeComprovante: json['exigecomprovante'] == true,
       aplicaCotaLegal: json['aplicacotalegal'] == true,
       cotaLegal: _toInt(json['cotalegal'] ?? 0),

@@ -411,6 +411,7 @@ class ApiService {
     required int clienteId,
     required int loteId,
     required int lotePrecoId,
+    int? beneficioId,
     String? tipoBeneficio,
     required int quantidade,
   }) async {
@@ -421,6 +422,7 @@ class ApiService {
         'cliente_id': clienteId,
         'lote_id': loteId,
         'lotepreco_id': lotePrecoId,
+        'beneficio_id': beneficioId,
         'tipo_beneficio': tipoBeneficio,
         'quantidade': quantidade,
       }),

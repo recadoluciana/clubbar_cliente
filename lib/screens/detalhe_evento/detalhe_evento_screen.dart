@@ -98,8 +98,7 @@ class _ModalidadesIngressoScreenState
 
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
-    final ehMeiaLegal =
-        lote.aplicaCotaLegal || lote.tipoIngresso == 'MEIA_LEGAL';
+    final ehMeiaLegal = lote.aplicaCotaLegal;
     final disponivelModalidade = ehMeiaLegal
         ? lote.qtDisponivelCotaLegal
         : lote.qtDisponivel;
@@ -687,37 +686,23 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       }
       return;
     }
-    String? beneficio;
-    if (lote.tipoIngresso == 'MEIA_LEGAL') {
-      beneficio = await showDialog<String>(
+    BeneficioIngresso? beneficio;
+    if (lote.exigeBeneficio) {
+      beneficio = await showDialog<BeneficioIngresso>(
         context: context,
         builder: (c) => SimpleDialog(
           title: const Text('Qual é o benefício?'),
           children: [
-            for (final item in const {
-              'ESTUDANTE': 'Estudante',
-              'JOVEM_BAIXA_RENDA': 'Jovem de baixa renda',
-              'PCD': 'Pessoa com deficiência',
-              'ACOMPANHANTE_PCD': 'Acompanhante de PcD',
-            }.entries)
+            for (final item in lote.beneficios)
               SimpleDialogOption(
-                onPressed: () => Navigator.pop(c, item.key),
-                child: Text(item.value),
+                onPressed: () => Navigator.pop(c, item),
+                child: Text(item.nome),
               ),
           ],
         ),
       );
       if (beneficio == null || !mounted) return;
-    } else if (lote.tipoIngresso == 'MEIA_IDOSO') {
-      beneficio = 'IDOSO';
     }
-    const nomesBeneficios = {
-      'ESTUDANTE': 'Estudante',
-      'JOVEM_BAIXA_RENDA': 'Jovem de baixa renda',
-      'PCD': 'Pessoa com deficiência',
-      'ACOMPANHANTE_PCD': 'Acompanhante de PcD',
-      'IDOSO': 'Pessoa idosa',
-    };
     setState(() => processandoCompra = true);
     try {
       final clienteId = await _obterClienteIdLogado();
@@ -726,7 +711,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         clienteId: clienteId,
         loteId: lote.loteId,
         lotePrecoId: lote.lotePrecoId,
-        tipoBeneficio: beneficio,
+        beneficioId: beneficio?.id,
+        tipoBeneficio: beneficio?.codigo,
         quantidade: quantidade,
       );
       if (!mounted) return;
@@ -745,7 +731,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ? 'Setor não informado'
                 : lote.nomeSetor,
             modalidade: _nomeModalidade(lote),
-            beneficio: nomesBeneficios[beneficio] ?? 'Não se aplica',
+            beneficio: beneficio?.nome ?? 'Não se aplica',
           ),
         ),
       );
@@ -753,7 +739,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     } catch (e) {
       if (mounted) {
         final mensagem = apiService.mensagemErroAmigavel(e);
-        if (lote.tipoIngresso == 'MEIA_LEGAL' &&
+        if (lote.aplicaCotaLegal &&
             mensagem.toLowerCase().contains('cota legal')) {
           AppSnackBar.erro(
             context,
@@ -827,25 +813,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   String _nomeModalidade(EventoLote lote) {
-    switch (lote.tipoIngresso) {
-      case 'INTEIRA':
-        return 'Inteira';
-      case 'MEIA_LEGAL':
-        return 'Meia-entrada';
-      case 'MEIA_IDOSO':
-        return 'Pessoa idosa';
-      default:
-        return lote.tipoIngresso
-            .replaceAll('_', ' ')
-            .toLowerCase()
-            .split(' ')
-            .map(
-              (parte) => parte.isEmpty
-                  ? parte
-                  : '${parte[0].toUpperCase()}${parte.substring(1)}',
-            )
-            .join(' ');
-    }
+    return lote.nomeModalidade.trim().isEmpty
+        ? 'Ingresso'
+        : lote.nomeModalidade;
   }
 
   Widget cardLoteGlobal(List<List<EventoLote>> setores) {
