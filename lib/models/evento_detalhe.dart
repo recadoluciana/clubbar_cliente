@@ -39,6 +39,13 @@ class EventoDetalhe {
     required this.atracoes,
   });
 
+  bool get jaIniciado {
+    final inicio = DateTime.tryParse(dataInicio);
+    if (inicio == null) return false;
+    final inicioLocal = inicio.isUtc ? inicio.toLocal() : inicio;
+    return !DateTime.now().isBefore(inicioLocal);
+  }
+
   factory EventoDetalhe.fromJson(Map<String, dynamic> json) {
     final politicaLoja = Map<String, dynamic>.from(
       json['politica_loja'] as Map? ?? const {},
