@@ -701,7 +701,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       return;
     }
     BeneficioIngresso? beneficio;
-    if (lote.exigeBeneficio) {
+    if (lote.exigeBeneficio || lote.aplicaCotaLegal) {
       beneficio = await showDialog<BeneficioIngresso>(
         context: context,
         builder: (c) => SimpleDialog(
