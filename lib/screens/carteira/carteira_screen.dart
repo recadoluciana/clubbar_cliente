@@ -145,6 +145,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           'itens': <Map<String, dynamic>>[],
           'total_produtos': 0,
           'total_ingressos': 0,
+          'total_ingressos_encerrados': 0,
         };
       }
 
@@ -154,8 +155,15 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       final tipo = (item['idtipoproduto'] ?? '').toString().toUpperCase();
 
       if (tipo == 'I') {
-        agrupado[lojaId]!['total_ingressos'] =
-            (agrupado[lojaId]!['total_ingressos'] as int) + qtd;
+        if (item['ingresso_encerrado'] == true) {
+          agrupado[lojaId]!['total_ingressos_encerrados'] =
+              (agrupado[lojaId]!['total_ingressos_encerrados'] as int) + qtd;
+          agrupado[lojaId]!['total_itens'] =
+              (agrupado[lojaId]!['total_itens'] as int) - qtd;
+        } else {
+          agrupado[lojaId]!['total_ingressos'] =
+              (agrupado[lojaId]!['total_ingressos'] as int) + qtd;
+        }
       } else {
         agrupado[lojaId]!['total_produtos'] =
             (agrupado[lojaId]!['total_produtos'] as int) + qtd;
@@ -242,6 +250,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     final totalProdutos = int.tryParse('${loja['total_produtos'] ?? 0}') ?? 0;
 
     final totalIngressos = int.tryParse('${loja['total_ingressos'] ?? 0}') ?? 0;
+    final totalIngressosEncerrados =
+        int.tryParse('${loja['total_ingressos_encerrados'] ?? 0}') ?? 0;
 
     final totalLoja = totalProdutos + totalIngressos;
 
@@ -279,9 +289,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                         const SizedBox(height: 5),
 
                         Text(
-                          totalLoja == 1
-                              ? '1 item disponível'
-                              : '$totalLoja itens disponíveis',
+                          '${totalLoja == 1 ? '1 item disponível' : '$totalLoja itens disponíveis'}'
+                          '${totalIngressosEncerrados > 0 ? ' • $totalIngressosEncerrados encerrado${totalIngressosEncerrados == 1 ? '' : 's'}' : ''}',
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 12,
@@ -343,7 +352,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
                   _atalhoCarteira(
                     titulo: 'Meus ingressos',
-                    quantidade: totalIngressos,
+                    quantidade: totalIngressos + totalIngressosEncerrados,
                     icone: Icons.confirmation_number_rounded,
                     cor: Colors.blue,
                     onTap: () {
