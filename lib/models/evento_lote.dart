@@ -37,6 +37,7 @@ class EventoLote {
   final bool exigeComprovante;
   final bool aplicaCotaLegal;
   final int cotaLegal;
+  final double percentualCotaLegal;
   final int qtVendidaCotaLegal;
   final int qtReservadaCotaLegal;
   final double preco;
@@ -66,6 +67,7 @@ class EventoLote {
     this.exigeComprovante = false,
     this.aplicaCotaLegal = false,
     this.cotaLegal = 0,
+    this.percentualCotaLegal = 40,
     this.qtVendidaCotaLegal = 0,
     this.qtReservadaCotaLegal = 0,
     required this.preco,
@@ -142,6 +144,8 @@ class EventoLote {
       exigeComprovante: json['exigecomprovante'] == true,
       aplicaCotaLegal: json['aplicacotalegal'] == true,
       cotaLegal: _toInt(json['cotalegal'] ?? 0),
+      percentualCotaLegal:
+          (json['percentualcotalegal'] as num?)?.toDouble() ?? 40,
       qtVendidaCotaLegal: _toInt(json['qtvendidacotalegal'] ?? 0),
       qtReservadaCotaLegal: _toInt(json['qtreservadacotalegal'] ?? 0),
       preco: _toDouble(json['vrprecolote'] ?? 0),
