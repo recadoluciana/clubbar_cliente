@@ -138,7 +138,7 @@ class _ModalidadesIngressoScreenState
             if (ehMeiaLegal) ...[
               const SizedBox(height: 8),
               Text(
-                'Cota legal do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'} (40% da capacidade)',
+                'Cota legal do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'} (${lote.percentualCotaLegal == lote.percentualCotaLegal.roundToDouble() ? lote.percentualCotaLegal.toInt() : lote.percentualCotaLegal}% da capacidade)',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
