@@ -155,6 +155,20 @@ class _ModalidadesIngressoScreenState
                   fontWeight: FontWeight.w700,
                 ),
               ),
+            ] else ...[
+              const SizedBox(height: 8),
+              Text(
+                lote.semLimite
+                    ? 'Ingressos disponíveis nesta modalidade'
+                    : '${disponivelModalidade} ingresso${disponivelModalidade == 1 ? '' : 's'} disponíve${disponivelModalidade == 1 ? 'l' : 'is'} nesta modalidade',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: lote.semLimite || disponivelModalidade > 0
+                      ? Colors.green.shade700
+                      : Colors.red,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
             const SizedBox(height: 8),
             Text(
