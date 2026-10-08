@@ -490,6 +490,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
+    final dataCompra = (item['dtcriacao_fmt'] ?? '').toString();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -533,7 +534,8 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              _chip('Qtd: ${item['qtitvenda'] ?? 0}'),
+                              if (dataCompra.isNotEmpty)
+                                _chip('Compra: $dataCompra'),
                               _chip(
                                 'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
                               ),
