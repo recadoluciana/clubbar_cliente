@@ -45,7 +45,6 @@ class EventoLote {
   final int qtVendida;
   final int qtReservada;
   final int? qtCapacidadeRestante;
-  final bool semLimite;
   final String status;
   final String dataInicioVenda;
   final String dataFimVenda;
@@ -75,7 +74,6 @@ class EventoLote {
     required this.qtVendida,
     this.qtReservada = 0,
     this.qtCapacidadeRestante,
-    required this.semLimite,
     required this.status,
     required this.dataInicioVenda,
     required this.dataFimVenda,
@@ -95,7 +93,7 @@ class EventoLote {
   bool podeComprarEm(DateTime agora) {
     final statusNormalizado = status.trim().toUpperCase();
     if (statusNormalizado != 'ATIVO') return false;
-    if (!semLimite && qtDisponivel <= 0) return false;
+    if (qtDisponivel <= 0) return false;
 
     final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
     final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
@@ -106,7 +104,7 @@ class EventoLote {
 
   String situacaoVendaEm(DateTime agora) {
     final statusNormalizado = status.trim().toUpperCase();
-    if (statusNormalizado == 'ESGOTADO' || (!semLimite && qtDisponivel <= 0)) {
+    if (statusNormalizado == 'ESGOTADO' || qtDisponivel <= 0) {
       return 'Esgotado';
     }
     if (statusNormalizado == 'INATIVO') return 'Indisponível';
@@ -151,7 +149,6 @@ class EventoLote {
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
-      semLimite: json['usarcapacidaderestante'] == true,
       qtReservada: _toInt(json['qtreservadalote'] ?? 0),
       qtCapacidadeRestante: json['qtdisponivel'] == null
           ? null

@@ -106,7 +106,7 @@ class _ModalidadesIngressoScreenState
     final podeDiminuir = quantidade > 1;
     final podeAumentar =
         quantidade < 20 &&
-        (lote.semLimite || quantidade < lote.qtDisponivel) &&
+        quantidade < lote.qtDisponivel &&
         (!ehMeiaLegal || quantidade < disponivelModalidade);
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
@@ -158,12 +158,10 @@ class _ModalidadesIngressoScreenState
             ] else ...[
               const SizedBox(height: 8),
               Text(
-                lote.semLimite
-                    ? 'Ingressos disponíveis nesta modalidade'
-                    : '${disponivelModalidade} ingresso${disponivelModalidade == 1 ? '' : 's'} disponíve${disponivelModalidade == 1 ? 'l' : 'is'} nesta modalidade',
+                '${disponivelModalidade} ingresso${disponivelModalidade == 1 ? '' : 's'} disponíve${disponivelModalidade == 1 ? 'l' : 'is'} nesta modalidade',
                 style: TextStyle(
                   fontSize: 12,
-                  color: lote.semLimite || disponivelModalidade > 0
+                  color: disponivelModalidade > 0
                       ? Colors.green.shade700
                       : Colors.red,
                   fontWeight: FontWeight.w700,
@@ -620,7 +618,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     int? quantidadeSelecionada,
   }) async {
     if (processandoCompra) return;
-    if (!lote.semLimite && lote.qtDisponivel <= 0) {
+    if (lote.qtDisponivel <= 0) {
       await carregarStatusLotes();
       if (mounted) {
         AppSnackBar.aviso(
@@ -665,8 +663,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                     IconButton(
                       onPressed:
-                          quantidade < 20 &&
-                              (lote.semLimite || quantidade < lote.qtDisponivel)
+                          quantidade < 20 && quantidade < lote.qtDisponivel
                           ? () => setDialogState(() => quantidade++)
                           : null,
                       icon: const Icon(Icons.add_circle_outline),
@@ -690,7 +687,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
     }
     if (confirmada != true || !mounted) return;
-    if (!lote.semLimite && quantidade > lote.qtDisponivel) {
+    if (quantidade > lote.qtDisponivel) {
       await carregarStatusLotes();
       if (mounted) {
         AppSnackBar.aviso(
@@ -942,28 +939,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ],
               ),
               const SizedBox(height: 6),
-              if (lote.semLimite)
-                Text(
-                  'Este preço utiliza todo o saldo restante do setor',
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                )
-              else
-                Text(
-                  vendaDisponivel
-                      ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste preço'
-                      : 'Cota não utilizada: ${lote.qtDisponivel}',
-                  style: TextStyle(
-                    color: lote.qtDisponivel > 0
-                        ? Colors.grey.shade700
-                        : Colors.red,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
+              Text(
+                vendaDisponivel
+                    ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste preço'
+                    : 'Cota não utilizada: ${lote.qtDisponivel}',
+                style: TextStyle(
+                  color: lote.qtDisponivel > 0
+                      ? Colors.grey.shade700
+                      : Colors.red,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
               const SizedBox(height: 4),
               Text(
                 'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
