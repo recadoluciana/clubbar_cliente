@@ -84,14 +84,6 @@ class _ModalidadesIngressoScreenState
               style: TextStyle(color: Colors.grey.shade700, height: 1.4),
             ),
           ],
-          const SizedBox(height: 4),
-          Text(
-            '${lote.nome} • ${lote.situacaoVendaEm(DateTime.now())}',
-            style: TextStyle(
-              color: vendaDisponivel ? Colors.green.shade700 : Colors.red,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
           const SizedBox(height: 18),
           ...widget.opcoes.map(
             (opcao) => _cardModalidade(opcao, vendaDisponivel: vendaDisponivel),
