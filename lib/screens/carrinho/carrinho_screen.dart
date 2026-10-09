@@ -7,7 +7,6 @@ import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
-import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 
@@ -822,8 +821,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())

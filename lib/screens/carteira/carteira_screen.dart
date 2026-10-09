@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
-import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../services/carteira_badge_notifier.dart';
 import 'carteira_loja_screen.dart';
@@ -539,7 +538,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : _listaCarteira(),
