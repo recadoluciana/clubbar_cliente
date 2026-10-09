@@ -10,7 +10,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
-import '../../services/api_service.dart';
 
 class CarteiraLojaScreen extends StatefulWidget {
   final String nomeLoja;
@@ -36,7 +35,6 @@ class CarteiraLojaScreen extends StatefulWidget {
 
 class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   late List<Map<String, dynamic>> itensTela;
-  final ApiService _apiService = ApiService();
   bool _atualizando = false;
 
   static final String baseUrl = AppConfig.apiBaseUrl;
@@ -244,75 +242,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     }
 
     await _compartilharPresente(item);
-  }
-
-  Future<void> _cancelarCompra(Map<String, dynamic> item) async {
-    final dataCompra = DateTime.tryParse(
-      (item['dtcriacao'] ?? '').toString(),
-    )?.toLocal();
-    if (dataCompra == null) {
-      AppSnackBar.erro(context, 'Data da compra não informada.');
-      return;
-    }
-    final hojeAgora = DateTime.now();
-    final hoje = DateTime(hojeAgora.year, hojeAgora.month, hojeAgora.day);
-    final dataLimite = DateTime(
-      dataCompra.year,
-      dataCompra.month,
-      dataCompra.day,
-    ).add(const Duration(days: 7));
-    if (hoje.isAfter(dataLimite)) {
-      AppSnackBar.erro(
-        context,
-        'Compra do produto não pode ser cancelada. Compra realizada a mais de 7 dias.',
-      );
-      return;
-    }
-
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Cancelar compra'),
-        content: const Text(
-          'Deseja cancelar este produto? O valor correspondente será solicitado '
-          'como reembolso pelo mesmo meio de pagamento.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Não'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Cancelar compra'),
-          ),
-        ],
-      ),
-    );
-    if (confirmado != true || !mounted) return;
-
-    try {
-      final itvendaId = int.parse('${item['itvenda_id']}');
-      await _apiService.cancelarProduto(itvendaId: itvendaId);
-      if (!mounted) return;
-      setState(() {
-        itensTela.removeWhere(
-          (registro) => registro['itvenda_id'] == item['itvenda_id'],
-        );
-      });
-      CarteiraBadgeNotifier.atualizar();
-      AppSnackBar.sucesso(
-        context,
-        'Compra cancelada. O reembolso deste produto foi solicitado com sucesso.',
-      );
-    } catch (e) {
-      if (!mounted) return;
-      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
-    }
   }
 
   Future<void> _abrirQrOuRetirada(
@@ -534,6 +463,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
+                              _chip('Venda: #${item['venda_id'] ?? ''}'),
                               if (dataCompra.isNotEmpty)
                                 _chip('Compra: $dataCompra'),
                               _chip(
@@ -589,32 +519,17 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 const SizedBox(height: 10),
 
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _confirmarCompartilhamento(item),
-                        icon: const Icon(Icons.card_giftcard_rounded, size: 18),
-                        label: const Text('Presentear'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF7A5A00),
-                          side: const BorderSide(color: Color(0xFFE0C36A)),
-                        ),
-                      ),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _confirmarCompartilhamento(item),
+                    icon: const Icon(Icons.card_giftcard_rounded, size: 18),
+                    label: const Text('Presentear'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF7A5A00),
+                      side: const BorderSide(color: Color(0xFFE0C36A)),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _cancelarCompra(item),
-                        icon: const Icon(Icons.cancel_outlined, size: 18),
-                        label: const Text('Cancelar compra'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
 
                 const SizedBox(height: 8),

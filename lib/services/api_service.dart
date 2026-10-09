@@ -1307,6 +1307,52 @@ class ApiService {
     );
   }
 
+  Future<Map<String, dynamic>> cancelarTransacao({required int vendaId}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/entregas/vendas/$vendaId/cancelar'),
+      headers: await _headersAutenticado(),
+    );
+    final data = response.body.trim().isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return Map<String, dynamic>.from(data as Map);
+    }
+
+    final detalhe = data is Map ? data['detail'] : null;
+    final mensagem = detalhe is String && detalhe.trim().isNotEmpty
+        ? detalhe
+        : detalhe is Map
+        ? (detalhe['description'] ?? detalhe['message'] ?? '').toString()
+        : 'Não foi possível cancelar a transação. Tente novamente.';
+    throw Exception(
+      mensagem.trim().isEmpty
+          ? 'Não foi possível cancelar a transação. Tente novamente.'
+          : mensagem,
+    );
+  }
+
+  Future<Map<String, dynamic>> consultarCancelamentoTransacao({
+    required int vendaId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/entregas/vendas/$vendaId/cancelamento'),
+      headers: await _headersAutenticado(),
+    );
+    final data = response.body.trim().isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return Map<String, dynamic>.from(data as Map);
+    }
+
+    final detalhe = data is Map ? data['detail'] : null;
+    final mensagem = detalhe is String && detalhe.trim().isNotEmpty
+        ? detalhe
+        : 'Não foi possível consultar a transação.';
+    throw Exception(mensagem);
+  }
+
   Future<Map<String, dynamic>> consultarPixPorPagamentoId({
     required String pagamentoId,
   }) async {
