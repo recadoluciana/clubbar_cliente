@@ -1096,30 +1096,24 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget _politicaEvento() {
     return Padding(
-      padding: const EdgeInsets.only(top: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextButton.icon(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
-              ),
-            ),
-            icon: const Icon(Icons.policy_outlined),
-            label: const Text(
-              'Política de compra de ingresso',
-              style: TextStyle(fontSize: 15),
-            ),
+      padding: const EdgeInsets.only(top: 4),
+      child: TextButton.icon(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(48, 0, 16, 4),
-            child: Text(
-              'Para cancelamento e alteração de participante, acesse o ingresso em Carteira/Ingressos.',
-              style: TextStyle(fontSize: 15),
-            ),
-          ),
-        ],
+        ),
+        icon: const Icon(Icons.policy_outlined, size: 19),
+        label: const Text(
+          'Política de compra de ingresso',
+          style: TextStyle(fontSize: 15),
+        ),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          alignment: Alignment.centerLeft,
+        ),
       ),
     );
   }
@@ -1480,10 +1474,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             estadoVazioLotes()
                           else
                             ..._lotesGlobaisAgrupados.map(cardLoteGlobal),
-                          const SizedBox(height: 24),
+                          _politicaEvento(),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 20),
                             const Text(
                               'Descrição',
                               style: TextStyle(
@@ -1509,7 +1503,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
-                          _politicaEvento(),
                         ],
                       ),
                     ),
