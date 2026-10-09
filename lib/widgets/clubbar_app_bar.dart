@@ -17,6 +17,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget> actions;
   final bool mostrarSessao;
   final bool mostrarPerfil;
+  final bool logoAlinhadaEsquerda;
 
   const ClubbarAppBar({
     super.key,
@@ -31,6 +32,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions = const [],
     this.mostrarSessao = true,
     this.mostrarPerfil = true,
+    this.logoAlinhadaEsquerda = false,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -116,7 +118,10 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
           style: TextButton.styleFrom(foregroundColor: Colors.white),
           icon: const Icon(Icons.login_rounded, size: 21),
-          label: const Text('Login', style: TextStyle(fontWeight: FontWeight.w800)),
+          label: const Text(
+            'Login',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
         );
       },
     );
@@ -131,9 +136,13 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
-      centerTitle: true,
+      centerTitle: temTitulo ? true : !logoAlinhadaEsquerda,
       toolbarHeight: 58,
-      titleSpacing: temTitulo ? NavigationToolbar.kMiddleSpacing : 10,
+      titleSpacing: temTitulo
+          ? NavigationToolbar.kMiddleSpacing
+          : logoAlinhadaEsquerda
+          ? 16
+          : 10,
 
       leading: mostrarVoltar
           ? IconButton(
@@ -171,9 +180,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                 fontWeight: FontWeight.w800,
               ),
             )
+          : logoAlinhadaEsquerda
+          ? _logoClubbar()
           : null,
 
-      flexibleSpace: temTitulo
+      flexibleSpace: temTitulo || logoAlinhadaEsquerda
           ? null
           : SafeArea(
               bottom: false,
