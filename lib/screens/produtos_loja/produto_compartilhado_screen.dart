@@ -237,7 +237,11 @@ class _ProdutoCompartilhadoScreenState
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: ClubbarAppBar(
+        titulo: loja?.nome ?? 'Produto',
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -255,81 +259,70 @@ class _ProdutoCompartilhadoScreenState
               ),
             )
           : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               children: [
                 if (imagemUrl.isNotEmpty)
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(18),
-                        child: Container(
-                          height: 220,
-                          width: double.infinity,
-                          color: Colors.white,
-                          child: Image.network(
-                            imagemUrl,
-                            height: 220,
-                            width: double.infinity,
-                            fit: BoxFit.contain,
-                            alignment: Alignment.center,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: 220,
-                                width: double.infinity,
-                                color: Colors.grey.shade300,
-                                child: const Icon(
-                                  Icons.image_not_supported_outlined,
-                                  size: 50,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      if (descontoAtivo)
-                        Positioned(
-                          left: 12,
-                          top: 12,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 11,
-                              vertical: 7,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              seloDesconto,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                  SizedBox(
+                    height: 164,
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: SizedBox(
+                              height: 164,
+                              width: 164,
+                              child: Image.network(
+                                imagemUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(
+                                      Icons.image_not_supported_outlined,
+                                      size: 42,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
                         ),
-                    ],
+                        if (descontoAtivo)
+                          Positioned(
+                            left: 12,
+                            top: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 11,
+                                vertical: 7,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                seloDesconto,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Text(
                   p?['nmproduto']?.toString() ?? '',
                   style: const TextStyle(
-                    fontSize: 23,
+                    fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 5),
-                if (loja != null)
-                  Text(
-                    loja!.nome,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 4),
                 if ((p?['dsproduto'] ?? '').toString().isNotEmpty)
                   Text(
                     p?['dsproduto']?.toString() ?? '',
@@ -339,11 +332,11 @@ class _ProdutoCompartilhadoScreenState
                       height: 1.35,
                     ),
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 14,
+                    vertical: 12,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -389,9 +382,12 @@ class _ProdutoCompartilhadoScreenState
                     ],
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
@@ -402,11 +398,11 @@ class _ProdutoCompartilhadoScreenState
                       const Text(
                         'Quantidade',
                         style: TextStyle(
-                          fontSize: 17,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           IconButton.filledTonal(
@@ -469,9 +465,9 @@ class _ProdutoCompartilhadoScreenState
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 _botaoAdicionar(),
-                const SizedBox(height: 80),
+                const SizedBox(height: 32),
               ],
             ),
     );
