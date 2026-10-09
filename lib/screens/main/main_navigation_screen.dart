@@ -116,7 +116,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return ValueListenableBuilder<Widget?>(
       valueListenable: MainNavigationController.telaInterna,
       builder: (context, telaInterna, _) {
-        if (telaInterna is PerfilScreen || telaInterna is AgendaEventosScreen) {
+        if (telaInterna is PerfilScreen ||
+            telaInterna is AgendaEventosScreen ||
+            telaInterna is DetalheEventoScreen) {
           return const SizedBox.shrink();
         }
 
