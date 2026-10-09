@@ -8,6 +8,7 @@ import '../../services/auth_storage.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../core/theme/app_colors.dart';
@@ -36,6 +37,8 @@ class DetalheEventoScreen extends StatefulWidget {
 
 class _ModalidadesIngressoScreen extends StatefulWidget {
   final List<EventoLote> opcoes;
+  final String nomeLoja;
+  final String imagemLojaUrl;
   final double taxaPercentual;
   final double taxaMinima;
   final String Function(EventoLote) nomeModalidade;
@@ -43,6 +46,8 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
+    required this.nomeLoja,
+    required this.imagemLojaUrl,
     required this.taxaPercentual,
     required this.taxaMinima,
     required this.nomeModalidade,
@@ -69,24 +74,39 @@ class _ModalidadesIngressoScreenState
         descricaoSetor.toLowerCase() ==
         'setor ${nomeSetor.toLowerCase()} do evento';
     return Scaffold(
-      appBar: AppBar(title: const Text('Escolha a modalidade')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: const Color(0xFFF6F6F6),
+      appBar: ClubbarAppBar(
+        titulo: widget.nomeLoja,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
+      body: Column(
         children: [
-          Text(
-            nomeSetor.isEmpty ? 'Setor' : 'Setor: $nomeSetor',
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          ClubbarPageHeader(
+            titulo: 'Escolha a modalidade',
+            subtitulo: nomeSetor.isEmpty
+                ? 'Setor não informado'
+                : 'Setor: $nomeSetor',
+            icone: Icons.confirmation_number_rounded,
+            imagemAvatarUrl: widget.imagemLojaUrl,
           ),
-          if (descricaoSetor.isNotEmpty && !descricaoPadrao) ...[
-            const SizedBox(height: 6),
-            Text(
-              descricaoSetor,
-              style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (descricaoSetor.isNotEmpty && !descricaoPadrao) ...[
+                  Text(
+                    descricaoSetor,
+                    style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+                  ),
+                  const SizedBox(height: 14),
+                ],
+                ...widget.opcoes.map(
+                  (opcao) =>
+                      _cardModalidade(opcao, vendaDisponivel: vendaDisponivel),
+                ),
+              ],
             ),
-          ],
-          const SizedBox(height: 18),
-          ...widget.opcoes.map(
-            (opcao) => _cardModalidade(opcao, vendaDisponivel: vendaDisponivel),
           ),
         ],
       ),
@@ -1013,6 +1033,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       MaterialPageRoute(
         builder: (_) => _ModalidadesIngressoScreen(
           opcoes: opcoes,
+          nomeLoja: widget.loja.nome,
+          imagemLojaUrl: widget.loja.imagemUrl,
           taxaPercentual: widget.loja.vrtaxaing,
           taxaMinima: widget.loja.vrtaxaminimaingresso,
           nomeModalidade: _nomeModalidade,
