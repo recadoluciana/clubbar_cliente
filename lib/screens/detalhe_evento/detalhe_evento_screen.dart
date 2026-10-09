@@ -89,8 +89,8 @@ class _ModalidadesIngressoScreenState
                 ? 'Escolha a modalidade'
                 : widget.nomeEvento,
             subtitulo: nomeSetor.isEmpty
-                ? 'Escolha a modalidade'
-                : 'Escolha a modalidade • Setor: $nomeSetor',
+                ? 'Escolha a modalidade • ${lote.nome}'
+                : 'Escolha a modalidade • ${lote.nome} • Setor: $nomeSetor',
             icone: Icons.confirmation_number_rounded,
             imagemAvatarUrl: widget.imagemLojaUrl,
             corTitulo: Colors.blue,
