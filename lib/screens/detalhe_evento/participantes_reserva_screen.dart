@@ -6,6 +6,8 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/cpf_utils.dart';
+import '../../utils/value_formatters.dart';
+import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
@@ -212,21 +214,23 @@ class _ParticipantesReservaScreenState
   Widget build(BuildContext context) {
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
     final segundos = (restante.inSeconds % 60).toString().padLeft(2, '0');
+    final valorTotal = double.tryParse('${widget.reserva['valor_total']}') ?? 0;
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) unawaited(_cancelarReservaSeNecessario());
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Informe o(s) participante(s)'),
-          centerTitle: true,
+        appBar: ClubbarAppBar(
+          titulo: widget.loja.nome,
+          mostrarVoltar: true,
+          mostrarSessao: false,
         ),
         backgroundColor: const Color(0xFFF5F5F5),
         body: Column(
           children: [
             ClubbarPageHeader(
               titulo: widget.nomeEvento,
-              subtitulo: 'Estabelecimento: ${widget.loja.nome}',
+              subtitulo: 'Informe os participantes.',
               icone: Icons.storefront_rounded,
               imagemAvatarUrl: widget.loja.imagemUrl,
             ),
@@ -256,6 +260,24 @@ class _ParticipantesReservaScreenState
                           _linhaResumo('Setor', widget.nomeSetor),
                           _linhaResumo('Modalidade', widget.modalidade),
                           _linhaResumo('Benefício', widget.beneficio),
+                          const Divider(height: 20),
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  'Valor a pagar',
+                                  style: TextStyle(fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                              Text(
+                                ValueFormatters.moeda(valorTotal),
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
