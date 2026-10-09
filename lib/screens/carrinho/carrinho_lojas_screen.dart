@@ -3,7 +3,6 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
-import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
@@ -256,8 +255,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-
-      appBar: const ClubbarAppBar(),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
