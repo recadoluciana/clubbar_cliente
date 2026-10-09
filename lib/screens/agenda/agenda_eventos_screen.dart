@@ -162,14 +162,16 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
     }
 
     return moldura(
-      Image.network(
-        url,
-        fit: BoxFit.cover,
-        alignment: Alignment.center,
-        errorBuilder: (context, error, stackTrace) => Container(
-          color: Colors.grey.shade100,
+      SizedBox.expand(
+        child: Image.network(
+          url,
+          fit: BoxFit.cover,
           alignment: Alignment.center,
-          child: const Icon(Icons.image_not_supported),
+          errorBuilder: (context, error, stackTrace) => Container(
+            color: Colors.grey.shade100,
+            alignment: Alignment.center,
+            child: const Icon(Icons.image_not_supported),
+          ),
         ),
       ),
     );
