@@ -90,6 +90,11 @@ class EventoLote {
     return disponivel < 0 ? 0 : disponivel;
   }
 
+  bool get temReservasTemporarias => qtReservada > 0;
+
+  bool get indisponivelPorReservasTemporarias =>
+      qtDisponivel <= 0 && temReservasTemporarias;
+
   bool podeComprarEm(DateTime agora) {
     final statusNormalizado = status.trim().toUpperCase();
     if (statusNormalizado != 'ATIVO') return false;

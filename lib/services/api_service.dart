@@ -448,6 +448,19 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<void> cancelarReservaIngresso({
+    required int reservaId,
+    required int clienteId,
+  }) async {
+    final response = await http.delete(
+      Uri.parse('$baseUrl/reservas-ingressos/$reservaId?cliente_id=$clienteId'),
+      headers: await _headersAutenticado(),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+  }
+
   Future<Map<String, dynamic>> criarPixReserva({
     required int reservaId,
     required int clienteId,
