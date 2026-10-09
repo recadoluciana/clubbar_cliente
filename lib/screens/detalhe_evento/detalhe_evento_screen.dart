@@ -63,19 +63,24 @@ class _ModalidadesIngressoScreenState
   Widget build(BuildContext context) {
     final lote = widget.opcoes.first;
     final vendaDisponivel = lote.podeComprarEm(DateTime.now());
+    final nomeSetor = lote.nomeSetor.trim();
+    final descricaoSetor = lote.descricaoSetor.trim();
+    final descricaoPadrao =
+        descricaoSetor.toLowerCase() ==
+        'setor ${nomeSetor.toLowerCase()} do evento';
     return Scaffold(
       appBar: AppBar(title: const Text('Escolha a modalidade')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            lote.nomeSetor.isEmpty ? 'Setor' : lote.nomeSetor,
+            nomeSetor.isEmpty ? 'Setor' : 'Setor: $nomeSetor',
             style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
           ),
-          if (lote.descricaoSetor.trim().isNotEmpty) ...[
+          if (descricaoSetor.isNotEmpty && !descricaoPadrao) ...[
             const SizedBox(height: 6),
             Text(
-              lote.descricaoSetor.trim(),
+              descricaoSetor,
               style: TextStyle(color: Colors.grey.shade700, height: 1.4),
             ),
           ],
