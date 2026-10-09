@@ -57,8 +57,78 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
     return DateFormatters.dataCompleta(valor);
   }
 
-  String formatarLocal(Evento evento) {
-    return evento.local.trim().isEmpty ? widget.loja.nome : evento.local;
+  List<String> _estilosDoEvento(Evento evento) {
+    final estilos = evento.atracoes
+        .expand((atracao) => atracao.estilos)
+        .where((estilo) => estilo.trim().isNotEmpty)
+        .toSet()
+        .toList()
+      ..sort();
+    return estilos;
+  }
+
+  Widget _badge({
+    required IconData icone,
+    required String texto,
+    required Color cor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: cor.withValues(alpha: .1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: cor.withValues(alpha: .35)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icone, size: 13, color: cor),
+          const SizedBox(width: 4),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 116),
+            child: Text(
+              texto,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: cor,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _badgesEvento(Evento evento) {
+    final estilos = _estilosDoEvento(evento);
+    final atracoes = evento.atracoes
+        .where((atracao) => atracao.nome.trim().isNotEmpty)
+        .toList();
+    if (estilos.isEmpty && atracoes.isEmpty) return const SizedBox.shrink();
+
+    return Wrap(
+      spacing: 5,
+      runSpacing: 5,
+      children: [
+        ...estilos.take(3).map(
+          (estilo) => _badge(
+            icone: Icons.music_note_rounded,
+            texto: estilo,
+            cor: const Color(0xFF2E7D32),
+          ),
+        ),
+        ...atracoes.take(3).map(
+          (atracao) => _badge(
+            icone: Icons.mic_rounded,
+            texto: atracao.nome,
+            cor: const Color(0xFF1565C0),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget imagemEvento(String url) {
@@ -173,16 +243,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Text(
-                        formatarLocal(evento),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 12,
-                          height: 1.3,
-                        ),
-                      ),
+                      _badgesEvento(evento),
                     ],
                   ),
                 ),
