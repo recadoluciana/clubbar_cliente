@@ -5,7 +5,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../../utils/date_formatters.dart';
-import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 import '../../services/main_navigation_controller.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
@@ -274,90 +274,84 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: ClubbarAppBar(
-        mostrarVoltar: true,
-        onVoltar: () {
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-            return;
-          }
-
-          MainNavigationController.fecharTelaInterna();
-        },
+      appBar: AppBar(
+        title: const Text('Agenda'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+              return;
+            }
+            MainNavigationController.fecharTelaInterna();
+          },
+        ),
       ),
-      body: RefreshIndicator(
-        onRefresh: carregarEventos,
-        child: ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          ClubbarPageHeader(
+            titulo: widget.loja.nome,
+            subtitulo: 'Agenda de eventos',
+            icone: Icons.storefront_rounded,
+            imagemAvatarUrl: widget.loja.imagemUrl,
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: carregarEventos,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 children: [
-                  Text(
-                    widget.loja.nome,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Agenda',
-                    style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
-                  ),
+                  if (carregando)
+                    const Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  else if (erro != null)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.cloud_off, size: 56),
+                          const SizedBox(height: 14),
+                          Text(erro!, textAlign: TextAlign.center),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: carregarEventos,
+                            child: const Text('Tentar novamente'),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (eventos.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.event_busy_outlined,
+                            size: 60,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 14),
+                          const Text(
+                            'Nenhum evento encontrado',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ...eventos.map(itemEvento),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
-
-            if (carregando)
-              const Padding(
-                padding: EdgeInsets.all(40),
-                child: Center(child: CircularProgressIndicator()),
-              )
-            else if (erro != null)
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    const Icon(Icons.cloud_off, size: 56),
-                    const SizedBox(height: 14),
-                    Text(erro!, textAlign: TextAlign.center),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: carregarEventos,
-                      child: const Text('Tentar novamente'),
-                    ),
-                  ],
-                ),
-              )
-            else if (eventos.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.event_busy_outlined,
-                      size: 60,
-                      color: Colors.grey.shade400,
-                    ),
-                    const SizedBox(height: 14),
-                    const Text(
-                      'Nenhum evento encontrado',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              ...eventos.map(itemEvento),
-
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
