@@ -135,7 +135,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
                 ),
                 const SizedBox(height: 1),
                 const Text(
-                  'Cora',
+                  'Cora responde',
                   maxLines: 1,
                   style: TextStyle(
                     color: Colors.black87,
