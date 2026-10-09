@@ -388,6 +388,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
+  Widget _pageHeader() {
+    return ClubbarPageHeader(
+      titulo: 'Cardápio',
+      subtitulo: 'Selecione o produto que deseja comprar',
+      corTitulo: Colors.blue,
+      imagemAvatarUrl: widget.loja.imagemUrl,
+      tamanhoAvatar: 52,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -415,16 +425,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-          ? _erroWidget()
+          ? Column(
+              children: [
+                _pageHeader(),
+                Expanded(child: _erroWidget()),
+              ],
+            )
           : Column(
               children: [
-                ClubbarPageHeader(
-                  titulo: 'Cardápio',
-                  subtitulo: 'Selecione o produto que deseja comprar',
-                  corTitulo: Colors.blue,
-                  imagemAvatarUrl: widget.loja.imagemUrl,
-                  tamanhoAvatar: 52,
-                ),
+                _pageHeader(),
 
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
