@@ -1117,7 +1117,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
+      appBar: ClubbarAppBar(
+        titulo: widget.loja.nome,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        onVoltar: widget.onVoltar,
+      ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null
