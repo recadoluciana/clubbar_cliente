@@ -149,64 +149,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     }
   }
 
-  Future<void> _cancelarIngresso(Map<String, dynamic> item) async {
-    final valorCortesia = _valorDoIngresso(item) <= 0;
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Cancelar ingresso'),
-        content: Text(
-          valorCortesia
-              ? 'Deseja cancelar este ingresso de cortesia? Cortesias não têm reembolso. Os demais ingressos continuarão disponíveis.'
-              : 'Deseja cancelar somente este ingresso? O valor correspondente a este item será solicitado como reembolso pelo mesmo meio de pagamento. Os demais ingressos continuarão disponíveis.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Não'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Cancelar ingresso'),
-          ),
-        ],
-      ),
-    );
-    if (confirmado != true || !mounted) return;
-    try {
-      final itvendaId = int.parse('${item['itvenda_id']}');
-      final resultado = await apiService.cancelarIngresso(itvendaId: itvendaId);
-      if (!mounted) return;
-      setState(() {
-        itensTela.removeWhere(
-          (registro) => registro['itvenda_id'] == item['itvenda_id'],
-        );
-      });
-      CarteiraBadgeNotifier.atualizar();
-      AppSnackBar.sucesso(
-        context,
-        resultado['mensagem']?.toString() ??
-            (valorCortesia
-                ? 'Ingresso de cortesia cancelado.'
-                : 'Ingresso cancelado. O reembolso deste item foi solicitado com sucesso.'),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
-    }
-  }
-
-  double _valorDoIngresso(Map<String, dynamic> item) {
-    final unitario = double.tryParse('${item['vrunititvenda'] ?? 0}') ?? 0;
-    final quantidade = int.tryParse('${item['qtitvenda'] ?? 1}') ?? 1;
-    final taxa = double.tryParse('${item['vrtaxaitvenda'] ?? 0}') ?? 0;
-    return (unitario * quantidade) + taxa;
-  }
-
   String _formatarCpf(String cpf) {
     final numeros = cpf.replaceAll(RegExp(r'[^0-9]'), '');
 
@@ -714,6 +656,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             height: 1.15,
                           ),
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Venda: #${item['venda_id'] ?? ''}',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         if (tipoIngresso.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
@@ -918,32 +869,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _compartilharIngresso(item),
-                            icon: const Icon(Icons.card_giftcard_rounded),
-                            label: const Text('Presentear'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF7A5A00),
-                              side: const BorderSide(color: Color(0xFFE0C36A)),
-                            ),
-                          ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _compartilharIngresso(item),
+                        icon: const Icon(Icons.card_giftcard_rounded),
+                        label: const Text('Presentear'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF7A5A00),
+                          side: const BorderSide(color: Color(0xFFE0C36A)),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: () => _cancelarIngresso(item),
-                            icon: const Icon(Icons.cancel_outlined),
-                            label: const Text('Cancelar'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red.shade700,
-                              side: BorderSide(color: Colors.red.shade200),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Center(
