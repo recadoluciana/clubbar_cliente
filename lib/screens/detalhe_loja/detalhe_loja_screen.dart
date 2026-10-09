@@ -345,7 +345,11 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: ClubbarAppBar(mostrarVoltar: true),
+      appBar: ClubbarAppBar(
+        titulo: loja.nome,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
 
       // 🔥 BODY SEM PADDING GLOBAL
       body: ListView(
