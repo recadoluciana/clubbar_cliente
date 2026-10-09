@@ -6,7 +6,6 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/cpf_utils.dart';
-import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
@@ -191,7 +190,7 @@ class _ParticipantesReservaScreenState
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
     final segundos = (restante.inSeconds % 60).toString().padLeft(2, '0');
     return Scaffold(
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: AppBar(title: const Text('Participante'), centerTitle: true),
       backgroundColor: const Color(0xFFF5F5F5),
       body: Column(
         children: [
