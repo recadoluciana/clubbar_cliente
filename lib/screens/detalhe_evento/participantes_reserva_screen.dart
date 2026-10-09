@@ -214,7 +214,7 @@ class _ParticipantesReservaScreenState
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Confira os ingressos escolhidos',
+                          'Confira os dados abaixo',
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w900,
