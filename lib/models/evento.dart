@@ -2,11 +2,13 @@ class AtracaoEvento {
   final int id;
   final String nome;
   final String imagemUrl;
+  final List<String> estilos;
 
   const AtracaoEvento({
     required this.id,
     required this.nome,
     this.imagemUrl = '',
+    this.estilos = const [],
   });
 
   factory AtracaoEvento.fromJson(Map<String, dynamic> json) {
@@ -16,11 +18,17 @@ class AtracaoEvento {
       imagemUrl: (json['urlbanneratracao'] ?? json['imagem_url'] ?? '')
           .toString()
           .trim(),
+      estilos: (json['estilos'] as List? ?? const [])
+          .map((estilo) => estilo is Map
+              ? (estilo['nmestilomusical'] ?? '').toString().trim()
+              : estilo.toString().trim())
+          .where((estilo) => estilo.isNotEmpty)
+          .toList(growable: false),
     );
   }
 
   AtracaoEvento comImagemUrl(String url) =>
-      AtracaoEvento(id: id, nome: nome, imagemUrl: url);
+      AtracaoEvento(id: id, nome: nome, imagemUrl: url, estilos: estilos);
 }
 
 class Evento {
