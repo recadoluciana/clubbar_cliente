@@ -18,6 +18,7 @@ class AgendaEventosScreen extends StatefulWidget {
 }
 
 class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
+  static const _tamanhoMiniaturaEvento = 76.0;
   final apiService = ApiService();
 
   bool carregando = true;
@@ -58,12 +59,13 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   }
 
   List<String> _estilosDoEvento(Evento evento) {
-    final estilos = evento.atracoes
-        .expand((atracao) => atracao.estilos)
-        .where((estilo) => estilo.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final estilos =
+        evento.atracoes
+            .expand((atracao) => atracao.estilos)
+            .where((estilo) => estilo.trim().isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
     return estilos;
   }
 
@@ -113,57 +115,61 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
       spacing: 5,
       runSpacing: 5,
       children: [
-        ...estilos.take(3).map(
-          (estilo) => _badge(
-            icone: Icons.music_note_rounded,
-            texto: estilo,
-            cor: const Color(0xFF2E7D32),
-          ),
-        ),
-        ...atracoes.take(3).map(
-          (atracao) => _badge(
-            icone: Icons.mic_rounded,
-            texto: atracao.nome,
-            cor: const Color(0xFF1565C0),
-          ),
-        ),
+        ...estilos
+            .take(3)
+            .map(
+              (estilo) => _badge(
+                icone: Icons.music_note_rounded,
+                texto: estilo,
+                cor: const Color(0xFF2E7D32),
+              ),
+            ),
+        ...atracoes
+            .take(3)
+            .map(
+              (atracao) => _badge(
+                icone: Icons.mic_rounded,
+                texto: atracao.nome,
+                cor: const Color(0xFF1565C0),
+              ),
+            ),
       ],
     );
   }
 
   Widget imagemEvento(String url) {
+    Widget moldura(Widget child) => Container(
+      width: _tamanhoMiniaturaEvento,
+      height: _tamanhoMiniaturaEvento,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      alignment: Alignment.center,
+      child: child,
+    );
+
     if (url.trim().isEmpty) {
-      return Container(
-        width: 108,
-        height: 78,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(12),
+      return moldura(
+        Container(
+          color: Colors.grey.shade100,
+          alignment: Alignment.center,
+          child: const Icon(Icons.image_not_supported),
         ),
-        alignment: Alignment.center,
-        child: const Icon(Icons.image_not_supported),
       );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: 108,
-        height: 78,
-        color: Colors.grey.shade100,
+    return moldura(
+      Padding(
+        padding: const EdgeInsets.all(4),
         child: Image.network(
           url,
-          width: 108,
-          height: 78,
           fit: BoxFit.contain,
-          alignment: Alignment.topCenter,
+          alignment: Alignment.center,
           errorBuilder: (context, error, stackTrace) => Container(
-            width: 108,
-            height: 78,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(12),
-            ),
+            color: Colors.grey.shade100,
             alignment: Alignment.center,
             child: const Icon(Icons.image_not_supported),
           ),
