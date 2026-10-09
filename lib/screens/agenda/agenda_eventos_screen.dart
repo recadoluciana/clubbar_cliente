@@ -296,7 +296,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
         children: [
           ClubbarPageHeader(
             titulo: 'Agenda',
-            subtitulo: 'Agenda de eventos',
+            subtitulo: 'Selecione o evento que deseja comprar.',
             icone: Icons.storefront_rounded,
             imagemAvatarUrl: widget.loja.imagemUrl,
           ),
