@@ -63,7 +63,10 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: ClubbarAppBar(
+      titulo: 'Política Clubbar',
       mostrarVoltar: true,
+      mostrarSessao: false,
+      mostrarLogo: false,
       onVoltar: () => Navigator.pop(context),
     ),
     backgroundColor: const Color(0xFFF6F6F6),
