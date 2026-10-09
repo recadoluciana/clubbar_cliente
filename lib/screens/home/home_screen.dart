@@ -527,19 +527,19 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     return SizedBox(
-      height: 150,
+      height: 128,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: produtosMaisVendidos.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final produto = produtosMaisVendidos[index];
           return SizedBox(
-            width: 124,
+            width: 108,
             child: Material(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(15),
               elevation: 2,
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -552,16 +552,20 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _imagemSegura(
-                      url: produto.urlfotoproduto ?? '',
-                      width: 124,
-                      height: 76,
-                      fit: BoxFit.contain,
-                      fallbackIcon: Icons.local_bar_outlined,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                      child: _imagemSegura(
+                        url: produto.urlfotoproduto ?? '',
+                        width: 92,
+                        height: 54,
+                        fit: BoxFit.contain,
+                        borderRadius: 11,
+                        fallbackIcon: Icons.local_bar_outlined,
+                      ),
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.all(7),
+                        padding: const EdgeInsets.fromLTRB(8, 5, 8, 7),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -571,18 +575,18 @@ class _HomeScreenState extends State<HomeScreen>
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 13,
+                                fontSize: 11,
                               ),
                             ),
-                            const SizedBox(height: 3),
+                            const SizedBox(height: 2),
                             Row(
                               children: [
                                 Icon(
                                   Icons.storefront_rounded,
                                   color: Colors.blue,
-                                  size: 13,
+                                  size: 11,
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 3),
                                 Expanded(
                                   child: Text(
                                     produto.nmloja,
@@ -590,7 +594,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: Colors.blue,
-                                      fontSize: 10.5,
+                                      fontSize: 9.5,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
