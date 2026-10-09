@@ -238,9 +238,10 @@ class _ProdutoCompartilhadoScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: loja?.nome ?? 'Produto',
+        titulo: loja?.nome,
         mostrarVoltar: true,
         mostrarSessao: false,
+        mostrarLogo: false,
       ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())

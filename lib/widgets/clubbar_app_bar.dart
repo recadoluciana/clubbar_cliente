@@ -18,6 +18,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool mostrarSessao;
   final bool mostrarPerfil;
   final bool logoAlinhadaEsquerda;
+  final bool mostrarLogo;
 
   const ClubbarAppBar({
     super.key,
@@ -33,6 +34,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.mostrarSessao = true,
     this.mostrarPerfil = true,
     this.logoAlinhadaEsquerda = false,
+    this.mostrarLogo = true,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -136,7 +138,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
-      centerTitle: temTitulo ? true : !logoAlinhadaEsquerda,
+      centerTitle: temTitulo
+          ? true
+          : mostrarLogo
+          ? !logoAlinhadaEsquerda
+          : false,
       toolbarHeight: 58,
       titleSpacing: temTitulo
           ? NavigationToolbar.kMiddleSpacing
@@ -184,7 +190,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? _logoClubbar()
           : null,
 
-      flexibleSpace: temTitulo || logoAlinhadaEsquerda
+      flexibleSpace: temTitulo || logoAlinhadaEsquerda || !mostrarLogo
           ? null
           : SafeArea(
               bottom: false,
