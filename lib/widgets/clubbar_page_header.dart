@@ -8,6 +8,7 @@ class ClubbarPageHeader extends StatelessWidget {
   final String? textoAvatar;
   final IconData? icone;
   final String? imagemAvatarUrl;
+  final String? imagemAvatarAsset;
   final double tamanhoAvatar;
   final bool mostrarAvatar;
   final Color? corTitulo;
@@ -30,6 +31,7 @@ class ClubbarPageHeader extends StatelessWidget {
     this.textoAvatar,
     this.icone,
     this.imagemAvatarUrl,
+    this.imagemAvatarAsset,
     this.tamanhoAvatar = 48,
     this.mostrarAvatar = true,
     this.corTitulo,
@@ -55,6 +57,7 @@ class ClubbarPageHeader extends StatelessWidget {
   /// Ícone ou inicial exibido sempre do lado esquerdo.
   Widget _avatarEsquerdo() {
     final avatarUrl = imagemAvatarUrl?.trim() ?? '';
+    final avatarAsset = imagemAvatarAsset?.trim() ?? '';
 
     return Container(
       width: tamanhoAvatar,
@@ -73,7 +76,14 @@ class ClubbarPageHeader extends StatelessWidget {
               color: corIcone ?? Colors.black87,
             )
           : ClipOval(
-              child: avatarUrl.isNotEmpty
+              child: avatarAsset.isNotEmpty
+                  ? Image.asset(
+                      avatarAsset,
+                      width: tamanhoAvatar,
+                      height: tamanhoAvatar,
+                      fit: BoxFit.contain,
+                    )
+                  : avatarUrl.isNotEmpty
                   ? Image.network(
                       avatarUrl,
                       width: tamanhoAvatar,

@@ -393,7 +393,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
           const ClubbarPageHeader(
             titulo: 'Cora responde',
             subtitulo: 'Dúvidas frequentes e atendimento',
-            mostrarAvatar: false,
+            imagemAvatarAsset: 'assets/images/corujao.png',
             corTitulo: Colors.blue,
             pesoTitulo: FontWeight.normal,
             pesoSubtitulo: FontWeight.normal,
