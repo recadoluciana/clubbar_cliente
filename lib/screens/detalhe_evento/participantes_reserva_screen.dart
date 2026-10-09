@@ -7,6 +7,7 @@ import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/cpf_utils.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
 
@@ -192,83 +193,90 @@ class _ParticipantesReservaScreenState
     return Scaffold(
       appBar: const ClubbarAppBar(mostrarVoltar: true),
       backgroundColor: const Color(0xFFF5F5F5),
-      body: ListView(
-        padding: const EdgeInsets.all(18),
+      body: Column(
         children: [
-          Text(
-            widget.nomeEvento,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ClubbarPageHeader(
+            titulo: widget.nomeEvento,
+            subtitulo: 'Estabelecimento: ${widget.loja.nome}',
+            icone: Icons.storefront_rounded,
+            imagemAvatarUrl: widget.loja.imagemUrl,
           ),
-          const SizedBox(height: 6),
-          Align(
-            alignment: Alignment.centerLeft,
-            child: _contador(minutos, segundos),
-          ),
-          const SizedBox(height: 14),
-          Card(
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 7),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Confira os ingressos escolhidos',
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
-                  ),
-                  const SizedBox(height: 14),
-                  _linhaResumo('Data e hora', widget.dataHoraEvento),
-                  _linhaResumo('Lote', widget.nomeLote),
-                  _linhaResumo('Setor', widget.nomeSetor),
-                  _linhaResumo('Modalidade', widget.modalidade),
-                  _linhaResumo('Benefício', widget.beneficio),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          for (var i = 0; i < nomes.length; i++)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Participante ${i + 1}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(18),
+              children: [
+                _contador(minutos, segundos),
+                const SizedBox(height: 14),
+                Card(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 7),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Confira os ingressos escolhidos',
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        _linhaResumo('Data e hora', widget.dataHoraEvento),
+                        _linhaResumo('Lote', widget.nomeLote),
+                        _linhaResumo('Setor', widget.nomeSetor),
+                        _linhaResumo('Modalidade', widget.modalidade),
+                        _linhaResumo('Benefício', widget.beneficio),
+                      ],
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: nomes[i],
-                      decoration: const InputDecoration(
-                        labelText: 'Nome completo',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                for (var i = 0; i < nomes.length; i++)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Participante ${i + 1}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: nomes[i],
+                            decoration: const InputDecoration(
+                              labelText: 'Nome completo',
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          TextField(
+                            controller: cpfs[i],
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(labelText: 'CPF'),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    TextField(
-                      controller: cpfs[i],
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'CPF'),
-                    ),
-                  ],
+                  ),
+                const SizedBox(height: 12),
+                ElevatedButton.icon(
+                  onPressed: salvando ? null : continuar,
+                  icon: const Icon(Icons.payment),
+                  label: const Text('Continuar para pagamento'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black,
+                    minimumSize: const Size.fromHeight(54),
+                  ),
                 ),
-              ),
-            ),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            onPressed: salvando ? null : continuar,
-            icon: const Icon(Icons.payment),
-            label: const Text('Continuar para pagamento'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
-              foregroundColor: Colors.black,
-              minimumSize: const Size.fromHeight(54),
+                const SizedBox(height: 12),
+                _contador(minutos, segundos),
+                const SizedBox(height: 12),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
-          _contador(minutos, segundos),
-          const SizedBox(height: 12),
         ],
       ),
     );
