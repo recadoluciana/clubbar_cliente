@@ -217,7 +217,10 @@ class _ParticipantesReservaScreenState
         if (didPop) unawaited(_cancelarReservaSeNecessario());
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Participante'), centerTitle: true),
+        appBar: AppBar(
+          title: const Text('Informe o(s) participante(s)'),
+          centerTitle: true,
+        ),
         backgroundColor: const Color(0xFFF5F5F5),
         body: Column(
           children: [
