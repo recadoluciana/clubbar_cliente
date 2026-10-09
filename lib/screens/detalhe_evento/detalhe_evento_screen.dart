@@ -887,6 +887,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Widget cardLote(List<EventoLote> opcoes, {bool exibirNomeLote = true}) {
     final lote = opcoes.first;
     final agora = DateTime.now();
+    final precos = opcoes.map((opcao) => opcao.preco).toSet().toList()
+      ..sort();
+    final textoPreco = precos.length == 1
+        ? 'Preço: ${ValueFormatters.moeda(precos.first)}'
+        : 'A partir de ${ValueFormatters.moeda(precos.first)}';
     final vendaDisponivel = lote.podeComprarEm(agora);
     final reservaTemporaria = lote.indisponivelPorReservasTemporarias;
     final textoBadge = reservaTemporaria
@@ -962,11 +967,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
               const SizedBox(height: 6),
               Text(
+                textoPreco,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
                 lote.qtDisponivel > 0
-                    ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste preço'
+                    ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste setor'
                     : reservaTemporaria
                     ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}; podem voltar a ficar disponíveis em breve.'
-                    : 'Ingressos esgotados neste preço',
+                    : 'Ingressos esgotados neste setor',
                 style: TextStyle(
                   color: lote.qtDisponivel > 0
                       ? Colors.grey.shade700
