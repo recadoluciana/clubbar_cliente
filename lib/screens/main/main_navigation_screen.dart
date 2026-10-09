@@ -173,7 +173,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       texto: 'Carteira',
                       estaSelecionado: carteiraSelecionada,
                     ),
-
                   ],
 
                   Expanded(
@@ -228,10 +227,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
+            style: TextButton.styleFrom(foregroundColor: Colors.green.shade700),
             child: const Text('Não'),
           ),
           ElevatedButton.icon(
             onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+              foregroundColor: Colors.white,
+            ),
             icon: const Icon(Icons.logout_rounded),
             label: const Text('Sair'),
           ),
