@@ -275,7 +275,11 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
-        title: const Text('Agenda'),
+        title: Text(
+          widget.loja.nome,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -291,7 +295,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: widget.loja.nome,
+            titulo: 'Agenda',
             subtitulo: 'Agenda de eventos',
             icone: Icons.storefront_rounded,
             imagemAvatarUrl: widget.loja.imagemUrl,
