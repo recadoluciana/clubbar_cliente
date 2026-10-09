@@ -993,6 +993,55 @@ class ApiService {
     }
   }
 
+  Future<List<Evento>> buscarEventosComCortesiasDisponiveis() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/eventos/cortesias-disponiveis'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final data = jsonDecode(response.body);
+        final itens = data is List
+            ? data
+            : data is Map && data['items'] is List
+            ? data['items'] as List
+            : const [];
+
+        return itens.map((item) {
+          final evento = Evento.fromJson(Map<String, dynamic>.from(item));
+          final banner = evento.bannerUrl.trim();
+          final logoLoja = evento.logoLojaUrl.trim();
+          return Evento(
+            id: evento.id,
+            titulo: evento.titulo,
+            data: evento.data,
+            local: evento.local,
+            bannerUrl: banner.isEmpty
+                ? ''
+                : banner.startsWith('http')
+                ? banner
+                : '$baseUrl$banner',
+            lojaId: evento.lojaId,
+            organizacaoId: evento.organizacaoId,
+            nomeLoja: evento.nomeLoja,
+            logoLojaUrl: logoLoja.isEmpty
+                ? ''
+                : logoLoja.startsWith('http')
+                ? logoLoja
+                : '$baseUrl$logoLoja',
+            totalVendasLoja: evento.totalVendasLoja,
+            atracoes: evento.atracoes,
+          );
+        }).toList();
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
   Future<List<Evento>> buscarEventosPorLoja(int lojaId) async {
     try {
       final response = await http.get(
