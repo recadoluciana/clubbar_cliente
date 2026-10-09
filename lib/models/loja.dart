@@ -16,8 +16,11 @@ class Loja {
   final String dsestiloloja;
   final List<String> estilosMusicais;
   final String nrtelloja;
+  final String emailContato;
+  final String whatsapp;
   final String sgEstado;
   final String numero;
+  final String complemento;
   final bool aberto24x7;
   final DateTime? dataCriacao;
 
@@ -37,8 +40,11 @@ class Loja {
     required this.dsestiloloja,
     this.estilosMusicais = const [],
     required this.nrtelloja,
+    this.emailContato = '',
+    this.whatsapp = '',
     required this.sgEstado,
     this.numero = '',
+    this.complemento = '',
     this.aberto24x7 = false,
     this.dataCriacao,
   });
@@ -81,8 +87,11 @@ class Loja {
           : (json['dsestiloloja'] ?? '').toString(),
       estilosMusicais: estilos,
       nrtelloja: (json['nrtelloja'] ?? '').toString(),
+      emailContato: (json['emailcontato'] ?? '').toString(),
+      whatsapp: (json['whatsapp'] ?? '').toString(),
       sgEstado: (json['sgestado'] ?? '').toString(),
       numero: (json['nrendeloja'] ?? '').toString(),
+      complemento: (json['complementoloja'] ?? '').toString(),
       aberto24x7: _toBool(json['aberto24x7']),
       dataCriacao: DateTime.tryParse((json['dtcriacao'] ?? '').toString()),
     );

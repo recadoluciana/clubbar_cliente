@@ -6,6 +6,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class ConteudoLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -21,6 +22,7 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
   bool _carregando = true;
   String? _erro;
   Map<String, dynamic> _conteudo = const {};
+  Loja? _dadosLoja;
 
   @override
   void initState() {
@@ -46,9 +48,15 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
       _erro = null;
     });
     try {
-      final dados = await _api.buscarConteudoPublicoLoja(widget.loja.id);
+      final resultados = await Future.wait([
+        _api.buscarConteudoPublicoLoja(widget.loja.id),
+        _api.buscarDadosLoja(widget.loja.id),
+      ]);
       if (!mounted) return;
-      setState(() => _conteudo = dados);
+      setState(() {
+        _conteudo = resultados[0] as Map<String, dynamic>;
+        _dadosLoja = resultados[1] as Loja;
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() => _erro = e.toString().replaceFirst('Exception: ', ''));
@@ -120,8 +128,66 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
     child: child,
   );
 
+  String _telefoneFormatado(String telefone) {
+    var numeros = telefone.replaceAll(RegExp(r'\D'), '');
+    if (numeros.length > 11 && numeros.startsWith('55')) {
+      numeros = numeros.substring(2);
+    }
+    if (numeros.length == 11) {
+      return '(${numeros.substring(0, 2)}) '
+          '${numeros.substring(2, 7)}-${numeros.substring(7)}';
+    }
+    if (numeros.length == 10) {
+      return '(${numeros.substring(0, 2)}) '
+          '${numeros.substring(2, 6)}-${numeros.substring(6)}';
+    }
+    return telefone.trim();
+  }
+
+  String _enderecoCompleto(Loja loja) {
+    final linhaEndereco = [
+      loja.endereco.trim(),
+      loja.numero.trim(),
+      loja.complemento.trim(),
+    ].where((texto) => texto.isNotEmpty).join(', ');
+    final localidade = [
+      loja.bairro.trim(),
+      loja.cidade.trim(),
+      loja.sgEstado.trim(),
+    ].where((texto) => texto.isNotEmpty).join(' - ');
+    return [
+      linhaEndereco,
+      localidade,
+    ].where((texto) => texto.isNotEmpty).join(' • ');
+  }
+
+  String _subtituloContato(Loja loja) {
+    final instagram = loja.instagram.trim().isEmpty
+        ? 'Não informado'
+        : loja.instagram.trim();
+    final telefone = loja.nrtelloja.trim().isEmpty
+        ? 'Não informado'
+        : _telefoneFormatado(loja.nrtelloja);
+    final email = loja.emailContato.trim().isEmpty
+        ? 'Não informado'
+        : loja.emailContato.trim();
+    final endereco = _enderecoCompleto(loja);
+    final whatsapp = loja.whatsapp.trim().isEmpty
+        ? 'Não informado'
+        : _telefoneFormatado(loja.whatsapp);
+
+    return [
+      'Instagram: $instagram',
+      'Telefone: $telefone',
+      'E-mail: $email',
+      'Endereço: ${endereco.isEmpty ? 'Não informado' : endereco}',
+      'WhatsApp: $whatsapp',
+    ].join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
+    final loja = _dadosLoja ?? widget.loja;
     final descricao = (_conteudo['dsdetalhadaloja'] ?? '').toString().trim();
     final fotos = _lista('fotos');
     final videos = _lista('videos');
@@ -129,33 +195,19 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: ClubbarAppBar(
+        titulo: loja.nome,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFFFFC107), Color(0xFFFFECB3)],
-              ),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.loja.nome,
-                  style: TextStyle(
-                    color: Colors.blue.shade700,
-                    fontSize: 23,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                const Text('Conteúdo do estabelecimento'),
-              ],
-            ),
+          ClubbarPageHeader(
+            titulo: 'Conteúdo do estabelecimento',
+            subtitulo: _subtituloContato(loja),
+            imagemAvatarUrl: loja.imagemUrl,
+            icone: Icons.storefront_rounded,
+            maxLinhasSubtitulo: 5,
           ),
           Expanded(
             child: _carregando
