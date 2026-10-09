@@ -38,6 +38,7 @@ class DetalheEventoScreen extends StatefulWidget {
 class _ModalidadesIngressoScreen extends StatefulWidget {
   final List<EventoLote> opcoes;
   final String nomeLoja;
+  final String nomeEvento;
   final String imagemLojaUrl;
   final double taxaPercentual;
   final double taxaMinima;
@@ -47,6 +48,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   const _ModalidadesIngressoScreen({
     required this.opcoes,
     required this.nomeLoja,
+    required this.nomeEvento,
     required this.imagemLojaUrl,
     required this.taxaPercentual,
     required this.taxaMinima,
@@ -83,12 +85,15 @@ class _ModalidadesIngressoScreenState
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: 'Escolha a modalidade',
+            titulo: widget.nomeEvento.trim().isEmpty
+                ? 'Escolha a modalidade'
+                : widget.nomeEvento,
             subtitulo: nomeSetor.isEmpty
-                ? 'Setor não informado'
-                : 'Setor: $nomeSetor',
+                ? 'Escolha a modalidade'
+                : 'Escolha a modalidade • Setor: $nomeSetor',
             icone: Icons.confirmation_number_rounded,
             imagemAvatarUrl: widget.imagemLojaUrl,
+            corTitulo: Colors.blue,
           ),
           Expanded(
             child: ListView(
@@ -1034,6 +1039,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         builder: (_) => _ModalidadesIngressoScreen(
           opcoes: opcoes,
           nomeLoja: widget.loja.nome,
+          nomeEvento: evento?.titulo ?? '',
           imagemLojaUrl: widget.loja.imagemUrl,
           taxaPercentual: widget.loja.vrtaxaing,
           taxaMinima: widget.loja.vrtaxaminimaingresso,
