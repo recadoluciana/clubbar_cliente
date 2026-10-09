@@ -394,7 +394,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
-        titulo: 'Cardápio',
+        titulo: widget.loja.nome,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: () {
@@ -419,7 +419,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           : Column(
               children: [
                 ClubbarPageHeader(
-                  titulo: widget.loja.nome,
+                  titulo: 'Cardápio',
                   subtitulo: 'Selecione o produto que deseja comprar',
                   corTitulo: Colors.blue,
                   imagemAvatarUrl: widget.loja.imagemUrl,
