@@ -387,14 +387,13 @@ class _ProdutoCompartilhadoScreenState
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 12,
+                    vertical: 8,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
                       const Text(
                         'Quantidade',
@@ -403,65 +402,74 @@ class _ProdutoCompartilhadoScreenState
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          IconButton.filledTonal(
-                            tooltip: 'Diminuir quantidade',
-                            onPressed: _quantidade > 1
-                                ? () => _alterarQuantidade(_quantidade - 1)
-                                : null,
-                            icon: const Icon(Icons.remove_rounded),
-                          ),
-                          const SizedBox(width: 10),
-                          SizedBox(
-                            width: 84,
-                            child: TextField(
-                              controller: _quantidadeCtrl,
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(3),
-                              ],
-                              onChanged: (_) => setState(() {}),
-                              onEditingComplete: () {
-                                _alterarQuantidade(
-                                  int.tryParse(_quantidadeCtrl.text) ?? 1,
-                                );
-                                FocusScope.of(context).unfocus();
-                              },
-                              decoration: InputDecoration(
-                                isDense: true,
-                                filled: true,
-                                fillColor: Colors.grey.shade50,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
+                      const Spacer(),
+                      IconButton.filledTonal(
+                        tooltip: 'Diminuir quantidade',
+                        onPressed: _quantidade > 1
+                            ? () => _alterarQuantidade(_quantidade - 1)
+                            : null,
+                        icon: const Icon(Icons.remove_rounded, size: 20),
+                        style: IconButton.styleFrom(
+                          minimumSize: const Size(40, 40),
+                          padding: EdgeInsets.zero,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        width: 66,
+                        height: 40,
+                        child: TextField(
+                          controller: _quantidadeCtrl,
+                          textAlign: TextAlign.center,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(3),
+                          ],
+                          onChanged: (_) => setState(() {}),
+                          onEditingComplete: () {
+                            _alterarQuantidade(
+                              int.tryParse(_quantidadeCtrl.text) ?? 1,
+                            );
+                            FocusScope.of(context).unfocus();
+                          },
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 10,
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade50,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          IconButton.filledTonal(
-                            tooltip: 'Aumentar quantidade',
-                            onPressed: _quantidade < 999
-                                ? () => _alterarQuantidade(_quantidade + 1)
-                                : null,
-                            icon: const Icon(Icons.add_rounded),
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
                           ),
-                          const Spacer(),
-                          Text(
-                            'Máximo 999',
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filledTonal(
+                        tooltip: 'Aumentar quantidade',
+                        onPressed: _quantidade < 999
+                            ? () => _alterarQuantidade(_quantidade + 1)
+                            : null,
+                        icon: const Icon(Icons.add_rounded, size: 20),
+                        style: IconButton.styleFrom(
+                          minimumSize: const Size(40, 40),
+                          padding: EdgeInsets.zero,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Máximo 999',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
