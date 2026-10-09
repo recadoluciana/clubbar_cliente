@@ -394,7 +394,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
+        titulo: 'Cardápio',
         mostrarVoltar: true,
+        mostrarSessao: false,
         onVoltar: () {
           if (widget.onVoltar != null) {
             widget.onVoltar!();
