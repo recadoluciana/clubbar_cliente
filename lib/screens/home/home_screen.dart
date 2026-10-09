@@ -9,6 +9,7 @@ import '../../models/produto.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../cortesias/cortesias_disponiveis_screen.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../login/login_screen.dart';
@@ -23,7 +24,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin {
   final authStorage = AuthStorage();
   final apiService = ApiService();
 
@@ -31,6 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _buscaCtrl = TextEditingController();
 
   Timer? _timer;
+  late final AnimationController _animacaoCortesias;
+  late final Animation<double> _opacidadeCortesias;
   int _paginaAtual = 0;
 
   bool carregando = true;
@@ -44,12 +48,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Evento> eventos = [];
   List<Evento> eventosCarrossel = [];
+  List<Evento> eventosComCortesias = [];
   List<Loja> lojas = [];
   List<Produto> produtosMaisVendidos = [];
 
   @override
   void initState() {
     super.initState();
+    _animacaoCortesias = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+    _opacidadeCortesias = Tween<double>(begin: .58, end: 1).animate(
+      CurvedAnimation(parent: _animacaoCortesias, curve: Curves.easeInOut),
+    );
     carregarHome();
   }
 
@@ -70,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final lojasFuture = apiService.buscarLojas();
       final eventosFuture = apiService.buscarEventos();
+      final cortesiasFuture = apiService.buscarEventosComCortesiasDisponiveis();
       final produtosFuture = apiService.buscarProdutosMaisVendidos(limite: 10);
 
       try {
@@ -86,6 +99,12 @@ class _HomeScreenState extends State<HomeScreen> {
         eventos = [];
         eventosCarrossel = [];
         erroEventos = apiService.mensagemErroAmigavel(e);
+      }
+
+      try {
+        eventosComCortesias = await cortesiasFuture;
+      } catch (_) {
+        eventosComCortesias = [];
       }
 
       try {
@@ -194,6 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _animacaoCortesias.dispose();
     _pageController.dispose();
     _buscaCtrl.dispose();
     super.dispose();
@@ -700,6 +720,66 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _indicadorCortesias() {
+    final quantidade = eventosComCortesias.length;
+    return FadeTransition(
+      opacity: _opacidadeCortesias,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: Material(
+          color: const Color(0xFFE5F6E9),
+          borderRadius: BorderRadius.circular(16),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () => MainNavigationController.abrirTela(
+              CortesiasDisponiveisScreen(eventos: eventosComCortesias),
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF4CAF50)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.card_giftcard_rounded,
+                    color: Color(0xFF168B3A),
+                    size: 25,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Cortesias disponíveis',
+                          style: TextStyle(
+                            color: Color(0xFF168B3A),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        Text(
+                          '$quantidade ${quantidade == 1 ? 'evento possui' : 'eventos possuem'} convite gratuito. Clique aqui.',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: Color(0xFF168B3A),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -744,6 +824,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
                 children: [
                   _campoBusca(),
+                  if (termoBusca.trim().isEmpty &&
+                      eventosComCortesias.isNotEmpty)
+                    _indicadorCortesias(),
                   const SizedBox(height: 15),
 
                   if (destaquesFiltrados.isNotEmpty) ...[
