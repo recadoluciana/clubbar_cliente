@@ -46,6 +46,8 @@ class _ParticipantesReservaScreenState
   late DateTime expiraEm;
   Duration restante = Duration.zero;
   bool salvando = false;
+  bool _reservaFinalizada = false;
+  bool _reservaCancelada = false;
 
   @override
   void initState() {
@@ -57,7 +59,7 @@ class _ParticipantesReservaScreenState
     }
     expiraEm =
         DateTime.tryParse('${widget.reserva['data_expiracao']}') ??
-        DateTime.now().add(const Duration(minutes: 15));
+        DateTime.now().add(const Duration(minutes: 5));
     _tick();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
@@ -68,11 +70,31 @@ class _ParticipantesReservaScreenState
     setState(() => restante = valor.isNegative ? Duration.zero : valor);
     if (valor <= Duration.zero) {
       timer?.cancel();
+      unawaited(_cancelarReservaSeNecessario());
       AppSnackBar.erro(
         context,
         'O tempo para concluir a compra de ingressos expirou.',
       );
       Navigator.pop(context);
+    }
+  }
+
+  Future<void> _cancelarReservaSeNecessario() async {
+    if (_reservaFinalizada || _reservaCancelada) return;
+    _reservaCancelada = true;
+    final reservaId =
+        int.tryParse('${widget.reserva['reserva_ingresso_id']}') ?? 0;
+    final clienteId = int.tryParse('${widget.reserva['cliente_id']}') ?? 0;
+    if (reservaId <= 0 || clienteId <= 0) return;
+    try {
+      await api.cancelarReservaIngresso(
+        reservaId: reservaId,
+        clienteId: clienteId,
+      );
+    } catch (_) {
+      // Se o app for fechado abruptamente, a expiração no servidor libera a
+      // reserva em até cinco minutos. Uma venda já confirmada também não pode
+      // ser cancelada por esta ação.
     }
   }
 
@@ -115,6 +137,7 @@ class _ParticipantesReservaScreenState
       );
       if (!mounted) return;
       if (reserva['gratuito'] == true || reserva['venda_id'] != null) {
+        _reservaFinalizada = true;
         timer?.cancel();
         await Navigator.pushReplacement(
           context,
@@ -189,94 +212,103 @@ class _ParticipantesReservaScreenState
   Widget build(BuildContext context) {
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
     final segundos = (restante.inSeconds % 60).toString().padLeft(2, '0');
-    return Scaffold(
-      appBar: AppBar(title: const Text('Participante'), centerTitle: true),
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
-        children: [
-          ClubbarPageHeader(
-            titulo: widget.nomeEvento,
-            subtitulo: 'Estabelecimento: ${widget.loja.nome}',
-            icone: Icons.storefront_rounded,
-            imagemAvatarUrl: widget.loja.imagemUrl,
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(18),
-              children: [
-                _contador(minutos, segundos),
-                const SizedBox(height: 14),
-                Card(
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 7),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Confira os dados abaixo',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        _linhaResumo('Data e hora', widget.dataHoraEvento),
-                        _linhaResumo('Lote', widget.nomeLote),
-                        _linhaResumo('Setor', widget.nomeSetor),
-                        _linhaResumo('Modalidade', widget.modalidade),
-                        _linhaResumo('Benefício', widget.beneficio),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                for (var i = 0; i < nomes.length; i++)
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) unawaited(_cancelarReservaSeNecessario());
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Participante'), centerTitle: true),
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Column(
+          children: [
+            ClubbarPageHeader(
+              titulo: widget.nomeEvento,
+              subtitulo: 'Estabelecimento: ${widget.loja.nome}',
+              icone: Icons.storefront_rounded,
+              imagemAvatarUrl: widget.loja.imagemUrl,
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(18),
+                children: [
+                  _contador(minutos, segundos),
+                  const SizedBox(height: 14),
                   Card(
+                    color: Colors.white,
                     child: Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 7),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Participante ${i + 1}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: nomes[i],
-                            decoration: const InputDecoration(
-                              labelText: 'Nome completo',
+                          const Text(
+                            'Confira os dados abaixo',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                           const SizedBox(height: 14),
-                          TextField(
-                            controller: cpfs[i],
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(labelText: 'CPF'),
-                          ),
+                          _linhaResumo('Data e hora', widget.dataHoraEvento),
+                          _linhaResumo('Lote', widget.nomeLote),
+                          _linhaResumo('Setor', widget.nomeSetor),
+                          _linhaResumo('Modalidade', widget.modalidade),
+                          _linhaResumo('Benefício', widget.beneficio),
                         ],
                       ),
                     ),
                   ),
-                const SizedBox(height: 12),
-                ElevatedButton.icon(
-                  onPressed: salvando ? null : continuar,
-                  icon: const Icon(Icons.payment),
-                  label: const Text('Continuar para pagamento'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.black,
-                    minimumSize: const Size.fromHeight(54),
+                  const SizedBox(height: 16),
+                  for (var i = 0; i < nomes.length; i++)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Participante ${i + 1}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: nomes[i],
+                              decoration: const InputDecoration(
+                                labelText: 'Nome completo',
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            TextField(
+                              controller: cpfs[i],
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'CPF',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: salvando ? null : continuar,
+                    icon: const Icon(Icons.payment),
+                    label: const Text('Continuar para pagamento'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size.fromHeight(54),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                _contador(minutos, segundos),
-                const SizedBox(height: 12),
-              ],
+                  const SizedBox(height: 12),
+                  _contador(minutos, segundos),
+                  const SizedBox(height: 12),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

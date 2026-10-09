@@ -158,7 +158,7 @@ class _ModalidadesIngressoScreenState
             ] else ...[
               const SizedBox(height: 8),
               Text(
-                '${disponivelModalidade} ingresso${disponivelModalidade == 1 ? '' : 's'} disponíve${disponivelModalidade == 1 ? 'l' : 'is'} nesta modalidade',
+                '$disponivelModalidade ingresso${disponivelModalidade == 1 ? '' : 's'} disponíve${disponivelModalidade == 1 ? 'l' : 'is'} nesta modalidade',
                 style: TextStyle(
                   fontSize: 12,
                   color: disponivelModalidade > 0
@@ -871,10 +871,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final lote = opcoes.first;
     final agora = DateTime.now();
     final vendaDisponivel = lote.podeComprarEm(agora);
-    final textoBadge = lote.situacaoVendaEm(agora);
+    final reservaTemporaria = lote.indisponivelPorReservasTemporarias;
+    final textoBadge = reservaTemporaria
+        ? 'Reservado temporariamente'
+        : lote.situacaoVendaEm(agora);
     final vendaFutura = textoBadge == 'Em breve';
     final corBadge = vendaDisponivel
         ? Colors.green
+        : reservaTemporaria
+        ? Colors.orange.shade800
         : vendaFutura
         ? Colors.amber.shade800
         : Colors.red;
@@ -940,17 +945,32 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                vendaDisponivel
+                lote.qtDisponivel > 0
                     ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste preço'
-                    : 'Cota não utilizada: ${lote.qtDisponivel}',
+                    : reservaTemporaria
+                    ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}; podem voltar a ficar disponíveis em breve.'
+                    : 'Ingressos esgotados neste preço',
                 style: TextStyle(
                   color: lote.qtDisponivel > 0
                       ? Colors.grey.shade700
+                      : reservaTemporaria
+                      ? Colors.orange.shade800
                       : Colors.red,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                 ),
               ),
+              if (lote.qtDisponivel > 0 && lote.temReservasTemporarias) ...[
+                const SizedBox(height: 3),
+                Text(
+                  '${lote.qtReservada} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}',
+                  style: TextStyle(
+                    color: Colors.orange.shade800,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
               const SizedBox(height: 4),
               Text(
                 'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
