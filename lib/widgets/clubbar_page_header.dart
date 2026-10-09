@@ -18,6 +18,7 @@ class ClubbarPageHeader extends StatelessWidget {
   // Conteúdo opcional do lado direito
   final Widget? trailing;
   final String? imagemUrl;
+  final VoidCallback? onVoltar;
 
   // Mantido para não quebrar chamadas antigas
   final bool mostrarAba;
@@ -37,6 +38,7 @@ class ClubbarPageHeader extends StatelessWidget {
     this.pesoSubtitulo = FontWeight.w500,
     this.trailing,
     this.imagemUrl,
+    this.onVoltar,
     this.mostrarAba = false,
   });
 
@@ -63,29 +65,36 @@ class ClubbarPageHeader extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: Colors.amber.shade200, width: 2),
       ),
-      child: ClipOval(
-        child: avatarUrl.isNotEmpty
-            ? Image.network(
-                avatarUrl,
-                width: tamanhoAvatar,
-                height: tamanhoAvatar,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Icon(
-                  icone ?? Icons.storefront_rounded,
-                  size: 24,
-                  color: corIcone ?? Colors.black87,
-                ),
-              )
-            : icone != null
-            ? Icon(icone, size: 24, color: corIcone ?? Colors.black87)
-            : Text(
-                _inicial,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-      ),
+      child: onVoltar != null
+          ? IconButton(
+              tooltip: 'Voltar',
+              onPressed: onVoltar,
+              icon: const Icon(Icons.arrow_back_rounded),
+              color: corIcone ?? Colors.black87,
+            )
+          : ClipOval(
+              child: avatarUrl.isNotEmpty
+                  ? Image.network(
+                      avatarUrl,
+                      width: tamanhoAvatar,
+                      height: tamanhoAvatar,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Icon(
+                        icone ?? Icons.storefront_rounded,
+                        size: 24,
+                        color: corIcone ?? Colors.black87,
+                      ),
+                    )
+                  : icone != null
+                  ? Icon(icone, size: 24, color: corIcone ?? Colors.black87)
+                  : Text(
+                      _inicial,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+            ),
     );
   }
 

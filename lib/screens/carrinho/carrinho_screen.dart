@@ -832,8 +832,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   titulo: widget.loja.nome,
                   subtitulo: subtitulo,
                   corTitulo: Colors.blue,
-                  icone: Icons.storefront_rounded,
-                  imagemAvatarUrl: widget.loja.imagemUrl,
+                  onVoltar: () => Navigator.of(context).pop(),
                 ),
 
                 Expanded(
