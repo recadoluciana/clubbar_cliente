@@ -18,6 +18,7 @@ import '../../utils/login_redirect.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import 'participantes_reserva_screen.dart';
 import '../pagamento/politica_compra_screen.dart';
+import 'meia_entrada_screen.dart';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -1106,23 +1107,44 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Widget _politicaEvento() {
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: TextButton.icon(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+              ),
+            ),
+            icon: const Icon(Icons.policy_outlined, size: 19),
+            label: const Text(
+              'Política de compra de ingresso',
+              style: TextStyle(fontSize: 15),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              alignment: Alignment.centerLeft,
+            ),
           ),
-        ),
-        icon: const Icon(Icons.policy_outlined, size: 19),
-        label: const Text(
-          'Política de compra de ingresso',
-          style: TextStyle(fontSize: 15),
-        ),
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          alignment: Alignment.centerLeft,
-        ),
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
+            ),
+            icon: const Icon(Icons.workspace_premium_outlined, size: 19),
+            label: const Text(
+              'Quem tem direito à meia-entrada',
+              style: TextStyle(fontSize: 15),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              alignment: Alignment.centerLeft,
+            ),
+          ),
+        ],
       ),
     );
   }
