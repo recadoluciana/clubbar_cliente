@@ -203,7 +203,7 @@ class PresenteImageGenerator {
     canvas.drawRect(areaFotoRect, paint);
 
     if (imagem != null) {
-      _desenharImagemContain(
+      _desenharImagemCover(
         canvas: canvas,
         imagem: imagem,
         destino: areaFotoRect,
@@ -323,8 +323,10 @@ class PresenteImageGenerator {
 
     _desenharTexto(
       canvas,
-      texto: 'Apresente este QR Code para o atendente',
-      posicao: Offset(84, ehIngresso ? 960 : 890),
+      texto: ehIngresso
+          ? 'Apresente este QR Code na entrada do evento'
+          : 'Apresente este QR Code para o atendente',
+      posicao: Offset(84, ehIngresso ? 950 : 880),
       larguraMaxima: 912,
       tamanho: 30,
       cor: Colors.red,
@@ -339,11 +341,11 @@ class PresenteImageGenerator {
     required String dadosQr,
     required bool ehIngresso,
   }) async {
-    final tamanhoQr = ehIngresso ? 270.0 : 300.0;
-    const margemQr = 30.0;
+    final tamanhoQr = ehIngresso ? 240.0 : 270.0;
+    const margemQr = 24.0;
     final tamanhoAreaQr = tamanhoQr + (margemQr * 2);
-    final inicioAreaBranca = ehIngresso ? 980.0 : 990.0;
-    final inicioQr = ehIngresso ? 1010.0 : 960.0;
+    final inicioQr = ehIngresso ? 1020.0 : 950.0;
+    final inicioAreaBranca = inicioQr - margemQr;
 
     final areaBrancaQr = Rect.fromLTWH(
       (1080 - tamanhoAreaQr) / 2,
@@ -419,13 +421,13 @@ class PresenteImageGenerator {
     _desenharTexto(
       canvas,
       texto:
-          'Conheça o aplicativo Clubbar, para bares e casas noturnas.\nBaixe o app e aproveite promoções, descontos e benefícios exclusivos.',
+          'Acesse o Clubbar pelo celular e aproveite promoções, descontos e benefícios exclusivos.',
       posicao: const Offset(118, 1380),
       larguraMaxima: 844,
       tamanho: 20,
       cor: Colors.black,
       peso: FontWeight.w600,
-      maxLines: 2,
+      maxLines: 1,
       alinhamento: TextAlign.center,
     );
   }
@@ -439,41 +441,20 @@ class PresenteImageGenerator {
     const tamanhoQr = 130.0;
     const margem = 12.0;
 
-    final qrApp = await _gerarQrImage(
-      conteudo: urlApp.trim(),
+    final urlAcesso = urlWeb.trim().isNotEmpty ? urlWeb.trim() : urlApp.trim();
+    final qrAcesso = await _gerarQrImage(
+      conteudo: urlAcesso,
       tamanho: tamanhoQr,
-    );
-
-    final qrWeb = await _gerarQrImage(
-      conteudo: urlWeb.trim(),
-      tamanho: tamanhoQr,
-    );
-
-    const areaApp = Rect.fromLTWH(115, 1450, 365, 220);
-    const areaWeb = Rect.fromLTWH(600, 1450, 365, 220);
-
-    _desenharCardDivulgacao(
-      canvas: canvas,
-      paint: paint,
-      area: areaApp,
-      titulo: 'Baixe o App',
-      subtitulo: ' ',
-      icone: Icons.download_rounded,
-      qrImage: qrApp,
-      tamanhoQr: tamanhoQr,
-      margem: margem,
-      fundo: Colors.black,
-      corTexto: Colors.white,
     );
 
     _desenharCardDivulgacao(
       canvas: canvas,
       paint: paint,
-      area: areaWeb,
-      titulo: 'Acesse pela Web',
-      subtitulo: ' ',
+      area: const Rect.fromLTWH(350, 1450, 380, 220),
+      titulo: 'Acesse o Clubbar',
+      subtitulo: 'Android e iPhone',
       icone: Icons.language_rounded,
-      qrImage: qrWeb,
+      qrImage: qrAcesso,
       tamanhoQr: tamanhoQr,
       margem: margem,
       fundo: Colors.white,
@@ -652,7 +633,7 @@ class PresenteImageGenerator {
     }
   }
 
-  static void _desenharImagemContain({
+  static void _desenharImagemCover({
     required Canvas canvas,
     required ui.Image imagem,
     required Rect destino,
@@ -660,23 +641,27 @@ class PresenteImageGenerator {
     final larguraImagem = imagem.width.toDouble();
     final alturaImagem = imagem.height.toDouble();
 
-    final escala = math.min(
-      destino.width / larguraImagem,
-      destino.height / alturaImagem,
-    );
+    final proporcaoImagem = larguraImagem / alturaImagem;
+    final proporcaoDestino = destino.width / destino.height;
 
-    final larguraFinal = larguraImagem * escala;
-    final alturaFinal = alturaImagem * escala;
-
-    final x = destino.left + ((destino.width - larguraFinal) / 2);
-    final y = destino.top + ((destino.height - alturaFinal) / 2);
-
-    final destinoFinal = Rect.fromLTWH(x, y, larguraFinal, alturaFinal);
+    final origem = proporcaoImagem > proporcaoDestino
+        ? Rect.fromLTWH(
+            (larguraImagem - (alturaImagem * proporcaoDestino)) / 2,
+            0,
+            alturaImagem * proporcaoDestino,
+            alturaImagem,
+          )
+        : Rect.fromLTWH(
+            0,
+            (alturaImagem - (larguraImagem / proporcaoDestino)) / 2,
+            larguraImagem,
+            larguraImagem / proporcaoDestino,
+          );
 
     canvas.drawImageRect(
       imagem,
-      Rect.fromLTWH(0, 0, larguraImagem, alturaImagem),
-      destinoFinal,
+      origem,
+      destino,
       Paint()..filterQuality = FilterQuality.high,
     );
   }
