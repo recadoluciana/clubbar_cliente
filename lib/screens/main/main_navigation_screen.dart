@@ -21,6 +21,7 @@ import '../../services/deep_link_service.dart';
 import '../../widgets/api_status_indicator.dart';
 import '../atendimento_cora/atendimento_cora_screen.dart';
 import '../agenda/agenda_eventos_screen.dart';
+import '../pedidos/meus_pedidos_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -536,11 +537,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       builder: (context, abaAtual, _) {
         currentIndex = abaAtual;
 
-        return Scaffold(
-          body: ValueListenableBuilder<Widget?>(
-            valueListenable: MainNavigationController.telaInterna,
-            builder: (context, telaInterna, _) {
-              return PopScope(
+        return ValueListenableBuilder<Widget?>(
+          valueListenable: MainNavigationController.telaInterna,
+          builder: (context, telaInterna, _) {
+            return Scaffold(
+              body: PopScope(
                 canPop: telaInterna == null && currentIndex == 0,
                 onPopInvokedWithResult: (didPop, _) {
                   if (!didPop) {
@@ -552,10 +553,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   }
                 },
                 child: telaInterna ?? _buildPage(),
-              );
-            },
-          ),
-          bottomNavigationBar: _barraNavegacao(),
+              ),
+              bottomNavigationBar: telaInterna is MeusPedidosScreen
+                  ? null
+                  : _barraNavegacao(),
+            );
+          },
         );
       },
     );
