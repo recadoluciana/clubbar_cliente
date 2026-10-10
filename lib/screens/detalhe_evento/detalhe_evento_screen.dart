@@ -1345,7 +1345,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ],
                           const SizedBox(height: 10),
                           Text(
-                            formatarDataHora(ev.dataInicio),
+                            '${formatarDataHora(ev.dataInicio)},',
                             style: const TextStyle(
                               color: Colors.blue,
                               fontSize: 20,
