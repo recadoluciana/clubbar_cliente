@@ -24,8 +24,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final authStorage = AuthStorage();
   final apiService = ApiService();
 
@@ -136,7 +135,15 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   String _normalizar(String texto) {
-    return texto.toLowerCase().trim();
+    return texto
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'[áàâãä]'), 'a')
+        .replaceAll(RegExp(r'[éèêë]'), 'e')
+        .replaceAll(RegExp(r'[íìîï]'), 'i')
+        .replaceAll(RegExp(r'[óòôõö]'), 'o')
+        .replaceAll(RegExp(r'[úùûü]'), 'u')
+        .replaceAll('ç', 'c');
   }
 
   List<Evento> get eventosFiltrados {

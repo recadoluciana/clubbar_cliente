@@ -21,6 +21,7 @@ class ClubbarPageHeader extends StatelessWidget {
   final Widget? trailing;
   final String? imagemUrl;
   final VoidCallback? onVoltar;
+  final Widget? conteudoInferior;
 
   // Mantido para não quebrar chamadas antigas
   final bool mostrarAba;
@@ -43,6 +44,7 @@ class ClubbarPageHeader extends StatelessWidget {
     this.trailing,
     this.imagemUrl,
     this.onVoltar,
+    this.conteudoInferior,
     this.mostrarAba = false,
   });
 
@@ -153,7 +155,12 @@ class ClubbarPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        conteudoInferior == null ? 14 : 0,
+      ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -168,48 +175,60 @@ class ClubbarPageHeader extends StatelessWidget {
           BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 3)),
         ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Column(
         children: [
-          if (mostrarAvatar) ...[_avatarEsquerdo(), const SizedBox(width: 12)],
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: EdgeInsets.only(bottom: conteudoInferior == null ? 0 : 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  titulo,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: pesoTitulo,
-                    color: corTitulo,
+                if (mostrarAvatar) ...[
+                  _avatarEsquerdo(),
+                  const SizedBox(width: 12),
+                ],
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        titulo,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: pesoTitulo,
+                          color: corTitulo,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitulo,
+                        maxLines: maxLinhasSubtitulo,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                          fontWeight: pesoSubtitulo,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitulo,
-                  maxLines: maxLinhasSubtitulo,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade700,
-                    fontWeight: pesoSubtitulo,
-                    height: 1.25,
-                  ),
-                ),
+
+                if (trailing != null) ...[
+                  const SizedBox(width: 10),
+                  trailing!,
+                ] else if (imagemUrl != null &&
+                    imagemUrl!.trim().isNotEmpty) ...[
+                  const SizedBox(width: 10),
+                  _logoDireita(),
+                ],
               ],
             ),
           ),
-
-          if (trailing != null) ...[
-            const SizedBox(width: 10),
-            trailing!,
-          ] else if (imagemUrl != null && imagemUrl!.trim().isNotEmpty) ...[
-            const SizedBox(width: 10),
-            _logoDireita(),
-          ],
+          if (conteudoInferior case final Widget conteudo) conteudo,
         ],
       ),
     );
