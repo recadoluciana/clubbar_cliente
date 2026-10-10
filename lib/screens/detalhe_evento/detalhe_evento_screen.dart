@@ -852,7 +852,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : lote.nomeModalidade;
   }
 
-  Widget cardLoteGlobal(List<List<EventoLote>> setores) {
+  bool get _exibirNomeSetor {
+    final setores = lotes
+        .map((lote) => lote.nomeSetor.trim())
+        .where((nome) => nome.isNotEmpty)
+        .toSet();
+    return setores.length > 1;
+  }
+
+  Widget cardLoteGlobal(
+    List<List<EventoLote>> setores, {
+    required bool exibirNomeLote,
+    required bool exibirNomeSetor,
+  }) {
     final lote = setores.first.first;
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -865,18 +877,30 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            lote.nome,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+          if (exibirNomeLote) ...[
+            Text(
+              lote.nome,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 10),
+          ],
+          ...setores.map(
+            (opcoes) => cardLote(
+              opcoes,
+              exibirNomeLote: false,
+              exibirNomeSetor: exibirNomeSetor,
+            ),
           ),
-          const SizedBox(height: 10),
-          ...setores.map((opcoes) => cardLote(opcoes, exibirNomeLote: false)),
         ],
       ),
     );
   }
 
-  Widget cardLote(List<EventoLote> opcoes, {bool exibirNomeLote = true}) {
+  Widget cardLote(
+    List<EventoLote> opcoes, {
+    bool exibirNomeLote = true,
+    bool exibirNomeSetor = true,
+  }) {
     final lote = opcoes.first;
     final agora = DateTime.now();
     final precos = opcoes.map((opcao) => opcao.preco).toSet().toList()..sort();
@@ -893,6 +917,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? 'Reservado temporariamente'
         : lote.situacaoVendaEm(agora);
     final vendaFutura = textoBadge == 'Em breve';
+    final textoDisponibilidade = lote.qtDisponivel > 0
+        ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste setor'
+        : reservaTemporaria
+        ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}; podem voltar a ficar disponíveis em breve.'
+        : null;
     final corBadge = vendaDisponivel
         ? Colors.green
         : reservaTemporaria
@@ -927,7 +956,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                        if (lote.nomeSetor.isNotEmpty) ...[
+                        if (exibirNomeSetor && lote.nomeSetor.isNotEmpty) ...[
                           if (exibirNomeLote) const SizedBox(height: 3),
                           Text(
                             lote.nomeSetor,
@@ -970,22 +999,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                lote.qtDisponivel > 0
-                    ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste setor'
-                    : reservaTemporaria
-                    ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}; podem voltar a ficar disponíveis em breve.'
-                    : 'Ingressos esgotados neste setor',
-                style: TextStyle(
-                  color: lote.qtDisponivel > 0
-                      ? Colors.grey.shade700
-                      : reservaTemporaria
-                      ? Colors.orange.shade800
-                      : Colors.red,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
+              if (textoDisponibilidade != null)
+                Text(
+                  textoDisponibilidade,
+                  style: TextStyle(
+                    color: lote.qtDisponivel > 0
+                        ? Colors.grey.shade700
+                        : Colors.orange.shade800,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
-              ),
               if (lote.qtDisponivel > 0 && lote.temReservasTemporarias) ...[
                 const SizedBox(height: 3),
                 Text(
@@ -1501,8 +1525,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
                           if (lotes.isEmpty)
                             estadoVazioLotes()
-                          else
-                            ..._lotesGlobaisAgrupados.map(cardLoteGlobal),
+                          else ...[
+                            ..._lotesGlobaisAgrupados.map(
+                              (setores) => cardLoteGlobal(
+                                setores,
+                                exibirNomeLote:
+                                    _lotesGlobaisAgrupados.length > 1,
+                                exibirNomeSetor: _exibirNomeSetor,
+                              ),
+                            ),
+                          ],
                           _politicaEvento(),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
