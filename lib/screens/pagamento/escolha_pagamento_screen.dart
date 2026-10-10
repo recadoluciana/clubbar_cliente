@@ -130,7 +130,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     _timerReserva?.cancel();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      AppSnackBar.aviso(context, 'O tempo para concluir a compra expirou.');
+      AppSnackBar.aviso(
+        context,
+        'Sua reserva expirou. Inicie uma nova compra de ingresso.',
+      );
       Navigator.pop(context, false);
     });
   }
@@ -206,6 +209,20 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   Future<void> _mostrarErroPix(Object erro) async {
     final mensagem = apiService.mensagemErroAmigavel(erro);
+    final reservaExpirada =
+        mensagem.toLowerCase().contains('reserva não está disponível') ||
+        mensagem.toLowerCase().contains('reserva de ingressos expirou');
+    if (reservaExpirada) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Sua reserva expirou. Inicie uma nova compra de ingresso.',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     if (erro.toString().toLowerCase().contains('timeout')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -763,6 +780,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       final erro = e.toString().toLowerCase();
       final mensagem = erro.contains('timeout')
           ? 'A conexão demorou. Antes de tentar pagar novamente, confira se a compra apareceu na carteira.'
+          : erro.contains('reserva não está disponível') ||
+                erro.contains('reserva de ingressos expirou')
+          ? 'Sua reserva expirou. Inicie uma nova compra de ingresso.'
           : erro.contains('asaas_pendente') ||
                 erro.contains('recebimentos ainda') ||
                 erro.contains('temporariamente indisponível')
