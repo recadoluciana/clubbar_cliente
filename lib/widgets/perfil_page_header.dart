@@ -5,8 +5,13 @@ import 'clubbar_page_header.dart';
 
 class PerfilPageHeader extends StatefulWidget {
   final String subtitulo;
+  final Widget? conteudoInferior;
 
-  const PerfilPageHeader({super.key, required this.subtitulo});
+  const PerfilPageHeader({
+    super.key,
+    required this.subtitulo,
+    this.conteudoInferior,
+  });
 
   @override
   State<PerfilPageHeader> createState() => _PerfilPageHeaderState();
@@ -33,6 +38,7 @@ class _PerfilPageHeaderState extends State<PerfilPageHeader> {
         subtitulo: widget.subtitulo,
         mostrarAvatar: false,
         corTitulo: Colors.blue.shade700,
+        conteudoInferior: widget.conteudoInferior,
       ),
     );
   }

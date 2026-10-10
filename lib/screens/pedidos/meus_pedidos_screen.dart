@@ -97,7 +97,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   }
 
   List<Map<String, dynamic>> get pedidosFiltrados {
-    final pesquisa = termoBusca.trim().toLowerCase();
+    final pesquisa = _normalizar(termoBusca);
 
     final resultado = <Map<String, dynamic>>[];
 
@@ -129,23 +129,21 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           return true;
         }
 
-        final nomeProduto = (item['nmproduto'] ?? '').toString().toLowerCase();
+        final nomeProduto = _normalizar((item['nmproduto'] ?? '').toString());
 
-        final descricao = (item['dsproduto'] ?? '').toString().toLowerCase();
+        final descricao = _normalizar((item['dsproduto'] ?? '').toString());
 
-        final observacao = (item['dsobsitvenda'] ?? '')
-            .toString()
-            .toLowerCase();
+        final observacao = _normalizar((item['dsobsitvenda'] ?? '').toString());
 
-        final participante = (item['nmparticipante'] ?? '')
-            .toString()
-            .toLowerCase();
+        final participante = _normalizar(
+          (item['nmparticipante'] ?? '').toString(),
+        );
 
-        final cpfParticipante = (item['cpfparticipante'] ?? '')
-            .toString()
-            .toLowerCase();
+        final cpfParticipante = _normalizar(
+          (item['cpfparticipante'] ?? '').toString(),
+        );
 
-        final nomeLoja = (pedido['nmloja'] ?? '').toString().toLowerCase();
+        final nomeLoja = _normalizar((pedido['nmloja'] ?? '').toString());
 
         return nomeProduto.contains(pesquisa) ||
             descricao.contains(pesquisa) ||
@@ -161,6 +159,18 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     }
 
     return resultado;
+  }
+
+  String _normalizar(String texto) {
+    return texto
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'[áàâãä]'), 'a')
+        .replaceAll(RegExp(r'[éèêë]'), 'e')
+        .replaceAll(RegExp(r'[íìîï]'), 'i')
+        .replaceAll(RegExp(r'[óòôõö]'), 'o')
+        .replaceAll(RegExp(r'[úùûü]'), 'u')
+        .replaceAll('ç', 'c');
   }
 
   Widget _filtrosTipo() {
@@ -804,7 +814,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                const PerfilPageHeader(subtitulo: 'Minhas compras'),
+                PerfilPageHeader(
+                  subtitulo: 'Minhas compras',
+                  conteudoInferior: _filtrosTipo(),
+                ),
 
                 Expanded(
                   child: RefreshIndicator(
@@ -813,10 +826,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        _filtrosTipo(),
-
-                        const SizedBox(height: 12),
-
                         _filtrosStatus(),
 
                         const SizedBox(height: 14),
