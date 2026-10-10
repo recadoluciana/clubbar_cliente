@@ -1163,7 +1163,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            height: 260,
                             width: double.infinity,
                             clipBehavior: Clip.antiAlias,
                             decoration: BoxDecoration(
@@ -1174,8 +1173,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 ? Image.network(
                                     ev.bannerUrl,
                                     width: double.infinity,
-                                    height: double.infinity,
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.fitWidth,
                                   )
                                 : Container(
                                     color: Colors.grey.shade300,
