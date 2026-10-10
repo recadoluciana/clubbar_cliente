@@ -28,6 +28,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   String termoBusca = '';
   String tipoSelecionado = 'P';
   String statusSelecionado = 'TODOS';
+  final Set<int> _vendasExpandidas = <int>{};
 
   List<Map<String, dynamic>> pedidos = [];
 
@@ -358,37 +359,51 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     );
   }
 
-  Widget _logoLoja(String url) {
+  Widget _fotoProduto(Map<String, dynamic> item, {double tamanho = 52}) {
+    final url = _buildImageUrl((item['urlfotoproduto'] ?? '').toString());
+    final ingresso = _isIngresso(item);
     if (url.isEmpty) {
       return Container(
-        width: 52,
-        height: 52,
+        width: tamanho,
+        height: tamanho,
         decoration: BoxDecoration(
-          color: Colors.amber.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(16),
+          color: (ingresso ? Colors.blue : Colors.amber).withValues(
+            alpha: 0.15,
+          ),
+          borderRadius: BorderRadius.circular(14),
         ),
-        child: Icon(Icons.storefront_outlined, color: Colors.amber.shade800),
+        child: Icon(
+          ingresso
+              ? Icons.confirmation_number_outlined
+              : Icons.shopping_bag_outlined,
+          color: ingresso ? Colors.blue : Colors.amber.shade800,
+          size: tamanho * 0.48,
+        ),
       );
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Image.network(
         url,
-        width: 52,
-        height: 52,
+        width: tamanho,
+        height: tamanho,
         fit: BoxFit.cover,
         errorBuilder: (_, _, _) {
           return Container(
-            width: 52,
-            height: 52,
+            width: tamanho,
+            height: tamanho,
             decoration: BoxDecoration(
-              color: Colors.amber.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(16),
+              color: (ingresso ? Colors.blue : Colors.amber).withValues(
+                alpha: 0.15,
+              ),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(
-              Icons.storefront_outlined,
-              color: Colors.amber.shade800,
+              ingresso
+                  ? Icons.confirmation_number_outlined
+                  : Icons.shopping_bag_outlined,
+              color: ingresso ? Colors.blue : Colors.amber.shade800,
             ),
           );
         },
@@ -418,148 +433,100 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         .toList();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _fotoProduto(item, tamanho: 46),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  (item['nmproduto'] ?? '').toString(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      (item['nmproduto'] ?? '').toString(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (ingresso && dataEvento.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Evento: $dataEvento',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _badgeTipo(item),
             ],
           ),
-          if (ingresso && dataEvento.isNotEmpty) ...[
-            const SizedBox(height: 5),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              if (ingresso && tipoIngresso.isNotEmpty)
+                _chipInfo('Tipo: $tipoIngresso'),
+              if (ingresso && lote.isNotEmpty) _chipInfo('Lote: $lote'),
+              if (!ingresso) _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
+              _chipInfo(
+                'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
+              ),
+              if (ingresso) _chipInfo('Taxa: ${ValueFormatters.moeda(taxa)}'),
+              _badgeEntrega(item),
+              if (badgeSituacao case final Widget situacao) situacao,
+            ],
+          ),
+          if (obs.isNotEmpty) ...[
+            const SizedBox(height: 8),
             Text(
-              'Data do evento: $dataEvento',
+              'Observação: $obs',
               style: TextStyle(
                 color: Colors.grey.shade700,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                height: 1.25,
               ),
             ),
           ],
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (ingresso && tipoIngresso.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Tipo: $tipoIngresso',
-                    style: TextStyle(
-                      color: Colors.blue.shade800,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              if (ingresso && lote.isNotEmpty) _chipInfo('Lote: $lote'),
-            ],
-          ),
-          if (badgeSituacao != null) ...[
-            const SizedBox(height: 8),
-            Align(alignment: Alignment.centerRight, child: badgeSituacao),
-          ],
-          const SizedBox(height: 10),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth < 330) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        if (!ingresso)
-                          _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
-                        _chipInfo(
-                          'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
-                        ),
-                        if (ingresso)
-                          _chipInfo('Taxa: ${ValueFormatters.moeda(taxa)}'),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: _badgeEntrega(item),
-                    ),
-                  ],
-                );
-              }
-
-              return Row(
-                children: [
-                  if (!ingresso) ...[
-                    _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
-                    const SizedBox(width: 8),
-                  ],
-                  _chipInfo(
-                    'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
-                  ),
-                  if (ingresso) ...[
-                    const SizedBox(width: 8),
-                    _chipInfo('Taxa: ${ValueFormatters.moeda(taxa)}'),
-                  ],
-                  const Spacer(),
-                  _badgeEntrega(item),
-                ],
-              );
-            },
-          ),
-          if (obs.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Observação: $obs',
-              style: TextStyle(color: Colors.grey.shade700, height: 1.35),
-            ),
-          ],
           if (ingresso && participante.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
-              'Participante atual: $participante${cpfParticipante.isEmpty ? '' : ' • CPF: $cpfParticipante'}',
+              'Participante: $participante${cpfParticipante.isEmpty ? '' : ' • CPF: $cpfParticipante'}',
               style: TextStyle(
                 color: Colors.blue.shade900,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ],
           if (ingresso && historico.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 7),
             Text(
               'Participantes anteriores',
               style: TextStyle(
                 color: Colors.grey.shade800,
+                fontSize: 12,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 4),
             ...historico.map((registro) {
               final nome = (registro['nmparticipanteanterior'] ?? '')
                   .toString()
@@ -567,14 +534,11 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               final cpf = (registro['cpfparticipanteanterior'] ?? '')
                   .toString()
                   .trim();
-              final data = (registro['dttransferencia'] ?? '')
-                  .toString()
-                  .trim();
               return Padding(
-                padding: const EdgeInsets.only(top: 3),
+                padding: const EdgeInsets.only(top: 2),
                 child: Text(
-                  '• ${nome.isEmpty ? 'Não informado' : nome}${cpf.isEmpty ? '' : ' • CPF: $cpf'}${data.isEmpty ? '' : ' • transferido em $data'}',
-                  style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+                  '• ${nome.isEmpty ? 'Não informado' : nome}${cpf.isEmpty ? '' : ' • CPF: $cpf'}',
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
                 ),
               );
             }),
@@ -582,40 +546,34 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           if (dataCancelamento.isNotEmpty ||
               reembolso != null ||
               idReembolso.isNotEmpty) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: Colors.red.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.red.withValues(alpha: 0.18)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 3,
                 children: [
                   if (dataCancelamento.isNotEmpty)
                     Text('Cancelamento: $dataCancelamento'),
                   if (reembolso != null)
                     Text('Reembolso: ${ValueFormatters.moeda(reembolso)}'),
-                  if (idReembolso.isNotEmpty)
-                    Text('Código do reembolso: $idReembolso'),
+                  if (idReembolso.isNotEmpty) Text('Código: $idReembolso'),
                 ],
               ),
             ),
           ],
           if (entreguePor.isNotEmpty || dataEntrega.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            if (entreguePor.isNotEmpty)
-              Text(
-                'Entregue por: $entreguePor',
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
-            if (dataEntrega.isNotEmpty)
-              Text(
-                'Data da entrega: $dataEntrega',
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
+            const SizedBox(height: 7),
+            Text(
+              '${entreguePor.isEmpty ? '' : 'Entregue por: $entreguePor'}${entreguePor.isNotEmpty && dataEntrega.isNotEmpty ? ' • ' : ''}${dataEntrega.isEmpty ? '' : 'Data: $dataEntrega'}',
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
+            ),
           ],
         ],
       ),
@@ -626,77 +584,133 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     final itens = (pedido['itens'] as List? ?? [])
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
+    final vendaId = int.tryParse('${pedido['venda_id'] ?? ''}') ?? 0;
+    final expandida = _vendasExpandidas.contains(vendaId);
     final podeCancelar =
         (pedido['sitvenda'] ?? '').toString().toUpperCase() == 'PAGA';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 18),
+      margin: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         elevation: 2,
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _logoLoja(
-                    _buildImageUrl((pedido['urllogoloja'] ?? '').toString()),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(18),
+              onTap: () => setState(() {
+                if (expandida) {
+                  _vendasExpandidas.remove(vendaId);
+                } else {
+                  _vendasExpandidas.add(vendaId);
+                }
+              }),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    _fotoProduto(
+                      itens.isEmpty ? <String, dynamic>{} : itens.first,
+                      tamanho: 50,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            (pedido['nmloja'] ?? 'Loja').toString(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Venda #$vendaId • ${(pedido['dtcriacao'] ?? '').toString()}',
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 11,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            '${itens.length} ${itens.length == 1 ? 'item' : 'itens'}',
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          (pedido['nmloja'] ?? 'Loja').toString(),
+                          ValueFormatters.moeda(pedido['totalvenda']),
                           style: const TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          'Data da compra: ${(pedido['dtcriacao'] ?? '').toString()}',
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 13,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              expandida ? 'Ocultar' : 'Ver itens',
+                              style: TextStyle(
+                                color: Colors.blue.shade700,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            Icon(
+                              expandida
+                                  ? Icons.keyboard_arrow_up_rounded
+                                  : Icons.keyboard_arrow_down_rounded,
+                              color: Colors.blue.shade700,
+                              size: 18,
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                  Text(
-                    ValueFormatters.moeda(pedido['totalvenda']),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              ...itens.map(_itemPedido),
-              if (podeCancelar) ...[
-                const SizedBox(height: 4),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _abrirCancelamento(pedido),
-                    icon: const Icon(Icons.cancel_outlined),
-                    label: const Text('Cancelar compra'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
+            ),
+            if (expandida) ...[
+              Divider(height: 1, color: Colors.grey.shade200),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+                child: Column(
+                  children: [
+                    ...itens.map(_itemPedido),
+                    if (podeCancelar)
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () => _abrirCancelamento(pedido),
+                          icon: const Icon(Icons.cancel_outlined),
+                          label: const Text('Cancelar compra'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            side: const BorderSide(color: Colors.red),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );
