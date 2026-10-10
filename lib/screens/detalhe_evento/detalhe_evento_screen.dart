@@ -1171,7 +1171,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           const Padding(
             padding: EdgeInsets.fromLTRB(8, 5, 8, 0),
             child: Text(
-              'Para alteração de participantes, acesse sua carteira.',
+              'Para alteração de participantes, acesse sua Carteira.',
               style: TextStyle(fontSize: 12, color: Colors.black54),
             ),
           ),
