@@ -476,6 +476,48 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     );
   }
 
+  Widget _fotoEvento(Map<String, dynamic> item, {double tamanho = 50}) {
+    final url = _buildImageUrl((item['urlbannerevento'] ?? '').toString());
+    if (url.isEmpty) {
+      return Container(
+        width: tamanho,
+        height: tamanho,
+        decoration: BoxDecoration(
+          color: Colors.blue.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Icon(
+          Icons.event_outlined,
+          color: Colors.blue.shade700,
+          size: tamanho * 0.48,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Image.network(
+        url,
+        width: tamanho,
+        height: tamanho,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(
+          width: tamanho,
+          height: tamanho,
+          decoration: BoxDecoration(
+            color: Colors.blue.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            Icons.event_outlined,
+            color: Colors.blue.shade700,
+            size: tamanho * 0.48,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _itemPedido(Map<String, dynamic> item) {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final entreguePor =
@@ -651,6 +693,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         .toList();
     final vendaId = int.tryParse('${pedido['venda_id'] ?? ''}') ?? 0;
     final expandida = _vendasExpandidas.contains(vendaId);
+    final itemEvento = itens.firstWhere(
+      _isIngresso,
+      orElse: () => <String, dynamic>{},
+    );
     final podeCancelar =
         (pedido['sitvenda'] ?? '').toString().toUpperCase() == 'PAGA';
 
@@ -675,10 +721,14 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    _fotoEstabelecimento(
-                      _buildImageUrl((pedido['urllogoloja'] ?? '').toString()),
-                      tamanho: 50,
-                    ),
+                    tipoSelecionado == 'I'
+                        ? _fotoEvento(itemEvento, tamanho: 50)
+                        : _fotoEstabelecimento(
+                            _buildImageUrl(
+                              (pedido['urllogoloja'] ?? '').toString(),
+                            ),
+                            tamanho: 50,
+                          ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -814,16 +864,17 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                PerfilPageHeader(
-                  subtitulo: 'Minhas compras',
-                  conteudoInferior: _filtrosTipo(),
+                const PerfilPageHeader(subtitulo: 'Minhas compras'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _filtrosTipo(),
                 ),
 
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: carregarPedidos,
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         _filtrosStatus(),
