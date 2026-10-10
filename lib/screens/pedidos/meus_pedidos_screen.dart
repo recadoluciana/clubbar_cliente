@@ -5,6 +5,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/perfil_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
+import '../perfil/cancelar_transacao_screen.dart';
 
 class MeusPedidosScreen extends StatefulWidget {
   const MeusPedidosScreen({super.key});
@@ -75,6 +76,22 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         pedidos = [];
         carregando = false;
       });
+    }
+  }
+
+  Future<void> _abrirCancelamento(Map<String, dynamic> pedido) async {
+    final vendaId = int.tryParse('${pedido['venda_id'] ?? ''}');
+    if (vendaId == null || vendaId <= 0) {
+      return;
+    }
+
+    final cancelada = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => CancelarTransacaoScreen(vendaId: vendaId),
+      ),
+    );
+    if (cancelada == true && mounted) {
+      await carregarPedidos();
     }
   }
 
@@ -609,6 +626,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     final itens = (pedido['itens'] as List? ?? [])
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
+    final podeCancelar =
+        (pedido['sitvenda'] ?? '').toString().toUpperCase() == 'PAGA';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
@@ -661,6 +680,21 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               ),
               const SizedBox(height: 16),
               ...itens.map(_itemPedido),
+              if (podeCancelar) ...[
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _abrirCancelamento(pedido),
+                    icon: const Icon(Icons.cancel_outlined),
+                    label: const Text('Cancelar compra'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

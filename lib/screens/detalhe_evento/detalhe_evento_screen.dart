@@ -1143,7 +1143,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             icon: const Icon(Icons.policy_outlined, size: 19),
             label: const Text(
               'Política de compra de ingresso',
-              style: TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 13),
             ),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -1159,13 +1159,27 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             icon: const Icon(Icons.workspace_premium_outlined, size: 19),
             label: const Text(
               'Quem tem direito à meia-entrada',
-              style: TextStyle(fontSize: 15),
+              style: TextStyle(fontSize: 13),
             ),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               alignment: Alignment.centerLeft,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(8, 5, 8, 0),
+            child: Text(
+              'Para alteração de participantes, acesse sua carteira.',
+              style: TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(8, 3, 8, 0),
+            child: Text(
+              'Para cancelamento, acesse seu Perfil/Minhas compras.',
+              style: TextStyle(fontSize: 12, color: Colors.black54),
             ),
           ),
         ],

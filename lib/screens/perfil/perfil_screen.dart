@@ -12,7 +12,6 @@ import '../../widgets/clubbar_page_header.dart';
 import '../../cashback/cashback_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import 'informacoes_aplicativo_screen.dart';
-import 'cancelar_transacao_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -199,19 +198,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   titulo: 'Minhas compras',
                   onTap: abrirPedidos,
                   iconColor: Colors.orange,
-                ),
-
-                const SizedBox(height: 10),
-
-                _itemAcao(
-                  icon: Icons.cancel_outlined,
-                  titulo: 'Cancelar transação',
-                  onTap: () {
-                    MainNavigationController.abrirTela(
-                      const CancelarTransacaoScreen(),
-                    );
-                  },
-                  iconColor: Colors.red,
                 ),
 
                 const SizedBox(height: 10),
