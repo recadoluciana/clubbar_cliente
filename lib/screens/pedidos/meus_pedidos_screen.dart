@@ -164,57 +164,71 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   }
 
   Widget _filtrosTipo() {
-    return Row(
-      children: [
-        Expanded(
-          child: _botaoTipo(
-            titulo: 'Produtos',
-            icone: Icons.shopping_bag_outlined,
-            tipo: 'P',
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _abaTipo(
+              titulo: 'Produtos',
+              icone: Icons.shopping_bag_outlined,
+              tipo: 'P',
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _botaoTipo(
-            titulo: 'Ingressos',
-            icone: Icons.confirmation_number_outlined,
-            tipo: 'I',
+          Expanded(
+            child: _abaTipo(
+              titulo: 'Ingressos',
+              icone: Icons.confirmation_number_outlined,
+              tipo: 'I',
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _botaoTipo({
+  Widget _abaTipo({
     required String titulo,
     required IconData icone,
     required String tipo,
   }) {
     final selecionado = tipoSelecionado == tipo;
 
-    return SizedBox(
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          setState(() {
-            tipoSelecionado = tipo;
-          });
-        },
-        icon: Icon(icone, size: 20),
-        label: Text(
-          titulo,
-          style: const TextStyle(fontWeight: FontWeight.bold),
+    return InkWell(
+      onTap: () => setState(() => tipoSelecionado = tipo),
+      borderRadius: BorderRadius.circular(13),
+      child: Container(
+        height: 46,
+        decoration: BoxDecoration(
+          color: selecionado ? Colors.amber.withValues(alpha: 0.16) : null,
+          border: Border(
+            bottom: BorderSide(
+              color: selecionado ? Colors.amber.shade800 : Colors.transparent,
+              width: 3,
+            ),
+          ),
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: selecionado ? Colors.amber : Colors.white,
-          foregroundColor: Colors.black,
-          elevation: selecionado ? 2 : 0,
-          side: BorderSide(
-            color: selecionado ? Colors.amber.shade700 : Colors.grey.shade300,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icone,
+              size: 19,
+              color: selecionado ? Colors.amber.shade900 : Colors.black54,
+            ),
+            const SizedBox(width: 7),
+            Text(
+              titulo,
+              style: TextStyle(
+                color: selecionado ? Colors.black : Colors.black54,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -407,6 +421,47 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _fotoEstabelecimento(String url, {double tamanho = 50}) {
+    if (url.isEmpty) {
+      return Container(
+        width: tamanho,
+        height: tamanho,
+        decoration: BoxDecoration(
+          color: Colors.amber.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Icon(
+          Icons.storefront_outlined,
+          color: Colors.amber.shade800,
+          size: tamanho * 0.48,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Image.network(
+        url,
+        width: tamanho,
+        height: tamanho,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => Container(
+          width: tamanho,
+          height: tamanho,
+          decoration: BoxDecoration(
+            color: Colors.amber.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(
+            Icons.storefront_outlined,
+            color: Colors.amber.shade800,
+            size: tamanho * 0.48,
+          ),
+        ),
       ),
     );
   }
@@ -610,8 +665,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    _fotoProduto(
-                      itens.isEmpty ? <String, dynamic>{} : itens.first,
+                    _fotoEstabelecimento(
+                      _buildImageUrl((pedido['urllogoloja'] ?? '').toString()),
                       tamanho: 50,
                     ),
                     const SizedBox(width: 10),
