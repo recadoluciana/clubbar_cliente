@@ -1056,7 +1056,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             padding: const EdgeInsets.fromLTRB(32, 0, 32, 8),
             child: Text(
               compraDeProdutos
-                  ? 'Para cancelamento de produto, acesse o produto em Carteira/Produtos.'
+                  ? 'Para cancelamento da compra, acesse Perfil/Minhas compras.'
                   : 'Para cancelamento e alteração de participante, acesse o ingresso em Carteira/Ingressos',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 15),
