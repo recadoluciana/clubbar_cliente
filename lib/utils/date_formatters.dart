@@ -50,6 +50,6 @@ class DateFormatters {
       return 'A partir de $ini';
     }
 
-    return '$ini até $fimFmt';
+    return '$ini, até $fimFmt';
   }
 }
