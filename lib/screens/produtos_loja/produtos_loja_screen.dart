@@ -393,7 +393,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget _pageHeader() {
     return ClubbarPageHeader(
       titulo: 'Cardápio',
-      subtitulo: 'Selecione o produto que deseja comprar',
+      subtitulo: '',
       corTitulo: Colors.blue,
       imagemAvatarUrl: widget.loja.imagemUrl,
       tamanhoAvatar: 52,
