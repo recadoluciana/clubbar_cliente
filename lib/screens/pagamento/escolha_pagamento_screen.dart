@@ -1141,24 +1141,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
+      appBar: ClubbarAppBar(
+        titulo: widget.loja.nome,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        onVoltar: widget.onVoltar,
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Center(
-            child: Text(
-              widget.loja.nome,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.blue,
-                fontSize: 23,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
           _barraTempoReserva(),
 
           const Text(
