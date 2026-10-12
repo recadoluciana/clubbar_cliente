@@ -1313,6 +1313,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   Widget _politicaEvento() {
+    final detalhe = evento;
+    final emailEstabelecimento = _primeiroContato(
+      detalhe?.emailEstabelecimento,
+      widget.loja.emailContato,
+    );
+    final whatsappEstabelecimento = _primeiroContato(
+      detalhe?.whatsappEstabelecimento,
+      widget.loja.whatsapp,
+      widget.loja.nrtelloja,
+    );
+    final emailEvento = _primeiroContato(
+      detalhe?.emailEvento,
+      emailEstabelecimento,
+    );
+    final whatsappEvento = _primeiroContato(
+      detalhe?.whatsappEvento,
+      whatsappEstabelecimento,
+    );
+
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: Column(
@@ -1366,17 +1385,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               style: TextStyle(fontSize: 12, color: Colors.black54),
             ),
           ),
-          if (evento != null)
+          if (detalhe != null)
             ClubbarContactLinks(
-              emailEstabelecimento: evento!.emailEstabelecimento,
-              whatsappEstabelecimento: evento!.whatsappEstabelecimento,
-              emailEvento: evento!.emailEvento,
-              whatsappEvento: evento!.whatsappEvento,
+              emailEstabelecimento: emailEstabelecimento,
+              whatsappEstabelecimento: whatsappEstabelecimento,
+              emailEvento: emailEvento,
+              whatsappEvento: whatsappEvento,
               mostrarContatoEvento: true,
             ),
         ],
       ),
     );
+  }
+
+  String _primeiroContato(String? principal, [String? reserva, String? extra]) {
+    for (final contato in [principal, reserva, extra]) {
+      final valor = (contato ?? '').trim();
+      if (valor.isNotEmpty) return valor;
+    }
+    return '';
   }
 
   @override
