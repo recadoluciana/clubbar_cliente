@@ -57,6 +57,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   double cashbackUtilizavel = 0;
   double saldoCashback = 0;
   bool falhaConsultaCashback = false;
+  bool receberNoEndereco = false;
   Timer? _timerReserva;
   Duration _tempoReservaRestante = Duration.zero;
   bool _reservaExpirada = false;
@@ -186,6 +187,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   bool get compraDeProdutos => widget.reservaIngressoId == null;
 
   bool get entregaDisponivel => compraDeProdutos && widget.loja.permiteEntrega;
+  bool get entregaSelecionada => entregaDisponivel && receberNoEndereco;
 
   String get _mensagemPagamentoNaoConcluido => compraDeProdutos
       ? 'Pagamento não concluído. O carrinho foi mantido.'
@@ -596,7 +598,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Future<void> _pagarNaEntrega() async {
-    if (!entregaDisponivel || carregandoPagamento) return;
+    if (!entregaSelecionada || carregandoPagamento) return;
     if (usarCashback) {
       setState(() => usarCashback = false);
       AppSnackBar.info(
@@ -867,10 +869,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (clienteId == null || clienteId == 0) {
         throw Exception('Cliente não identificado');
       }
-      final entrega = entregaDisponivel
+      final entrega = entregaSelecionada
           ? await _enderecoEntregaDoPerfil()
           : null;
-      if (entregaDisponivel && entrega == null) return;
+      if (entregaSelecionada && entrega == null) return;
       final pagamento = widget.reservaIngressoId != null
           ? await apiService.criarPixReserva(
               reservaId: widget.reservaIngressoId!,
@@ -930,10 +932,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       }
 
       if (!await _garantirEnderecoParaCartao()) return;
-      final entrega = entregaDisponivel
+      final entrega = entregaSelecionada
           ? await _enderecoEntregaDoPerfil()
           : null;
-      if (entregaDisponivel && entrega == null) return;
+      if (entregaSelecionada && entrega == null) return;
 
       final resposta = widget.reservaIngressoId != null
           ? await apiService.criarCheckoutReserva(
@@ -1188,6 +1190,34 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   ),
                   const SizedBox(height: 16),
                   _linhaCashback(),
+                  if (entregaDisponivel) ...[
+                    const Divider(height: 24),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: receberNoEndereco,
+                      onChanged: carregandoPagamento
+                          ? null
+                          : (valor) =>
+                                setState(() => receberNoEndereco = valor),
+                      secondary: Icon(
+                        receberNoEndereco
+                            ? Icons.delivery_dining_rounded
+                            : Icons.storefront_outlined,
+                        color: Colors.amber.shade800,
+                      ),
+                      title: Text(
+                        receberNoEndereco
+                            ? 'Receber no endereço'
+                            : 'Retirar no estabelecimento',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        receberNoEndereco
+                            ? 'O pedido será enviado após o aceite do estabelecimento.'
+                            : 'Ative para solicitar entrega no endereço cadastrado.',
+                      ),
+                    ),
+                  ],
                   if (falhaConsultaCashback)
                     TextButton.icon(
                       onPressed: _carregarCashback,
@@ -1239,7 +1269,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           const SizedBox(height: 24),
 
-          if (entregaDisponivel) ...[
+          if (entregaSelecionada) ...[
             SizedBox(
               height: 56,
               child: OutlinedButton.icon(
