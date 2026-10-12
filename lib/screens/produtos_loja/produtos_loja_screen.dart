@@ -14,6 +14,7 @@ import '../../services/main_navigation_controller.dart';
 import 'produto_compartilhado_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/clubbar_contact_links.dart';
 import '../pagamento/politica_compra_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
@@ -470,24 +471,37 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ...produtosFiltrados.map(_cardProdutoLista),
                           const SizedBox(height: 4),
                           Center(
-                            child: TextButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const PoliticaCompraScreen(
-                                      tipo: 'PRODUTO',
+                            child: Column(
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const PoliticaCompraScreen(
+                                              tipo: 'PRODUTO',
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.policy_outlined,
+                                    size: 18,
+                                  ),
+                                  label: const Text(
+                                    'Política de compra de produto',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                );
-                              },
-                              icon: const Icon(Icons.policy_outlined, size: 18),
-                              label: const Text(
-                                'Política de compra de produto',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
                                 ),
-                              ),
+                                ClubbarContactLinks(
+                                  emailEstabelecimento:
+                                      widget.loja.emailContato,
+                                  whatsappEstabelecimento: widget.loja.whatsapp,
+                                ),
+                              ],
                             ),
                           ),
                         ],

@@ -16,6 +16,10 @@ class EventoDetalhe {
   final String nomeLoja;
   final String nomeCidade;
   final String sgEstado;
+  final String emailEvento;
+  final String whatsappEvento;
+  final String emailEstabelecimento;
+  final String whatsappEstabelecimento;
   final List<AtracaoEventoDetalhe> atracoes;
 
   EventoDetalhe({
@@ -36,6 +40,10 @@ class EventoDetalhe {
     required this.nomeLoja,
     required this.nomeCidade,
     required this.sgEstado,
+    this.emailEvento = '',
+    this.whatsappEvento = '',
+    this.emailEstabelecimento = '',
+    this.whatsappEstabelecimento = '',
     required this.atracoes,
   });
 
@@ -69,6 +77,11 @@ class EventoDetalhe {
       nomeLoja: (json['nmloja'] ?? '').toString(),
       nomeCidade: (json['nmcidade'] ?? '').toString(),
       sgEstado: (json['sgestado'] ?? '').toString(),
+      emailEvento: (json['email_evento'] ?? '').toString(),
+      whatsappEvento: (json['whatsapp_evento'] ?? '').toString(),
+      emailEstabelecimento: (json['email_estabelecimento'] ?? '').toString(),
+      whatsappEstabelecimento: (json['whatsapp_estabelecimento'] ?? '')
+          .toString(),
       atracoes: (json['atracoes'] as List? ?? const [])
           .whereType<Map>()
           .map(

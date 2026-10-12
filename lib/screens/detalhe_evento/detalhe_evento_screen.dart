@@ -10,6 +10,7 @@ import '../../services/main_navigation_controller.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/clubbar_contact_links.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../core/theme/app_colors.dart';
@@ -1365,6 +1366,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               style: TextStyle(fontSize: 12, color: Colors.black54),
             ),
           ),
+          if (evento != null)
+            ClubbarContactLinks(
+              emailEstabelecimento: evento!.emailEstabelecimento,
+              whatsappEstabelecimento: evento!.whatsappEstabelecimento,
+              emailEvento: evento!.emailEvento,
+              whatsappEvento: evento!.whatsappEvento,
+              mostrarContatoEvento: true,
+            ),
         ],
       ),
     );
