@@ -81,20 +81,6 @@ class ClubbarContactLinks extends StatelessWidget {
             spacing: 2,
             runSpacing: 2,
             children: [
-              if (emailLoja.isNotEmpty)
-                _link(
-                  context,
-                  icone: Icons.email_outlined,
-                  texto: 'E-mail do estabelecimento',
-                  uri: Uri(scheme: 'mailto', path: emailLoja),
-                )
-              else if (zapLoja.isNotEmpty)
-                _link(
-                  context,
-                  icone: Icons.chat_outlined,
-                  texto: 'WhatsApp do estabelecimento',
-                  uri: Uri.parse('https://wa.me/$zapLoja'),
-                ),
               if (mostrarContatoEvento && emailDoEvento.isNotEmpty)
                 _link(
                   context,
@@ -102,12 +88,26 @@ class ClubbarContactLinks extends StatelessWidget {
                   texto: 'E-mail do evento',
                   uri: Uri(scheme: 'mailto', path: emailDoEvento),
                 )
-              else if (mostrarContatoEvento && zapEvento.isNotEmpty)
+              else if (emailLoja.isNotEmpty)
+                _link(
+                  context,
+                  icone: Icons.email_outlined,
+                  texto: 'E-mail do estabelecimento',
+                  uri: Uri(scheme: 'mailto', path: emailLoja),
+                ),
+              if (mostrarContatoEvento && zapEvento.isNotEmpty)
                 _link(
                   context,
                   icone: Icons.chat_outlined,
                   texto: 'WhatsApp do evento',
                   uri: Uri.parse('https://wa.me/$zapEvento'),
+                )
+              else if (zapLoja.isNotEmpty)
+                _link(
+                  context,
+                  icone: Icons.chat_outlined,
+                  texto: 'WhatsApp do estabelecimento',
+                  uri: Uri.parse('https://wa.me/$zapLoja'),
                 ),
             ],
           ),
