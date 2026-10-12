@@ -6,6 +6,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
+import '../../utils/date_formatters.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
@@ -465,8 +466,15 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString();
     final entrega = _isDelivery(item);
-    final emRota =
-        (item['situacaoentrega'] ?? '').toString().toUpperCase() == 'EM_ROTA';
+    final situacaoEntrega = (item['situacaoentrega'] ?? '')
+        .toString()
+        .toUpperCase();
+    final emRota = situacaoEntrega == 'EM_ROTA';
+    final pedidoAceito = situacaoEntrega == 'ACEITO';
+    final dataAceite = (item['dtaceiteentrega'] ?? '').toString().trim();
+    final botaoAceite = pedidoAceito
+        ? 'Aceito em ${DateFormatters.dataHoraSimples(dataAceite)}'
+        : '';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -543,30 +551,75 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 SizedBox(
                   width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton.icon(
+                  height: pedidoAceito ? 58 : 46,
+                  child: ElevatedButton(
                     onPressed: entrega && !emRota
                         ? null
                         : () => _abrirQrOuRetirada(context, item),
-                    icon: const Icon(Icons.qr_code_2_rounded, size: 22),
-                    label: Text(
-                      entrega
-                          ? (emRota
-                                ? 'Exibir QR Code de entrega'
-                                : _statusEntrega(item))
-                          : 'Exibir produto e QR Code',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
+                      backgroundColor: emRota
+                          ? Colors.amber
+                          : pedidoAceito
+                          ? const Color(0xFFE1F5E8)
+                          : Colors.amber,
+                      disabledBackgroundColor: pedidoAceito
+                          ? const Color(0xFFE1F5E8)
+                          : Colors.grey.shade300,
+                      foregroundColor: emRota
+                          ? Colors.black
+                          : pedidoAceito
+                          ? const Color(0xFF18763B)
+                          : Colors.black,
+                      disabledForegroundColor: pedidoAceito
+                          ? const Color(0xFF18763B)
+                          : Colors.grey.shade500,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          pedidoAceito
+                              ? Icons.storefront_rounded
+                              : Icons.qr_code_2_rounded,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: pedidoAceito
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'Pedido aceito',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    if (dataAceite.isNotEmpty)
+                                      Text(
+                                        botaoAceite,
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                  ],
+                                )
+                              : Text(
+                                  entrega
+                                      ? (emRota
+                                            ? 'Exibir QR Code de entrega'
+                                            : _statusEntrega(item))
+                                      : 'Exibir produto e QR Code',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
