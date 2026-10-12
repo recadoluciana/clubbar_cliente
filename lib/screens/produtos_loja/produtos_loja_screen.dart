@@ -227,7 +227,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         });
       },
       decoration: InputDecoration(
-        hintText: 'Produto, categoria ou descrição',
+        hintText: 'Produto, categoria, descrição',
         hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
         prefixIcon: const Icon(Icons.search_rounded, size: 22),
         suffixIcon: termoBusca.trim().isEmpty
