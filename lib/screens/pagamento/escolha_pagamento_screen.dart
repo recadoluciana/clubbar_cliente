@@ -7,6 +7,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_contact_links.dart';
 import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
 import '../../services/cart_badge_notifier.dart';
@@ -1396,6 +1397,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               style: const TextStyle(fontSize: 15),
             ),
           ),
+          if (compraDeProdutos)
+            ClubbarContactLinks(
+              emailEstabelecimento: widget.loja.emailContato,
+              whatsappEstabelecimento: widget.loja.whatsapp,
+            ),
         ],
       ),
     );
