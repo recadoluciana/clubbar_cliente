@@ -49,6 +49,29 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     return (item['idtipoproduto'] ?? '').toString().toUpperCase() == 'I';
   }
 
+  bool _isDelivery(Map<String, dynamic> item) {
+    return (item['tipo_operacao'] ?? '').toString().toUpperCase() == 'DELIVERY';
+  }
+
+  String _statusEntrega(Map<String, dynamic> item) {
+    switch ((item['situacaoentrega'] ?? '').toString().toUpperCase()) {
+      case 'AGUARDANDO_ACEITE':
+        return 'Aguardando aceite';
+      case 'ACEITO':
+        return 'Pedido aceito';
+      case 'EM_ROTA':
+        return 'Saiu para entrega';
+      case 'ENTREGUE':
+        return 'Entregue';
+      case 'RECUSADO':
+        return 'Pedido recusado';
+      case 'CANCELADO':
+        return 'Cancelado';
+      default:
+        return 'Pedido de entrega';
+    }
+  }
+
   String _buildImageUrl(String path) {
     final caminho = path.trim();
 
@@ -71,11 +94,14 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   }
 
   String _montarDadosQr(Map<String, dynamic> item) {
-    final token = (item['qrtokenitvenda'] ?? '').toString().trim();
+    final token =
+        (_isDelivery(item) ? item['qrcodeentrega'] : item['qrtokenitvenda'])
+            .toString()
+            .trim();
 
     if (token.isEmpty) {
       debugPrint(
-        '[PRESENTEAR] qrtokenitvenda vazio para itvenda_id=${item['itvenda_id']}',
+        '[CARTEIRA] Token QR vazio para itvenda_id=${item['itvenda_id']}',
       );
 
       return '';
@@ -259,7 +285,15 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     if (qrData.isEmpty) {
       AppSnackBar.erro(
         context,
-        'Este produto ainda não está pronto para retirada. Atualize sua carteira e tente novamente.',
+        'O QR Code deste pedido ainda não está disponível.',
+      );
+      return;
+    }
+    if (_isDelivery(item) &&
+        (item['situacaoentrega'] ?? '').toString().toUpperCase() != 'EM_ROTA') {
+      AppSnackBar.info(
+        context,
+        'O QR Code será liberado quando o pedido sair para entrega.',
       );
       return;
     }
@@ -328,7 +362,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     const SizedBox(width: 12),
                     Flexible(
                       child: Text(
-                        (item['nmproduto'] ?? '').toString(),
+                        _isDelivery(item)
+                            ? 'Pedido para entrega'
+                            : (item['nmproduto'] ?? '').toString(),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           fontSize: 20,
@@ -371,6 +407,14 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   size: 220,
                   backgroundColor: Colors.white,
                 ),
+                if (_isDelivery(item)) ...[
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Apresente este QR Code ao motoboy no recebimento.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
               ],
             ),
           ),
@@ -420,6 +464,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString();
+    final entrega = _isDelivery(item);
+    final emRota =
+        (item['situacaoentrega'] ?? '').toString().toUpperCase() == 'EM_ROTA';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -471,6 +518,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                               ),
                               if (validade.isNotEmpty)
                                 _chip('Validade: $validade'),
+                              if (entrega) _chip(_statusEntrega(item)),
                             ],
                           ),
 
@@ -497,10 +545,16 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   width: double.infinity,
                   height: 46,
                   child: ElevatedButton.icon(
-                    onPressed: () => _abrirQrOuRetirada(context, item),
+                    onPressed: entrega && !emRota
+                        ? null
+                        : () => _abrirQrOuRetirada(context, item),
                     icon: const Icon(Icons.qr_code_2_rounded, size: 22),
-                    label: const Text(
-                      'Exibir produto e QR Code',
+                    label: Text(
+                      entrega
+                          ? (emRota
+                                ? 'Exibir QR Code de entrega'
+                                : _statusEntrega(item))
+                          : 'Exibir produto e QR Code',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
@@ -517,20 +571,21 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 10),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _confirmarCompartilhamento(item),
-                    icon: const Icon(Icons.card_giftcard_rounded, size: 18),
-                    label: const Text('Presentear'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF7A5A00),
-                      side: const BorderSide(color: Color(0xFFE0C36A)),
+                if (!entrega) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _confirmarCompartilhamento(item),
+                      icon: const Icon(Icons.card_giftcard_rounded, size: 18),
+                      label: const Text('Presentear'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF7A5A00),
+                        side: const BorderSide(color: Color(0xFFE0C36A)),
+                      ),
                     ),
                   ),
-                ),
+                ],
 
                 const SizedBox(height: 8),
 
@@ -545,7 +600,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     const SizedBox(width: 5),
                     Flexible(
                       child: Text(
-                        'Apresente o QR Code para o atendente',
+                        entrega
+                            ? 'Pague na entrega e apresente o QR Code ao motoboy.'
+                            : 'Apresente o QR Code para o atendente',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.grey.shade600,

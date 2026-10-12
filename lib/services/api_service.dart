@@ -1507,6 +1507,42 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  Future<Map<String, dynamic>> criarPedidoEntrega({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+    required String cep,
+    required String endereco,
+    required String numero,
+    String? complemento,
+    required String bairro,
+    required String cidade,
+    required String uf,
+    String? observacao,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/pedido-entrega'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+        'cep': cep,
+        'endereco': endereco,
+        'numero': numero,
+        'complemento': complemento,
+        'bairro': bairro,
+        'cidade': cidade,
+        'uf': uf,
+        'observacao': observacao,
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> cashbackDisponivel({
     required int clienteId,
     required int lojaId,
