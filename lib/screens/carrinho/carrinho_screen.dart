@@ -8,6 +8,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../utils/app_snackbar.dart';
+import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 
 class ItemCarrinhoAgrupado {
@@ -821,6 +822,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+      appBar: ClubbarAppBar(
+        titulo: widget.loja.nome,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
@@ -829,10 +835,10 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           : Column(
               children: [
                 ClubbarPageHeader(
-                  titulo: widget.loja.nome,
+                  titulo: 'Carrinho',
                   subtitulo: subtitulo,
+                  icone: Icons.shopping_cart_outlined,
                   corTitulo: Colors.blue,
-                  onVoltar: () => Navigator.of(context).pop(),
                 ),
 
                 Expanded(
