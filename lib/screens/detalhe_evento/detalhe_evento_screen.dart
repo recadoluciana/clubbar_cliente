@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/evento_detalhe.dart';
 import '../../models/evento_lote.dart';
@@ -867,22 +868,21 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }) {
     final lote = setores.first.first;
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
-      decoration: BoxDecoration(
-        color: Colors.green.shade50,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Colors.green.shade200),
-      ),
+      margin: const EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (exibirNomeLote) ...[
-            Text(
-              lote.nome,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(2, 0, 2, 6),
+              child: Text(
+                lote.nome,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             ),
-            const SizedBox(height: 10),
           ],
           ...setores.map(
             (opcoes) => cardLote(
@@ -918,9 +918,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : lote.situacaoVendaEm(agora);
     final vendaFutura = textoBadge == 'Em breve';
     final textoDisponibilidade = lote.qtDisponivel > 0
-        ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'} neste setor'
+        ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'}'
         : reservaTemporaria
-        ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}; podem voltar a ficar disponíveis em breve.'
+        ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} reservados temporariamente'
         : null;
     final corBadge = vendaDisponivel
         ? Colors.green
@@ -931,13 +931,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : Colors.red;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 8),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        elevation: 2,
+        elevation: 1,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -952,17 +953,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           Text(
                             lote.nome,
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 15,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                         if (exibirNomeSetor && lote.nomeSetor.isNotEmpty) ...[
-                          if (exibirNomeLote) const SizedBox(height: 3),
+                          if (exibirNomeLote) const SizedBox(height: 2),
                           Text(
-                            lote.nomeSetor,
+                            'Setor: ${lote.nomeSetor}',
                             style: TextStyle(
                               color: Colors.grey.shade700,
-                              fontSize: 12,
+                              fontSize: 11,
                             ),
                           ),
                         ],
@@ -972,7 +973,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
-                      vertical: 6,
+                      vertical: 5,
                     ),
                     decoration: BoxDecoration(
                       color: corBadge.withValues(alpha: 0.12),
@@ -989,29 +990,39 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
-              Text(
-                textoPreco,
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 4),
-              if (textoDisponibilidade != null)
-                Text(
-                  textoDisponibilidade,
-                  style: TextStyle(
-                    color: lote.qtDisponivel > 0
-                        ? Colors.grey.shade700
-                        : Colors.orange.shade800,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  Text(
+                    textoPreco,
+                    style: const TextStyle(
+                      color: Colors.black87,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-                ),
+                  if (textoDisponibilidade != null) ...[
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        textoDisponibilidade,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: lote.qtDisponivel > 0
+                              ? Colors.green.shade700
+                              : Colors.orange.shade800,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
               if (lote.qtDisponivel > 0 && lote.temReservasTemporarias) ...[
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
                   '${lote.qtReservada} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}',
                   style: TextStyle(
@@ -1021,9 +1032,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   ),
                 ),
               ],
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.grey.shade700,
                   fontSize: 10,
@@ -1031,19 +1044,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ),
               ),
               if (descricaoSetor.isNotEmpty && !descricaoSetorPadrao) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 Text(
                   descricaoSetor,
-                  style: TextStyle(
-                    color: Colors.grey.shade700,
-                    fontSize: 13,
-                    height: 1.35,
-                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
                 ),
               ],
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
+                height: 36,
                 child: OutlinedButton.icon(
                   onPressed: () => _abrirModalidades(opcoes),
                   icon: const Icon(Icons.arrow_forward_rounded),
@@ -1124,6 +1136,177 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _abrirReferenciaTaxas() async {
+    final abriu = await launchUrl(
+      Uri.parse(
+        'https://www.stj.jus.br/sites/portalp/Paginas/Comunicacao/Noticias/15102020-STJ-readequa-entendimento-sobre-abuso-da-taxa-de-conveniencia-em-venda-de-ingressos-pela-internet.aspx',
+      ),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!abriu && mounted) {
+      AppSnackBar.erro(context, 'Não foi possível abrir a referência.');
+    }
+  }
+
+  Widget _itemTaxa(String titulo, String descricao) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            color: Colors.grey.shade800,
+            fontSize: 14,
+            height: 1.4,
+          ),
+          children: [
+            TextSpan(
+              text: '$titulo: ',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            TextSpan(text: descricao),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _abrirExplicacaoTaxas() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.74,
+        minChildSize: 0.45,
+        maxChildSize: 0.94,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: ListView(
+            controller: scrollController,
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 30),
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Row(
+                children: [
+                  Icon(Icons.receipt_long_outlined, color: Colors.amber),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Entenda as taxas da compra',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'No Clubbar, os valores aplicáveis são apresentados antes da confirmação do pedido. Eles ajudam a viabilizar a experiência de compra e o processamento seguro do pagamento.',
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Taxa de serviço',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+              ),
+              Text(
+                'É o valor destinado à estrutura que torna a venda e o acompanhamento do ingresso possíveis.',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              _itemTaxa(
+                'Plataforma Clubbar',
+                'manutenção, disponibilidade e evolução do site e do aplicativo.',
+              ),
+              _itemTaxa(
+                'Gestão da compra',
+                'proteção das informações, emissão do ingresso digital, acompanhamento do pedido e suporte.',
+              ),
+              _itemTaxa(
+                'Recursos do evento',
+                'funcionalidades necessárias à venda, conforme a configuração da produção.',
+              ),
+              const SizedBox(height: 22),
+              const Text(
+                'Taxa de processamento',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+              ),
+              Text(
+                'Está ligada à forma de pagamento escolhida e é destinada às instituições que autorizam e processam a transação.',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              _itemTaxa(
+                'Transação financeira',
+                'custos de autorização e operação de cada pagamento.',
+              ),
+              _itemTaxa(
+                'Segurança',
+                'tecnologias e controles que protegem os dados e a operação financeira.',
+              ),
+              const SizedBox(height: 22),
+              const Text(
+                'Parcelamento e transparência',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'As taxas podem variar conforme o meio de pagamento, a operadora e as condições de parcelamento. Quando houver custo de parcelamento, ele será informado antes da confirmação e você poderá escolher a opção que preferir.',
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'O total da compra, com as taxas aplicáveis, sempre é exibido antes do pagamento — uma medida de transparência alinhada ao entendimento do STJ sobre a cobrança de conveniência na venda online de ingressos.',
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: _abrirReferenciaTaxas,
+                icon: const Icon(Icons.open_in_new_rounded, size: 18),
+                label: const Text('Consultar orientação do STJ'),
+                style: TextButton.styleFrom(alignment: Alignment.centerLeft),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -1230,16 +1413,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               borderRadius: BorderRadius.circular(24),
                             ),
                             child: ev.bannerUrl.trim().isNotEmpty
-                                ? Image.network(
-                                    ev.bannerUrl,
-                                    width: double.infinity,
-                                    fit: BoxFit.fitWidth,
+                                ? SizedBox(
+                                    height: 200,
+                                    child: Image.network(
+                                      ev.bannerUrl,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
                                   )
-                                : Container(
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                      size: 48,
+                                : SizedBox(
+                                    height: 200,
+                                    child: Container(
+                                      color: Colors.grey.shade300,
+                                      child: const Icon(
+                                        Icons.image_not_supported,
+                                        size: 48,
+                                      ),
                                     ),
                                   ),
                           ),
@@ -1549,6 +1738,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
+                          const SizedBox(height: 2),
+                          Center(
+                            child: TextButton.icon(
+                              onPressed: _abrirExplicacaoTaxas,
+                              icon: const Icon(
+                                Icons.receipt_long_outlined,
+                                size: 18,
+                              ),
+                              label: const Text('Entenda nossa taxa'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.grey.shade700,
+                                textStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            ),
+                          ),
                           _politicaEvento(),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
