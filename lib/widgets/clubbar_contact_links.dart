@@ -87,8 +87,8 @@ class ClubbarContactLinks extends StatelessWidget {
                   icone: Icons.email_outlined,
                   texto: 'E-mail do estabelecimento',
                   uri: Uri(scheme: 'mailto', path: emailLoja),
-                ),
-              if (zapLoja.isNotEmpty)
+                )
+              else if (zapLoja.isNotEmpty)
                 _link(
                   context,
                   icone: Icons.chat_outlined,
@@ -101,8 +101,8 @@ class ClubbarContactLinks extends StatelessWidget {
                   icone: Icons.email_outlined,
                   texto: 'E-mail do evento',
                   uri: Uri(scheme: 'mailto', path: emailDoEvento),
-                ),
-              if (mostrarContatoEvento && zapEvento.isNotEmpty)
+                )
+              else if (mostrarContatoEvento && zapEvento.isNotEmpty)
                 _link(
                   context,
                   icone: Icons.chat_outlined,
