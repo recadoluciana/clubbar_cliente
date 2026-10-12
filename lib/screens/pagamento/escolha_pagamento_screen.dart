@@ -14,6 +14,7 @@ import '../../services/carteira_badge_notifier.dart';
 import '../../services/cep_service.dart';
 import 'pix_pagamento_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
+import '../carteira/carteira_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
 
@@ -592,6 +593,205 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     return salvo == true;
   }
 
+  Future<void> _pagarNaEntrega() async {
+    if (!compraDeProdutos || carregandoPagamento) return;
+    if (usarCashback) {
+      setState(() => usarCashback = false);
+      AppSnackBar.info(
+        context,
+        'O cashback não é aplicado em pedidos pagos na entrega.',
+      );
+    }
+    final perfil = await apiService.buscarMeuPerfil();
+    if (!mounted) return;
+
+    final formKey = GlobalKey<FormState>();
+    final cep = TextEditingController(text: '${perfil['cepcliente'] ?? ''}');
+    final endereco = TextEditingController(
+      text: '${perfil['endcliente'] ?? ''}',
+    );
+    final numero = TextEditingController(
+      text: '${perfil['nrendcliente'] ?? ''}',
+    );
+    final complemento = TextEditingController(
+      text: '${perfil['complcliente'] ?? ''}',
+    );
+    final bairro = TextEditingController(
+      text: '${perfil['bairrocliente'] ?? ''}',
+    );
+    final cidade = TextEditingController(
+      text: '${perfil['cidadecliente'] ?? ''}',
+    );
+    final uf = TextEditingController(text: '${perfil['ufcliente'] ?? ''}');
+    final observacao = TextEditingController();
+
+    final dados = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Entrega e pagamento'),
+        content: SizedBox(
+          width: 420,
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Você pagará ao receber. Confirme o endereço de entrega.',
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: cep,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'CEP'),
+                    validator: (v) =>
+                        (v ?? '').replaceAll(RegExp(r'[^0-9]'), '').length == 8
+                        ? null
+                        : 'CEP inválido',
+                  ),
+                  TextFormField(
+                    controller: endereco,
+                    decoration: const InputDecoration(labelText: 'Endereço'),
+                    validator: (v) =>
+                        (v ?? '').trim().isEmpty ? 'Informe o endereço' : null,
+                  ),
+                  TextFormField(
+                    controller: numero,
+                    decoration: const InputDecoration(labelText: 'Número'),
+                    validator: (v) =>
+                        (v ?? '').trim().isEmpty ? 'Informe o número' : null,
+                  ),
+                  TextFormField(
+                    controller: complemento,
+                    decoration: const InputDecoration(
+                      labelText: 'Complemento (opcional)',
+                    ),
+                  ),
+                  TextFormField(
+                    controller: bairro,
+                    decoration: const InputDecoration(labelText: 'Bairro'),
+                    validator: (v) =>
+                        (v ?? '').trim().isEmpty ? 'Informe o bairro' : null,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: cidade,
+                          decoration: const InputDecoration(
+                            labelText: 'Cidade',
+                          ),
+                          validator: (v) => (v ?? '').trim().isEmpty
+                              ? 'Informe a cidade'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 64,
+                        child: TextFormField(
+                          controller: uf,
+                          maxLength: 2,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: const InputDecoration(
+                            labelText: 'UF',
+                            counterText: '',
+                          ),
+                          validator: (v) =>
+                              (v ?? '').trim().length == 2 ? null : 'UF',
+                        ),
+                      ),
+                    ],
+                  ),
+                  TextFormField(
+                    controller: observacao,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Referência ou observação (opcional)',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Voltar'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              if (!formKey.currentState!.validate()) return;
+              Navigator.pop(dialogContext, {
+                'cep': cep.text.replaceAll(RegExp(r'[^0-9]'), ''),
+                'endereco': endereco.text.trim(),
+                'numero': numero.text.trim(),
+                'complemento': complemento.text.trim(),
+                'bairro': bairro.text.trim(),
+                'cidade': cidade.text.trim(),
+                'uf': uf.text.trim().toUpperCase(),
+                'observacao': observacao.text.trim(),
+              });
+            },
+            icon: const Icon(Icons.delivery_dining_rounded),
+            label: const Text('Enviar pedido'),
+          ),
+        ],
+      ),
+    );
+    for (final controller in [
+      cep,
+      endereco,
+      numero,
+      complemento,
+      bairro,
+      cidade,
+      uf,
+      observacao,
+    ]) {
+      controller.dispose();
+    }
+    if (dados == null || !mounted) return;
+
+    setState(() => _metodoPagamentoProcessando = 'ENTREGA');
+    try {
+      final clienteId = await authStorage.obterClienteId();
+      if (clienteId == null) throw Exception('Cliente não identificado.');
+      await apiService.criarPedidoEntrega(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        cep: dados['cep']!,
+        endereco: dados['endereco']!,
+        numero: dados['numero']!,
+        complemento: dados['complemento'],
+        bairro: dados['bairro']!,
+        cidade: dados['cidade']!,
+        uf: dados['uf']!,
+        observacao: dados['observacao'],
+      );
+      final quantidade = await apiService.buscarQuantidadeCarrinho(
+        clienteId: clienteId,
+      );
+      CartBadgeNotifier.atualizar(quantidade);
+      CarteiraBadgeNotifier.atualizar();
+      if (!mounted) return;
+      AppSnackBar.sucesso(
+        context,
+        'Pedido enviado. Acompanhe o aceite na sua Carteira.',
+      );
+      MainNavigationController.abrirTela(const CarteiraScreen());
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+      }
+    } finally {
+      if (mounted) setState(() => _metodoPagamentoProcessando = null);
+    }
+  }
+
   Future<void> abrirPix() async {
     if (_reservaExpirada) return;
     if (totalPagar <= 0) {
@@ -970,6 +1170,42 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ),
 
           const SizedBox(height: 24),
+
+          if (compraDeProdutos) ...[
+            SizedBox(
+              height: 56,
+              child: OutlinedButton.icon(
+                onPressed: carregandoPagamento ? null : _pagarNaEntrega,
+                icon: _metodoPagamentoProcessando == 'ENTREGA'
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.delivery_dining_rounded, size: 26),
+                label: const Text(
+                  'Pagar na entrega',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0F6B3B),
+                  side: const BorderSide(color: Color(0xFF0F6B3B), width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(12, 8, 12, 4),
+              child: Text(
+                'O estabelecimento confirma o pedido antes de enviá-lo. Você paga ao receber.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54, fontSize: 12),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
 
           SizedBox(
             height: 56,
