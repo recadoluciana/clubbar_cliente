@@ -22,6 +22,7 @@ class Loja {
   final String numero;
   final String complemento;
   final bool aberto24x7;
+  final bool permiteEntrega;
   final DateTime? dataCriacao;
 
   Loja({
@@ -46,6 +47,7 @@ class Loja {
     this.numero = '',
     this.complemento = '',
     this.aberto24x7 = false,
+    this.permiteEntrega = false,
     this.dataCriacao,
   });
 
@@ -93,6 +95,7 @@ class Loja {
       numero: (json['nrendeloja'] ?? '').toString(),
       complemento: (json['complementoloja'] ?? '').toString(),
       aberto24x7: _toBool(json['aberto24x7']),
+      permiteEntrega: _toBool(json['permiteentrega']),
       dataCriacao: DateTime.tryParse((json['dtcriacao'] ?? '').toString()),
     );
   }

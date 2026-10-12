@@ -185,6 +185,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   bool get compraDeProdutos => widget.reservaIngressoId == null;
 
+  bool get entregaDisponivel => compraDeProdutos && widget.loja.permiteEntrega;
+
   String get _mensagemPagamentoNaoConcluido => compraDeProdutos
       ? 'Pagamento não concluído. O carrinho foi mantido.'
       : 'Pagamento do ingresso não concluído.';
@@ -594,7 +596,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Future<void> _pagarNaEntrega() async {
-    if (!compraDeProdutos || carregandoPagamento) return;
+    if (!entregaDisponivel || carregandoPagamento) return;
     if (usarCashback) {
       setState(() => usarCashback = false);
       AppSnackBar.info(
@@ -813,6 +815,41 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
   }
 
+  Future<Map<String, String>?> _enderecoEntregaDoPerfil() async {
+    final perfil = await apiService.buscarMeuPerfil();
+    String valor(String campo) => '${perfil[campo] ?? ''}'.trim();
+    final endereco = <String, String>{
+      'cep': valor('cepcliente').replaceAll(RegExp(r'[^0-9]'), ''),
+      'endereco': valor('endcliente'),
+      'numero': valor('nrendcliente'),
+      'complemento': valor('complcliente'),
+      'bairro': valor('bairrocliente'),
+      'cidade': valor('cidadecliente'),
+      'uf': valor('ufcliente').toUpperCase(),
+      'observacao': '',
+    };
+    final incompleto =
+        endereco['cep']!.length != 8 ||
+        [
+          'endereco',
+          'numero',
+          'bairro',
+          'cidade',
+          'uf',
+        ].any((campo) => endereco[campo]!.isEmpty) ||
+        endereco['uf']!.length != 2;
+    if (incompleto) {
+      if (mounted) {
+        AppSnackBar.info(
+          context,
+          'Para receber o pedido, complete seu endereço em Perfil/Dados pessoais.',
+        );
+      }
+      return null;
+    }
+    return endereco;
+  }
+
   Future<void> abrirPix() async {
     if (_reservaExpirada) return;
     if (totalPagar <= 0) {
@@ -830,6 +867,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (clienteId == null || clienteId == 0) {
         throw Exception('Cliente não identificado');
       }
+      final entrega = entregaDisponivel
+          ? await _enderecoEntregaDoPerfil()
+          : null;
+      if (entregaDisponivel && entrega == null) return;
       final pagamento = widget.reservaIngressoId != null
           ? await apiService.criarPixReserva(
               reservaId: widget.reservaIngressoId!,
@@ -843,6 +884,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               percentualTaxaProduto: percentualTaxaProduto,
               usarCashback: usarCashback,
               valorCashback: usarCashback ? cashbackUtilizavel : null,
+              entrega: entrega,
             );
       if (!mounted) return;
       final resultadoPix = await Navigator.push(
@@ -888,6 +930,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       }
 
       if (!await _garantirEnderecoParaCartao()) return;
+      final entrega = entregaDisponivel
+          ? await _enderecoEntregaDoPerfil()
+          : null;
+      if (entregaDisponivel && entrega == null) return;
 
       final resposta = widget.reservaIngressoId != null
           ? await apiService.criarCheckoutReserva(
@@ -902,6 +948,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               percentualTaxaProduto: percentualTaxaProduto,
               usarCashback: usarCashback,
               valorCashback: usarCashback ? cashbackUtilizavel : null,
+              entrega: entrega,
             );
 
       final checkoutUrl = resposta['checkout_url'];
@@ -1192,7 +1239,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           const SizedBox(height: 24),
 
-          if (compraDeProdutos) ...[
+          if (entregaDisponivel) ...[
             SizedBox(
               height: 56,
               child: OutlinedButton.icon(

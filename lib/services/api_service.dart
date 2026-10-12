@@ -1454,6 +1454,7 @@ class ApiService {
     required double percentualTaxaProduto,
     bool usarCashback = false,
     double? valorCashback,
+    Map<String, String>? entrega,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pix'),
@@ -1467,6 +1468,7 @@ class ApiService {
         'percentual_taxa_produto': percentualTaxaProduto,
         'usar_cashback': usarCashback,
         'valor_cashback': valorCashback,
+        ...?(entrega == null ? null : {'entrega': entrega}),
       }),
     );
 
@@ -1484,6 +1486,7 @@ class ApiService {
     required double percentualTaxaProduto,
     bool usarCashback = false,
     double? valorCashback,
+    Map<String, String>? entrega,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pagar-asaas'),
@@ -1497,6 +1500,7 @@ class ApiService {
         'percentual_taxa_produto': percentualTaxaProduto,
         'usar_cashback': usarCashback,
         'valor_cashback': valorCashback,
+        ...?(entrega == null ? null : {'entrega': entrega}),
       }),
     );
 
