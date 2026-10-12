@@ -153,6 +153,8 @@ class ClubbarPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subtituloLimpo = subtitulo.trim();
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(
@@ -201,18 +203,20 @@ class ClubbarPageHeader extends StatelessWidget {
                           color: corTitulo,
                         ),
                       ),
-                      const SizedBox(height: 3),
-                      Text(
-                        subtitulo,
-                        maxLines: maxLinhasSubtitulo,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade700,
-                          fontWeight: pesoSubtitulo,
-                          height: 1.25,
+                      if (subtituloLimpo.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          subtituloLimpo,
+                          maxLines: maxLinhasSubtitulo,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade700,
+                            fontWeight: pesoSubtitulo,
+                            height: 1.25,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
