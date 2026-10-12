@@ -461,6 +461,31 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
   }
 
+  Widget _chipStatusEntrega(Map<String, dynamic> item) {
+    final emRota =
+        (item['situacaoentrega'] ?? '').toString().toUpperCase() == 'EM_ROTA';
+    final dataDespacho = (item['dtdespachoentrega'] ?? '').toString().trim();
+    final texto = emRota && dataDespacho.isNotEmpty
+        ? 'Saiu para entrega em ${DateFormatters.dataHoraSimples(dataDespacho)}'
+        : _statusEntrega(item);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: emRota ? const Color(0xFFE1F5E8) : Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        texto,
+        style: TextStyle(
+          color: emRota ? const Color(0xFF18763B) : null,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
@@ -526,7 +551,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                               ),
                               if (validade.isNotEmpty)
                                 _chip('Validade: $validade'),
-                              if (entrega) _chip(_statusEntrega(item)),
+                              if (entrega) _chipStatusEntrega(item),
                             ],
                           ),
 
