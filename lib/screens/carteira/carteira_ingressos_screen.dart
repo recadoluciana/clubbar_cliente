@@ -1030,7 +1030,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
+      appBar: ClubbarAppBar(
+        titulo: widget.nomeLoja,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        onVoltar: widget.onVoltar,
+      ),
 
       body: Column(
         children: [

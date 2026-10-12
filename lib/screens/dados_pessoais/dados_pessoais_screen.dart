@@ -257,7 +257,11 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: const ClubbarAppBar(
+        titulo: 'Dados pessoais',
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())

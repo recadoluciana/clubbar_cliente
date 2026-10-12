@@ -357,7 +357,9 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
+        titulo: widget.loja.nome,
         mostrarVoltar: true,
+        mostrarSessao: false,
         onVoltar: () {
           Navigator.pop(context);
         },
@@ -365,8 +367,8 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: widget.loja.nome,
-            subtitulo: 'Pagamento via Pix',
+            titulo: 'Pagamento via Pix',
+            subtitulo: 'Use o QR Code para concluir sua compra',
             icone: Icons.pix,
             corIcone: Colors.green,
             corTitulo: Colors.blue,

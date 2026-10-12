@@ -795,11 +795,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(
-        mostrarVoltar: false,
-        mostrarPerfil: true,
-        logoAlinhadaEsquerda: true,
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: false, mostrarPerfil: true),
       body: RefreshIndicator(
         onRefresh: carregarHome,
         child: carregando
