@@ -1323,14 +1323,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       widget.loja.whatsapp,
       widget.loja.nrtelloja,
     );
-    final emailEvento = _primeiroContato(
-      detalhe?.emailEvento,
-      emailEstabelecimento,
-    );
-    final whatsappEvento = _primeiroContato(
-      detalhe?.whatsappEvento,
-      whatsappEstabelecimento,
-    );
 
     return Padding(
       padding: const EdgeInsets.only(top: 4),
@@ -1389,8 +1381,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             ClubbarContactLinks(
               emailEstabelecimento: emailEstabelecimento,
               whatsappEstabelecimento: whatsappEstabelecimento,
-              emailEvento: emailEvento,
-              whatsappEvento: whatsappEvento,
+              emailEvento: detalhe.emailEvento,
+              whatsappEvento: detalhe.whatsappEvento,
               mostrarContatoEvento: true,
             ),
         ],
