@@ -1057,7 +1057,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             child: Text(
               compraDeProdutos
                   ? 'Para cancelamento da compra, acesse Perfil/Minhas compras.'
-                  : 'Para cancelamento e alteração de participante, acesse o ingresso em Carteira/Ingressos',
+                  : 'Para cancelamento da compra, acesse Perfil/Minhas compras. Para alteração de participante, acesse sua Carteira/Ingressos.',
               textAlign: TextAlign.center,
               style: const TextStyle(fontSize: 15),
             ),
