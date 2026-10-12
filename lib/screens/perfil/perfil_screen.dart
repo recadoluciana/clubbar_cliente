@@ -141,11 +141,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       extendBodyBehindAppBar: false,
-      appBar: const ClubbarAppBar(
-        titulo: 'Perfil',
-        mostrarVoltar: true,
-        mostrarSessao: false,
-      ),
+      appBar: const ClubbarAppBar(mostrarVoltar: false, mostrarPerfil: false),
       body: Column(
         children: [
           FutureBuilder<Map<String, String>>(

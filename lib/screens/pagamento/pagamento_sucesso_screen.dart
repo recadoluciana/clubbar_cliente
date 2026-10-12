@@ -55,7 +55,11 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: ClubbarAppBar(mostrarVoltar: false),
+      appBar: const ClubbarAppBar(
+        titulo: 'Pagamento',
+        mostrarVoltar: false,
+        mostrarSessao: false,
+      ),
 
       body: Center(
         child: Padding(
