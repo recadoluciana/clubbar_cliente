@@ -631,87 +631,108 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         title: const Text('Entrega e pagamento'),
         content: SizedBox(
           width: 420,
-          child: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Você pagará ao receber. Confirme o endereço de entrega.',
-                  ),
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: cep,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'CEP'),
-                    validator: (v) =>
-                        (v ?? '').replaceAll(RegExp(r'[^0-9]'), '').length == 8
-                        ? null
-                        : 'CEP inválido',
-                  ),
-                  TextFormField(
-                    controller: endereco,
-                    decoration: const InputDecoration(labelText: 'Endereço'),
-                    validator: (v) =>
-                        (v ?? '').trim().isEmpty ? 'Informe o endereço' : null,
-                  ),
-                  TextFormField(
-                    controller: numero,
-                    decoration: const InputDecoration(labelText: 'Número'),
-                    validator: (v) =>
-                        (v ?? '').trim().isEmpty ? 'Informe o número' : null,
-                  ),
-                  TextFormField(
-                    controller: complemento,
-                    decoration: const InputDecoration(
-                      labelText: 'Complemento (opcional)',
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              inputDecorationTheme: const InputDecorationTheme(
+                border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 11,
+                ),
+              ),
+            ),
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Você pagará ao receber. Confirme o endereço de entrega.',
                     ),
-                  ),
-                  TextFormField(
-                    controller: bairro,
-                    decoration: const InputDecoration(labelText: 'Bairro'),
-                    validator: (v) =>
-                        (v ?? '').trim().isEmpty ? 'Informe o bairro' : null,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: cidade,
-                          decoration: const InputDecoration(
-                            labelText: 'Cidade',
-                          ),
-                          validator: (v) => (v ?? '').trim().isEmpty
-                              ? 'Informe a cidade'
-                              : null,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        width: 64,
-                        child: TextFormField(
-                          controller: uf,
-                          maxLength: 2,
-                          textCapitalization: TextCapitalization.characters,
-                          decoration: const InputDecoration(
-                            labelText: 'UF',
-                            counterText: '',
-                          ),
-                          validator: (v) =>
-                              (v ?? '').trim().length == 2 ? null : 'UF',
-                        ),
-                      ),
-                    ],
-                  ),
-                  TextFormField(
-                    controller: observacao,
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      labelText: 'Referência ou observação (opcional)',
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: cep,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(labelText: 'CEP'),
+                      validator: (v) =>
+                          (v ?? '').replaceAll(RegExp(r'[^0-9]'), '').length ==
+                              8
+                          ? null
+                          : 'CEP inválido',
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: endereco,
+                      decoration: const InputDecoration(labelText: 'Endereço'),
+                      validator: (v) => (v ?? '').trim().isEmpty
+                          ? 'Informe o endereço'
+                          : null,
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: numero,
+                      decoration: const InputDecoration(labelText: 'Número'),
+                      validator: (v) =>
+                          (v ?? '').trim().isEmpty ? 'Informe o número' : null,
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: complemento,
+                      decoration: const InputDecoration(
+                        labelText: 'Complemento (opcional)',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: bairro,
+                      decoration: const InputDecoration(labelText: 'Bairro'),
+                      validator: (v) =>
+                          (v ?? '').trim().isEmpty ? 'Informe o bairro' : null,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: cidade,
+                            decoration: const InputDecoration(
+                              labelText: 'Cidade',
+                            ),
+                            validator: (v) => (v ?? '').trim().isEmpty
+                                ? 'Informe a cidade'
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          width: 64,
+                          child: TextFormField(
+                            controller: uf,
+                            maxLength: 2,
+                            textCapitalization: TextCapitalization.characters,
+                            decoration: const InputDecoration(
+                              labelText: 'UF',
+                              counterText: '',
+                            ),
+                            validator: (v) =>
+                                (v ?? '').trim().length == 2 ? null : 'UF',
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: observacao,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Referência ou observação (opcional)',
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
