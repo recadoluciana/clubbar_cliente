@@ -94,7 +94,10 @@ class _ModalidadesIngressoScreenState
             subtitulo: '',
             icone: Icons.confirmation_number_rounded,
             imagemAvatarUrl: widget.imagemLojaUrl,
-            corTitulo: Colors.blue,
+            tamanhoAvatar: 56,
+            larguraAvatar: 86,
+            avatarRetangular: true,
+            corTitulo: Colors.black87,
           ),
           Expanded(
             child: ListView(
