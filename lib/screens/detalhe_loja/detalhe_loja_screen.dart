@@ -223,16 +223,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                 ),
               ),
             ),
-            Positioned(
-              right: 14,
-              bottom: 12,
-              child: IconButton(
-                tooltip: 'Compartilhar ${loja.nome}',
-                onPressed: _compartilharLoja,
-                color: Colors.blue.shade700,
-                icon: const Icon(Icons.ios_share_rounded, size: 28),
-              ),
-            ),
           ],
         ),
       ),
@@ -422,6 +412,12 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     const Icon(Icons.location_on_outlined),
                     const SizedBox(width: 8),
                     Expanded(child: Text(_enderecoCompleto())),
+                    IconButton(
+                      tooltip: 'Compartilhar ${loja.nome}',
+                      onPressed: _compartilharLoja,
+                      color: Colors.blue.shade700,
+                      icon: const Icon(Icons.ios_share_rounded, size: 28),
+                    ),
                   ],
                 ),
 
