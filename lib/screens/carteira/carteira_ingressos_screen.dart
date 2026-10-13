@@ -117,7 +117,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         'Recebido de: ${widget.nomeCliente}\n\n'
         'Apresente o QR Code na entrada junto com seu documento de identificação.';
     try {
-      final resultado = await Share.shareXFiles(
+      await Share.shareXFiles(
         [
           await ShareImageFile.prepare(
             imagem,
@@ -127,9 +127,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         text: texto,
         subject: 'Ingresso Clubbar',
       );
-      if (resultado.status == ShareResultStatus.unavailable) {
-        await _copiarMensagemDoIngresso(texto);
-      }
     } catch (_) {
       await _copiarMensagemDoIngresso(texto);
     }
