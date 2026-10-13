@@ -1748,7 +1748,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         ),
                                       )
                                     : const Icon(Icons.refresh, size: 18),
-                                label: const Text('Atualizar lotes'),
+                                label: const Text('Atualizar ingressos'),
                               ),
                             ],
                           ),
