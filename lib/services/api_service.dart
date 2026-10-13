@@ -17,10 +17,23 @@ import 'package:clubbar_cliente/config/app_config.dart';
 class ApiService {
   static final String baseUrl = AppConfig.apiBaseUrl;
 
+  bool erroDeSessao(Object erro) {
+    final texto = erro.toString().toLowerCase();
+    return texto.contains('token inválido') ||
+        texto.contains('token expirado') ||
+        texto.contains('sessão expirada') ||
+        texto.contains('não autenticado') ||
+        texto.contains('unauthorized');
+  }
+
   String mensagemErroAmigavel(Object e) {
     final texto = e.toString();
 
     final textoLower = texto.toLowerCase();
+
+    if (erroDeSessao(e)) {
+      return 'Sua sessão terminou. Entre novamente para continuar.';
+    }
 
     if (textoLower.contains('socketexception') ||
         textoLower.contains('failed host lookup') ||
