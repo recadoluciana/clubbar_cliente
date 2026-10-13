@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/perfil_page_header.dart';
+import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 import '../perfil/cancelar_transacao_screen.dart';
@@ -23,6 +23,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   bool carregando = true;
   String? erro;
   int? clienteId;
+  String _nomeCabecalho = 'Cliente Clubbar';
+  String _emailCabecalho = '';
+  bool _cabecalhoPronto = false;
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -41,7 +44,32 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   @override
   void initState() {
     super.initState();
+    _carregarCabecalho();
     carregarPedidos();
+  }
+
+  Future<void> _carregarCabecalho() async {
+    final nomeSalvo = (await authStorage.obterNmcliente())?.trim() ?? '';
+
+    try {
+      final perfil = await apiService.buscarMeuPerfil();
+      final nome = (perfil['nmcliente'] ?? '').toString().trim();
+      final email = (perfil['emailcliente'] ?? '').toString().trim();
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nome.isEmpty
+            ? (nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo)
+            : nome;
+        _emailCabecalho = email;
+        _cabecalhoPronto = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo;
+        _cabecalhoPronto = true;
+      });
+    }
   }
 
   @override
@@ -175,9 +203,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
 
   Widget _filtrosTipo() {
     return Container(
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: Row(
@@ -210,17 +239,12 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
 
     return InkWell(
       onTap: () => setState(() => tipoSelecionado = tipo),
-      borderRadius: BorderRadius.circular(13),
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        height: 46,
+        height: 42,
         decoration: BoxDecoration(
-          color: selecionado ? Colors.amber.withValues(alpha: 0.16) : null,
-          border: Border(
-            bottom: BorderSide(
-              color: selecionado ? Colors.amber.shade800 : Colors.transparent,
-              width: 3,
-            ),
-          ),
+          color: selecionado ? Colors.amber : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -235,7 +259,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               titulo,
               style: TextStyle(
                 color: selecionado ? Colors.black : Colors.black54,
-                fontWeight: FontWeight.w800,
+                fontSize: 13,
+                fontWeight: selecionado ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
           ],
@@ -868,7 +893,14 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                const PerfilPageHeader(subtitulo: ''),
+                _cabecalhoPronto
+                    ? ClubbarPageHeader(
+                        titulo: _nomeCabecalho,
+                        subtitulo: _emailCabecalho,
+                        mostrarAvatar: false,
+                        corTitulo: Colors.blue,
+                      )
+                    : const SizedBox(height: 70),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _filtrosTipo(),
@@ -878,16 +910,16 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                   child: RefreshIndicator(
                     onRefresh: carregarPedidos,
                     child: ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         _filtrosStatus(),
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 10),
 
                         _campoPesquisa(),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
 
                         if (erro != null)
                           _erroWidget()
@@ -947,32 +979,29 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   }
 
   Widget _filtrosStatus() {
-    return Row(
-      children: [
-        Expanded(
-          child: _botaoStatus(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _botaoStatus(
             titulo: 'Todos',
             status: 'TODOS',
             icone: Icons.all_inbox_rounded,
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _botaoStatus(
+          const SizedBox(width: 8),
+          _botaoStatus(
             titulo: 'Não utilizados',
             status: 'NAO',
             icone: Icons.hourglass_bottom_rounded,
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: _botaoStatus(
+          const SizedBox(width: 8),
+          _botaoStatus(
             titulo: 'Utilizados',
             status: 'SIM',
             icone: Icons.check_circle_outline_rounded,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -984,7 +1013,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     final selecionado = statusSelecionado == status;
 
     return SizedBox(
-      height: 44,
+      height: 38,
       child: OutlinedButton.icon(
         onPressed: () {
           setState(() {
@@ -996,7 +1025,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           titulo,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
         ),
         style: OutlinedButton.styleFrom(
           backgroundColor: selecionado ? Colors.amber : Colors.white,
@@ -1004,9 +1033,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           side: BorderSide(
             color: selecionado ? Colors.amber.shade700 : Colors.grey.shade300,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
       ),
