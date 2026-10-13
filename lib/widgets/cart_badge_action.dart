@@ -19,6 +19,7 @@ class CartBadgeAction extends StatelessWidget {
 
         if (totalItensCarrinho > 0) {
           icon = Badge(
+            backgroundColor: Colors.red,
             label: Text(
               totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
               style: const TextStyle(
