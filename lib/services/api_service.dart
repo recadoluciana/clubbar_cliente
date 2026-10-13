@@ -1470,6 +1470,36 @@ class ApiService {
     return campanha is Map ? Map<String, dynamic>.from(campanha) : null;
   }
 
+  Future<List<Map<String, dynamic>>> buscarCampanhasParticipantes() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/campanhas-doacao/participantes'),
+      headers: const {'Accept': 'application/json'},
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    final dados = Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+    final participantes = dados['participantes'];
+    if (participantes is! List) return const [];
+    String normalizarUrl(dynamic valor) {
+      final url = '${valor ?? ''}'.trim();
+      if (url.isEmpty || url.startsWith('http')) return url;
+      return '$baseUrl$url';
+    }
+
+    return participantes
+        .whereType<Map>()
+        .map((item) {
+          final campanha = Map<String, dynamic>.from(item);
+          campanha['campanha_logo_url'] = normalizarUrl(
+            campanha['campanha_logo_url'],
+          );
+          campanha['loja_logo_url'] = normalizarUrl(campanha['loja_logo_url']);
+          return campanha;
+        })
+        .toList(growable: false);
+  }
+
   Future<Map<String, dynamic>> criarPixAsaas({
     required int clienteId,
     required int organizacaoId,
