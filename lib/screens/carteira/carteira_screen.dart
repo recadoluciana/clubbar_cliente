@@ -433,8 +433,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           onTap: ativo ? onTap : null,
           borderRadius: BorderRadius.circular(18),
           child: Container(
-            height: 113,
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+            height: 76,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
@@ -446,29 +446,29 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Icon(
-                    Icons.chevron_right_rounded,
-                    size: 22,
-                    color: ativo ? cor : Colors.grey.shade400,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        titulo,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: ativo ? Colors.black87 : Colors.grey.shade500,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 22,
+                      color: ativo ? cor : Colors.grey.shade400,
+                    ),
+                  ],
                 ),
 
-                const SizedBox(height: 15),
-
-                Text(
-                  titulo,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: ativo ? Colors.black87 : Colors.grey.shade500,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-                const SizedBox(height: 3),
+                const SizedBox(height: 5),
 
                 Text(
                   quantidade == 1 ? '1 item' : '$quantidade itens',
