@@ -8,6 +8,7 @@ import 'app_version_text.dart';
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titulo;
   final IconData? iconeTitulo;
+  final Color corIconeTitulo;
   final String? imagemTituloAsset;
   final bool mostrarCarrinho;
   final int quantidadeCarrinho;
@@ -28,6 +29,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     this.titulo,
     this.iconeTitulo,
+    this.corIconeTitulo = Colors.white,
     this.imagemTituloAsset,
     this.mostrarCarrinho = false,
     this.quantidadeCarrinho = 0,
@@ -217,7 +219,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                           fit: BoxFit.contain,
                         )
                       else
-                        Icon(iconeTitulo, color: Colors.white, size: 22),
+                        Icon(iconeTitulo, color: corIconeTitulo, size: 22),
                       const SizedBox(width: 8),
                       Text(
                         titulo!,

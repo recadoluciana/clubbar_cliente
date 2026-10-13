@@ -159,20 +159,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       extendBodyBehindAppBar: false,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(58),
-        child: FutureBuilder<Map<String, String>>(
-          future: _dadosCabecalho,
-          builder: (context, snapshot) {
-            final nome = (snapshot.data?['nome'] ?? '').trim();
-            return ClubbarAppBar(
-              titulo: nome.isEmpty ? 'Perfil' : 'Perfil - $nome',
-              mostrarVoltar: true,
-              mostrarSessao: false,
-              onVoltar: MainNavigationController.irParaHome,
-            );
-          },
-        ),
+      appBar: ClubbarAppBar(
+        titulo: 'Perfil',
+        iconeTitulo: Icons.person_rounded,
+        corIconeTitulo: Colors.amber,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        onVoltar: MainNavigationController.irParaHome,
       ),
       body: Column(
         children: [
@@ -184,7 +177,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 titulo: dados?['nome'] ?? 'Cliente Clubbar',
                 subtitulo: dados?['email'] ?? '',
                 mostrarAvatar: false,
-                mostrarTitulo: false,
                 corTitulo: Colors.blue,
               );
             },
