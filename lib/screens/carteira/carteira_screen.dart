@@ -297,9 +297,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
               Row(
                 children: [
                   _atalhoCarteira(
-                    titulo: 'Meus produtos',
+                    titulo: 'Produtos',
                     quantidade: totalProdutos,
-                    icone: Icons.shopping_bag_rounded,
                     cor: const Color(0xFFD18A00),
                     onTap: () {
                       MainNavigationController.abrirTela(
@@ -321,9 +320,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                   const SizedBox(width: 10),
 
                   _atalhoCarteira(
-                    titulo: 'Meus ingressos',
+                    titulo: 'Ingressos',
                     quantidade: totalIngressos,
-                    icone: Icons.confirmation_number_rounded,
                     cor: Colors.blue,
                     onTap: () {
                       MainNavigationController.abrirTela(
@@ -422,7 +420,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   Widget _atalhoCarteira({
     required String titulo,
     required int quantidade,
-    required IconData icone,
     required Color cor,
     required VoidCallback onTap,
   }) {
@@ -449,30 +446,16 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: ativo
-                            ? cor.withValues(alpha: 0.16)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(11),
-                      ),
-                      child: Icon(
-                        icone,
-                        size: 20,
-                        color: ativo ? cor : Colors.grey.shade400,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (ativo)
-                      Icon(Icons.chevron_right_rounded, size: 22, color: cor),
-                  ],
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Icon(
+                    Icons.chevron_right_rounded,
+                    size: 22,
+                    color: ativo ? cor : Colors.grey.shade400,
+                  ),
                 ),
 
-                const SizedBox(height: 9),
+                const SizedBox(height: 15),
 
                 Text(
                   titulo,
