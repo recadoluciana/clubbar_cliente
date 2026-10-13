@@ -280,7 +280,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
               children: [
                 const ClubbarPageHeader(
                   titulo: 'Carrinho',
-                  subtitulo: 'Itens pendentes de pagamento por estabelecimento',
+                  subtitulo: '',
                   icone: Icons.shopping_cart_rounded,
                 ),
 
