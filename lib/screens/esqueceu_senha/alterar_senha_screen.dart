@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
+import '../../services/auth_storage.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/clubbar_page_header.dart';
 
 class AlterarSenhaScreen extends StatefulWidget {
   final VoidCallback onVoltar;
@@ -21,11 +23,35 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
   final _confirmarSenhaCtrl = TextEditingController();
 
   final apiService = ApiService();
+  final authStorage = AuthStorage();
+  late final Future<Map<String, String>> _dadosCabecalho;
   bool carregando = false;
 
   bool ocultarSenhaAtual = true;
   bool ocultarNovaSenha = true;
   bool ocultarConfirmarSenha = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _dadosCabecalho = _carregarDadosCabecalho();
+  }
+
+  Future<Map<String, String>> _carregarDadosCabecalho() async {
+    final nomeSalvo = (await authStorage.obterNmcliente())?.trim() ?? '';
+
+    try {
+      final perfil = await apiService.buscarMeuPerfil();
+      final nome = (perfil['nmcliente'] ?? '').toString().trim();
+      final email = (perfil['emailcliente'] ?? '').toString().trim();
+      return {'nome': nome.isEmpty ? nomeSalvo : nome, 'email': email};
+    } catch (_) {
+      return {
+        'nome': nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo,
+        'email': '',
+      };
+    }
+  }
 
   @override
   void dispose() {
@@ -128,6 +154,18 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
 
       body: Column(
         children: [
+          FutureBuilder<Map<String, String>>(
+            future: _dadosCabecalho,
+            builder: (context, snapshot) {
+              final dados = snapshot.data;
+              return ClubbarPageHeader(
+                titulo: dados?['nome'] ?? 'Cliente Clubbar',
+                subtitulo: dados?['email'] ?? '',
+                mostrarAvatar: false,
+                corTitulo: Colors.blue,
+              );
+            },
+          ),
           Expanded(
             child: Form(
               key: _formKey,
