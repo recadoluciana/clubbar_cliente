@@ -24,7 +24,9 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
 
   final apiService = ApiService();
   final authStorage = AuthStorage();
-  late final Future<Map<String, String>> _dadosCabecalho;
+  String _nomeCabecalho = 'Cliente Clubbar';
+  String _emailCabecalho = '';
+  bool _cabecalhoPronto = false;
   bool carregando = false;
 
   bool ocultarSenhaAtual = true;
@@ -34,22 +36,30 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
   @override
   void initState() {
     super.initState();
-    _dadosCabecalho = _carregarDadosCabecalho();
+    _carregarDadosCabecalho();
   }
 
-  Future<Map<String, String>> _carregarDadosCabecalho() async {
+  Future<void> _carregarDadosCabecalho() async {
     final nomeSalvo = (await authStorage.obterNmcliente())?.trim() ?? '';
 
     try {
       final perfil = await apiService.buscarMeuPerfil();
       final nome = (perfil['nmcliente'] ?? '').toString().trim();
       final email = (perfil['emailcliente'] ?? '').toString().trim();
-      return {'nome': nome.isEmpty ? nomeSalvo : nome, 'email': email};
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nome.isEmpty
+            ? (nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo)
+            : nome;
+        _emailCabecalho = email;
+        _cabecalhoPronto = true;
+      });
     } catch (_) {
-      return {
-        'nome': nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo,
-        'email': '',
-      };
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo;
+        _cabecalhoPronto = true;
+      });
     }
   }
 
@@ -154,18 +164,14 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
 
       body: Column(
         children: [
-          FutureBuilder<Map<String, String>>(
-            future: _dadosCabecalho,
-            builder: (context, snapshot) {
-              final dados = snapshot.data;
-              return ClubbarPageHeader(
-                titulo: dados?['nome'] ?? 'Cliente Clubbar',
-                subtitulo: dados?['email'] ?? '',
-                mostrarAvatar: false,
-                corTitulo: Colors.blue,
-              );
-            },
-          ),
+          _cabecalhoPronto
+              ? ClubbarPageHeader(
+                  titulo: _nomeCabecalho,
+                  subtitulo: _emailCabecalho,
+                  mostrarAvatar: false,
+                  corTitulo: Colors.blue,
+                )
+              : const SizedBox(height: 70),
           Expanded(
             child: Form(
               key: _formKey,
