@@ -507,10 +507,12 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(
+      appBar: ClubbarAppBar(
         titulo: 'Carteira',
-        mostrarVoltar: false,
-        mostrarLogoPequenaEsquerdaComTitulo: true,
+        mostrarVoltar: true,
+        mostrarLogo: false,
+        mostrarSessao: false,
+        onVoltar: MainNavigationController.irParaHome,
       ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
