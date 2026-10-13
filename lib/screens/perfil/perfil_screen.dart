@@ -48,6 +48,32 @@ class _PerfilScreenState extends State<PerfilScreen> {
   }
 
   Future<void> fazerLogout() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (contextoDialogo) => AlertDialog(
+        title: const Text('Sair da conta?'),
+        content: const Text(
+          'Você precisará informar seus dados para entrar novamente.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(contextoDialogo, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(contextoDialogo, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar != true || !mounted) return;
+
     await authStorage.limparToken();
 
     if (!mounted) return;
