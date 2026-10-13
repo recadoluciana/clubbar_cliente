@@ -25,6 +25,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   final apiService = ApiService();
   String _nomeCabecalho = 'Cliente Clubbar';
   String _emailCabecalho = '';
+  bool _cabecalhoPronto = false;
 
   @override
   void initState() {
@@ -45,11 +46,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
             ? (nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo)
             : nome;
         _emailCabecalho = email;
+        _cabecalhoPronto = true;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _nomeCabecalho = nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo;
+        _cabecalhoPronto = true;
       });
     }
   }
@@ -176,12 +179,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       body: Column(
         children: [
-          ClubbarPageHeader(
-            titulo: _nomeCabecalho,
-            subtitulo: _emailCabecalho,
-            mostrarAvatar: false,
-            corTitulo: Colors.blue,
-          ),
+          _cabecalhoPronto
+              ? ClubbarPageHeader(
+                  titulo: _nomeCabecalho,
+                  subtitulo: _emailCabecalho,
+                  mostrarAvatar: false,
+                  corTitulo: Colors.blue,
+                )
+              : const SizedBox(height: 70),
 
           Expanded(
             child: ListView(
