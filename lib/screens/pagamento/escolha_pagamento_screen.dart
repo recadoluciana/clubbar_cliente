@@ -1468,6 +1468,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             ClubbarContactLinks(
               emailEstabelecimento: widget.loja.emailContato,
               whatsappEstabelecimento: widget.loja.whatsapp,
+              centralizado: true,
+              cor: Theme.of(context).colorScheme.primary,
             ),
         ],
       ),

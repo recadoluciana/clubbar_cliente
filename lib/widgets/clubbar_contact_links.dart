@@ -7,6 +7,8 @@ class ClubbarContactLinks extends StatelessWidget {
   final String emailEvento;
   final String whatsappEvento;
   final bool mostrarContatoEvento;
+  final bool centralizado;
+  final Color? cor;
 
   const ClubbarContactLinks({
     super.key,
@@ -15,6 +17,8 @@ class ClubbarContactLinks extends StatelessWidget {
     this.emailEvento = '',
     this.whatsappEvento = '',
     this.mostrarContatoEvento = false,
+    this.centralizado = false,
+    this.cor,
   });
 
   bool get _temContato => [
@@ -50,7 +54,7 @@ class ClubbarContactLinks extends StatelessWidget {
       icon: Icon(icone, size: 17),
       label: Text(texto),
       style: TextButton.styleFrom(
-        foregroundColor: Colors.blue.shade800,
+        foregroundColor: cor ?? Colors.blue.shade800,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -70,14 +74,20 @@ class ClubbarContactLinks extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 2),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: centralizado
+            ? CrossAxisAlignment.center
+            : CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Fale com o organizador/estabelecimento',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            textAlign: centralizado ? TextAlign.center : TextAlign.start,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 2),
           Wrap(
+            alignment: centralizado
+                ? WrapAlignment.center
+                : WrapAlignment.start,
             spacing: 2,
             runSpacing: 2,
             children: [
