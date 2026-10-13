@@ -593,6 +593,13 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
+    final enderecoEvento =
+        (item['endereco_evento_completo'] ??
+                item['dsendlocevento'] ??
+                item['endereco_estabelecimento'] ??
+                '')
+            .toString()
+            .trim();
 
     final valor = double.tryParse('${item['vrunititvenda'] ?? 0}') ?? 0;
 
@@ -658,7 +665,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Venda: #${item['venda_id'] ?? ''}',
+                          dataEvento.isEmpty
+                              ? 'Data do evento não informada'
+                              : dataEvento,
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 12,
@@ -678,19 +687,19 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ),
                           ),
                         ],
-                        const SizedBox(height: 5),
-                        Text(
-                          dataEvento.isEmpty
-                              ? 'Data do evento não informada'
-                              : dataEvento,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                        if (enderecoEvento.isNotEmpty) ...[
+                          const SizedBox(height: 5),
+                          Text(
+                            enderecoEvento,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
