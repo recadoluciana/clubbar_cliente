@@ -276,7 +276,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  const PerfilPageHeader(subtitulo: 'Dados pessoais'),
+                  const PerfilPageHeader(subtitulo: ''),
 
                   Expanded(
                     child: ListView(
