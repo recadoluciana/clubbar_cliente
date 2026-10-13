@@ -7,7 +7,6 @@ import '../../services/carteira_badge_notifier.dart';
 import 'carteira_loja_screen.dart';
 import 'carteira_ingressos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/clubbar_page_header.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraScreen extends StatefulWidget {
@@ -290,25 +289,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                       ],
                     ),
                   ),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '$totalLoja',
-                      style: const TextStyle(
-                        color: Color(0xFF755600),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
                 ],
               ),
 
@@ -422,32 +402,20 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   }
 
   Widget _listaCarteira() {
-    return Column(
-      children: [
-        ClubbarPageHeader(
-          titulo: 'Carteira',
-          subtitulo: '',
-          icone: Icons.account_balance_wallet_rounded,
-        ),
-
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: carregarTela,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-              children: [
-                if (erro != null)
-                  _erroWidget()
-                else if (lojasResumo.isEmpty)
-                  _estadoVazio()
-                else
-                  ...lojasResumo.map(_cardLoja),
-              ],
-            ),
-          ),
-        ),
-      ],
+    return RefreshIndicator(
+      onRefresh: carregarTela,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        children: [
+          if (erro != null)
+            _erroWidget()
+          else if (lojasResumo.isEmpty)
+            _estadoVazio()
+          else
+            ...lojasResumo.map(_cardLoja),
+        ],
+      ),
     );
   }
 
@@ -539,7 +507,11 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: false),
+      appBar: const ClubbarAppBar(
+        titulo: 'Carteira',
+        mostrarVoltar: false,
+        mostrarLogoPequenaEsquerdaComTitulo: true,
+      ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : _listaCarteira(),

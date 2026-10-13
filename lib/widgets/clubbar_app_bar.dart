@@ -20,6 +20,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool logoAlinhadaEsquerda;
   final bool mostrarLogo;
   final bool mostrarCorujaAoLadoDoTitulo;
+  final bool mostrarLogoPequenaEsquerdaComTitulo;
 
   const ClubbarAppBar({
     super.key,
@@ -37,6 +38,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.logoAlinhadaEsquerda = false,
     this.mostrarLogo = true,
     this.mostrarCorujaAoLadoDoTitulo = false,
+    this.mostrarLogoPequenaEsquerdaComTitulo = false,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -69,8 +71,8 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  Widget _logoClubbar() {
-    return Image.asset(logoPath, height: 40, fit: BoxFit.contain);
+  Widget _logoClubbar({double altura = 40}) {
+    return Image.asset(logoPath, height: altura, fit: BoxFit.contain);
   }
 
   Future<_SessaoAppBar> _carregarSessao() async {
@@ -134,6 +136,8 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final bool temTitulo = titulo != null && titulo!.trim().isNotEmpty;
+    final exibirLogoPequenaEsquerda =
+        mostrarLogoPequenaEsquerdaComTitulo && temTitulo && !mostrarVoltar;
 
     return AppBar(
       automaticallyImplyLeading: false,
@@ -146,6 +150,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? !logoAlinhadaEsquerda
           : false,
       toolbarHeight: 58,
+      leadingWidth: exibirLogoPequenaEsquerda ? 118 : null,
       titleSpacing: temTitulo
           ? NavigationToolbar.kMiddleSpacing
           : logoAlinhadaEsquerda
@@ -174,6 +179,14 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                   MainNavigationController.irParaHome();
                 }
               },
+            )
+          : exibirLogoPequenaEsquerda
+          ? Padding(
+              padding: const EdgeInsets.only(left: 14, right: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: _logoClubbar(altura: 28),
+              ),
             )
           : null,
 
