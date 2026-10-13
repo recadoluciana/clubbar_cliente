@@ -57,20 +57,22 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     return Positioned(
       right: 4,
       top: 6,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
-        child: Text(
-          quantidadeCarrinho > 99 ? '99+' : '$quantidadeCarrinho',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
+      child: IgnorePointer(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+          child: Text(
+            quantidadeCarrinho > 99 ? '99+' : '$quantidadeCarrinho',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
