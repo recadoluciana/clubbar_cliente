@@ -433,8 +433,8 @@ class _CashbackScreenState extends State<CashbackScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: const ClubbarAppBar(
         titulo: 'Cashback',
-        iconeTitulo: Icons.person_rounded,
-        corIconeTitulo: Colors.amber,
+        iconeTitulo: Icons.savings_rounded,
+        corIconeTitulo: Colors.green,
         mostrarVoltar: true,
         mostrarSessao: false,
       ),

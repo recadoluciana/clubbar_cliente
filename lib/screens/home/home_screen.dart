@@ -50,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   List<Evento> eventosComCortesias = [];
   List<Loja> lojas = [];
   List<Produto> produtosMaisVendidos = [];
+  List<Map<String, dynamic>> campanhasParticipantes = [];
 
   @override
   void initState() {
@@ -83,6 +84,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final eventosFuture = apiService.buscarEventos();
       final cortesiasFuture = apiService.buscarEventosComCortesiasDisponiveis();
       final produtosFuture = apiService.buscarProdutosMaisVendidos(limite: 10);
+      final campanhasFuture = apiService.buscarCampanhasParticipantes();
 
       try {
         lojas = await lojasFuture;
@@ -111,6 +113,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } catch (e) {
         produtosMaisVendidos = [];
         erroProdutos = apiService.mensagemErroAmigavel(e);
+      }
+
+      try {
+        campanhasParticipantes = await campanhasFuture;
+      } catch (_) {
+        campanhasParticipantes = [];
       }
 
       _paginaAtual = 0;
@@ -386,6 +394,114 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
+      ),
+    );
+  }
+
+  void _abrirLojaParticipante(int lojaId) {
+    for (final loja in lojas) {
+      if (loja.id == lojaId) {
+        MainNavigationController.abrirTela(DetalheLojaScreen(loja: loja));
+        return;
+      }
+    }
+  }
+
+  Widget _listaCampanhasParticipantes() {
+    return SizedBox(
+      height: 144,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: campanhasParticipantes.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          final campanha = campanhasParticipantes[index];
+          final logo = '${campanha['campanha_logo_url'] ?? ''}';
+          final nomeCampanha = '${campanha['campanha_nome'] ?? ''}'.trim();
+          final loja = '${campanha['loja_nome'] ?? ''}'.trim();
+          final percentual =
+              double.tryParse('${campanha['percentual_doacao'] ?? 0}') ?? 0;
+          final lojaId = int.tryParse('${campanha['loja_id'] ?? ''}') ?? 0;
+          final percentualTexto = percentual.toStringAsFixed(
+            percentual % 1 == 0 ? 0 : 2,
+          );
+
+          return SizedBox(
+            width: 258,
+            child: Material(
+              color: const Color(0xFFFFF8E1),
+              borderRadius: BorderRadius.circular(18),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: lojaId > 0 ? () => _abrirLojaParticipante(lojaId) : null,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          _imagemSegura(
+                            url: logo,
+                            width: 48,
+                            height: 48,
+                            borderRadius: 24,
+                            fallbackIcon: Icons.volunteer_activism_rounded,
+                            fit: BoxFit.cover,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              nomeCampanha.isEmpty
+                                  ? 'Campanha solidária'
+                                  : nomeCampanha,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Spacer(),
+                      Text(
+                        loja.isEmpty ? 'Estabelecimento participante' : loja,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.favorite_rounded,
+                            color: Color(0xFFB27600),
+                            size: 15,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$percentualTexto% destinado à campanha',
+                            style: const TextStyle(
+                              color: Color(0xFF7A5700),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -1002,6 +1118,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                       ),
                     ],
+                  ],
+                  if (termoBusca.trim().isEmpty &&
+                      campanhasParticipantes.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    _secaoTitulo(
+                      'Campanhas',
+                      Icons.volunteer_activism_outlined,
+                    ),
+                    const SizedBox(height: 5),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Estabelecimentos que fazem a diferença',
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _listaCampanhasParticipantes(),
+                    const SizedBox(height: 20),
                   ],
                   if (termoBusca.trim().isEmpty &&
                       produtosMaisVendidos.isNotEmpty) ...[
