@@ -757,6 +757,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       await carregarStatusLotes();
     } catch (e) {
       if (mounted) {
+        if (apiService.erroDeSessao(e)) {
+          await authStorage.limparToken();
+          if (mounted) {
+            await direcionarParaLogin(
+              context,
+              mensagem:
+                  'Sua sessão terminou. Entre novamente para comprar seu ingresso.',
+            );
+          }
+          return;
+        }
         final mensagem = apiService.mensagemErroAmigavel(e);
         if (lote.aplicaCotaLegal &&
             mensagem.toLowerCase().contains('cota legal')) {
