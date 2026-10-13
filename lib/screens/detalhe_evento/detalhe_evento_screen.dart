@@ -471,24 +471,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Widget _numeroAtracao(int indice) {
-    final cor = _corEstilo(indice);
-    return Container(
-      width: 30,
-      height: 30,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: cor.shade100, shape: BoxShape.circle),
-      child: Text(
-        '${indice + 1}',
-        style: TextStyle(
-          color: cor.shade700,
-          fontSize: 14,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    );
-  }
-
   Widget _fotoAtracao(AtracaoEventoDetalhe atracao) {
     final imagem = atracao.bannerUrl.trim();
     return ClipRRect(
@@ -1563,7 +1545,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ],
                           const SizedBox(height: 10),
                           Text(
-                            '${formatarDataHora(ev.dataInicio)},',
+                            formatarDataHora(ev.dataInicio),
                             style: const TextStyle(
                               color: Colors.blue,
                               fontSize: 20,
@@ -1629,15 +1611,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            ...atracoesOrdenadas.asMap().entries.map(
-                              (entrada) => Padding(
+                            ...atracoesOrdenadas.map(
+                              (atracao) => Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: Material(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(16),
                                   child: InkWell(
-                                    onTap: () =>
-                                        _abrirDetalhesAtracao(entrada.value),
+                                    onTap: () => _abrirDetalhesAtracao(atracao),
                                     borderRadius: BorderRadius.circular(16),
                                     child: Container(
                                       width: double.infinity,
@@ -1663,9 +1644,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                               const SizedBox(width: 7),
                                               Expanded(
                                                 child: Text(
-                                                  _duracaoPrevista(
-                                                    entrada.value,
-                                                  ),
+                                                  _duracaoPrevista(atracao),
                                                   style: TextStyle(
                                                     color: Colors.grey.shade700,
                                                     fontSize: 12,
@@ -1685,9 +1664,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
                                             children: [
-                                              _numeroAtracao(entrada.key),
-                                              const SizedBox(width: 10),
-                                              _fotoAtracao(entrada.value),
+                                              _fotoAtracao(atracao),
                                               const SizedBox(width: 12),
                                               Expanded(
                                                 child: Column(
@@ -1695,21 +1672,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      entrada.value.nome,
+                                                      atracao.nome,
                                                       style: const TextStyle(
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.w900,
                                                       ),
                                                     ),
-                                                    if (entrada
-                                                        .value
+                                                    if (atracao
                                                         .estilos
                                                         .isNotEmpty) ...[
                                                       const SizedBox(height: 7),
-                                                      _badgesEstilos(
-                                                        entrada.value,
-                                                      ),
+                                                      _badgesEstilos(atracao),
                                                     ],
                                                   ],
                                                 ),
