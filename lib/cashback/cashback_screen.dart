@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/auth_storage.dart';
 import '../utils/value_formatters.dart';
 import '../widgets/clubbar_app_bar.dart';
+import '../widgets/perfil_page_header.dart';
 
 class CashbackScreen extends StatefulWidget {
   const CashbackScreen({super.key});
@@ -409,6 +410,7 @@ class _CashbackScreenState extends State<CashbackScreen> {
       ),
       body: Column(
         children: [
+          const PerfilPageHeader(subtitulo: ''),
           Expanded(
             child: _carregando
                 ? const Center(child: CircularProgressIndicator())
