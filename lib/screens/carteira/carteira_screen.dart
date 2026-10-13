@@ -426,7 +426,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       children: [
         ClubbarPageHeader(
           titulo: 'Carteira',
-          subtitulo: 'Produtos e ingressos disponíveis para você usar',
+          subtitulo: '',
           icone: Icons.account_balance_wallet_rounded,
         ),
 
