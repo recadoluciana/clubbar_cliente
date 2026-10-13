@@ -5,6 +5,7 @@ import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../services/main_navigation_controller.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarrinhoLojasScreen extends StatefulWidget {
@@ -268,7 +269,10 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: false),
+      appBar: ClubbarAppBar(
+        mostrarVoltar: true,
+        onVoltar: MainNavigationController.irParaHome,
+      ),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
