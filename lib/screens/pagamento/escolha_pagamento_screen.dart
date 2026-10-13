@@ -1216,7 +1216,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: widget.loja.nome,
+        titulo: 'Pagamento - ${widget.loja.nome}',
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
