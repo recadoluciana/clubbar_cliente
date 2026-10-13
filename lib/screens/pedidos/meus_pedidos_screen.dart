@@ -868,7 +868,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
-                const PerfilPageHeader(subtitulo: 'Minhas compras'),
+                const PerfilPageHeader(subtitulo: ''),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: _filtrosTipo(),
