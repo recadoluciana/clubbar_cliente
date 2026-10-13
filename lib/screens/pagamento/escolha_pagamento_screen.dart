@@ -59,6 +59,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   double saldoCashback = 0;
   bool falhaConsultaCashback = false;
   bool receberNoEndereco = false;
+  Map<String, dynamic>? campanhaDoacao;
   Timer? _timerReserva;
   Duration _tempoReservaRestante = Duration.zero;
   bool _reservaExpirada = false;
@@ -112,6 +113,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     if (widget.reservaIngressoId == null && widget.totalProdutos > 0) {
       _carregarCashback();
     }
+    _carregarCampanhaDoacao();
   }
 
   @override
@@ -170,6 +172,19 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       }
     } finally {
       if (mounted) setState(() => carregandoCashback = false);
+    }
+  }
+
+  Future<void> _carregarCampanhaDoacao() async {
+    try {
+      final campanha = await apiService.campanhaDoacaoVigente(
+        lojaId: widget.loja.id,
+        reservaIngressoId: widget.reservaIngressoId,
+      );
+      if (mounted) setState(() => campanhaDoacao = campanha);
+    } catch (_) {
+      // A campanha é apenas informativa no checkout. Uma indisponibilidade
+      // dela não pode impedir o cliente de concluir uma compra.
     }
   }
 
@@ -1137,6 +1152,65 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     );
   }
 
+  Widget _cartaoCampanhaDoacao() {
+    final campanha = campanhaDoacao;
+    if (campanha == null) return const SizedBox.shrink();
+    final nome = '${campanha['nome'] ?? ''}'.trim();
+    final beneficiario = '${campanha['beneficiario'] ?? ''}'.trim();
+    final mensagem = '${campanha['mensagem'] ?? ''}'.trim();
+    final percentual = double.tryParse('${campanha['percentual_doacao']}') ?? 0;
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEAF7EE),
+        border: Border.all(color: const Color(0xFF8BC9A1)),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.volunteer_activism_outlined,
+            color: Color(0xFF18743A),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Para quem doar?',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF155D30),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  beneficiario.isEmpty ? nome : '$nome • $beneficiario',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'O estabelecimento destina ${percentual.toStringAsFixed(percentual % 1 == 0 ? 0 : 2)}% do valor líquido recebido a esta campanha.',
+                  style: const TextStyle(fontSize: 12, height: 1.3),
+                ),
+                if (mensagem.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    mensagem,
+                    style: const TextStyle(fontSize: 12, height: 1.3),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1258,6 +1332,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               ],
             ),
           ),
+
+          _cartaoCampanhaDoacao(),
 
           const SizedBox(height: 24),
 
