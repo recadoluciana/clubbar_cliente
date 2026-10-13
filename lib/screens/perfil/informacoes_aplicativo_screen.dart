@@ -110,6 +110,8 @@ class _InformacoesAplicativoScreenState
     backgroundColor: const Color(0xFFF6F6F6),
     appBar: const ClubbarAppBar(
       titulo: 'Sobre o aplicativo',
+      iconeTitulo: Icons.person_rounded,
+      corIconeTitulo: Colors.amber,
       mostrarVoltar: true,
       mostrarSessao: false,
     ),
