@@ -5,7 +5,8 @@ import '../../services/http_with_timeout.dart' as http;
 
 import '../../config/app_config.dart';
 import '../../services/auth_storage.dart';
-import '../../widgets/clubbar_page_header.dart';
+import '../../services/main_navigation_controller.dart';
+import '../../widgets/clubbar_app_bar.dart';
 
 class AtendimentoCoraScreen extends StatefulWidget {
   const AtendimentoCoraScreen({super.key});
@@ -388,16 +389,16 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
     length: 2,
     child: Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+      appBar: ClubbarAppBar(
+        titulo: 'Cora responde',
+        imagemTituloAsset: 'assets/images/corujao.png',
+        mostrarVoltar: true,
+        mostrarLogo: false,
+        mostrarSessao: false,
+        onVoltar: MainNavigationController.irParaHome,
+      ),
       body: Column(
         children: [
-          const ClubbarPageHeader(
-            titulo: 'Cora',
-            subtitulo: 'Dúvidas frequentes e atendimento',
-            imagemAvatarAsset: 'assets/images/corujao.png',
-            corTitulo: Colors.blue,
-            pesoTitulo: FontWeight.normal,
-            pesoSubtitulo: FontWeight.normal,
-          ),
           Container(
             color: Colors.white,
             child: TabBar(
