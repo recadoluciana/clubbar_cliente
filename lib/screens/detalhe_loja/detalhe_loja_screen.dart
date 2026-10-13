@@ -464,8 +464,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   children: [
                     Expanded(
                       child: _menuCard(
-                        context: context,
-                        titulo: 'Agenda\nIngressos',
+                        titulo: 'Agenda e ingressos',
                         icone: Icons.confirmation_number_rounded,
                         cor: Colors.blue,
                         onTap: () {
@@ -478,8 +477,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     const SizedBox(width: 14),
                     Expanded(
                       child: _menuCard(
-                        context: context,
-                        titulo: 'Cardápio\nProdutos',
+                        titulo: 'Cardápio e produtos',
                         icone: Icons.restaurant_menu_rounded,
                         cor: Colors.amber,
                         onTap: () {
@@ -500,7 +498,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
   }
 
   Widget _menuCard({
-    required BuildContext context,
     required String titulo,
     required IconData icone,
     required Color cor,
@@ -508,35 +505,28 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
   }) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(18),
       elevation: 2,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(18),
         child: Container(
-          height: 145,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          height: 76,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: cor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(icone, color: cor, size: 30),
-              ),
-
-              Text(
-                titulo,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  height: 1.15,
+              Icon(icone, color: cor, size: 28),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  titulo,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
