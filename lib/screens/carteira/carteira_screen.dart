@@ -509,6 +509,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
         titulo: 'Carteira',
+        iconeTitulo: Icons.account_balance_wallet_rounded,
         mostrarVoltar: true,
         mostrarLogo: false,
         mostrarSessao: false,
