@@ -7,7 +7,9 @@ import '../../config/app_config.dart';
 import '../../models/loja.dart';
 import '../../models/loja_horario.dart';
 import '../../services/api_service.dart';
+import '../../services/auth_storage.dart';
 import '../agenda/agenda_eventos_screen.dart';
+import '../carrinho/carrinho_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
@@ -25,7 +27,9 @@ class DetalheLojaScreen extends StatefulWidget {
 
 class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
   final ApiService _apiService = ApiService();
+  final AuthStorage _authStorage = AuthStorage();
   late final Future<List<LojaHorario>> _horariosFuture;
+  int _quantidadeCarrinhoLoja = 0;
 
   Loja get loja => widget.loja;
 
@@ -33,6 +37,43 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
   void initState() {
     super.initState();
     _horariosFuture = _apiService.buscarHorariosLoja(loja.id);
+    _carregarQuantidadeCarrinhoLoja();
+  }
+
+  Future<void> _carregarQuantidadeCarrinhoLoja() async {
+    try {
+      final clienteId = await _authStorage.obterClienteId();
+      if (clienteId == null || clienteId == 0) {
+        if (mounted) setState(() => _quantidadeCarrinhoLoja = 0);
+        return;
+      }
+
+      final carrinho = await _apiService.buscarCarrinho(
+        clienteId: clienteId,
+        organizacaoId: loja.organizacaoId,
+        lojaId: loja.id,
+      );
+      final itens = carrinho['itens'];
+      final quantidade = itens is List
+          ? itens.fold<int>(
+              0,
+              (total, item) => total + (int.tryParse('${item['qt']}') ?? 1),
+            )
+          : 0;
+
+      if (mounted) setState(() => _quantidadeCarrinhoLoja = quantidade);
+    } catch (_) {
+      if (mounted) setState(() => _quantidadeCarrinhoLoja = 0);
+    }
+  }
+
+  Future<void> _abrirCarrinhoDaLoja() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: loja)),
+    );
+
+    if (mounted) await _carregarQuantidadeCarrinhoLoja();
   }
 
   Future<void> abrirInstagram(BuildContext context) async {
@@ -349,6 +390,9 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         titulo: loja.nome,
         mostrarVoltar: true,
         mostrarSessao: false,
+        mostrarCarrinho: true,
+        quantidadeCarrinho: _quantidadeCarrinhoLoja,
+        onCarrinhoTap: _abrirCarrinhoDaLoja,
       ),
 
       // 🔥 BODY SEM PADDING GLOBAL
