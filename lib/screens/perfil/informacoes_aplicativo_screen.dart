@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import '../../config/app_config.dart';
 import '../../widgets/app_version_text.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/clubbar_page_header.dart';
 
 class InformacoesAplicativoScreen extends StatefulWidget {
   const InformacoesAplicativoScreen({super.key});
@@ -109,16 +108,13 @@ class _InformacoesAplicativoScreenState
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: const Color(0xFFF6F6F6),
-    appBar: const ClubbarAppBar(mostrarVoltar: true),
+    appBar: const ClubbarAppBar(
+      titulo: 'Sobre o aplicativo',
+      mostrarVoltar: true,
+      mostrarSessao: false,
+    ),
     body: Column(
       children: [
-        const ClubbarPageHeader(
-          titulo: 'Sobre o aplicativo',
-          subtitulo: 'Versão e situação do acesso',
-          mostrarAvatar: false,
-          pesoTitulo: FontWeight.normal,
-          pesoSubtitulo: FontWeight.normal,
-        ),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.all(20),

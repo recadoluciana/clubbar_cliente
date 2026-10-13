@@ -4,7 +4,6 @@ import '../services/api_service.dart';
 import '../services/auth_storage.dart';
 import '../utils/value_formatters.dart';
 import '../widgets/clubbar_app_bar.dart';
-import '../widgets/perfil_page_header.dart';
 
 class CashbackScreen extends StatefulWidget {
   const CashbackScreen({super.key});
@@ -403,10 +402,13 @@ class _CashbackScreenState extends State<CashbackScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(mostrarVoltar: true),
+      appBar: const ClubbarAppBar(
+        titulo: 'Cashback',
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
       body: Column(
         children: [
-          const PerfilPageHeader(subtitulo: 'Cashback'),
           Expanded(
             child: _carregando
                 ? const Center(child: CircularProgressIndicator())
