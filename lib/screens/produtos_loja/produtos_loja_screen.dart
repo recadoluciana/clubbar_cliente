@@ -400,6 +400,14 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         mostrarSessao: false,
         mostrarCorujaAoLadoDoTitulo: true,
         onVoltar: () {
+          // O cardápio é aberto pela navegação interna do Client. Fechá-la
+          // primeiro evita que o navegador intercepte o retorno e mantenha a
+          // tela atual visível.
+          if (MainNavigationController.telaInterna.value != null) {
+            MainNavigationController.fecharTelaInterna();
+            return;
+          }
+
           if (widget.onVoltar != null) {
             widget.onVoltar!();
             return;
