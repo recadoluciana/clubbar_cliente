@@ -261,7 +261,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
         titulo: 'Carrinho',
         iconeTitulo: Icons.shopping_cart_rounded,
         mostrarVoltar: true,
-        mostrarSessao: false,
         mostrarLogo: false,
         onVoltar: MainNavigationController.irParaHome,
       ),
