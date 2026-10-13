@@ -344,7 +344,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
         titulo: 'Agenda - ${widget.loja.nome}',
         mostrarVoltar: true,
         mostrarSessao: false,
-        mostrarCorujaAoLadoDoTitulo: true,
         onVoltar: () {
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
