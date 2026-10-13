@@ -14,6 +14,7 @@ import '../../services/main_navigation_controller.dart';
 import 'produto_compartilhado_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
 import '../../widgets/clubbar_contact_links.dart';
+import '../carrinho/carrinho_screen.dart';
 import '../pagamento/politica_compra_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
@@ -124,13 +125,29 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         return;
       }
 
-      final total = await apiService.buscarQuantidadeCarrinho(clienteId: id);
+      final resultados = await Future.wait([
+        apiService.buscarQuantidadeCarrinho(clienteId: id),
+        apiService.buscarCarrinho(
+          clienteId: id,
+          organizacaoId: widget.loja.organizacaoId,
+          lojaId: widget.loja.id,
+        ),
+      ]);
+      final total = resultados[0] as int;
+      final carrinhoLoja = resultados[1] as Map<String, dynamic>;
+      final itens = carrinhoLoja['itens'];
+      final totalLoja = itens is List
+          ? itens.fold<int>(
+              0,
+              (soma, item) => soma + (int.tryParse('${item['qt']}') ?? 1),
+            )
+          : 0;
 
       CartBadgeNotifier.atualizar(total);
 
       if (!mounted) return;
       setState(() {
-        quantidadeCarrinho = total;
+        quantidadeCarrinho = totalLoja;
       });
     } catch (_) {
       CartBadgeNotifier.limpar();
@@ -187,6 +204,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     }
+  }
+
+  Future<void> _abrirCarrinhoDaLoja() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: widget.loja)),
+    );
+
+    if (mounted) await carregarQuantidadeCarrinho();
   }
 
   List<Produto> get produtosFiltrados {
@@ -398,7 +424,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         titulo: 'Cardápio - ${widget.loja.nome}',
         mostrarVoltar: true,
         mostrarSessao: false,
-        mostrarCorujaAoLadoDoTitulo: true,
+        mostrarCarrinho: true,
+        quantidadeCarrinho: quantidadeCarrinho,
+        onCarrinhoTap: _abrirCarrinhoDaLoja,
         onVoltar: () {
           // O cardápio é aberto pela navegação interna do Client. Fechá-la
           // primeiro evita que o navegador intercepte o retorno e mantenha a
