@@ -183,7 +183,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                             ? '1 item no carrinho'
                             : '$qtItens itens no carrinho',
                         style: TextStyle(
-                          color: Colors.grey.shade600,
+                          color: Colors.blue,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
