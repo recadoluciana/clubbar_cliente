@@ -1450,6 +1450,26 @@ class ApiService {
     return Map<String, dynamic>.from(data as Map);
   }
 
+  Future<Map<String, dynamic>?> campanhaDoacaoVigente({
+    required int lojaId,
+    int? reservaIngressoId,
+  }) async {
+    final parametros = <String, String>{'loja_id': '$lojaId'};
+    if (reservaIngressoId != null) {
+      parametros['reserva_ingresso_id'] = '$reservaIngressoId';
+    }
+    final uri = Uri.parse(
+      '$baseUrl/campanhas-doacao/vigente',
+    ).replace(queryParameters: parametros);
+    final response = await http.get(uri, headers: await _headersAutenticado());
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    final data = Map<String, dynamic>.from(jsonDecode(response.body) as Map);
+    final campanha = data['campanha'];
+    return campanha is Map ? Map<String, dynamic>.from(campanha) : null;
+  }
+
   Future<Map<String, dynamic>> criarPixAsaas({
     required int clienteId,
     required int organizacaoId,
