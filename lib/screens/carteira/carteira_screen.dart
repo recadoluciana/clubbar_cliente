@@ -495,7 +495,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         iconeTitulo: Icons.account_balance_wallet_rounded,
         mostrarVoltar: true,
         mostrarLogo: false,
-        mostrarSessao: false,
         onVoltar: MainNavigationController.irParaHome,
       ),
       body: carregando
