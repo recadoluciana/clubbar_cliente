@@ -223,6 +223,16 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                 ),
               ),
             ),
+            Positioned(
+              right: 14,
+              bottom: 12,
+              child: IconButton(
+                tooltip: 'Compartilhar ${loja.nome}',
+                onPressed: _compartilharLoja,
+                color: Colors.blue.shade700,
+                icon: const Icon(Icons.ios_share_rounded, size: 28),
+              ),
+            ),
           ],
         ),
       ),
@@ -407,31 +417,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        loja.nome,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: Colors.blue.shade700,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Compartilhar ${loja.nome}',
-                      onPressed: _compartilharLoja,
-                      color: Colors.blue.shade700,
-                      icon: const Icon(Icons.ios_share_rounded, size: 28),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
-
                 Row(
                   children: [
                     const Icon(Icons.location_on_outlined),
