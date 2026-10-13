@@ -4,7 +4,7 @@ import '../services/api_service.dart';
 import '../services/auth_storage.dart';
 import '../utils/value_formatters.dart';
 import '../widgets/clubbar_app_bar.dart';
-import '../widgets/perfil_page_header.dart';
+import '../widgets/clubbar_page_header.dart';
 
 class CashbackScreen extends StatefulWidget {
   const CashbackScreen({super.key});
@@ -20,11 +20,39 @@ class _CashbackScreenState extends State<CashbackScreen> {
   String? _erro;
   bool _carregando = true;
   String _filtro = 'TODOS';
+  String _nomeCabecalho = 'Cliente Clubbar';
+  String _emailCabecalho = '';
+  bool _cabecalhoPronto = false;
 
   @override
   void initState() {
     super.initState();
+    _carregarCabecalho();
     _carregar();
+  }
+
+  Future<void> _carregarCabecalho() async {
+    final nomeSalvo = (await _auth.obterNmcliente())?.trim() ?? '';
+
+    try {
+      final perfil = await _api.buscarMeuPerfil();
+      final nome = (perfil['nmcliente'] ?? '').toString().trim();
+      final email = (perfil['emailcliente'] ?? '').toString().trim();
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nome.isEmpty
+            ? (nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo)
+            : nome;
+        _emailCabecalho = email;
+        _cabecalhoPronto = true;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo;
+        _cabecalhoPronto = true;
+      });
+    }
   }
 
   Future<void> _carregar() async {
@@ -410,7 +438,14 @@ class _CashbackScreenState extends State<CashbackScreen> {
       ),
       body: Column(
         children: [
-          const PerfilPageHeader(subtitulo: ''),
+          _cabecalhoPronto
+              ? ClubbarPageHeader(
+                  titulo: _nomeCabecalho,
+                  subtitulo: _emailCabecalho,
+                  mostrarAvatar: false,
+                  corTitulo: Colors.blue,
+                )
+              : const SizedBox(height: 70),
           Expanded(
             child: _carregando
                 ? const Center(child: CircularProgressIndicator())
