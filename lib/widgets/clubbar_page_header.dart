@@ -10,6 +10,8 @@ class ClubbarPageHeader extends StatelessWidget {
   final String? imagemAvatarUrl;
   final String? imagemAvatarAsset;
   final double tamanhoAvatar;
+  final double? larguraAvatar;
+  final bool avatarRetangular;
   final bool mostrarAvatar;
   final Color? corTitulo;
   final Color? corIcone;
@@ -35,6 +37,8 @@ class ClubbarPageHeader extends StatelessWidget {
     this.imagemAvatarUrl,
     this.imagemAvatarAsset,
     this.tamanhoAvatar = 48,
+    this.larguraAvatar,
+    this.avatarRetangular = false,
     this.mostrarAvatar = true,
     this.corTitulo,
     this.corIcone,
@@ -62,14 +66,17 @@ class ClubbarPageHeader extends StatelessWidget {
   Widget _avatarEsquerdo() {
     final avatarUrl = imagemAvatarUrl?.trim() ?? '';
     final avatarAsset = imagemAvatarAsset?.trim() ?? '';
+    final largura = larguraAvatar ?? tamanhoAvatar;
+    final borda = BorderRadius.circular(8);
 
     return Container(
-      width: tamanhoAvatar,
+      width: largura,
       height: tamanhoAvatar,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: Colors.white,
-        shape: BoxShape.circle,
+        shape: avatarRetangular ? BoxShape.rectangle : BoxShape.circle,
+        borderRadius: avatarRetangular ? borda : null,
         border: Border.all(color: Colors.amber.shade200, width: 2),
       ),
       child: onVoltar != null
@@ -79,20 +86,23 @@ class ClubbarPageHeader extends StatelessWidget {
               icon: const Icon(Icons.arrow_back_rounded),
               color: corIcone ?? Colors.black87,
             )
-          : ClipOval(
+          : ClipRRect(
+              borderRadius: avatarRetangular
+                  ? borda
+                  : BorderRadius.circular(largura),
               child: avatarAsset.isNotEmpty
                   ? Image.asset(
                       avatarAsset,
-                      width: tamanhoAvatar,
+                      width: largura,
                       height: tamanhoAvatar,
                       fit: BoxFit.contain,
                     )
                   : avatarUrl.isNotEmpty
                   ? Image.network(
                       avatarUrl,
-                      width: tamanhoAvatar,
+                      width: largura,
                       height: tamanhoAvatar,
-                      fit: BoxFit.cover,
+                      fit: avatarRetangular ? BoxFit.contain : BoxFit.cover,
                       errorBuilder: (_, _, _) => Icon(
                         icone ?? Icons.storefront_rounded,
                         size: 24,
