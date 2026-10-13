@@ -9,7 +9,6 @@ import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/clubbar_page_header.dart';
 
 class ItemCarrinhoAgrupado {
   final int produtoId;
@@ -817,13 +816,14 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     );
 
     final subtitulo = totalItens == 1
-        ? '1 item no carrinho.'
-        : '$totalItens itens no carrinho.';
+        ? '1 item no carrinho'
+        : '$totalItens itens no carrinho';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: widget.loja.nome,
+        titulo: 'Carrinho - ${widget.loja.nome}',
+        iconeTitulo: Icons.shopping_cart_outlined,
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
@@ -834,13 +834,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           ? _erroWidget()
           : Column(
               children: [
-                ClubbarPageHeader(
-                  titulo: 'Carrinho',
-                  subtitulo: subtitulo,
-                  icone: Icons.shopping_cart_outlined,
-                  corTitulo: Colors.blue,
-                ),
-
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: carregarCarrinho,
@@ -852,7 +845,18 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                           _estadoVazio()
                         else ...[
                           ...itensAgrupados.map(_itemCarrinho),
-                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2, bottom: 10),
+                            child: Text(
+                              subtitulo,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
                           _resumoTotal(),
                         ],
                       ],
