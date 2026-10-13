@@ -1767,7 +1767,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ],
                           const SizedBox(height: 2),
-                          Center(
+                          Align(
+                            alignment: Alignment.centerLeft,
                             child: TextButton.icon(
                               onPressed: _abrirExplicacaoTaxas,
                               icon: const Icon(
@@ -1776,13 +1777,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                               label: const Text('Entenda nossa taxa'),
                               style: TextButton.styleFrom(
-                                foregroundColor: Colors.grey.shade700,
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 textStyle: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
                                 ),
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                alignment: Alignment.centerLeft,
                               ),
                             ),
                           ),
