@@ -140,9 +140,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
-      centerTitle: mostrarCorujaAoLadoDoTitulo
-          ? false
-          : temTitulo
+      centerTitle: temTitulo
           ? true
           : mostrarLogo
           ? !logoAlinhadaEsquerda
@@ -180,40 +178,16 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           : null,
 
       title: temTitulo
-          ? mostrarCorujaAoLadoDoTitulo
-                ? Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/corujao.png',
-                        width: 28,
-                        height: 28,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          titulo!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                : Text(
-                    titulo!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  )
+          ? Text(
+              titulo!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+              ),
+            )
           : logoAlinhadaEsquerda
           ? _logoClubbar()
           : null,
@@ -231,6 +205,18 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
 
       actions: [
+        if (mostrarCorujaAoLadoDoTitulo)
+          SizedBox(
+            width: kToolbarHeight,
+            child: Center(
+              child: Image.asset(
+                'assets/images/corujao.png',
+                width: 28,
+                height: 28,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
         ...actions,
         if (mostrarSessao) _botaoSessao(context),
         if (mostrarCarrinho)
