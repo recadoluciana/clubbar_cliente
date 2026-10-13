@@ -791,8 +791,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         children: [
           ClubbarPageHeader(
             titulo: 'Carteira de Produtos',
-            subtitulo:
-                '${widget.nomeLoja} • $totalUnidades item(ns) disponível(is)',
+            subtitulo: totalUnidades == 1
+                ? '1 item disponível'
+                : '$totalUnidades itens disponíveis',
             icone: Icons.inventory_2_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
             trailing: IconButton(
