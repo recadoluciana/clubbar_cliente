@@ -129,15 +129,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           child: Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: (iconColor ?? Colors.amber).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(icon, color: iconColor ?? Colors.amber.shade800),
-              ),
+              Icon(icon, color: iconColor ?? Colors.amber.shade800, size: 25),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -146,8 +138,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     Text(
                       titulo,
                       style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        fontWeight: FontWeight.normal,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -192,6 +184,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 titulo: dados?['nome'] ?? 'Cliente Clubbar',
                 subtitulo: dados?['email'] ?? '',
                 mostrarAvatar: false,
+                mostrarTitulo: false,
                 corTitulo: Colors.blue,
               );
             },
