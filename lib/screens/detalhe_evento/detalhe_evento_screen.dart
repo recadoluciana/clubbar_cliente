@@ -476,8 +476,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: SizedBox(
-        width: 68,
-        height: 68,
+        width: 60,
+        height: 60,
         child: imagem.isEmpty
             ? Container(
                 color: Colors.blue.shade50,
@@ -915,7 +915,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : Colors.red;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.fromLTRB(0, 4, 0, 12),
       child: Material(
         color: Colors.white,
         elevation: 1,
@@ -1732,7 +1732,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: 18),
 
                           if (lotes.isEmpty)
                             estadoVazioLotes()
