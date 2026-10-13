@@ -72,39 +72,47 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
   }
 
   Widget _logoLoja(String url) {
-    if (url.isEmpty) {
+    Widget placeholder() {
       return Container(
-        width: 58,
-        height: 58,
+        width: 68,
+        height: 68,
         decoration: BoxDecoration(
           color: Colors.amber.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(18),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.amber.shade200, width: 2),
         ),
-        child: Icon(Icons.storefront_outlined, color: Colors.amber.shade800),
+        child: Icon(
+          Icons.storefront_rounded,
+          color: Colors.amber.shade800,
+          size: 30,
+        ),
       );
     }
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
-      child: Image.network(
-        url,
-        width: 58,
-        height: 58,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) {
-          return Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: Colors.amber.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(
-              Icons.storefront_outlined,
-              color: Colors.amber.shade800,
-            ),
-          );
-        },
+    if (url.trim().isEmpty) return placeholder();
+
+    return Container(
+      width: 68,
+      height: 68,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey.shade200, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Image.network(
+          url,
+          width: 68,
+          height: 68,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => placeholder(),
+        ),
       ),
     );
   }
@@ -131,11 +139,12 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     final qtItens = int.tryParse('${lojaData['total_itens'] ?? 0}') ?? 0;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       child: Material(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         elevation: 2,
+        shadowColor: Colors.black.withValues(alpha: 0.15),
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
           onTap: () async {
@@ -159,46 +168,49 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                     children: [
                       Text(
                         loja.nome,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _chip(
-                            qtItens == 1
-                                ? '1 item no carrinho'
-                                : '$qtItens itens no carrinho',
-                          ),
-                        ],
+                      const SizedBox(height: 5),
+                      Text(
+                        qtItens == 1
+                            ? '1 item no carrinho'
+                            : '$qtItens itens no carrinho',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.chevron_right_rounded, size: 32),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '$qtItens',
+                    style: const TextStyle(
+                      color: Color(0xFF755600),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _chip(String texto) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        texto,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
       ),
     );
   }
