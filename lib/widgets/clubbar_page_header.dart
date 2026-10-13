@@ -13,6 +13,7 @@ class ClubbarPageHeader extends StatelessWidget {
   final double? larguraAvatar;
   final bool avatarRetangular;
   final bool mostrarAvatar;
+  final bool mostrarTitulo;
   final Color? corTitulo;
   final Color? corIcone;
   final FontWeight pesoTitulo;
@@ -40,6 +41,7 @@ class ClubbarPageHeader extends StatelessWidget {
     this.larguraAvatar,
     this.avatarRetangular = false,
     this.mostrarAvatar = true,
+    this.mostrarTitulo = true,
     this.corTitulo,
     this.corIcone,
     this.pesoTitulo = FontWeight.w800,
@@ -203,16 +205,17 @@ class ClubbarPageHeader extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        titulo,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: pesoTitulo,
-                          color: corTitulo,
+                      if (mostrarTitulo)
+                        Text(
+                          titulo,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: pesoTitulo,
+                            color: corTitulo,
+                          ),
                         ),
-                      ),
                       if (subtituloLimpo.isNotEmpty) ...[
                         const SizedBox(height: 3),
                         Text(
