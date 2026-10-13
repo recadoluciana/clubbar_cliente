@@ -118,6 +118,16 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     );
   }
 
+  Future<void> _abrirCarrinhoDaLoja(Loja loja) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: loja)),
+    );
+
+    if (!mounted) return;
+    await carregarLojasCarrinho();
+  }
+
   Widget _cardLoja(Map<String, dynamic> lojaData) {
     final loja = Loja(
       id: int.tryParse('${lojaData['loja_id']}') ?? 0,
@@ -148,15 +158,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
         shadowColor: Colors.black.withValues(alpha: 0.15),
         child: InkWell(
           borderRadius: BorderRadius.circular(24),
-          onTap: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: loja)),
-            );
-
-            if (!mounted) return;
-            await carregarLojasCarrinho();
-          },
+          onTap: () => _abrirCarrinhoDaLoja(loja),
           child: Padding(
             padding: const EdgeInsets.all(18),
             child: Row(
@@ -190,23 +192,10 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$qtItens',
-                    style: const TextStyle(
-                      color: Color(0xFF755600),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                IconButton(
+                  tooltip: 'Abrir carrinho',
+                  onPressed: () => _abrirCarrinhoDaLoja(loja),
+                  icon: const Icon(Icons.chevron_right_rounded, size: 32),
                 ),
               ],
             ),
