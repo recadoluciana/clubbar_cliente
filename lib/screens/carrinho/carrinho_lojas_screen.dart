@@ -4,7 +4,6 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/clubbar_page_header.dart';
 import '../../services/main_navigation_controller.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
@@ -259,38 +258,30 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
+        titulo: 'Carrinho',
+        iconeTitulo: Icons.shopping_cart_rounded,
         mostrarVoltar: true,
+        mostrarSessao: false,
+        mostrarLogo: false,
         onVoltar: MainNavigationController.irParaHome,
       ),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                const ClubbarPageHeader(
-                  titulo: 'Carrinho',
-                  subtitulo: '',
-                  icone: Icons.shopping_cart_rounded,
-                ),
-
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: carregarLojasCarrinho,
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                      children: [
-                        if (erro != null)
-                          _erroWidget()
-                        else if (lojasCarrinho.isEmpty)
-                          _estadoVazio()
-                        else
-                          ...lojasCarrinho.map(_cardLoja),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+          : RefreshIndicator(
+              onRefresh: carregarLojasCarrinho,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                children: [
+                  if (erro != null)
+                    _erroWidget()
+                  else if (lojasCarrinho.isEmpty)
+                    _estadoVazio()
+                  else
+                    ...lojasCarrinho.map(_cardLoja),
+                ],
+              ),
             ),
     );
   }

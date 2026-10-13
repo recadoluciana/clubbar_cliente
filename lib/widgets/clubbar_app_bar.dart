@@ -7,6 +7,7 @@ import 'app_version_text.dart';
 
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titulo;
+  final IconData? iconeTitulo;
   final bool mostrarCarrinho;
   final int quantidadeCarrinho;
   final VoidCallback? onCarrinhoTap;
@@ -25,6 +26,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ClubbarAppBar({
     super.key,
     this.titulo,
+    this.iconeTitulo,
     this.mostrarCarrinho = false,
     this.quantidadeCarrinho = 0,
     this.onCarrinhoTap,
@@ -191,16 +193,34 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           : null,
 
       title: temTitulo
-          ? Text(
-              titulo!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-              ),
-            )
+          ? iconeTitulo == null
+                ? Text(
+                    titulo!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(iconeTitulo, color: Colors.white, size: 22),
+                      const SizedBox(width: 8),
+                      Text(
+                        titulo!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  )
           : logoAlinhadaEsquerda
           ? _logoClubbar()
           : null,
