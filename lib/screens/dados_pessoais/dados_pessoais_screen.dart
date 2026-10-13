@@ -3,7 +3,7 @@ import '../../services/api_service.dart';
 import '../../services/cep_service.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
-import '../../widgets/perfil_page_header.dart';
+import '../../widgets/clubbar_page_header.dart';
 import '../../services/main_navigation_controller.dart';
 
 class DadosPessoaisScreen extends StatefulWidget {
@@ -276,7 +276,12 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  const PerfilPageHeader(subtitulo: ''),
+                  ClubbarPageHeader(
+                    titulo: _nomeCtrl.text,
+                    subtitulo: _emailCtrl.text,
+                    mostrarAvatar: false,
+                    corTitulo: Colors.blue,
+                  ),
 
                   Expanded(
                     child: ListView(
