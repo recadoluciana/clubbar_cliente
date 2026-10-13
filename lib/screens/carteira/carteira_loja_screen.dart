@@ -178,7 +178,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         'Apresente o QR Code ao atendente.';
 
     try {
-      final resultado = await Share.shareXFiles(
+      await Share.shareXFiles(
         [
           await ShareImageFile.prepare(
             imagem,
@@ -188,9 +188,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         text: texto,
         subject: 'Presente Clubbar',
       );
-      if (resultado.status == ShareResultStatus.unavailable) {
-        await _copiarMensagemDoPresente(texto);
-      }
     } catch (_) {
       await _copiarMensagemDoPresente(texto);
     }
