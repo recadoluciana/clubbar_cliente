@@ -781,7 +781,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
-        titulo: widget.nomeLoja,
+        titulo: 'Carteira de produto',
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
@@ -790,7 +790,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: 'Carteira de Produtos',
+            titulo: widget.nomeLoja,
             subtitulo: totalUnidades == 1
                 ? '1 item disponível'
                 : '$totalUnidades itens disponíveis',
