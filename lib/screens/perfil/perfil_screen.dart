@@ -167,7 +167,21 @@ class _PerfilScreenState extends State<PerfilScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       extendBodyBehindAppBar: false,
-      appBar: const ClubbarAppBar(mostrarVoltar: false, mostrarPerfil: false),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(58),
+        child: FutureBuilder<Map<String, String>>(
+          future: _dadosCabecalho,
+          builder: (context, snapshot) {
+            final nome = (snapshot.data?['nome'] ?? '').trim();
+            return ClubbarAppBar(
+              titulo: nome.isEmpty ? 'Perfil' : 'Perfil - $nome',
+              mostrarVoltar: true,
+              mostrarSessao: false,
+              onVoltar: MainNavigationController.irParaHome,
+            );
+          },
+        ),
+      ),
       body: Column(
         children: [
           FutureBuilder<Map<String, String>>(
