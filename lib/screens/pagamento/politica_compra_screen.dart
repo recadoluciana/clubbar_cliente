@@ -54,12 +54,6 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
     }
   }
 
-  String _data(dynamic valor) {
-    final data = DateTime.tryParse(valor?.toString() ?? '');
-    if (data == null) return '';
-    return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
-  }
-
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: ClubbarAppBar(
@@ -100,11 +94,6 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Versão ${_politica!['versao'] ?? ''}${_data(_politica!['dtiniciovigencia']).isEmpty ? '' : ' • Vigente desde ${_data(_politica!['dtiniciovigencia'])}'}',
-                style: const TextStyle(color: Colors.black54),
               ),
               const SizedBox(height: 20),
               SelectableText(
