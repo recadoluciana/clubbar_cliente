@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
-import '../../widgets/perfil_page_header.dart';
 
 class AlterarSenhaScreen extends StatefulWidget {
   final VoidCallback onVoltar;
@@ -120,12 +119,15 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: ClubbarAppBar(mostrarVoltar: true, onVoltar: widget.onVoltar),
+      appBar: ClubbarAppBar(
+        titulo: 'Alterar senha',
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        onVoltar: widget.onVoltar,
+      ),
 
       body: Column(
         children: [
-          const PerfilPageHeader(subtitulo: 'Alterar senha'),
-
           Expanded(
             child: Form(
               key: _formKey,
