@@ -23,27 +23,34 @@ class PerfilScreen extends StatefulWidget {
 class _PerfilScreenState extends State<PerfilScreen> {
   final authStorage = AuthStorage();
   final apiService = ApiService();
-  late final Future<Map<String, String>> _dadosCabecalho;
+  String _nomeCabecalho = 'Cliente Clubbar';
+  String _emailCabecalho = '';
 
   @override
   void initState() {
     super.initState();
-    _dadosCabecalho = _carregarDadosCabecalho();
+    _carregarDadosCabecalho();
   }
 
-  Future<Map<String, String>> _carregarDadosCabecalho() async {
+  Future<void> _carregarDadosCabecalho() async {
     final nomeSalvo = (await authStorage.obterNmcliente())?.trim() ?? '';
 
     try {
       final perfil = await apiService.buscarMeuPerfil();
       final nome = (perfil['nmcliente'] ?? '').toString().trim();
       final email = (perfil['emailcliente'] ?? '').toString().trim();
-      return {'nome': nome.isEmpty ? nomeSalvo : nome, 'email': email};
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nome.isEmpty
+            ? (nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo)
+            : nome;
+        _emailCabecalho = email;
+      });
     } catch (_) {
-      return {
-        'nome': nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo,
-        'email': '',
-      };
+      if (!mounted) return;
+      setState(() {
+        _nomeCabecalho = nomeSalvo.isEmpty ? 'Cliente Clubbar' : nomeSalvo;
+      });
     }
   }
 
@@ -169,17 +176,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       body: Column(
         children: [
-          FutureBuilder<Map<String, String>>(
-            future: _dadosCabecalho,
-            builder: (context, snapshot) {
-              final dados = snapshot.data;
-              return ClubbarPageHeader(
-                titulo: dados?['nome'] ?? 'Cliente Clubbar',
-                subtitulo: dados?['email'] ?? '',
-                mostrarAvatar: false,
-                corTitulo: Colors.blue,
-              );
-            },
+          ClubbarPageHeader(
+            titulo: _nomeCabecalho,
+            subtitulo: _emailCabecalho,
+            mostrarAvatar: false,
+            corTitulo: Colors.blue,
           ),
 
           Expanded(
