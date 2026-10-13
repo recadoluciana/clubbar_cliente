@@ -1357,13 +1357,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               alignment: Alignment.centerLeft,
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(8, 3, 8, 0),
-            child: Text(
-              'Para cancelamento, acesse seu Perfil/Minhas compras.',
-              style: TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-          ),
           if (detalhe != null)
             ClubbarContactLinks(
               emailEstabelecimento: emailEstabelecimento,
