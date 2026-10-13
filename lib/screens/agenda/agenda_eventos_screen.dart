@@ -5,7 +5,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../../utils/date_formatters.dart';
-import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 
 class AgendaEventosScreen extends StatefulWidget {
@@ -340,32 +340,21 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(
-        title: Text(
-          widget.loja.nome,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-              return;
-            }
-            MainNavigationController.fecharTelaInterna();
-          },
-        ),
+      appBar: ClubbarAppBar(
+        titulo: 'Agenda - ${widget.loja.nome}',
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        mostrarCorujaAoLadoDoTitulo: true,
+        onVoltar: () {
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+            return;
+          }
+          MainNavigationController.fecharTelaInterna();
+        },
       ),
       body: Column(
         children: [
-          ClubbarPageHeader(
-            titulo: 'Agenda',
-            subtitulo: '',
-            icone: Icons.storefront_rounded,
-            imagemAvatarUrl: widget.loja.imagemUrl,
-          ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: carregarEventos,

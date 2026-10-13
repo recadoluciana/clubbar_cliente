@@ -13,7 +13,6 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import 'produto_compartilhado_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
-import '../../widgets/clubbar_page_header.dart';
 import '../../widgets/clubbar_contact_links.dart';
 import '../pagamento/politica_compra_screen.dart';
 
@@ -390,25 +389,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
-  Widget _pageHeader() {
-    return ClubbarPageHeader(
-      titulo: 'Cardápio',
-      subtitulo: '',
-      corTitulo: Colors.blue,
-      imagemAvatarUrl: widget.loja.imagemUrl,
-      tamanhoAvatar: 52,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
-        titulo: widget.loja.nome,
+        titulo: 'Cardápio - ${widget.loja.nome}',
         mostrarVoltar: true,
         mostrarSessao: false,
+        mostrarCorujaAoLadoDoTitulo: true,
         onVoltar: () {
           if (widget.onVoltar != null) {
             widget.onVoltar!();
@@ -427,16 +417,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
-          ? Column(
-              children: [
-                _pageHeader(),
-                Expanded(child: _erroWidget()),
-              ],
-            )
+          ? Column(children: [Expanded(child: _erroWidget())])
           : Column(
               children: [
-                _pageHeader(),
-
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
                   child: _campoPesquisa(),
