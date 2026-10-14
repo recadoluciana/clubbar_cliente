@@ -303,6 +303,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         return Dialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Colors.amber, width: 2),
           ),
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -339,38 +340,19 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 const SizedBox(height: 14),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 54,
-                      height: 54,
-                      child: imagemProduto.isEmpty
-                          ? _placeholderItem(item)
-                          : ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: Image.network(
-                                imagemProduto,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) =>
-                                    _placeholderItem(item),
-                              ),
-                            ),
-                    ),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        _isDelivery(item)
-                            ? 'Pedido para entrega'
-                            : (item['nmproduto'] ?? '').toString(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                SizedBox(
+                  width: 54,
+                  height: 54,
+                  child: imagemProduto.isEmpty
+                      ? _placeholderItem(item)
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.network(
+                            imagemProduto,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => _placeholderItem(item),
+                          ),
                         ),
-                      ),
-                    ),
-                  ],
                 ),
                 if ((item['dsobsitvenda'] ?? '')
                     .toString()
@@ -402,9 +384,28 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 QrImageView(
                   data: qrData,
-                  size: 220,
+                  size: 200,
                   backgroundColor: Colors.white,
                 ),
+                const SizedBox(height: 14),
+                Text(
+                  _isDelivery(item)
+                      ? 'Pedido para entrega'
+                      : (item['nmproduto'] ?? '').toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (widget.nomeCliente.trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.nomeCliente,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+                  ),
+                ],
                 if (_isDelivery(item)) ...[
                   const SizedBox(height: 12),
                   const Text(
