@@ -42,7 +42,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final List<EventoLote> opcoes;
   final String nomeLoja;
   final String nomeEvento;
-  final String imagemLojaUrl;
+  final String imagemEventoUrl;
   final double taxaPercentual;
   final double taxaMinima;
   final String Function(EventoLote) nomeModalidade;
@@ -52,7 +52,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.opcoes,
     required this.nomeLoja,
     required this.nomeEvento,
-    required this.imagemLojaUrl,
+    required this.imagemEventoUrl,
     required this.taxaPercentual,
     required this.taxaMinima,
     required this.nomeModalidade,
@@ -93,11 +93,12 @@ class _ModalidadesIngressoScreenState
                 : widget.nomeEvento,
             subtitulo: '',
             icone: Icons.confirmation_number_rounded,
-            imagemAvatarUrl: widget.imagemLojaUrl,
+            imagemAvatarUrl: widget.imagemEventoUrl,
             tamanhoAvatar: 56,
             larguraAvatar: 86,
             avatarRetangular: true,
             corTitulo: Colors.black87,
+            maxLinhasTitulo: 2,
           ),
           Expanded(
             child: ListView(
@@ -1075,7 +1076,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           opcoes: opcoes,
           nomeLoja: widget.loja.nome,
           nomeEvento: evento?.titulo ?? '',
-          imagemLojaUrl: widget.loja.imagemUrl,
+          imagemEventoUrl: evento?.bannerUrl ?? '',
           taxaPercentual: widget.loja.vrtaxaing,
           taxaMinima: widget.loja.vrtaxaminimaingresso,
           nomeModalidade: _nomeModalidade,

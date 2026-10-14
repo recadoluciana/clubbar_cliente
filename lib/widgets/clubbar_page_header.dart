@@ -18,6 +18,7 @@ class ClubbarPageHeader extends StatelessWidget {
   final Color? corIcone;
   final FontWeight pesoTitulo;
   final FontWeight pesoSubtitulo;
+  final int maxLinhasTitulo;
   final int maxLinhasSubtitulo;
 
   // Conteúdo opcional do lado direito
@@ -46,6 +47,7 @@ class ClubbarPageHeader extends StatelessWidget {
     this.corIcone,
     this.pesoTitulo = FontWeight.w800,
     this.pesoSubtitulo = FontWeight.w500,
+    this.maxLinhasTitulo = 1,
     this.maxLinhasSubtitulo = 2,
     this.trailing,
     this.imagemUrl,
@@ -208,7 +210,7 @@ class ClubbarPageHeader extends StatelessWidget {
                       if (mostrarTitulo)
                         Text(
                           titulo,
-                          maxLines: 1,
+                          maxLines: maxLinhasTitulo,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 18,
