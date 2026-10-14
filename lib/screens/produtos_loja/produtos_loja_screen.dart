@@ -41,6 +41,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   int? clienteId;
 
   int quantidadeCarrinho = 0;
+  int carrinhoDaLojaId = 0;
+  Map<int, int> quantidadesPorProduto = {};
+  final Set<int> produtosEmAlteracao = {};
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -120,6 +123,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         if (!mounted) return;
         setState(() {
           quantidadeCarrinho = 0;
+          carrinhoDaLojaId = 0;
+          quantidadesPorProduto = {};
         });
 
         return;
@@ -136,18 +141,34 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       final total = resultados[0] as int;
       final carrinhoLoja = resultados[1] as Map<String, dynamic>;
       final itens = carrinhoLoja['itens'];
-      final totalLoja = itens is List
-          ? itens.fold<int>(
-              0,
-              (soma, item) => soma + (int.tryParse('${item['qt']}') ?? 1),
-            )
-          : 0;
+      final quantidades = <int, int>{};
+      var totalLoja = 0;
+
+      if (itens is List) {
+        for (final item in itens) {
+          if (item is! Map) continue;
+          final produtoId = int.tryParse('${item['produto_id']}');
+          final quantidade = int.tryParse('${item['qt']}') ?? 1;
+          final observacao = '${item['observacao'] ?? ''}'.trim();
+
+          // O controle no cardápio gerencia somente as unidades sem
+          // observação. Itens personalizados continuam sendo ajustados no
+          // carrinho, onde a observação fica visível.
+          if (produtoId != null && observacao.isEmpty) {
+            quantidades[produtoId] = (quantidades[produtoId] ?? 0) + quantidade;
+          }
+          totalLoja += quantidade;
+        }
+      }
 
       CartBadgeNotifier.atualizar(total);
 
       if (!mounted) return;
       setState(() {
         quantidadeCarrinho = totalLoja;
+        carrinhoDaLojaId =
+            int.tryParse('${carrinhoLoja['carrinho_id'] ?? 0}') ?? 0;
+        quantidadesPorProduto = quantidades;
       });
     } catch (_) {
       CartBadgeNotifier.limpar();
@@ -155,6 +176,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       if (!mounted) return;
       setState(() {
         quantidadeCarrinho = 0;
+        carrinhoDaLojaId = 0;
+        quantidadesPorProduto = {};
       });
     }
   }
@@ -171,6 +194,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       return;
     }
 
+    if (produtosEmAlteracao.contains(produto.produtoId)) return;
+
+    final quantidadeAnterior = quantidadesPorProduto[produto.produtoId] ?? 0;
+    setState(() => produtosEmAlteracao.add(produto.produtoId));
+
     try {
       await apiService.adicionarAoCarrinho(
         clienteId: clienteId!,
@@ -182,17 +210,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         observacao: observacao,
       );
 
-      final total = await apiService.buscarQuantidadeCarrinho(
-        clienteId: clienteId!,
-      );
-      CartBadgeNotifier.atualizar(total);
-
       if (!mounted) return;
+      await carregarQuantidadeCarrinho();
 
-      setState(() {
-        quantidadeCarrinho += 1;
-      });
-
+      if (!mounted || quantidadeAnterior > 0) return;
       AppSnackBar.info(
         context,
         observacao.trim().isEmpty
@@ -203,6 +224,36 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       if (!mounted) return;
 
       AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) {
+        setState(() => produtosEmAlteracao.remove(produto.produtoId));
+      }
+    }
+  }
+
+  Future<void> removerProdutoDoCarrinho(Produto produto) async {
+    if (produtosEmAlteracao.contains(produto.produtoId)) return;
+    if (carrinhoDaLojaId == 0) {
+      await carregarQuantidadeCarrinho();
+      return;
+    }
+
+    setState(() => produtosEmAlteracao.add(produto.produtoId));
+    try {
+      await apiService.removerItemCarrinho(
+        carrinhoId: carrinhoDaLojaId,
+        produtoId: produto.produtoId,
+        observacao: '',
+      );
+      if (!mounted) return;
+      await carregarQuantidadeCarrinho();
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) {
+        setState(() => produtosEmAlteracao.remove(produto.produtoId));
+      }
     }
   }
 
@@ -561,7 +612,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             );
           },
           child: SizedBox(
-            height: 128,
+            height: 136,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -692,35 +743,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         const SizedBox(height: 8),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            height: 30,
-                            child: ElevatedButton.icon(
-                              onPressed: () =>
-                                  adicionarProdutoAoCarrinho(produto),
-                              icon: const Icon(
-                                Icons.add_shopping_cart_rounded,
-                                size: 15,
-                              ),
-                              label: const Text(
-                                'Adicionar',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 13,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
+                          child: _controleQuantidadeProduto(produto),
                         ),
                       ],
                     ),
@@ -733,4 +756,106 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       ),
     );
   }
+
+  Widget _controleQuantidadeProduto(Produto produto) {
+    final quantidade = quantidadesPorProduto[produto.produtoId] ?? 0;
+    final alterando = produtosEmAlteracao.contains(produto.produtoId);
+
+    if (quantidade == 0) {
+      return SizedBox(
+        height: 30,
+        child: ElevatedButton.icon(
+          onPressed: alterando
+              ? null
+              : () => adicionarProdutoAoCarrinho(produto),
+          icon: alterando
+              ? const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.add_shopping_cart_rounded, size: 15),
+          label: const Text(
+            'Adicionar',
+            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.amber,
+            foregroundColor: Colors.black,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 13),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      height: 32,
+      decoration: BoxDecoration(
+        color: Colors.amber.withValues(alpha: .16),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.amber.shade700),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _botaoQuantidade(
+            icone: Icons.remove_rounded,
+            dica: 'Remover uma unidade',
+            habilitado: !alterando,
+            aoPressionar: () => removerProdutoDoCarrinho(produto),
+          ),
+          SizedBox(
+            width: 28,
+            child: Center(
+              child: alterando
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      '$quantidade',
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+            ),
+          ),
+          _botaoQuantidade(
+            icone: Icons.add_rounded,
+            dica: 'Adicionar uma unidade',
+            habilitado: !alterando,
+            aoPressionar: () => adicionarProdutoAoCarrinho(produto),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _botaoQuantidade({
+    required IconData icone,
+    required String dica,
+    required bool habilitado,
+    required VoidCallback aoPressionar,
+  }) => Tooltip(
+    message: dica,
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: habilitado ? aoPressionar : null,
+        child: SizedBox(
+          width: 30,
+          height: 30,
+          child: Icon(
+            icone,
+            size: 18,
+            color: habilitado ? Colors.black87 : Colors.grey,
+          ),
+        ),
+      ),
+    ),
+  );
 }
