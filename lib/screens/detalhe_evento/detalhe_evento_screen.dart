@@ -1044,15 +1044,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 36,
-                child: OutlinedButton.icon(
-                  onPressed: () => _abrirModalidades(opcoes),
-                  icon: const Icon(Icons.arrow_forward_rounded),
-                  label: Text(
-                    vendaDisponivel
-                        ? 'Escolher modalidade'
-                        : 'Consultar modalidades',
-                  ),
-                ),
+                child: vendaDisponivel
+                    ? ElevatedButton.icon(
+                        onPressed: () => _abrirModalidades(opcoes),
+                        icon: const Icon(Icons.confirmation_number_outlined),
+                        label: const Text('Comprar ingresso'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black87,
+                          elevation: 0,
+                        ),
+                      )
+                    : OutlinedButton.icon(
+                        onPressed: () => _abrirModalidades(opcoes),
+                        icon: const Icon(Icons.arrow_forward_rounded),
+                        label: const Text('Consultar modalidades'),
+                      ),
               ),
             ],
           ),
