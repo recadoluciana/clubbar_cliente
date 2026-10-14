@@ -801,7 +801,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           iniciarCarousel();
         },
         decoration: InputDecoration(
-          hintText: 'bar, casa noturna, atração, cidade, bairro',
+          hintText: 'bar, casa noturna, evento, atração, cidade, bairro',
           hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
           prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: termoBusca.isEmpty
