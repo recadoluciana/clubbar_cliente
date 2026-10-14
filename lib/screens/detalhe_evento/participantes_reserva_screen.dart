@@ -164,6 +164,7 @@ class _ParticipantesReservaScreenState
         );
         return;
       }
+      final valorTotalComTaxa = _valorTotalComTaxa(reserva);
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -176,7 +177,7 @@ class _ParticipantesReservaScreenState
             taxaConveniencia:
                 double.tryParse('${reserva['valor_taxa_unitaria']}')! *
                 int.parse('${reserva['quantidade']}'),
-            totalPagar: double.tryParse('${reserva['valor_total']}'),
+            totalPagar: valorTotalComTaxa,
             reservaIngressoId: int.parse('${reserva['reserva_ingresso_id']}'),
             reservaExpiracao: expiraEm,
           ),
@@ -204,6 +205,18 @@ class _ParticipantesReservaScreenState
         ),
       ],
     );
+  }
+
+  double _valorTotalComTaxa(Map<String, dynamic> reserva) {
+    final valorUnitario = double.tryParse('${reserva['valor_unitario']}') ?? 0;
+    final taxaUnitaria =
+        double.tryParse('${reserva['valor_taxa_unitaria']}') ?? 0;
+    final quantidade = double.tryParse('${reserva['quantidade']}') ?? 0;
+    final totalCalculado = (valorUnitario + taxaUnitaria) * quantidade;
+
+    return totalCalculado > 0
+        ? totalCalculado
+        : (double.tryParse('${reserva['valor_total']}') ?? 0);
   }
 
   Widget _linhaResumo(String titulo, String valor) {
@@ -243,7 +256,7 @@ class _ParticipantesReservaScreenState
   Widget build(BuildContext context) {
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
     final segundos = (restante.inSeconds % 60).toString().padLeft(2, '0');
-    final valorTotal = double.tryParse('${widget.reserva['valor_total']}') ?? 0;
+    final valorTotal = _valorTotalComTaxa(widget.reserva);
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) unawaited(_cancelarReservaSeNecessario());
