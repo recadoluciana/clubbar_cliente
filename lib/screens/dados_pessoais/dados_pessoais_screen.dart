@@ -181,6 +181,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
       _bairroCtrl.text = (data['bairrocliente'] ?? '').toString();
       _cidadeCtrl.text = (data['cidadecliente'] ?? '').toString();
       _ufCtrl.text = (data['ufcliente'] ?? '').toString().toUpperCase();
+      _resolverNomeCidadePeloCep();
     } catch (e) {
       erro = e.toString().replaceFirst('Exception: ', '');
     } finally {
@@ -231,12 +232,37 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
     }
   }
 
-  InputDecoration _decoracao({required String label, required IconData icon}) {
+  Future<void> _resolverNomeCidadePeloCep() async {
+    final cidadeInformada = _cidadeCtrl.text.trim();
+    final cep = _somenteNumeros(_cepCtrl.text);
+
+    if (!RegExp(r'^\d+$').hasMatch(cidadeInformada) || cep.length != 8) {
+      return;
+    }
+
+    try {
+      final endereco = await _cepService.buscar(cep);
+      if (!mounted || _cidadeCtrl.text.trim() != cidadeInformada) return;
+
+      setState(() {
+        _cidadeCtrl.text = endereco.cidade;
+        if (endereco.uf.isNotEmpty) _ufCtrl.text = endereco.uf;
+      });
+    } catch (_) {
+      // Mantém o dado atual se o CEP não puder ser consultado agora.
+    }
+  }
+
+  InputDecoration _decoracao({
+    required String label,
+    required IconData icon,
+    bool bloqueado = false,
+  }) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon),
+      prefixIcon: Icon(icon, color: bloqueado ? Colors.grey.shade600 : null),
       filled: true,
-      fillColor: Colors.white,
+      fillColor: bloqueado ? Colors.grey.shade100 : Colors.white,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
@@ -247,7 +273,10 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.amber, width: 1.6),
+        borderSide: BorderSide(
+          color: bloqueado ? Colors.grey.shade300 : Colors.amber,
+          width: bloqueado ? 1 : 1.6,
+        ),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -528,6 +557,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                       _decoracao(
                                         label: 'Logradouro',
                                         icon: Icons.signpost_outlined,
+                                        bloqueado: true,
                                       ).copyWith(
                                         helperText:
                                             'Preenchido automaticamente pelo CEP',
@@ -572,6 +602,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                   decoration: _decoracao(
                                     label: 'Bairro',
                                     icon: Icons.location_city_outlined,
+                                    bloqueado: true,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -589,6 +620,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                         decoration: _decoracao(
                                           label: 'UF',
                                           icon: Icons.map_outlined,
+                                          bloqueado: true,
                                         ).copyWith(counterText: ''),
                                         validator: (value) {
                                           final uf = value?.trim() ?? '';
@@ -609,6 +641,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                         decoration: _decoracao(
                                           label: 'Cidade',
                                           icon: Icons.domain_outlined,
+                                          bloqueado: true,
                                         ),
                                       ),
                                     ),
