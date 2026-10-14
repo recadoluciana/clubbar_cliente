@@ -487,18 +487,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget _fotoAtracao(AtracaoEventoDetalhe atracao) {
     final imagem = atracao.bannerUrl.trim();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+    return ClipOval(
       child: SizedBox(
-        width: 60,
-        height: 60,
+        width: 48,
+        height: 48,
         child: imagem.isEmpty
             ? Container(
                 color: Colors.blue.shade50,
                 child: Icon(
                   Icons.music_note_rounded,
                   color: Colors.blue.shade700,
-                  size: 30,
+                  size: 24,
                 ),
               )
             : Image.network(
@@ -509,7 +508,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   child: Icon(
                     Icons.music_note_rounded,
                     color: Colors.blue.shade700,
-                    size: 30,
+                    size: 24,
                   ),
                 ),
               ),
@@ -1435,13 +1434,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               borderRadius: BorderRadius.circular(24),
                             ),
                             child: ev.bannerUrl.trim().isNotEmpty
-                                ? SizedBox(
-                                    height: 200,
-                                    child: Image.network(
-                                      ev.bannerUrl,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
-                                    ),
+                                ? Image.network(
+                                    ev.bannerUrl,
+                                    width: double.infinity,
+                                    fit: BoxFit.contain,
                                   )
                                 : SizedBox(
                                     height: 200,
@@ -1667,70 +1663,79 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           width: 1.4,
                                         ),
                                       ),
-                                      child: Column(
+                                      child: Row(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment.center,
                                         children: [
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.schedule_rounded,
-                                                size: 18,
-                                                color: Colors.blue.shade700,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text.rich(
-                                                  TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: atracao.nome,
-                                                        style: const TextStyle(
-                                                          color: Colors.black87,
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.w900,
+                                          _fotoAtracao(atracao),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.schedule_rounded,
+                                                      size: 17,
+                                                      color:
+                                                          Colors.blue.shade700,
+                                                    ),
+                                                    const SizedBox(width: 5),
+                                                    Expanded(
+                                                      child: Text.rich(
+                                                        TextSpan(
+                                                          children: [
+                                                            TextSpan(
+                                                              text:
+                                                                  atracao.nome,
+                                                              style: const TextStyle(
+                                                                color: Colors
+                                                                    .black87,
+                                                                fontSize: 15,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w900,
+                                                              ),
+                                                            ),
+                                                            TextSpan(
+                                                              text:
+                                                                  ' • ${_duracaoPrevista(atracao)}',
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .grey
+                                                                    .shade700,
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
-                                                      TextSpan(
-                                                        text:
-                                                            ' • ${_duracaoPrevista(atracao)}',
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .grey
-                                                              .shade700,
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                                    ),
+                                                  ],
                                                 ),
-                                              ),
-                                              Icon(
-                                                Icons.chevron_right_rounded,
-                                                color: Colors.blue.shade700,
-                                                size: 26,
-                                              ),
-                                            ],
+                                                if (atracao
+                                                    .estilos
+                                                    .isNotEmpty) ...[
+                                                  const SizedBox(height: 5),
+                                                  _badgesEstilos(atracao),
+                                                ],
+                                              ],
+                                            ),
                                           ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              _fotoAtracao(atracao),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: atracao.estilos.isEmpty
-                                                    ? const SizedBox()
-                                                    : _badgesEstilos(atracao),
-                                              ),
-                                            ],
+                                          const SizedBox(width: 4),
+                                          Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: Colors.blue.shade700,
+                                            size: 26,
                                           ),
                                         ],
                                       ),
