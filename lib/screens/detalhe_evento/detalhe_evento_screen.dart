@@ -124,6 +124,7 @@ class _ModalidadesIngressoScreenState
 
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
+    final ehCortesia = lote.tipoIngresso.trim().toUpperCase() == 'CORTESIA';
     final ehMeiaLegal = lote.aplicaCotaLegal;
     final disponivelModalidade = ehMeiaLegal
         ? lote.qtDisponivelCotaLegal
@@ -293,7 +294,7 @@ class _ModalidadesIngressoScreenState
                         }
                       },
                 icon: const Icon(Icons.local_activity_outlined),
-                label: const Text('Comprar ingresso'),
+                label: Text(ehCortesia ? 'Resgatar' : 'Comprar ingresso'),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.amareloCerveja,
                   foregroundColor: Colors.black,
