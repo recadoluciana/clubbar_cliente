@@ -260,6 +260,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
       appBar: ClubbarAppBar(
         titulo: 'Meu Carrinho',
         iconeTitulo: Icons.shopping_cart_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
         mostrarSessao: false,
