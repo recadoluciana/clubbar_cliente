@@ -540,14 +540,13 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              _chip('Venda: #${item['venda_id'] ?? ''}'),
                               if (dataCompra.isNotEmpty)
-                                _chip('Compra: $dataCompra'),
+                                _chip('Data da compra: $dataCompra'),
                               _chip(
                                 'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
                               ),
                               if (validade.isNotEmpty)
-                                _chip('Validade: $validade'),
+                                _chip('Data de validade: $validade'),
                               if (entrega) _chipStatusEntrega(item),
                             ],
                           ),
@@ -571,96 +570,132 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 const SizedBox(height: 16),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: pedidoAceito ? 58 : 46,
-                  child: ElevatedButton(
-                    onPressed: entrega && !emRota
-                        ? null
-                        : () => _abrirQrOuRetirada(context, item),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: emRota
-                          ? Colors.amber
-                          : pedidoAceito
-                          ? const Color(0xFFE1F5E8)
-                          : Colors.amber,
-                      disabledBackgroundColor: pedidoAceito
-                          ? const Color(0xFFE1F5E8)
-                          : Colors.grey.shade300,
-                      foregroundColor: emRota
-                          ? Colors.black
-                          : pedidoAceito
-                          ? const Color(0xFF18763B)
-                          : Colors.black,
-                      disabledForegroundColor: pedidoAceito
-                          ? const Color(0xFF18763B)
-                          : Colors.grey.shade500,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                if (!entrega)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _abrirQrOuRetirada(context, item),
+                            icon: const Icon(Icons.qr_code_2_rounded, size: 21),
+                            label: const Text(
+                              'Exibir QR Code',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          pedidoAceito
-                              ? Icons.storefront_rounded
-                              : Icons.qr_code_2_rounded,
-                          size: 22,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: SizedBox(
+                          height: 46,
+                          child: OutlinedButton.icon(
+                            onPressed: () => _confirmarCompartilhamento(item),
+                            icon: const Icon(
+                              Icons.card_giftcard_rounded,
+                              size: 18,
+                            ),
+                            label: const Text('Presentear'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF7A5A00),
+                              side: const BorderSide(color: Color(0xFFE0C36A)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: pedidoAceito
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      'Pedido aceito',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    if (dataAceite.isNotEmpty)
-                                      Text(
-                                        botaoAceite,
-                                        style: const TextStyle(fontSize: 11),
-                                      ),
-                                  ],
-                                )
-                              : Text(
-                                  entrega
-                                      ? (emRota
-                                            ? 'Exibir QR Code de entrega'
-                                            : _statusEntrega(item))
-                                      : 'Exibir produto e QR Code',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                if (!entrega) ...[
-                  const SizedBox(height: 10),
+                      ),
+                    ],
+                  )
+                else
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _confirmarCompartilhamento(item),
-                      icon: const Icon(Icons.card_giftcard_rounded, size: 18),
-                      label: const Text('Presentear'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF7A5A00),
-                        side: const BorderSide(color: Color(0xFFE0C36A)),
+                    height: pedidoAceito ? 58 : 46,
+                    child: ElevatedButton(
+                      onPressed: !emRota
+                          ? null
+                          : () => _abrirQrOuRetirada(context, item),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: emRota
+                            ? Colors.amber
+                            : pedidoAceito
+                            ? const Color(0xFFE1F5E8)
+                            : Colors.grey.shade300,
+                        disabledBackgroundColor: pedidoAceito
+                            ? const Color(0xFFE1F5E8)
+                            : Colors.grey.shade300,
+                        foregroundColor: emRota
+                            ? Colors.black
+                            : pedidoAceito
+                            ? const Color(0xFF18763B)
+                            : Colors.grey.shade500,
+                        disabledForegroundColor: pedidoAceito
+                            ? const Color(0xFF18763B)
+                            : Colors.grey.shade500,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            pedidoAceito
+                                ? Icons.storefront_rounded
+                                : Icons.qr_code_2_rounded,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: pedidoAceito
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'Pedido aceito',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      if (dataAceite.isNotEmpty)
+                                        Text(
+                                          botaoAceite,
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                    ],
+                                  )
+                                : Text(
+                                    emRota
+                                        ? 'Exibir QR Code de entrega'
+                                        : _statusEntrega(item),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
 
                 const SizedBox(height: 8),
 
