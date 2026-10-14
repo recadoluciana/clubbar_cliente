@@ -412,7 +412,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       alignment: Alignment.center,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 56),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Text(
                             nomeEvento,
                             textAlign: TextAlign.center,
@@ -423,14 +423,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                               fontSize: 16,
                               fontWeight: FontWeight.normal,
                             ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            tooltip: 'Fechar',
-                            onPressed: () => Navigator.pop(dialogContext),
-                            icon: const Icon(Icons.close, color: Colors.red),
                           ),
                         ),
                       ],

@@ -311,7 +311,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   alignment: Alignment.center,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 56),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
                         _isDelivery(item)
                             ? 'Pedido para entrega'
@@ -324,14 +324,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        tooltip: 'Fechar',
-                        onPressed: () => Navigator.pop(dialogContext),
-                        icon: const Icon(Icons.close, color: Colors.red),
                       ),
                     ),
                   ],
