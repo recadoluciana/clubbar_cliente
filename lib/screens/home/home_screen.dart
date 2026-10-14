@@ -1142,7 +1142,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       produtosMaisVendidos.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     _secaoTitulo(
-                      'Top 10 de produtos mais vendidos',
+                      'Top 10 produtos',
                       Icons.local_fire_department_outlined,
                     ),
                     const SizedBox(height: 10),
