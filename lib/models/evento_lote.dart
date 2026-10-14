@@ -45,6 +45,8 @@ class EventoLote {
   final int qtVendida;
   final int qtReservada;
   final int? qtCapacidadeRestante;
+  final int? qtLimiteModalidade;
+  final int? qtDisponivelModalidade;
   final String status;
   final String dataInicioVenda;
   final String dataFimVenda;
@@ -74,6 +76,8 @@ class EventoLote {
     required this.qtVendida,
     this.qtReservada = 0,
     this.qtCapacidadeRestante,
+    this.qtLimiteModalidade,
+    this.qtDisponivelModalidade,
     required this.status,
     required this.dataInicioVenda,
     required this.dataFimVenda,
@@ -90,6 +94,17 @@ class EventoLote {
     return disponivel < 0 ? 0 : disponivel;
   }
 
+  int get qtDisponivelParaCompra {
+    final limiteModalidade = qtDisponivelModalidade;
+    final disponibilidadeDaModalidade = limiteModalidade == null
+        ? qtDisponivel
+        : (limiteModalidade < qtDisponivel ? limiteModalidade : qtDisponivel);
+    if (!aplicaCotaLegal) return disponibilidadeDaModalidade;
+    return qtDisponivelCotaLegal < disponibilidadeDaModalidade
+        ? qtDisponivelCotaLegal
+        : disponibilidadeDaModalidade;
+  }
+
   bool get temReservasTemporarias => qtReservada > 0;
 
   bool get indisponivelPorReservasTemporarias =>
@@ -98,7 +113,7 @@ class EventoLote {
   bool podeComprarEm(DateTime agora) {
     final statusNormalizado = status.trim().toUpperCase();
     if (statusNormalizado != 'ATIVO') return false;
-    if (qtDisponivel <= 0) return false;
+    if (qtDisponivelParaCompra <= 0) return false;
 
     final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
     final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
@@ -109,7 +124,7 @@ class EventoLote {
 
   String situacaoVendaEm(DateTime agora) {
     final statusNormalizado = status.trim().toUpperCase();
-    if (statusNormalizado == 'ESGOTADO' || qtDisponivel <= 0) {
+    if (statusNormalizado == 'ESGOTADO' || qtDisponivelParaCompra <= 0) {
       return 'Esgotado';
     }
     if (statusNormalizado == 'INATIVO') return 'Indisponível';
@@ -158,6 +173,12 @@ class EventoLote {
       qtCapacidadeRestante: json['qtdisponivel'] == null
           ? null
           : _toInt(json['qtdisponivel']),
+      qtLimiteModalidade: json['qtlimitemodalidade'] == null
+          ? null
+          : _toInt(json['qtlimitemodalidade']),
+      qtDisponivelModalidade: json['qtdisponivelmodalidade'] == null
+          ? null
+          : _toInt(json['qtdisponivelmodalidade']),
       status: (json['statuslote'] ?? 'ATIVO').toString(),
       dataInicioVenda: (json['dtiniciovenda'] ?? '').toString(),
       dataFimVenda: (json['dtfimvenda'] ?? '').toString(),

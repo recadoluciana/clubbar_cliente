@@ -151,15 +151,10 @@ class _ModalidadesIngressoScreenState
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
     final ehCortesia = lote.tipoIngresso.trim().toUpperCase() == 'CORTESIA';
     final ehMeiaLegal = lote.aplicaCotaLegal;
-    final disponivelModalidade = ehMeiaLegal
-        ? lote.qtDisponivelCotaLegal
-        : lote.qtDisponivel;
-    final modalidadeDisponivel = !ehMeiaLegal || disponivelModalidade > 0;
+    final disponivelModalidade = lote.qtDisponivelParaCompra;
+    final modalidadeDisponivel = disponivelModalidade > 0;
     final podeDiminuir = quantidade > 1;
-    final podeAumentar =
-        quantidade < 20 &&
-        quantidade < lote.qtDisponivel &&
-        (!ehMeiaLegal || quantidade < disponivelModalidade);
+    final podeAumentar = quantidade < 20 && quantidade < disponivelModalidade;
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
         ? 0.0
@@ -237,10 +232,10 @@ class _ModalidadesIngressoScreenState
               ),
               const SizedBox(height: 2),
               Text(
-                '${lote.qtDisponivelCotaLegal} ingresso${lote.qtDisponivelCotaLegal == 1 ? '' : 's'} disponíve${lote.qtDisponivelCotaLegal == 1 ? 'l' : 'is'} nesta cota',
+                '$disponivelModalidade ingresso${disponivelModalidade == 1 ? '' : 's'} disponíve${disponivelModalidade == 1 ? 'l' : 'is'} ${lote.qtLimiteModalidade == null ? 'nesta cota' : 'nesta modalidade'}',
                 style: TextStyle(
                   fontSize: 12,
-                  color: lote.qtDisponivelCotaLegal > 0
+                  color: disponivelModalidade > 0
                       ? Colors.green.shade700
                       : Colors.red,
                   fontWeight: FontWeight.w700,
