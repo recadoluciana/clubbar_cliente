@@ -342,8 +342,17 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
         titulo: 'Agenda - ${widget.loja.nome}',
+        iconeTitulo: Icons.confirmation_number_rounded,
+        corIconeTitulo: Colors.blue,
         mostrarVoltar: true,
         mostrarSessao: false,
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar agenda',
+            onPressed: carregarEventos,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
         onVoltar: () {
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
