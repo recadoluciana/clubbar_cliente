@@ -489,7 +489,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                   children: [
                     Expanded(
                       child: _menuCard(
-                        titulo: 'Agenda e ingressos',
+                        titulo: 'Agenda',
                         icone: Icons.confirmation_number_rounded,
                         cor: Colors.blue,
                         onTap: () {
@@ -502,7 +502,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     const SizedBox(width: 14),
                     Expanded(
                       child: _menuCard(
-                        titulo: 'Cardápio e produtos',
+                        titulo: 'Cardápio',
                         icone: Icons.restaurant_menu_rounded,
                         cor: Colors.amber,
                         onTap: () {
