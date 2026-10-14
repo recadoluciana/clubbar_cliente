@@ -88,7 +88,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     if (!mounted) return;
 
-    AppSnackBar.erro(context, 'Logout realizado com sucesso.');
+    AppSnackBar.sucesso(context, 'Logout realizado com sucesso.');
 
     Navigator.pushAndRemoveUntil(
       context,
