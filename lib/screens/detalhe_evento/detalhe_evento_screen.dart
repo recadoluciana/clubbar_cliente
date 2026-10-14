@@ -47,6 +47,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final double taxaMinima;
   final String Function(EventoLote) nomeModalidade;
   final Future<void> Function(EventoLote lote, int quantidade) onComprar;
+  final VoidCallback onEntenderTaxa;
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
@@ -57,6 +58,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.taxaMinima,
     required this.nomeModalidade,
     required this.onComprar,
+    required this.onEntenderTaxa,
   });
 
   @override
@@ -115,6 +117,28 @@ class _ModalidadesIngressoScreenState
                   (opcao) =>
                       _cardModalidade(opcao, vendaDisponivel: vendaDisponivel),
                 ),
+                const SizedBox(height: 4),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: widget.onEntenderTaxa,
+                    icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                    label: const Text(
+                      'Entenda nossa taxa',
+                      style: TextStyle(fontWeight: FontWeight.normal),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      textStyle: const TextStyle(fontSize: 12),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
               ],
             ),
           ),
@@ -1082,6 +1106,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           nomeModalidade: _nomeModalidade,
           onComprar: (lote, quantidade) =>
               iniciarReserva(lote, quantidadeSelecionada: quantidade),
+          onEntenderTaxa: _abrirExplicacaoTaxas,
         ),
       ),
     );
