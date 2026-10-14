@@ -497,6 +497,13 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         mostrarLogo: false,
         mostrarSessao: false,
         onVoltar: MainNavigationController.irParaHome,
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar carteira',
+            onPressed: carregando ? null : carregarTela,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
       ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
