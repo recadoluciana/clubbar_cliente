@@ -351,21 +351,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   ) async {
     final token = (item['qrtokenitvenda'] ?? '').toString().trim();
     final qrData = 'CLUBBAR-INGRESSO:$token';
-    final nomeEstabelecimento = _primeiroTexto(item, const [
-      'nmloja',
-      'nome_loja',
-    ], padrao: widget.nomeLoja);
     final nomeEvento = _primeiroTexto(item, const [
       'nmevento',
       'nmproduto',
     ], padrao: 'Ingresso Clubbar');
-    final lote = _primeiroTexto(item, const ['nmlote', 'lote']);
-    final numeroLote = _primeiroTexto(item, const ['nrlote', 'numero_lote']);
-    final loteExibicao = lote.isNotEmpty
-        ? lote
-        : numeroLote.isNotEmpty
-        ? 'Lote $numeroLote'
-        : 'Não informado';
     final setor = _primeiroTexto(item, const [
       'nmsetor',
       'nmsetoringresso',
@@ -381,20 +370,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         : _primeiroTexto(item, const [
             'tipo_ingresso',
           ], padrao: 'Não informada');
-    final dataEvento = _primeiroTexto(item, const [
-      'dtinicioevento_fmt',
-      'dtinicioevento',
-    ], padrao: 'Não informada');
-    final localEvento = _primeiroTexto(item, const [
-      'nmlocalevento',
-      'nmloja',
-    ], padrao: nomeEstabelecimento);
-    final enderecoEvento = _primeiroTexto(item, const [
-      'dsendlocevento',
-      'endereco_estabelecimento',
-      'endloja',
-      'dsinstaloja',
-    ], padrao: 'Endereço do estabelecimento');
+    final beneficio = _primeiroTexto(item, const [
+      'nmbeneficiosnapshot',
+      'nmbeneficio',
+      'beneficio',
+    ]);
+    final nomeParticipante = _primeiroTexto(item, const [
+      'nmparticipante',
+    ], padrao: 'Não informado');
+    final cpfParticipante = _formatarCpf(item['cpfparticipante'] ?? '');
 
     if (token.isEmpty) {
       AppSnackBar.erro(context, 'QR Code não disponível para este item.');
@@ -403,11 +387,13 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
     await showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       builder: (dialogContext) {
         return Dialog(
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Colors.amber, width: 2),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -415,23 +401,27 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               maxHeight: MediaQuery.sizeOf(context).height * 0.90,
             ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
+                  Container(
+                    height: 56,
                     width: double.infinity,
+                    color: Colors.black,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 42),
+                          padding: const EdgeInsets.symmetric(horizontal: 56),
                           child: Text(
-                            nomeEstabelecimento,
+                            nomeEvento,
                             textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.normal,
                             ),
                           ),
                         ),
@@ -440,76 +430,71 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           child: IconButton(
                             tooltip: 'Fechar',
                             onPressed: () => Navigator.pop(dialogContext),
-                            icon: const Icon(Icons.close),
+                            icon: const Icon(Icons.close, color: Colors.red),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    nomeEvento,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _detalheIngresso('Lote', loteExibicao),
-                  _detalheIngresso('Setor', setor),
-                  _detalheIngresso('Modalidade', modalidade),
-                  _detalheIngresso('Data e hora', dataEvento),
-                  _detalheIngresso('Local', localEvento),
-                  _detalheIngresso('Endereço', enderecoEvento),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Participante',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
+                        Text('Setor: $setor'),
                         const SizedBox(height: 4),
-                        Text(
-                          _primeiroTexto(item, const [
-                            'nmparticipante',
-                          ], padrao: 'Não informado'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
+                        Text('Modalidade: $modalidade'),
+                        if (beneficio.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text('Benefício: $beneficio'),
+                        ],
+                        const SizedBox(height: 16),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Column(
+                            children: [
+                              Text('Participante: $nomeParticipante'),
+                              if (cpfParticipante.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(cpfParticipante),
+                              ],
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatarCpf(item['cpfparticipante'] ?? ''),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Apresente seu documento de identificação.',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                        ),
+                        const SizedBox(height: 16),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: QrImageView(
+                            data: qrData,
+                            size: 200,
+                            backgroundColor: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                            ),
+                            child: const Text('Voltar'),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Apresente seu documento de identificação.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  QrImageView(
-                    data: qrData,
-                    size: 210,
-                    backgroundColor: Colors.white,
                   ),
                 ],
               ),
@@ -543,20 +528,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       if (valor.isNotEmpty && valor.toLowerCase() != 'null') return valor;
     }
     return padrao;
-  }
-
-  Widget _detalheIngresso(String titulo, String valor) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Text.rich(
-        TextSpan(
-          text: '$titulo: ',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-          children: [TextSpan(text: valor)],
-        ),
-        textAlign: TextAlign.center,
-      ),
-    );
   }
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
