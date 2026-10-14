@@ -175,10 +175,49 @@ class _ModalidadesIngressoScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.nomeModalidade(lote),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-            ),
+            if (ehMeiaLegal)
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.nomeModalidade(lote),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const MeiaEntradaScreen(),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.workspace_premium_outlined,
+                      size: 16,
+                    ),
+                    label: const Text('Quem tem direito à meia-entrada'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      textStyle: const TextStyle(fontSize: 11),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Text(
+                widget.nomeModalidade(lote),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             if (lote.exigeComprovante)
               const Padding(
                 padding: EdgeInsets.only(top: 3),
@@ -220,26 +259,6 @@ class _ModalidadesIngressoScreenState
                 ),
               ),
             ],
-            if (ehMeiaLegal)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => const MeiaEntradaScreen(),
-                    ),
-                  ),
-                  icon: const Icon(Icons.workspace_premium_outlined, size: 17),
-                  label: const Text('Quem tem direito à meia-entrada'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.primary,
-                    padding: const EdgeInsets.only(top: 5, bottom: 1),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    textStyle: const TextStyle(fontSize: 12),
-                  ),
-                ),
-              ),
             const SizedBox(height: 8),
             Text(
               '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
@@ -257,28 +276,24 @@ class _ModalidadesIngressoScreenState
                       : () => setState(
                           () => _quantidades[lote.lotePrecoId] = quantidade - 1,
                         ),
-                  icon: Text(
-                    '−',
-                    style: TextStyle(
-                      color: podeDiminuir ? Colors.black : Colors.grey.shade700,
-                      fontSize: 25,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
-                    ),
-                  ),
+                  icon: const Icon(Icons.remove_rounded, size: 20),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.amareloCerveja,
                     foregroundColor: Colors.black,
                     disabledBackgroundColor: Colors.grey.shade300,
                     disabledForegroundColor: Colors.grey.shade600,
+                    minimumSize: const Size(38, 38),
+                    maximumSize: const Size(38, 38),
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
                 SizedBox(
-                  width: 40,
+                  width: 34,
                   child: Text(
                     '$quantidade',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
+                    style: const TextStyle(fontSize: 16),
                   ),
                 ),
                 IconButton.filled(
@@ -288,20 +303,16 @@ class _ModalidadesIngressoScreenState
                       : () => setState(
                           () => _quantidades[lote.lotePrecoId] = quantidade + 1,
                         ),
-                  icon: Text(
-                    '+',
-                    style: TextStyle(
-                      color: podeAumentar ? Colors.black : Colors.grey.shade700,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
-                    ),
-                  ),
+                  icon: const Icon(Icons.add_rounded, size: 20),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.amareloCerveja,
                     foregroundColor: Colors.black,
                     disabledBackgroundColor: Colors.grey.shade300,
                     disabledForegroundColor: Colors.grey.shade600,
+                    minimumSize: const Size(38, 38),
+                    maximumSize: const Size(38, 38),
+                    padding: EdgeInsets.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ],
