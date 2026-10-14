@@ -314,6 +314,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
   final Map<int, Map<String, dynamic>> _statusLotes = {};
+  final GlobalKey _ingressosKey = GlobalKey();
 
   bool carregando = true;
   bool atualizandoLotes = false;
@@ -366,6 +367,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     } finally {
       if (mounted) setState(() => atualizandoLotes = false);
     }
+  }
+
+  Future<void> _irParaIngressos() async {
+    final contextoIngressos = _ingressosKey.currentContext;
+    if (contextoIngressos == null) return;
+
+    await Scrollable.ensureVisible(
+      contextoIngressos,
+      alignment: 0.08,
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   Future<void> compartilharEvento() async {
@@ -1509,6 +1522,32 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ],
                           ),
+                          if (lotes.isNotEmpty)
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton.icon(
+                                onPressed: _irParaIngressos,
+                                icon: const Icon(
+                                  Icons.confirmation_number_outlined,
+                                  size: 17,
+                                ),
+                                label: const Text('Comprar ingresso'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.amber.shade900,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  textStyle: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: 6),
                           Text(
                             ev.titulo,
@@ -1703,32 +1742,35 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ],
 
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Expanded(
-                                child: Text(
-                                  'Ingressos',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                          Container(
+                            key: _ingressosKey,
+                            child: Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Ingressos',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              TextButton.icon(
-                                onPressed: atualizandoLotes
-                                    ? null
-                                    : atualizarLotes,
-                                icon: atualizandoLotes
-                                    ? const SizedBox.square(
-                                        dimension: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Icon(Icons.refresh, size: 18),
-                                label: const Text('Atualizar ingressos'),
-                              ),
-                            ],
+                                TextButton.icon(
+                                  onPressed: atualizandoLotes
+                                      ? null
+                                      : atualizarLotes,
+                                  icon: atualizandoLotes
+                                      ? const SizedBox.square(
+                                          dimension: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(Icons.refresh, size: 18),
+                                  label: const Text('Atualizar ingressos'),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 18),
 
