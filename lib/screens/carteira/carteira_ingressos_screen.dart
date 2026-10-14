@@ -851,41 +851,63 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
                   const SizedBox(height: 14),
                   ...[
-                    SizedBox(
-                      width: double.infinity,
-                      height: 46,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _abrirQrOuRetirada(context, item),
-                        icon: const Icon(Icons.qr_code_2_rounded, size: 22),
-                        label: const Text(
-                          'Exibir ingresso e QR Code',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 46,
+                            child: ElevatedButton.icon(
+                              onPressed: () =>
+                                  _abrirQrOuRetirada(context, item),
+                              icon: const Icon(
+                                Icons.qr_code_2_rounded,
+                                size: 21,
+                              ),
+                              label: const Text(
+                                'Exibir QR Code',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 46,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _compartilharIngresso(item),
+                              icon: const Icon(
+                                Icons.card_giftcard_rounded,
+                                size: 18,
+                              ),
+                              label: const Text('Presentear'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF7A5A00),
+                                side: const BorderSide(
+                                  color: Color(0xFFE0C36A),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _compartilharIngresso(item),
-                        icon: const Icon(Icons.card_giftcard_rounded),
-                        label: const Text('Presentear'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF7A5A00),
-                          side: const BorderSide(color: Color(0xFFE0C36A)),
-                        ),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Center(
@@ -1037,7 +1059,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
-        titulo: 'Carteira de ingressos',
+        titulo: 'Minha Carteira - Ingressos',
+        iconeTitulo: Icons.account_balance_wallet_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
