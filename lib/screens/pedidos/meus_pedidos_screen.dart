@@ -214,7 +214,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           Expanded(
             child: _abaTipo(
               titulo: 'Produtos',
-              icone: Icons.shopping_bag_outlined,
+              icone: Icons.liquor_outlined,
               tipo: 'P',
             ),
           ),
@@ -279,8 +279,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       },
       decoration: InputDecoration(
         hintText: tipoSelecionado == 'I'
-            ? 'Pesquisar ingresso, participante, CPF ou bar'
-            : 'Pesquisar produto, descrição, observação ou bar',
+            ? 'ingresso, participante, CPF, bar'
+            : 'produto, descrição, observação, bar',
         hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
         prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: termoBusca.isEmpty
