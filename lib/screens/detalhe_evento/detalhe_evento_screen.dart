@@ -510,19 +510,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Widget _fotoAtracao(AtracaoEventoDetalhe atracao) {
+  Widget _fotoAtracao(AtracaoEventoDetalhe atracao, {double tamanho = 48}) {
     final imagem = atracao.bannerUrl.trim();
     return ClipOval(
       child: SizedBox(
-        width: 48,
-        height: 48,
+        width: tamanho,
+        height: tamanho,
         child: imagem.isEmpty
             ? Container(
                 color: Colors.blue.shade50,
                 child: Icon(
                   Icons.music_note_rounded,
                   color: Colors.blue.shade700,
-                  size: 24,
+                  size: tamanho / 2,
                 ),
               )
             : Image.network(
@@ -1669,7 +1669,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                             const SizedBox(height: 10),
                             SizedBox(
-                              height: 108,
+                              height: 184,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: atracoesOrdenadas.length,
@@ -1678,7 +1678,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 itemBuilder: (context, index) {
                                   final atracao = atracoesOrdenadas[index];
                                   return SizedBox(
-                                    width: 230,
+                                    width: 158,
                                     child: Material(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(16),
@@ -1697,45 +1697,38 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                               width: 1.4,
                                             ),
                                           ),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.center,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              _fotoAtracao(atracao),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      atracao.nome,
-                                                      style: const TextStyle(
-                                                        color: Colors.black87,
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w900,
-                                                      ),
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    if (atracao
-                                                        .estilos
-                                                        .isNotEmpty) ...[
-                                                      const SizedBox(height: 5),
-                                                      _badgesEstilos(atracao),
-                                                    ],
-                                                  ],
+                                              Text(
+                                                atracao.nome,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w900,
+                                                  height: 1.15,
                                                 ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                              const SizedBox(width: 2),
-                                              Icon(
-                                                Icons.chevron_right_rounded,
-                                                color: Colors.blue.shade700,
-                                                size: 24,
+                                              const SizedBox(height: 8),
+                                              _fotoAtracao(
+                                                atracao,
+                                                tamanho: 72,
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                atracao.estilos.join(' • '),
+                                                textAlign: TextAlign.center,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: Colors.blue.shade700,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
                                               ),
                                             ],
                                           ),
