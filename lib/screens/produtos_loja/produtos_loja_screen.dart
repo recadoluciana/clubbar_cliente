@@ -348,7 +348,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 8,
+                    fontSize: 10,
                     height: 1.15,
                     fontWeight: FontWeight.w700,
                     color: selecionada ? Colors.black : Colors.black87,
