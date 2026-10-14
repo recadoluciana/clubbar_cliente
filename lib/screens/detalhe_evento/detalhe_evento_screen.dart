@@ -1642,82 +1642,82 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            ...atracoesOrdenadas.map(
-                              (atracao) => Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Material(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: InkWell(
-                                    onTap: () => _abrirDetalhesAtracao(atracao),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
+                            SizedBox(
+                              height: 108,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: atracoesOrdenadas.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(width: 10),
+                                itemBuilder: (context, index) {
+                                  final atracao = atracoesOrdenadas[index];
+                                  return SizedBox(
+                                    width: 230,
+                                    child: Material(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: InkWell(
+                                        onTap: () =>
+                                            _abrirDetalhesAtracao(atracao),
                                         borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: Colors.blue.shade600,
-                                          width: 1.4,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          _fotoAtracao(atracao),
-                                          const SizedBox(width: 10),
-                                          Expanded(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Icon(
-                                                      Icons.schedule_rounded,
-                                                      size: 17,
-                                                      color:
-                                                          Colors.blue.shade700,
-                                                    ),
-                                                    const SizedBox(width: 5),
-                                                    Expanded(
-                                                      child: Text(
-                                                        atracao.nome,
-                                                        style: const TextStyle(
-                                                          color: Colors.black87,
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                        ),
-                                                        maxLines: 1,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                if (atracao
-                                                    .estilos
-                                                    .isNotEmpty) ...[
-                                                  const SizedBox(height: 5),
-                                                  _badgesEstilos(atracao),
-                                                ],
-                                              ],
+                                        child: Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.blue.shade600,
+                                              width: 1.4,
                                             ),
                                           ),
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.chevron_right_rounded,
-                                            color: Colors.blue.shade700,
-                                            size: 26,
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              _fotoAtracao(atracao),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      atracao.nome,
+                                                      style: const TextStyle(
+                                                        color: Colors.black87,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    if (atracao
+                                                        .estilos
+                                                        .isNotEmpty) ...[
+                                                      const SizedBox(height: 5),
+                                                      _badgesEstilos(atracao),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(width: 2),
+                                              Icon(
+                                                Icons.chevron_right_rounded,
+                                                color: Colors.blue.shade700,
+                                                size: 24,
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               ),
                             ),
                           ],
