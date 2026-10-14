@@ -493,6 +493,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       appBar: ClubbarAppBar(
         titulo: 'Minha Carteira',
         iconeTitulo: Icons.account_balance_wallet_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
         mostrarSessao: false,
