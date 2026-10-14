@@ -220,6 +220,26 @@ class _ModalidadesIngressoScreenState
                 ),
               ),
             ],
+            if (ehMeiaLegal)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const MeiaEntradaScreen(),
+                    ),
+                  ),
+                  icon: const Icon(Icons.workspace_premium_outlined, size: 17),
+                  label: const Text('Quem tem direito à meia-entrada'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                    padding: const EdgeInsets.only(top: 5, bottom: 1),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: const TextStyle(fontSize: 12),
+                  ),
+                ),
+              ),
             const SizedBox(height: 8),
             Text(
               '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
@@ -1370,34 +1390,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             ),
           ),
-          Center(
-            child: TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
-              ),
-              icon: const Icon(Icons.workspace_premium_outlined, size: 19),
-              label: const Text(
-                'Quem tem direito à meia-entrada',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: corRodape,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ),
           if (detalhe != null)
-            ClubbarContactLinks(
-              emailEstabelecimento: emailEstabelecimento,
-              whatsappEstabelecimento: whatsappEstabelecimento,
-              emailEvento: detalhe.emailEvento,
-              whatsappEvento: detalhe.whatsappEvento,
-              mostrarContatoEvento: true,
-              centralizado: true,
-              tituloEmNegrito: false,
-              cor: corRodape,
+            Center(
+              child: ClubbarContactLinks(
+                emailEstabelecimento: emailEstabelecimento,
+                whatsappEstabelecimento: whatsappEstabelecimento,
+                emailEvento: detalhe.emailEvento,
+                whatsappEvento: detalhe.whatsappEvento,
+                mostrarContatoEvento: true,
+                centralizado: true,
+                tituloEmNegrito: false,
+                cor: corRodape,
+              ),
             ),
         ],
       ),
@@ -1786,32 +1790,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
-                          const SizedBox(height: 2),
-                          Center(
-                            child: TextButton.icon(
-                              onPressed: _abrirExplicacaoTaxas,
-                              icon: const Icon(
-                                Icons.receipt_long_outlined,
-                                size: 18,
-                              ),
-                              label: const Text(
-                                'Entenda nossa taxa',
-                                style: TextStyle(fontWeight: FontWeight.normal),
-                              ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                textStyle: const TextStyle(fontSize: 12),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                            ),
-                          ),
                           _politicaEvento(),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
