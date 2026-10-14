@@ -650,7 +650,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     return SizedBox(
-      height: 128,
+      height: 120,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -659,7 +659,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         itemBuilder: (context, index) {
           final produto = produtosMaisVendidos[index];
           return SizedBox(
-            width: 108,
+            width: 96,
             child: Material(
               color: Colors.white,
               borderRadius: BorderRadius.circular(15),
@@ -679,8 +679,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                       child: _imagemSegura(
                         url: produto.urlfotoproduto ?? '',
-                        width: 92,
-                        height: 54,
+                        width: 80,
+                        height: 48,
                         fit: BoxFit.contain,
                         borderRadius: 11,
                         fallbackIcon: Icons.local_bar_outlined,
@@ -698,7 +698,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 11,
+                                fontSize: 10.5,
                               ),
                             ),
                             const SizedBox(height: 2),
