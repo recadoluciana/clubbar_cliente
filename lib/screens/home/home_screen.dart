@@ -914,6 +914,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       appBar: const ClubbarAppBar(
         titulo: 'Home',
         iconeTitulo: Icons.home_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: false,
         mostrarPerfil: true,
         mostrarLogoPequenaEsquerdaComTitulo: true,
