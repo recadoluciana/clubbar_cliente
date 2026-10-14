@@ -612,23 +612,54 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
               _badgeTipo(item),
             ],
           ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              if (ingresso && tipoIngresso.isNotEmpty)
-                _chipInfo('Tipo: $tipoIngresso'),
-              if (ingresso && lote.isNotEmpty) _chipInfo('Lote: $lote'),
-              if (!ingresso) _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
-              _chipInfo(
-                'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
-              ),
-              if (ingresso) _chipInfo('Taxa: ${ValueFormatters.moeda(taxa)}'),
-              _badgeEntrega(item),
-              if (badgeSituacao case final Widget situacao) situacao,
+          const SizedBox(height: 6),
+          if (ingresso) ...[
+            Wrap(
+              spacing: 14,
+              runSpacing: 3,
+              children: [
+                if (tipoIngresso.isNotEmpty)
+                  Text(
+                    'Tipo: $tipoIngresso',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                if (lote.isNotEmpty)
+                  Text('Lote: $lote', style: const TextStyle(fontSize: 12)),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Text(
+                  'Taxa: ${ValueFormatters.moeda(taxa)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                const SizedBox(width: 8),
+                _badgeEntrega(item),
+                const Spacer(),
+                Text(
+                  'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            if (badgeSituacao case final Widget situacao) ...[
+              const SizedBox(height: 5),
+              situacao,
             ],
-          ),
+          ] else
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
+                _chipInfo(
+                  'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
+                ),
+                _badgeEntrega(item),
+                if (badgeSituacao case final Widget situacao) situacao,
+              ],
+            ),
           if (obs.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
@@ -641,15 +672,16 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ),
           ],
           if (ingresso && participante.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              'Participante: $participante${cpfParticipante.isEmpty ? '' : ' • CPF: $cpfParticipante'}',
-              style: TextStyle(
-                color: Colors.blue.shade900,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
+              'Participante: $participante',
+              style: TextStyle(color: Colors.blue.shade900, fontSize: 12),
             ),
+            if (cpfParticipante.isNotEmpty)
+              Text(
+                'CPF: $cpfParticipante',
+                style: TextStyle(color: Colors.blue.shade900, fontSize: 12),
+              ),
           ],
           if (ingresso && historico.isNotEmpty) ...[
             const SizedBox(height: 7),
