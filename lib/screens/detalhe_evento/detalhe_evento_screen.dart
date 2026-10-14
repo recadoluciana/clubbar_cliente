@@ -516,26 +516,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  String _duracaoPrevista(AtracaoEventoDetalhe atracao) {
-    try {
-      final inicio = DateTime.parse(atracao.inicio).toLocal();
-      final fim = DateTime.parse(atracao.fim).toLocal();
-      final duracao = fim.difference(inicio);
-      if (duracao.inMinutes <= 0) return 'Duração prevista não informada';
-
-      final horas = duracao.inHours;
-      final minutos = duracao.inMinutes.remainder(60);
-      final texto = horas == 0
-          ? '$minutos min'
-          : minutos == 0
-          ? '${horas}h'
-          : '${horas}h ${minutos}min';
-      return 'Duração prevista: $texto';
-    } catch (_) {
-      return 'Duração prevista não informada';
-    }
-  }
-
   void _abrirDetalhesAtracao(AtracaoEventoDetalhe atracao) {
     showModalBottomSheet<void>(
       context: context,
@@ -1321,6 +1301,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget _politicaEvento() {
     final detalhe = evento;
+    final corRodape = Theme.of(context).colorScheme.primary;
     final emailEstabelecimento = _primeiroContato(
       detalhe?.emailEstabelecimento,
       widget.loja.emailContato,
@@ -1336,38 +1317,42 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextButton.icon(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+                ),
+              ),
+              icon: const Icon(Icons.policy_outlined, size: 19),
+              label: const Text(
+                'Política de compra de ingresso',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: corRodape,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
-            icon: const Icon(Icons.policy_outlined, size: 19),
-            label: const Text(
-              'Política de compra de ingresso',
-              style: TextStyle(fontSize: 13),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              alignment: Alignment.centerLeft,
-            ),
           ),
-          TextButton.icon(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
-            ),
-            icon: const Icon(Icons.workspace_premium_outlined, size: 19),
-            label: const Text(
-              'Quem tem direito à meia-entrada',
-              style: TextStyle(fontSize: 13),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              alignment: Alignment.centerLeft,
+          Center(
+            child: TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
+              ),
+              icon: const Icon(Icons.workspace_premium_outlined, size: 19),
+              label: const Text(
+                'Quem tem direito à meia-entrada',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: corRodape,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ),
           if (detalhe != null)
@@ -1377,6 +1362,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               emailEvento: detalhe.emailEvento,
               whatsappEvento: detalhe.whatsappEvento,
               mostrarContatoEvento: true,
+              centralizado: true,
+              tituloEmNegrito: false,
+              cor: corRodape,
             ),
         ],
       ),
@@ -1685,35 +1673,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                                     ),
                                                     const SizedBox(width: 5),
                                                     Expanded(
-                                                      child: Text.rich(
-                                                        TextSpan(
-                                                          children: [
-                                                            TextSpan(
-                                                              text:
-                                                                  atracao.nome,
-                                                              style: const TextStyle(
-                                                                color: Colors
-                                                                    .black87,
-                                                                fontSize: 15,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w900,
-                                                              ),
-                                                            ),
-                                                            TextSpan(
-                                                              text:
-                                                                  ' • ${_duracaoPrevista(atracao)}',
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .grey
-                                                                    .shade700,
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w700,
-                                                              ),
-                                                            ),
-                                                          ],
+                                                      child: Text(
+                                                        atracao.nome,
+                                                        style: const TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.w900,
                                                         ),
                                                         maxLines: 1,
                                                         overflow: TextOverflow
@@ -1792,15 +1758,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ],
                           const SizedBox(height: 2),
-                          Align(
-                            alignment: Alignment.centerLeft,
+                          Center(
                             child: TextButton.icon(
                               onPressed: _abrirExplicacaoTaxas,
                               icon: const Icon(
                                 Icons.receipt_long_outlined,
                                 size: 18,
                               ),
-                              label: const Text('Entenda nossa taxa'),
+                              label: const Text(
+                                'Entenda nossa taxa',
+                                style: TextStyle(fontWeight: FontWeight.normal),
+                              ),
                               style: TextButton.styleFrom(
                                 foregroundColor: Theme.of(
                                   context,
@@ -1809,13 +1777,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   horizontal: 8,
                                   vertical: 4,
                                 ),
-                                textStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                                textStyle: const TextStyle(fontSize: 12),
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                alignment: Alignment.centerLeft,
                               ),
                             ),
                           ),

@@ -8,6 +8,7 @@ class ClubbarContactLinks extends StatelessWidget {
   final String whatsappEvento;
   final bool mostrarContatoEvento;
   final bool centralizado;
+  final bool tituloEmNegrito;
   final Color? cor;
 
   const ClubbarContactLinks({
@@ -18,6 +19,7 @@ class ClubbarContactLinks extends StatelessWidget {
     this.whatsappEvento = '',
     this.mostrarContatoEvento = false,
     this.centralizado = false,
+    this.tituloEmNegrito = true,
     this.cor,
   });
 
@@ -52,7 +54,7 @@ class ClubbarContactLinks extends StatelessWidget {
     return TextButton.icon(
       onPressed: () => _abrir(context, uri),
       icon: Icon(icone, size: 17),
-      label: Text(texto),
+      label: Text(texto, style: const TextStyle(fontWeight: FontWeight.normal)),
       style: TextButton.styleFrom(
         foregroundColor: cor ?? Colors.blue.shade800,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -81,7 +83,10 @@ class ClubbarContactLinks extends StatelessWidget {
           Text(
             'Fale com o organizador/estabelecimento',
             textAlign: centralizado ? TextAlign.center : TextAlign.start,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: tituloEmNegrito ? FontWeight.w700 : FontWeight.normal,
+            ),
           ),
           const SizedBox(height: 2),
           Wrap(
