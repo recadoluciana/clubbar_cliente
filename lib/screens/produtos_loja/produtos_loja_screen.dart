@@ -401,7 +401,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           children: [
             Icon(
               semCardapioPublicado
-                  ? Icons.restaurant_menu_outlined
+                  ? Icons.local_drink_outlined
                   : Icons.cloud_off,
               size: 56,
             ),
@@ -431,7 +431,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       appBar: ClubbarAppBar(
         titulo: 'Cardápio - ${widget.loja.nome}',
-        iconeTitulo: Icons.restaurant_menu_rounded,
+        iconeTitulo: Icons.local_drink_rounded,
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,

@@ -503,7 +503,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     Expanded(
                       child: _menuCard(
                         titulo: 'Cardápio',
-                        icone: Icons.restaurant_menu_rounded,
+                        icone: Icons.local_drink_rounded,
                         cor: Colors.amber,
                         onTap: () {
                           MainNavigationController.abrirTela(
