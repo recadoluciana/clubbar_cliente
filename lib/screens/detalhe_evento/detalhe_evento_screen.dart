@@ -199,7 +199,7 @@ class _ModalidadesIngressoScreenState
                       Icons.workspace_premium_outlined,
                       size: 16,
                     ),
-                    label: const Text('Quem tem direito à meia-entrada'),
+                    label: const Text('Quem tem direito'),
                     style: TextButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.primary,
                       padding: const EdgeInsets.symmetric(horizontal: 4),
