@@ -451,10 +451,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Text(
-        texto,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-      ),
+      child: Text(texto, style: const TextStyle(fontSize: 12)),
     );
   }
 
