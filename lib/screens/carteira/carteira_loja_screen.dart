@@ -813,10 +813,28 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
-        titulo: 'Carteira de produto',
+        titulo: 'Minha Carteira - Produtos',
+        iconeTitulo: Icons.account_balance_wallet_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar carteira',
+            onPressed: _atualizando ? null : _atualizarItens,
+            icon: _atualizando
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.refresh_rounded),
+          ),
+        ],
       ),
 
       body: Column(
@@ -828,22 +846,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                 : '$totalUnidades itens disponíveis',
             icone: Icons.inventory_2_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
-            trailing: IconButton(
-              tooltip: 'Atualizar carteira',
-              onPressed: _atualizando ? null : _atualizarItens,
-              icon: _atualizando
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
-                    )
-                  : const Icon(Icons.refresh_rounded),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: 0.92),
-                foregroundColor: Colors.black87,
-                elevation: 2,
-              ),
-            ),
           ),
 
           Expanded(
