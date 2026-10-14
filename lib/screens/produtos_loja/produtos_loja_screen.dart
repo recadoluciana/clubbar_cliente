@@ -431,6 +431,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       appBar: ClubbarAppBar(
         titulo: 'Cardápio - ${widget.loja.nome}',
+        iconeTitulo: Icons.restaurant_menu_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
         mostrarCarrinho: true,
