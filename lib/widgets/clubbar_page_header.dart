@@ -106,7 +106,7 @@ class ClubbarPageHeader extends StatelessWidget {
                       avatarUrl,
                       width: largura,
                       height: tamanhoAvatar,
-                      fit: avatarRetangular ? BoxFit.contain : BoxFit.cover,
+                      fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => Icon(
                         icone ?? Icons.storefront_rounded,
                         size: 24,
