@@ -1429,10 +1429,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               borderRadius: BorderRadius.circular(24),
                             ),
                             child: ev.bannerUrl.trim().isNotEmpty
-                                ? Image.network(
-                                    ev.bannerUrl,
-                                    width: double.infinity,
-                                    fit: BoxFit.contain,
+                                ? SizedBox(
+                                    height: 200,
+                                    child: Image.network(
+                                      ev.bannerUrl,
+                                      width: double.infinity,
+                                      fit: BoxFit.fill,
+                                    ),
                                   )
                                 : SizedBox(
                                     height: 200,

@@ -1009,7 +1009,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         width: double.infinity,
                                         height: double.infinity,
                                         fallbackIcon: Icons.image_not_supported,
-                                        fit: BoxFit.contain,
+                                        fit: BoxFit.fill,
                                       ),
                                       Container(
                                         decoration: const BoxDecoration(
