@@ -22,6 +22,8 @@ import 'participantes_reserva_screen.dart';
 import '../pagamento/politica_compra_screen.dart';
 import 'meia_entrada_screen.dart';
 
+const int _limiteIngressosPorTransacao = 5;
+
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
   final Loja loja;
@@ -154,7 +156,9 @@ class _ModalidadesIngressoScreenState
     final disponivelModalidade = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivelModalidade > 0;
     final podeDiminuir = quantidade > 1;
-    final podeAumentar = quantidade < 20 && quantidade < disponivelModalidade;
+    final podeAumentar =
+        quantidade < _limiteIngressosPorTransacao &&
+        quantidade < disponivelModalidade;
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
         ? 0.0
@@ -254,6 +258,11 @@ class _ModalidadesIngressoScreenState
                 ),
               ),
             ],
+            const SizedBox(height: 3),
+            const Text(
+              'Limite de 5 ingressos por transação',
+              style: TextStyle(fontSize: 11, color: Colors.black54),
+            ),
             const SizedBox(height: 8),
             Text(
               '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
@@ -670,7 +679,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     int? quantidadeSelecionada,
   }) async {
     if (processandoCompra) return;
-    if (lote.qtDisponivel <= 0) {
+    if (lote.qtDisponivelParaCompra <= 0) {
       await carregarStatusLotes();
       if (mounted) {
         AppSnackBar.aviso(
@@ -715,7 +724,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                     IconButton(
                       onPressed:
-                          quantidade < 20 && quantidade < lote.qtDisponivel
+                          quantidade < _limiteIngressosPorTransacao &&
+                              quantidade < lote.qtDisponivelParaCompra
                           ? () => setDialogState(() => quantidade++)
                           : null,
                       icon: const Icon(Icons.add_circle_outline),
@@ -739,7 +749,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
     }
     if (confirmada != true || !mounted) return;
-    if (quantidade > lote.qtDisponivel) {
+    if (quantidade > _limiteIngressosPorTransacao) {
+      AppSnackBar.aviso(context, 'O limite é de 5 ingressos por transação.');
+      return;
+    }
+    if (quantidade > lote.qtDisponivelParaCompra) {
       await carregarStatusLotes();
       if (mounted) {
         AppSnackBar.aviso(

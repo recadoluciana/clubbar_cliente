@@ -257,6 +257,7 @@ class _ParticipantesReservaScreenState
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
     final segundos = (restante.inSeconds % 60).toString().padLeft(2, '0');
     final valorTotal = _valorTotalComTaxa(widget.reserva);
+    final ehCortesia = valorTotal <= 0;
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) unawaited(_cancelarReservaSeNecessario());
@@ -399,8 +400,12 @@ class _ParticipantesReservaScreenState
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: salvando ? null : continuar,
-              icon: const Icon(Icons.payment),
-              label: const Text('Continuar para pagamento'),
+              icon: Icon(
+                ehCortesia ? Icons.card_giftcard_rounded : Icons.payment,
+              ),
+              label: Text(
+                ehCortesia ? 'Resgatar cortesia' : 'Continuar para pagamento',
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 foregroundColor: Colors.black,
