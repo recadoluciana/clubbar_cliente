@@ -761,37 +761,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final quantidade = quantidadesPorProduto[produto.produtoId] ?? 0;
     final alterando = produtosEmAlteracao.contains(produto.produtoId);
 
-    if (quantidade == 0) {
-      return SizedBox(
-        height: 30,
-        child: ElevatedButton.icon(
-          onPressed: alterando
-              ? null
-              : () => adicionarProdutoAoCarrinho(produto),
-          icon: alterando
-              ? const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Icons.add_shopping_cart_rounded, size: 15),
-          label: const Text(
-            'Adicionar',
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.amber,
-            foregroundColor: Colors.black,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 13),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      );
-    }
-
     return Container(
       height: 32,
       decoration: BoxDecoration(
@@ -805,7 +774,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           _botaoQuantidade(
             icone: Icons.remove_rounded,
             dica: 'Remover uma unidade',
-            habilitado: !alterando,
+            habilitado: !alterando && quantidade > 0,
             aoPressionar: () => removerProdutoDoCarrinho(produto),
           ),
           SizedBox(
