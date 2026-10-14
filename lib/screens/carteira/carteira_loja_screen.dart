@@ -273,12 +273,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     Map<String, dynamic> item,
   ) async {
     final qrData = _montarDadosQr(item);
-    final nomeLoja = (item['nmloja'] ?? '').toString().trim().isNotEmpty
-        ? (item['nmloja'] ?? '').toString().trim()
-        : widget.nomeLoja;
-    final imagemProduto = _buildImageUrl(
-      (item['urlfotoproduto'] ?? '').toString(),
-    );
 
     if (qrData.isEmpty) {
       AppSnackBar.erro(
@@ -298,7 +292,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
     await showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       builder: (dialogContext) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -312,108 +306,24 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
               children: [
                 SizedBox(
                   width: double.infinity,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 42),
-                        child: Text(
-                          nomeLoja,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          tooltip: 'Fechar',
-                          onPressed: () => Navigator.pop(dialogContext),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                SizedBox(
-                  width: 54,
-                  height: 54,
-                  child: imagemProduto.isEmpty
-                      ? _placeholderItem(item)
-                      : ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Image.network(
-                            imagemProduto,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => _placeholderItem(item),
-                          ),
-                        ),
-                ),
-                if ((item['dsobsitvenda'] ?? '')
-                    .toString()
-                    .trim()
-                    .isNotEmpty) ...[
-                  const SizedBox(height: 8),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      (item['dsobsitvenda'] ?? '').toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      tooltip: 'Fechar',
+                      onPressed: () => Navigator.pop(dialogContext),
+                      icon: const Icon(Icons.close, color: Colors.red),
                     ),
                   ),
-                ],
-
-                const SizedBox(height: 16),
-
-                QrImageView(
-                  data: qrData,
-                  size: 200,
-                  backgroundColor: Colors.white,
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  _isDelivery(item)
-                      ? 'Pedido para entrega'
-                      : (item['nmproduto'] ?? '').toString(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: QrImageView(
+                    data: qrData,
+                    size: 200,
+                    backgroundColor: Colors.white,
                   ),
                 ),
-                if (widget.nomeCliente.trim().isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.nomeCliente,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
-                  ),
-                ],
-                if (_isDelivery(item)) ...[
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Apresente este QR Code ao motoboy no recebimento.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
               ],
             ),
           ),
