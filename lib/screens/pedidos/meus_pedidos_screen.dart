@@ -214,7 +214,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           Expanded(
             child: _abaTipo(
               titulo: 'Produtos',
-              icone: Icons.liquor_outlined,
+              icone: Icons.local_drink_rounded,
               tipo: 'P',
             ),
           ),
@@ -578,7 +578,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _fotoProduto(item, tamanho: 46),
+              ingresso
+                  ? _fotoEvento(item, tamanho: 46)
+                  : _fotoProduto(item, tamanho: 46),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -718,10 +720,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         .toList();
     final vendaId = int.tryParse('${pedido['venda_id'] ?? ''}') ?? 0;
     final expandida = _vendasExpandidas.contains(vendaId);
-    final itemEvento = itens.firstWhere(
-      _isIngresso,
-      orElse: () => <String, dynamic>{},
-    );
     final podeCancelar =
         (pedido['sitvenda'] ?? '').toString().toUpperCase() == 'PAGA';
 
@@ -746,14 +744,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    tipoSelecionado == 'I'
-                        ? _fotoEvento(itemEvento, tamanho: 50)
-                        : _fotoEstabelecimento(
-                            _buildImageUrl(
-                              (pedido['urllogoloja'] ?? '').toString(),
-                            ),
-                            tamanho: 50,
-                          ),
+                    _fotoEstabelecimento(
+                      _buildImageUrl((pedido['urllogoloja'] ?? '').toString()),
+                      tamanho: 50,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
