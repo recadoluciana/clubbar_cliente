@@ -11,11 +11,15 @@ import '../main/main_navigation_screen.dart';
 class PagamentoSucessoScreen extends StatefulWidget {
   final bool sucesso;
   final double cashbackGerado;
+  final String? tituloSucesso;
+  final String? descricaoSucesso;
 
   const PagamentoSucessoScreen({
     super.key,
     this.sucesso = true,
     this.cashbackGerado = 0,
+    this.tituloSucesso,
+    this.descricaoSucesso,
   });
 
   @override
@@ -101,7 +105,8 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
 
                 Text(
                   sucesso
-                      ? 'Pagamento realizado com sucesso'
+                      ? (widget.tituloSucesso ??
+                            'Pagamento realizado com sucesso')
                       : 'Pagamento cancelado pelo cliente',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
@@ -144,7 +149,8 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
 
                 Text(
                   sucesso
-                      ? 'Acompanhe sua compra através de sua carteira.'
+                      ? (widget.descricaoSucesso ??
+                            'Acompanhe sua compra através de sua carteira.')
                       : 'Não foi possível concluir o pagamento. Você pode tentar novamente pelo carrinho.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
