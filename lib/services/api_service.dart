@@ -448,7 +448,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> salvarParticipantesReserva({
     required int reservaId,
-    required List<Map<String, String>> participantes,
+    required List<Map<String, dynamic>> participantes,
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/reservas-ingressos/$reservaId/participantes'),

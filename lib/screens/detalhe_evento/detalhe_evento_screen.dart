@@ -754,23 +754,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       }
       return;
     }
-    BeneficioIngresso? beneficio;
-    if (lote.exigeBeneficio || lote.aplicaCotaLegal) {
-      beneficio = await showDialog<BeneficioIngresso>(
-        context: context,
-        builder: (c) => SimpleDialog(
-          title: const Text('Qual é o benefício?'),
-          children: [
-            for (final item in lote.beneficios)
-              SimpleDialogOption(
-                onPressed: () => Navigator.pop(c, item),
-                child: Text(item.nome),
-              ),
-          ],
-        ),
-      );
-      if (beneficio == null || !mounted) return;
-    }
     setState(() => processandoCompra = true);
     try {
       final clienteId = await _obterClienteIdLogado();
@@ -779,8 +762,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         clienteId: clienteId,
         loteId: lote.loteId,
         lotePrecoId: lote.lotePrecoId,
-        beneficioId: beneficio?.id,
-        tipoBeneficio: beneficio?.codigo,
         quantidade: quantidade,
       );
       if (!mounted) return;
@@ -799,7 +780,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ? 'Setor não informado'
                 : lote.nomeSetor,
             modalidade: _nomeModalidade(lote),
-            beneficio: beneficio?.nome ?? 'Não se aplica',
+            beneficios: lote.beneficios,
           ),
         ),
       );
