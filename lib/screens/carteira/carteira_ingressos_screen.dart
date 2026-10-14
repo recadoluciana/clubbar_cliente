@@ -259,7 +259,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar compra'),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Cancelar'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -298,6 +299,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     'confirmar_meia_entrada': confirmouMeiaEntrada,
                   });
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
                 child: const Text('Transferir'),
               ),
             ],
