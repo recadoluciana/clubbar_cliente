@@ -698,7 +698,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 10.5,
+                                fontSize: 12,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -717,7 +717,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: Colors.blue,
-                                      fontSize: 9.5,
+                                      fontSize: 10.5,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
