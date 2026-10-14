@@ -23,6 +23,8 @@ import '../pagamento/politica_compra_screen.dart';
 import 'meia_entrada_screen.dart';
 
 const int _limiteIngressosPorTransacao = 5;
+const String _mensagemLimiteIngressosPorTransacao =
+    'Máximo de 5 ingressos por compra. Caso necessite de mais ingressos realize duas ou mais compras.';
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -157,7 +159,7 @@ class _ModalidadesIngressoScreenState
     final modalidadeDisponivel = disponivelModalidade > 0;
     final podeDiminuir = quantidade > 1;
     final podeAumentar =
-        quantidade < _limiteIngressosPorTransacao &&
+        quantidade >= _limiteIngressosPorTransacao ||
         quantidade < disponivelModalidade;
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
@@ -304,9 +306,19 @@ class _ModalidadesIngressoScreenState
                   tooltip: 'Aumentar quantidade',
                   onPressed: !podeAumentar
                       ? null
-                      : () => setState(
-                          () => _quantidades[lote.lotePrecoId] = quantidade + 1,
-                        ),
+                      : () {
+                          if (quantidade >= _limiteIngressosPorTransacao) {
+                            AppSnackBar.aviso(
+                              context,
+                              _mensagemLimiteIngressosPorTransacao,
+                            );
+                            return;
+                          }
+                          setState(
+                            () =>
+                                _quantidades[lote.lotePrecoId] = quantidade + 1,
+                          );
+                        },
                   icon: const Icon(Icons.add_rounded, size: 20),
                   style: IconButton.styleFrom(
                     backgroundColor: AppColors.amareloCerveja,
@@ -724,9 +736,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                     IconButton(
                       onPressed:
-                          quantidade < _limiteIngressosPorTransacao &&
+                          quantidade >= _limiteIngressosPorTransacao ||
                               quantidade < lote.qtDisponivelParaCompra
-                          ? () => setDialogState(() => quantidade++)
+                          ? () {
+                              if (quantidade >= _limiteIngressosPorTransacao) {
+                                AppSnackBar.aviso(
+                                  dialogContext,
+                                  _mensagemLimiteIngressosPorTransacao,
+                                );
+                                return;
+                              }
+                              setDialogState(() => quantidade++);
+                            }
                           : null,
                       icon: const Icon(Icons.add_circle_outline),
                     ),
@@ -750,7 +771,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }
     if (confirmada != true || !mounted) return;
     if (quantidade > _limiteIngressosPorTransacao) {
-      AppSnackBar.aviso(context, 'O limite é de 5 ingressos por transação.');
+      AppSnackBar.aviso(context, _mensagemLimiteIngressosPorTransacao);
       return;
     }
     if (quantidade > lote.qtDisponivelParaCompra) {
