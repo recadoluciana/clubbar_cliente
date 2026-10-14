@@ -1518,7 +1518,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ),
                           if (lotes.isNotEmpty)
                             Align(
-                              alignment: Alignment.centerRight,
+                              alignment: Alignment.centerLeft,
                               child: TextButton.icon(
                                 onPressed: _irParaIngressos,
                                 icon: const Icon(
