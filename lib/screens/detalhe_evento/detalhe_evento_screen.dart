@@ -1673,7 +1673,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                             const SizedBox(height: 10),
                             SizedBox(
-                              height: 184,
+                              height: 148,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: atracoesOrdenadas.length,
@@ -1682,7 +1682,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 itemBuilder: (context, index) {
                                   final atracao = atracoesOrdenadas[index];
                                   return SizedBox(
-                                    width: 158,
+                                    width: 128,
                                     child: Material(
                                       color: Colors.white,
                                       borderRadius: BorderRadius.circular(16),
@@ -1691,7 +1691,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                             _abrirDetalhesAtracao(atracao),
                                         borderRadius: BorderRadius.circular(16),
                                         child: Container(
-                                          padding: const EdgeInsets.all(12),
+                                          padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
                                               16,
@@ -1710,19 +1710,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                                 textAlign: TextAlign.center,
                                                 style: const TextStyle(
                                                   color: Colors.black87,
-                                                  fontSize: 14,
+                                                  fontSize: 13,
                                                   fontWeight: FontWeight.w900,
                                                   height: 1.15,
                                                 ),
                                                 maxLines: 2,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
-                                              const SizedBox(height: 8),
+                                              const SizedBox(height: 6),
                                               _fotoAtracao(
                                                 atracao,
-                                                tamanho: 72,
+                                                tamanho: 56,
                                               ),
-                                              const SizedBox(height: 8),
+                                              const SizedBox(height: 6),
                                               Text(
                                                 atracao.estilos.join(' • '),
                                                 textAlign: TextAlign.center,
@@ -1730,7 +1730,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
                                                   color: Colors.blue.shade700,
-                                                  fontSize: 11,
+                                                  fontSize: 10,
                                                   fontWeight: FontWeight.w700,
                                                 ),
                                               ),
