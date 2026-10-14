@@ -645,46 +645,55 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        if (temDesconto)
-                          Text.rich(
-                            TextSpan(
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 10,
-                              ),
-                              children: [
-                                const TextSpan(text: 'de '),
-                                TextSpan(
-                                  text: ValueFormatters.moeda(
-                                    produto.vrprecoprod,
-                                  ),
-                                  style: const TextStyle(
-                                    decoration: TextDecoration.lineThrough,
-                                  ),
-                                ),
-                                const TextSpan(text: ' por '),
-                                TextSpan(
-                                  text: ValueFormatters.moeda(precoAtual),
-                                  style: TextStyle(
-                                    color: Colors.green.shade700,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
+                        Row(
+                          children: [
+                            Expanded(
+                              child: temDesconto
+                                  ? Text.rich(
+                                      TextSpan(
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 10,
+                                        ),
+                                        children: [
+                                          const TextSpan(text: 'de '),
+                                          TextSpan(
+                                            text: ValueFormatters.moeda(
+                                              produto.vrprecoprod,
+                                            ),
+                                            style: const TextStyle(
+                                              decoration:
+                                                  TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                          const TextSpan(text: ' por '),
+                                          TextSpan(
+                                            text: ValueFormatters.moeda(
+                                              precoAtual,
+                                            ),
+                                            style: TextStyle(
+                                              color: Colors.green.shade700,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  : Text(
+                                      ValueFormatters.moeda(precoAtual),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black,
+                                      ),
+                                    ),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          )
-                        else
-                          Text(
-                            ValueFormatters.moeda(precoAtual),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black,
-                            ),
-                          ),
+                            _controleQuantidadeProduto(produto),
+                          ],
+                        ),
 
                         const SizedBox(height: 3),
                         if (produto.dsproduto.trim().isNotEmpty)
@@ -701,47 +710,38 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         else
                           const SizedBox(height: 12),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            _controleQuantidadeProduto(produto),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: SizedBox(
-                                height: 40,
-                                child: ElevatedButton.icon(
-                                  onPressed:
-                                      produtosEmAlteracao.contains(
-                                        produto.produtoId,
-                                      )
-                                      ? null
-                                      : () => adicionarProdutoAoCarrinho(
-                                          produto,
-                                          quantidade:
-                                              quantidadesSelecionadas[produto
-                                                  .produtoId] ??
-                                              1,
-                                        ),
-                                  icon: const Icon(
-                                    Icons.add_shopping_cart_rounded,
-                                    size: 18,
+                        SizedBox(
+                          width: double.infinity,
+                          height: 40,
+                          child: ElevatedButton.icon(
+                            onPressed:
+                                produtosEmAlteracao.contains(produto.produtoId)
+                                ? null
+                                : () => adicionarProdutoAoCarrinho(
+                                    produto,
+                                    quantidade:
+                                        quantidadesSelecionadas[produto
+                                            .produtoId] ??
+                                        1,
                                   ),
-                                  label: const Text('Adicionar ao carrinho'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.amber,
-                                    foregroundColor: Colors.black,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    textStyle: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
+                            icon: const Icon(
+                              Icons.add_shopping_cart_rounded,
+                              size: 18,
+                            ),
+                            label: const Text('Carrinho'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                          ],
+                          ),
                         ),
                       ],
                     ),
@@ -759,70 +759,56 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final quantidade = quantidadesSelecionadas[produto.produtoId] ?? 1;
     final alterando = produtosEmAlteracao.contains(produto.produtoId);
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _botaoQuantidade(
-          icone: Icons.remove_rounded,
-          dica: 'Diminuir quantidade',
-          habilitado: !alterando && quantidade > 1,
-          aoPressionar: () => setState(
-            () => quantidadesSelecionadas[produto.produtoId] = quantidade - 1,
-          ),
-        ),
-        SizedBox(
-          width: 30,
-          child: Center(
-            child: alterando
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Diminuir quantidade',
+            onPressed: !alterando && quantidade > 1
+                ? () => setState(
+                    () => quantidadesSelecionadas[produto.produtoId] =
+                        quantidade - 1,
                   )
-                : Text(
-                    '$quantidade',
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
+                : null,
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove_rounded, size: 19),
           ),
-        ),
-        _botaoQuantidade(
-          icone: Icons.add_rounded,
-          dica: 'Aumentar quantidade',
-          habilitado: !alterando,
-          aoPressionar: () => setState(
-            () => quantidadesSelecionadas[produto.produtoId] = quantidade + 1,
+          SizedBox(
+            width: 22,
+            child: Center(
+              child: alterando
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(
+                      '$quantidade',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+            ),
           ),
-        ),
-      ],
+          IconButton(
+            tooltip: 'Aumentar quantidade',
+            onPressed: !alterando
+                ? () => setState(
+                    () => quantidadesSelecionadas[produto.produtoId] =
+                        quantidade + 1,
+                  )
+                : null,
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add_rounded, size: 19),
+          ),
+        ],
+      ),
     );
   }
-
-  Widget _botaoQuantidade({
-    required IconData icone,
-    required String dica,
-    required bool habilitado,
-    required VoidCallback aoPressionar,
-  }) => Tooltip(
-    message: dica,
-    child: Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: habilitado ? aoPressionar : null,
-        child: Ink(
-          width: 34,
-          height: 34,
-          decoration: const BoxDecoration(
-            color: Colors.amber,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icone,
-            size: 18,
-            color: habilitado ? Colors.black87 : Colors.black38,
-          ),
-        ),
-      ),
-    ),
-  );
 }
