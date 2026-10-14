@@ -258,7 +258,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Estabelecimentos com Carrinho',
+        titulo: 'Meu Carrinho',
         iconeTitulo: Icons.shopping_cart_rounded,
         mostrarVoltar: true,
         mostrarLogo: false,
