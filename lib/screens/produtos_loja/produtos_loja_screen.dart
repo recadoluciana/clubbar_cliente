@@ -47,6 +47,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
 
+  int _chaveItemCardapio(Produto produto) =>
+      produto.cardapioItemId ?? produto.produtoId;
+
   @override
   void initState() {
     super.initState();
@@ -178,9 +181,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       return;
     }
 
-    if (produtosEmAlteracao.contains(produto.produtoId)) return;
+    final chaveItem = _chaveItemCardapio(produto);
+    if (produtosEmAlteracao.contains(chaveItem)) return;
 
-    setState(() => produtosEmAlteracao.add(produto.produtoId));
+    setState(() => produtosEmAlteracao.add(chaveItem));
 
     try {
       await apiService.adicionarAoCarrinho(
@@ -197,7 +201,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       await carregarQuantidadeCarrinho();
 
       if (!mounted) return;
-      setState(() => quantidadesSelecionadas[produto.produtoId] = 1);
+      setState(() => quantidadesSelecionadas[chaveItem] = 1);
       AppSnackBar.info(
         context,
         observacao.trim().isEmpty
@@ -210,7 +214,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) {
-        setState(() => produtosEmAlteracao.remove(produto.produtoId));
+        setState(() => produtosEmAlteracao.remove(chaveItem));
       }
     }
   }
@@ -742,13 +746,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           height: 40,
                           child: ElevatedButton.icon(
                             onPressed:
-                                produtosEmAlteracao.contains(produto.produtoId)
+                                produtosEmAlteracao.contains(
+                                  _chaveItemCardapio(produto),
+                                )
                                 ? null
                                 : () => adicionarProdutoAoCarrinho(
                                     produto,
                                     quantidade:
-                                        quantidadesSelecionadas[produto
-                                            .produtoId] ??
+                                        quantidadesSelecionadas[_chaveItemCardapio(
+                                          produto,
+                                        )] ??
                                         1,
                                   ),
                             icon: const Icon(
@@ -783,8 +790,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   }
 
   Widget _controleQuantidadeProduto(Produto produto) {
-    final quantidade = quantidadesSelecionadas[produto.produtoId] ?? 1;
-    final alterando = produtosEmAlteracao.contains(produto.produtoId);
+    final chaveItem = _chaveItemCardapio(produto);
+    final quantidade = quantidadesSelecionadas[chaveItem] ?? 1;
+    final alterando = produtosEmAlteracao.contains(chaveItem);
 
     return Container(
       decoration: BoxDecoration(
@@ -798,8 +806,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             tooltip: 'Diminuir quantidade',
             onPressed: !alterando && quantidade > 1
                 ? () => setState(
-                    () => quantidadesSelecionadas[produto.produtoId] =
-                        quantidade - 1,
+                    () => quantidadesSelecionadas[chaveItem] = quantidade - 1,
                   )
                 : null,
             visualDensity: VisualDensity.compact,
@@ -827,8 +834,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             tooltip: 'Aumentar quantidade',
             onPressed: !alterando
                 ? () => setState(
-                    () => quantidadesSelecionadas[produto.produtoId] =
-                        quantidade + 1,
+                    () => quantidadesSelecionadas[chaveItem] = quantidade + 1,
                   )
                 : null,
             visualDensity: VisualDensity.compact,

@@ -12,7 +12,9 @@ import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
 
 class ItemCarrinhoAgrupado {
+  final int itCarrinhoId;
   final int produtoId;
+  final int? cardapioItemId;
   final String nome;
   final String observacao;
   final String fotoUrl;
@@ -27,7 +29,9 @@ class ItemCarrinhoAgrupado {
   final String idtipoproduto;
 
   ItemCarrinhoAgrupado({
+    required this.itCarrinhoId,
     required this.produtoId,
+    this.cardapioItemId,
     required this.nome,
     required this.observacao,
     required this.fotoUrl,
@@ -81,14 +85,17 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       final cpf = item.cpfparticipante.trim();
 
       final chave =
-          '${item.produtoId}__${obs.toLowerCase()}__'
+          '${item.produtoId}__${item.cardapioItemId ?? 'sem-cardapio'}__'
+          '${obs.toLowerCase()}__'
           '${nome.toLowerCase()}__${cpf.toLowerCase()}';
 
       if (mapa.containsKey(chave)) {
         final atual = mapa[chave]!;
 
         mapa[chave] = ItemCarrinhoAgrupado(
+          itCarrinhoId: atual.itCarrinhoId,
           produtoId: atual.produtoId,
+          cardapioItemId: atual.cardapioItemId,
           nome: atual.nome,
           observacao: atual.observacao,
           fotoUrl: atual.fotoUrl,
@@ -104,7 +111,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         );
       } else {
         mapa[chave] = ItemCarrinhoAgrupado(
+          itCarrinhoId: item.itCarrinhoId,
           produtoId: item.produtoId,
+          cardapioItemId: item.cardapioItemId,
           nome: item.nome,
           observacao: obs,
           fotoUrl: item.fotoUrl,
@@ -190,6 +199,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
         produtoId: item.produtoId,
+        cardapioItemId: item.cardapioItemId,
         quantidade: 1,
         observacao: item.observacao,
       );
@@ -284,6 +294,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       await apiService.removerItemCarrinho(
         carrinhoId: carrinhoId!,
         produtoId: item.produtoId,
+        cardapioItemId: item.cardapioItemId,
         observacao: item.observacao,
       );
 
@@ -367,6 +378,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         await apiService.removerItemCarrinho(
           carrinhoId: carrinhoId!,
           produtoId: item.produtoId,
+          cardapioItemId: item.cardapioItemId,
           observacao: item.observacao,
         );
       }

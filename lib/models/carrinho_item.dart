@@ -1,7 +1,9 @@
 import '../services/api_service.dart';
 
 class ItemCarrinho {
+  final int itCarrinhoId;
   final int produtoId;
+  final int? cardapioItemId;
   final String nome;
   final String observacao;
   final String fotoUrl;
@@ -17,7 +19,9 @@ class ItemCarrinho {
   final String cpfparticipante;
 
   ItemCarrinho({
+    required this.itCarrinhoId,
     required this.produtoId,
+    this.cardapioItemId,
     required this.nome,
     required this.observacao,
     required this.fotoUrl,
@@ -34,7 +38,11 @@ class ItemCarrinho {
 
   factory ItemCarrinho.fromJson(Map<String, dynamic> json) {
     return ItemCarrinho(
+      itCarrinhoId: _toInt(json['itcarrinho_id']),
       produtoId: _toInt(json['produto_id']),
+      cardapioItemId: json['cardapioitem_id'] == null
+          ? null
+          : _toInt(json['cardapioitem_id']),
       nome: (json['nmproduto'] ?? '').toString(),
       observacao: (json['observacao'] ?? json['dsobsitcar'] ?? '').toString(),
       fotoUrl: _buildUrl((json['urlfotoproduto'] ?? '').toString()),

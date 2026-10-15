@@ -549,12 +549,20 @@ class ApiService {
   Future<void> removerItemCarrinho({
     required int carrinhoId,
     required int produtoId,
+    int? cardapioItemId,
     required String observacao,
   }) async {
     try {
-      final uri = Uri.parse(
-        '$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um',
-      ).replace(queryParameters: {'observacao': observacao});
+      final uri =
+          Uri.parse(
+            '$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um',
+          ).replace(
+            queryParameters: {
+              'observacao': observacao,
+              if (cardapioItemId != null)
+                'cardapioitem_id': cardapioItemId.toString(),
+            },
+          );
 
       final response = await http.delete(
         uri,
