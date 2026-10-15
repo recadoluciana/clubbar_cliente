@@ -591,61 +591,46 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ingresso
-                  ? ocultarEvento
-                        ? Container(
-                            width: 46,
-                            height: 46,
-                            decoration: BoxDecoration(
-                              color: Colors.blue.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Icon(
-                              Icons.confirmation_number_outlined,
-                              color: Colors.blue.shade700,
-                            ),
-                          )
-                        : _fotoEvento(item, tamanho: 46)
-                  : _fotoProduto(item, tamanho: 46),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      ingresso && ocultarEvento
-                          ? 'Ingresso'
-                          : (item['nmproduto'] ?? '').toString(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (ingresso &&
-                        !ocultarEvento &&
-                        dataEvento.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+          if (!(ingresso && ocultarEvento)) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ingresso
+                    ? _fotoEvento(item, tamanho: 46)
+                    : _fotoProduto(item, tamanho: 46),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'Evento: $dataEvento',
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 11,
+                        (item['nmproduto'] ?? '').toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      if (ingresso && dataEvento.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Evento: $dataEvento',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              _badgeTipo(item),
-            ],
-          ),
-          const SizedBox(height: 6),
+                const SizedBox(width: 6),
+                _badgeTipo(item),
+              ],
+            ),
+            const SizedBox(height: 6),
+          ],
           if (ingresso) ...[
             Wrap(
               spacing: 14,
