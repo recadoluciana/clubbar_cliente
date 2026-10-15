@@ -805,17 +805,27 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           ),
                         ),
 
-                        IconButton(
-                          tooltip: 'Transferir ingresso',
+                        OutlinedButton.icon(
                           onPressed: () =>
                               _abrirDialogAlterarParticipante(item),
-                          style: IconButton.styleFrom(
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text('Alterar participante'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: Size.zero,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 9,
+                            ),
                             backgroundColor: Colors.amber.withValues(
                               alpha: 0.18,
                             ),
                             foregroundColor: Colors.black87,
+                            side: BorderSide.none,
+                            textStyle: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                          icon: const Icon(Icons.edit_outlined, size: 19),
                         ),
                       ],
                     ),
