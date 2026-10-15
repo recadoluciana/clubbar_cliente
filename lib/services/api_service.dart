@@ -299,19 +299,15 @@ class ApiService {
   Future<List<Categoria>> buscarCategoriasPorLoja(int lojaId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/lojas/$lojaId/categorias'),
+        Uri.parse('$baseUrl/lojas/$lojaId/cardapio-publicado'),
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
 
-        if (data is List) {
-          return data.map((e) => Categoria.fromJson(e)).toList();
-        }
-
-        if (data is Map && data['items'] is List) {
-          return (data['items'] as List)
+        if (data is Map && data['categorias'] is List) {
+          return (data['categorias'] as List)
               .map((e) => Categoria.fromJson(e))
               .toList();
         }
