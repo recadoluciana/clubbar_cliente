@@ -1215,6 +1215,10 @@ class ApiService {
           final lote = Map<String, dynamic>.from(bruto as Map);
           for (final p in (lote['precos'] as List? ?? const [])) {
             final preco = Map<String, dynamic>.from(p as Map);
+            if ((preco['situacao'] ?? 'ATIVO').toString().toUpperCase() !=
+                'ATIVO') {
+              continue;
+            }
             opcoes.add(
               EventoLote.fromJson({
                 ...lote,

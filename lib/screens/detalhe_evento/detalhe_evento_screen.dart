@@ -46,6 +46,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final List<EventoLote> opcoes;
   final String nomeLoja;
   final String nomeEvento;
+  final String dataHoraEvento;
   final String imagemEventoUrl;
   final double taxaPercentual;
   final double taxaMinima;
@@ -57,6 +58,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.opcoes,
     required this.nomeLoja,
     required this.nomeEvento,
+    required this.dataHoraEvento,
     required this.imagemEventoUrl,
     required this.taxaPercentual,
     required this.taxaMinima,
@@ -97,7 +99,7 @@ class _ModalidadesIngressoScreenState
             titulo: widget.nomeEvento.trim().isEmpty
                 ? 'Escolha a modalidade'
                 : widget.nomeEvento,
-            subtitulo: '',
+            subtitulo: widget.dataHoraEvento,
             icone: Icons.confirmation_number_rounded,
             imagemAvatarUrl: widget.imagemEventoUrl,
             tamanhoAvatar: 56,
@@ -170,9 +172,9 @@ class _ModalidadesIngressoScreenState
     final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 10),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -228,7 +230,7 @@ class _ModalidadesIngressoScreenState
                 ),
               ),
             if (ehMeiaLegal) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 'Cota legal do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'} (${lote.percentualCotaLegal == lote.percentualCotaLegal.roundToDouble() ? lote.percentualCotaLegal.toInt() : lote.percentualCotaLegal}% da capacidade)',
                 style: const TextStyle(
@@ -265,75 +267,28 @@ class _ModalidadesIngressoScreenState
               'Limite de 5 ingressos por transação',
               style: TextStyle(fontSize: 11, color: Colors.black54),
             ),
-            const SizedBox(height: 8),
-            Text(
-              '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 6),
             Row(
               children: [
-                const Text('Quantidade'),
-                const Spacer(),
-                IconButton.filled(
-                  tooltip: 'Diminuir quantidade',
-                  onPressed: !podeDiminuir
-                      ? null
-                      : () => setState(
-                          () => _quantidades[lote.lotePrecoId] = quantidade - 1,
-                        ),
-                  icon: const Icon(Icons.remove_rounded, size: 20),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.amareloCerveja,
-                    foregroundColor: Colors.black,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
-                    minimumSize: const Size(38, 38),
-                    maximumSize: const Size(38, 38),
-                    padding: EdgeInsets.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
-                SizedBox(
-                  width: 34,
+                Expanded(
                   child: Text(
-                    '$quantidade',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+                    '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
-                IconButton.filled(
-                  tooltip: 'Aumentar quantidade',
-                  onPressed: !podeAumentar
-                      ? null
-                      : () {
-                          if (quantidade >= _limiteIngressosPorTransacao) {
-                            AppSnackBar.aviso(
-                              context,
-                              _mensagemLimiteIngressosPorTransacao,
-                            );
-                            return;
-                          }
-                          setState(
-                            () =>
-                                _quantidades[lote.lotePrecoId] = quantidade + 1,
-                          );
-                        },
-                  icon: const Icon(Icons.add_rounded, size: 20),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.amareloCerveja,
-                    foregroundColor: Colors.black,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
-                    minimumSize: const Size(38, 38),
-                    maximumSize: const Size(38, 38),
-                    padding: EdgeInsets.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
+                const SizedBox(width: 8),
+                _controleQuantidade(
+                  lote: lote,
+                  quantidade: quantidade,
+                  podeDiminuir: podeDiminuir,
+                  podeAumentar: podeAumentar,
                 ),
               ],
             ),
-            const Divider(height: 24),
+            const Divider(height: 18),
             Row(
               children: [
                 const Text(
@@ -350,7 +305,7 @@ class _ModalidadesIngressoScreenState
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
@@ -377,6 +332,58 @@ class _ModalidadesIngressoScreenState
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _controleQuantidade({
+    required EventoLote lote,
+    required int quantidade,
+    required bool podeDiminuir,
+    required bool podeAumentar,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Diminuir quantidade',
+            onPressed: !podeDiminuir
+                ? null
+                : () => setState(
+                    () => _quantidades[lote.lotePrecoId] = quantidade - 1,
+                  ),
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove_rounded, size: 19),
+          ),
+          Text(
+            '$quantidade',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          IconButton(
+            tooltip: 'Aumentar quantidade',
+            onPressed: !podeAumentar
+                ? null
+                : () {
+                    if (quantidade >= _limiteIngressosPorTransacao) {
+                      AppSnackBar.aviso(
+                        context,
+                        _mensagemLimiteIngressosPorTransacao,
+                      );
+                      return;
+                    }
+                    setState(
+                      () => _quantidades[lote.lotePrecoId] = quantidade + 1,
+                    );
+                  },
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add_rounded, size: 19),
+          ),
+        ],
       ),
     );
   }
@@ -1142,6 +1149,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           opcoes: opcoes,
           nomeLoja: widget.loja.nome,
           nomeEvento: evento?.titulo ?? '',
+          dataHoraEvento: evento == null
+              ? ''
+              : 'Evento: ${DateFormatters.dataHoraSimples(evento!.dataInicio)}',
           imagemEventoUrl: evento?.bannerUrl ?? '',
           taxaPercentual: widget.loja.vrtaxaing,
           taxaMinima: widget.loja.vrtaxaminimaingresso,
