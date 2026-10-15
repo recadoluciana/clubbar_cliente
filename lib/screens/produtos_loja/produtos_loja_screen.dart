@@ -577,92 +577,20 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             );
           },
           child: SizedBox(
-            height: 136,
+            height: 140,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                  width: 110,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      imagem.isEmpty
-                          ? Container(
-                              color: Colors.grey.shade200,
-                              child: const Icon(
-                                Icons.fastfood_outlined,
-                                size: 36,
-                              ),
-                            )
-                          : ColoredBox(
-                              color: Colors.grey.shade100,
-                              child: Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: Image.network(
-                                  imagem,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (_, _, _) => Container(
-                                    color: Colors.grey.shade200,
-                                    child: const Icon(
-                                      Icons.image_not_supported_outlined,
-                                      size: 32,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                      if (temDesconto)
-                        Positioned(
-                          left: 8,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 7,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              seloDesconto,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      if (ehCortesia)
-                        Positioned(
-                          left: 8,
-                          bottom: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade700,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Text(
-                              'Cortesia',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                _imagemProdutoCard(
+                  imagem: imagem,
+                  temDesconto: temDesconto,
+                  seloDesconto: seloDesconto,
+                  ehCortesia: ehCortesia,
                 ),
+                VerticalDivider(width: 1, color: Colors.grey.shade100),
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 8, 12),
+                    padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -675,8 +603,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Expanded(
                               child: temDesconto
@@ -726,24 +655,28 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ],
                         ),
 
-                        const SizedBox(height: 3),
-                        if (produto.dsproduto.trim().isNotEmpty)
-                          Text(
-                            produto.dsproduto,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              height: 1.2,
-                              color: Colors.grey.shade700,
+                        const SizedBox(height: 4),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              produto.dsproduto.trim().isNotEmpty
+                                  ? produto.dsproduto
+                                  : ' ',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                height: 1.2,
+                                color: Colors.grey.shade700,
+                              ),
                             ),
-                          )
-                        else
-                          const SizedBox(height: 12),
-                        const SizedBox(height: 8),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
                         SizedBox(
                           width: double.infinity,
-                          height: 40,
+                          height: 34,
                           child: ElevatedButton.icon(
                             onPressed:
                                 produtosEmAlteracao.contains(
@@ -760,7 +693,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   ),
                             icon: const Icon(
                               Icons.add_shopping_cart_rounded,
-                              size: 18,
+                              size: 17,
                             ),
                             label: const Text('Carrinho'),
                             style: ElevatedButton.styleFrom(
@@ -774,6 +707,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
@@ -784,6 +720,74 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _imagemProdutoCard({
+    required String imagem,
+    required bool temDesconto,
+    required String seloDesconto,
+    required bool ehCortesia,
+  }) {
+    return SizedBox(
+      width: 104,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          imagem.isEmpty
+              ? Container(
+                  color: Colors.grey.shade100,
+                  child: const Icon(Icons.fastfood_outlined, size: 34),
+                )
+              : ColoredBox(
+                  color: Colors.grey.shade50,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Image.network(
+                      imagem,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => Container(
+                        color: Colors.grey.shade100,
+                        child: const Icon(
+                          Icons.image_not_supported_outlined,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+          if (temDesconto)
+            Positioned(
+              left: 7,
+              top: 7,
+              child: _seloProduto(seloDesconto, Colors.red),
+            ),
+          if (ehCortesia)
+            Positioned(
+              left: 7,
+              bottom: 7,
+              child: _seloProduto('Cortesia', Colors.green.shade700),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _seloProduto(String texto, Color cor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+      decoration: BoxDecoration(
+        color: cor,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        texto,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
