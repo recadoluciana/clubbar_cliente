@@ -548,6 +548,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final temDesconto = produto.descontoativo;
 
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
+    final ehCortesia = precoAtual <= 0;
 
     final seloDesconto = produto.tipodesconto.toUpperCase() == 'PERCENTUAL'
         ? '${produto.vrdesconto.toStringAsFixed(0)}% OFF'
@@ -625,6 +626,29 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 color: Colors.white,
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (ehCortesia)
+                        Positioned(
+                          left: 8,
+                          bottom: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade700,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Text(
+                              'Cortesia',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
