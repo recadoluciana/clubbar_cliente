@@ -45,21 +45,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   @override
   void initState() {
     super.initState();
-    itensTela = _somenteIngressosNaJanela(widget.itens);
+    itensTela = _ordenarIngressos(widget.itens);
   }
 
-  List<Map<String, dynamic>> _somenteIngressosNaJanela(
+  List<Map<String, dynamic>> _ordenarIngressos(
     List<Map<String, dynamic>> itens,
   ) {
-    final agora = DateTime.now();
+    // A API já filtra os ingressos pelo término efetivo do evento. Não
+    // repetimos a regra no Client para evitar esconder eventos em andamento.
     final ingressos = itens
-        .where((item) {
-          final inicio = DateTime.tryParse(
-            (item['dtinicioevento'] ?? '').toString(),
-          );
-          if (inicio == null) return true;
-          return !agora.isAfter(inicio.add(const Duration(hours: 6)));
-        })
         .map((item) => Map<String, dynamic>.from(item))
         .toList();
 
@@ -510,7 +504,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       if (!mounted) return;
 
       setState(() {
-        itensTela = _somenteIngressosNaJanela(novosItens);
+        itensTela = _ordenarIngressos(novosItens);
       });
     }
   }
@@ -1118,7 +1112,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 if (!mounted) return;
 
                 setState(() {
-                  itensTela = _somenteIngressosNaJanela(novosItens);
+                  itensTela = _ordenarIngressos(novosItens);
                 });
               },
               child: ListView(
