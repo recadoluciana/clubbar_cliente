@@ -398,6 +398,24 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
   }
 
+  Widget _chipCortesia() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE1F5E8),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Text(
+        'Cortesia',
+        style: TextStyle(
+          color: Color(0xFF18763B),
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
   Widget _chipStatusEntrega(Map<String, dynamic> item) {
     final emRota =
         (item['situacaoentrega'] ?? '').toString().toUpperCase() == 'EM_ROTA';
@@ -427,6 +445,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString();
+    final ehCortesia = (double.tryParse('${item['vrunititvenda']}') ?? 0) <= 0;
     final entrega = _isDelivery(item);
     final situacaoEntrega = (item['situacaoentrega'] ?? '')
         .toString()
@@ -485,6 +504,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                               _chip(
                                 'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
                               ),
+                              if (ehCortesia) _chipCortesia(),
                               if (validade.isNotEmpty)
                                 _chip('Data de validade: $validade'),
                               if (entrega) _chipStatusEntrega(item),

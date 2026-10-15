@@ -629,15 +629,27 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          dataEvento.isEmpty
-                              ? 'Data do evento não informada'
-                              : dataEvento,
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        Row(
+                          children: [
+                            if (valor <= 0) ...[
+                              _badgeCortesia(),
+                              const SizedBox(width: 6),
+                            ],
+                            Expanded(
+                              child: Text(
+                                dataEvento.isEmpty
+                                    ? 'Data do evento não informada'
+                                    : dataEvento,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         if (tipoIngresso.isNotEmpty) ...[
                           const SizedBox(height: 4),
@@ -1006,6 +1018,24 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _badgeCortesia() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE1F5E8),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Text(
+        'Cortesia',
+        style: TextStyle(
+          color: Color(0xFF18763B),
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
