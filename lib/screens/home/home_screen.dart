@@ -225,6 +225,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _moverCarrossel(int direcao) {
+    final total = destaquesFiltrados.length;
+    if (total <= 1 || !_pageController.hasClients) return;
+
+    final proximaPagina = (_paginaAtual + direcao + total) % total;
+    _pageController.animateToPage(
+      proximaPagina,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  Widget _setaCarrossel({
+    required IconData icone,
+    required String descricao,
+    required VoidCallback onPressed,
+  }) => Material(
+    color: Colors.black.withValues(alpha: .5),
+    shape: const CircleBorder(),
+    child: InkWell(
+      customBorder: const CircleBorder(),
+      onTap: onPressed,
+      child: Semantics(
+        button: true,
+        label: descricao,
+        child: SizedBox(
+          width: 34,
+          height: 34,
+          child: Icon(icone, color: Colors.white, size: 24),
+        ),
+      ),
+    ),
+  );
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -968,142 +1002,177 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     else
                       SizedBox(
                         height: 210,
-                        child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: destaquesFiltrados.length,
-                          onPageChanged: (index) {
-                            setState(() {
-                              _paginaAtual = index;
-                            });
-                          },
-                          itemBuilder: (context, index) {
-                            final evento = destaquesFiltrados[index];
+                        child: Stack(
+                          children: [
+                            PageView.builder(
+                              controller: _pageController,
+                              itemCount: destaquesFiltrados.length,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _paginaAtual = index;
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                final evento = destaquesFiltrados[index];
 
-                            final loja = _lojaDoEvento(evento);
-                            return GestureDetector(
-                              onTap: () => _abrirEvento(evento, loja),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 7,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(21),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.14,
-                                      ),
-                                      blurRadius: 14,
-                                      offset: const Offset(0, 7),
+                                final loja = _lojaDoEvento(evento);
+                                return GestureDetector(
+                                  onTap: () => _abrirEvento(evento, loja),
+                                  child: Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 7,
                                     ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(21),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      _imagemSegura(
-                                        url: evento.bannerUrl,
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        fallbackIcon: Icons.image_not_supported,
-                                        fit: BoxFit.fill,
-                                      ),
-                                      Container(
-                                        decoration: const BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.transparent,
-                                              Colors.black54,
-                                              Colors.black87,
-                                            ],
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(21),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.14,
                                           ),
+                                          blurRadius: 14,
+                                          offset: const Offset(0, 7),
                                         ),
-                                      ),
-                                      if (evento.atracoes.isNotEmpty)
-                                        Positioned(
-                                          top: 10,
-                                          left: 10,
-                                          right: 10,
-                                          child: _atracoesDoEvento(evento),
-                                        ),
-                                      Positioned(
-                                        left: 15,
-                                        right: 15,
-                                        bottom: 10,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              evento.titulo,
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 19,
-                                                fontWeight: FontWeight.bold,
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(21),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          _imagemSegura(
+                                            url: evento.bannerUrl,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            fallbackIcon:
+                                                Icons.image_not_supported,
+                                            fit: BoxFit.fill,
+                                          ),
+                                          Container(
+                                            decoration: const BoxDecoration(
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors: [
+                                                  Colors.transparent,
+                                                  Colors.black54,
+                                                  Colors.black87,
+                                                ],
                                               ),
                                             ),
-                                            const SizedBox(height: 5),
-                                            Row(
+                                          ),
+                                          if (evento.atracoes.isNotEmpty)
+                                            Positioned(
+                                              top: 10,
+                                              left: 10,
+                                              right: 10,
+                                              child: _atracoesDoEvento(evento),
+                                            ),
+                                          Positioned(
+                                            left: 15,
+                                            right: 15,
+                                            bottom: 10,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
                                               children: [
-                                                const Icon(
-                                                  Icons.calendar_month,
-                                                  color: Colors.white,
-                                                  size: 16,
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Expanded(
-                                                  child: Text(
-                                                    formatarDataEvento(
-                                                      evento.data,
-                                                    ),
-                                                    style: TextStyle(
-                                                      color:
-                                                          Colors.grey.shade200,
-                                                      fontSize: 12,
-                                                    ),
+                                                Text(
+                                                  evento.titulo,
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 19,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
+                                                ),
+                                                const SizedBox(height: 5),
+                                                Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.calendar_month,
+                                                      color: Colors.white,
+                                                      size: 16,
+                                                    ),
+                                                    const SizedBox(width: 5),
+                                                    Expanded(
+                                                      child: Text(
+                                                        formatarDataEvento(
+                                                          evento.data,
+                                                        ),
+                                                        style: TextStyle(
+                                                          color: Colors
+                                                              .grey
+                                                              .shade200,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons
+                                                          .location_on_outlined,
+                                                      color: Colors.white,
+                                                      size: 16,
+                                                    ),
+                                                    const SizedBox(width: 5),
+                                                    Expanded(
+                                                      child: Text(
+                                                        evento.local.isEmpty
+                                                            ? 'Local não informado'
+                                                            : evento.local,
+                                                        style: TextStyle(
+                                                          color: Colors
+                                                              .grey
+                                                              .shade300,
+                                                          fontSize: 12,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 4),
-                                            Row(
-                                              children: [
-                                                const Icon(
-                                                  Icons.location_on_outlined,
-                                                  color: Colors.white,
-                                                  size: 16,
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Expanded(
-                                                  child: Text(
-                                                    evento.local.isEmpty
-                                                        ? 'Local não informado'
-                                                        : evento.local,
-                                                    style: TextStyle(
-                                                      color:
-                                                          Colors.grey.shade300,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            if (destaquesFiltrados.length > 1) ...[
+                              Positioned(
+                                left: 12,
+                                top: 0,
+                                bottom: 0,
+                                child: Center(
+                                  child: _setaCarrossel(
+                                    icone: Icons.chevron_left_rounded,
+                                    descricao: 'Evento anterior',
+                                    onPressed: () => _moverCarrossel(-1),
                                   ),
                                 ),
                               ),
-                            );
-                          },
+                              Positioned(
+                                right: 12,
+                                top: 0,
+                                bottom: 0,
+                                child: Center(
+                                  child: _setaCarrossel(
+                                    icone: Icons.chevron_right_rounded,
+                                    descricao: 'Próximo evento',
+                                    onPressed: () => _moverCarrossel(1),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
 
