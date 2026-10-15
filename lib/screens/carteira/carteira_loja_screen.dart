@@ -416,6 +416,24 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
   }
 
+  Widget _chipValidade(String validade) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEBEE),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        'Válido até $validade',
+        style: const TextStyle(
+          color: Color(0xFFC62828),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
   Widget _chipStatusEntrega(Map<String, dynamic> item) {
     final emRota =
         (item['situacaoentrega'] ?? '').toString().toUpperCase() == 'EM_ROTA';
@@ -505,8 +523,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                                 'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
                               ),
                               if (ehCortesia) _chipCortesia(),
-                              if (validade.isNotEmpty)
-                                _chip('Data de validade: $validade'),
+                              if (validade.isNotEmpty) _chipValidade(validade),
                               if (entrega) _chipStatusEntrega(item),
                             ],
                           ),
@@ -535,7 +552,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     children: [
                       Expanded(
                         child: SizedBox(
-                          height: 46,
+                          height: 42,
                           child: ElevatedButton.icon(
                             onPressed: () => _abrirQrOuRetirada(context, item),
                             icon: const Icon(Icons.qr_code_2_rounded, size: 21),
@@ -563,7 +580,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: SizedBox(
-                          height: 46,
+                          height: 42,
                           child: OutlinedButton.icon(
                             onPressed: () => _confirmarCompartilhamento(item),
                             icon: const Icon(
