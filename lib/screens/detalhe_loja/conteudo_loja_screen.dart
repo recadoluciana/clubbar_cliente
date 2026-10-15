@@ -165,9 +165,6 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
     final instagram = loja.instagram.trim().isEmpty
         ? 'Não informado'
         : loja.instagram.trim();
-    final telefone = loja.nrtelloja.trim().isEmpty
-        ? 'Não informado'
-        : _telefoneFormatado(loja.nrtelloja);
     final email = loja.emailContato.trim().isEmpty
         ? 'Não informado'
         : loja.emailContato.trim();
@@ -178,7 +175,6 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
 
     return [
       'Instagram: $instagram',
-      'Telefone: $telefone',
       'E-mail: $email',
       'Endereço: ${endereco.isEmpty ? 'Não informado' : endereco}',
       'WhatsApp: $whatsapp',
