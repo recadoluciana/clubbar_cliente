@@ -770,6 +770,16 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     final expandida = _vendasExpandidas.contains(vendaId);
     final podeCancelar =
         (pedido['sitvenda'] ?? '').toString().toUpperCase() == 'PAGA';
+    final ingressos = itens.isNotEmpty && itens.every(_isIngresso);
+    final primeiroIngresso = ingressos ? itens.first : null;
+    final nomeEvento =
+        (primeiroIngresso?['nmevento'] ??
+                primeiroIngresso?['nmproduto'] ??
+                'Evento')
+            .toString();
+    final dataEvento = (primeiroIngresso?['dtinicioevento'] ?? '')
+        .toString()
+        .trim();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -792,18 +802,24 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    _fotoEstabelecimento(
-                      _buildImageUrl((pedido['urllogoloja'] ?? '').toString()),
-                      tamanho: 50,
-                    ),
+                    ingressos
+                        ? _fotoEvento(primeiroIngresso!, tamanho: 50)
+                        : _fotoEstabelecimento(
+                            _buildImageUrl(
+                              (pedido['urllogoloja'] ?? '').toString(),
+                            ),
+                            tamanho: 50,
+                          ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            (pedido['nmloja'] ?? 'Loja').toString(),
-                            maxLines: 1,
+                            ingressos
+                                ? nomeEvento
+                                : (pedido['nmloja'] ?? 'Loja').toString(),
+                            maxLines: ingressos ? 2 : 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 16,
@@ -811,8 +827,18 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                             ),
                           ),
                           const SizedBox(height: 2),
+                          if (ingressos && dataEvento.isNotEmpty)
+                            Text(
+                              'Evento: $dataEvento',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 11,
+                              ),
+                            ),
                           Text(
-                            'Venda #$vendaId • ${(pedido['dtcriacao'] ?? '').toString()}',
+                            ingressos
+                                ? 'Venda #$vendaId • Compra: ${(pedido['dtcriacao'] ?? '').toString()}'
+                                : 'Venda #$vendaId • ${(pedido['dtcriacao'] ?? '').toString()}',
                             style: TextStyle(
                               color: Colors.grey.shade700,
                               fontSize: 11,
