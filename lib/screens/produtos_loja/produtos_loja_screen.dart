@@ -591,14 +591,17 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             )
                           : ColoredBox(
                               color: Colors.grey.shade100,
-                              child: Image.network(
-                                imagem,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => Container(
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(
-                                    Icons.image_not_supported_outlined,
-                                    size: 32,
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Image.network(
+                                  imagem,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, _, _) => Container(
+                                    color: Colors.grey.shade200,
+                                    child: const Icon(
+                                      Icons.image_not_supported_outlined,
+                                      size: 32,
+                                    ),
                                   ),
                                 ),
                               ),
