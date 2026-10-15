@@ -553,7 +553,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 },
                 child: telaInterna ?? _buildPage(),
               ),
-              bottomNavigationBar: telaInterna is MeusPedidosScreen
+              bottomNavigationBar:
+                  telaInterna is MeusPedidosScreen ||
+                      telaInterna is PedidosPorTipoScreen
                   ? null
                   : _barraNavegacao(),
             );

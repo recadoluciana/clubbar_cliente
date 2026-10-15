@@ -1,20 +1,150 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 import '../perfil/cancelar_transacao_screen.dart';
 
-class MeusPedidosScreen extends StatefulWidget {
+class MeusPedidosScreen extends StatelessWidget {
   const MeusPedidosScreen({super.key});
 
   @override
-  State<MeusPedidosScreen> createState() => _MeusPedidosScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+      appBar: const ClubbarAppBar(
+        titulo: 'Minhas compras',
+        iconeTitulo: Icons.receipt_long_rounded,
+        corIconeTitulo: Colors.orange,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'O que você deseja consultar?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Escolha uma categoria para ver suas compras.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade700),
+                ),
+                const SizedBox(height: 24),
+                _OpcaoCompras(
+                  titulo: 'Produtos',
+                  descricao: 'Pedidos de produtos e seu status de uso.',
+                  icone: Icons.shopping_bag_outlined,
+                  cor: Colors.amber.shade800,
+                  onTap: () => MainNavigationController.abrirTela(
+                    const PedidosPorTipoScreen(tipo: 'P'),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _OpcaoCompras(
+                  titulo: 'Ingressos',
+                  descricao: 'Ingressos, participantes e cancelamentos.',
+                  icone: Icons.confirmation_number_outlined,
+                  cor: Colors.blue,
+                  onTap: () => MainNavigationController.abrirTela(
+                    const PedidosPorTipoScreen(tipo: 'I'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
+class _OpcaoCompras extends StatelessWidget {
+  final String titulo;
+  final String descricao;
+  final IconData icone;
+  final Color cor;
+  final VoidCallback onTap;
+
+  const _OpcaoCompras({
+    required this.titulo,
+    required this.descricao,
+    required this.icone,
+    required this.cor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: cor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icone, color: cor, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titulo,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      descricao,
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: cor, size: 30),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PedidosPorTipoScreen extends StatefulWidget {
+  final String tipo;
+
+  const PedidosPorTipoScreen({super.key, required this.tipo});
+
+  @override
+  State<PedidosPorTipoScreen> createState() => _PedidosPorTipoScreenState();
+}
+
+class _PedidosPorTipoScreenState extends State<PedidosPorTipoScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
@@ -29,7 +159,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
-  String tipoSelecionado = 'P';
+  late String tipoSelecionado;
   String statusSelecionado = 'TODOS';
   final Set<int> _vendasExpandidas = <int>{};
 
@@ -44,6 +174,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   @override
   void initState() {
     super.initState();
+    tipoSelecionado = widget.tipo;
     _carregarCabecalho();
     carregarPedidos();
   }
@@ -215,74 +346,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         .replaceAll(RegExp(r'[óòôõö]'), 'o')
         .replaceAll(RegExp(r'[úùûü]'), 'u')
         .replaceAll('ç', 'c');
-  }
-
-  Widget _filtrosTipo() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _abaTipo(
-              titulo: 'Produtos',
-              icone: Icons.local_drink_rounded,
-              tipo: 'P',
-            ),
-          ),
-          Expanded(
-            child: _abaTipo(
-              titulo: 'Ingressos',
-              icone: Icons.confirmation_number_outlined,
-              tipo: 'I',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _abaTipo({
-    required String titulo,
-    required IconData icone,
-    required String tipo,
-  }) {
-    final selecionado = tipoSelecionado == tipo;
-
-    return InkWell(
-      onTap: () => setState(() => tipoSelecionado = tipo),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 42,
-        decoration: BoxDecoration(
-          color: selecionado ? Colors.amber : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icone,
-              size: 19,
-              color: selecionado ? Colors.amber.shade900 : Colors.black54,
-            ),
-            const SizedBox(width: 7),
-            Text(
-              titulo,
-              style: TextStyle(
-                color: selecionado ? Colors.black : Colors.black54,
-                fontSize: 13,
-                fontWeight: selecionado ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _campoPesquisa() {
@@ -843,7 +906,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                             ),
                           Text(
                             ingressos
-                                ? 'Venda #$vendaId • Compra: ${(pedido['dtcriacao'] ?? '').toString()}'
+                                ? 'Compra: #$vendaId realizada em ${(pedido['dtcriacao'] ?? '').toString()}'
                                 : 'Compra: ${(pedido['dtcriacao'] ?? '').toString()}',
                             style: TextStyle(
                               color: Colors.grey.shade700,
@@ -1034,8 +1097,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(
-        titulo: 'Minhas compras',
+      appBar: ClubbarAppBar(
+        titulo: tipoSelecionado == 'I'
+            ? 'Minhas compras - Ingressos'
+            : 'Minhas compras - Produtos',
         iconeTitulo: Icons.receipt_long_rounded,
         corIconeTitulo: Colors.orange,
         mostrarVoltar: true,
@@ -1053,11 +1118,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         corTitulo: Colors.blue,
                       )
                     : const SizedBox(height: 70),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _filtrosTipo(),
-                ),
-
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: carregarPedidos,
