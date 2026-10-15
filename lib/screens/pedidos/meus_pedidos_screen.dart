@@ -44,8 +44,8 @@ class MeusPedidosScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _OpcaoCompras(
                   titulo: 'Produtos',
-                  descricao: 'Pedidos de produtos e seu status de uso.',
-                  icone: Icons.shopping_bag_outlined,
+                  descricao: 'Produtos, status de uso e cancelamentos.',
+                  icone: Icons.local_drink_rounded,
                   cor: Colors.amber.shade800,
                   onTap: () => MainNavigationController.abrirTela(
                     const PedidosPorTipoScreen(tipo: 'P'),
