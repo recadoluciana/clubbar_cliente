@@ -558,6 +558,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
+    final lote = (item['lote'] ?? '').toString().trim();
+    final setor = (item['nmsetor'] ?? '').toString().trim();
+    final modalidade = (item['nmpreco'] ?? '').toString().trim();
     final enderecoEvento =
         (item['endereco_evento_completo'] ??
                 item['dsendlocevento'] ??
@@ -629,39 +632,28 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            if (valor <= 0) ...[
-                              _badgeCortesia(),
-                              const SizedBox(width: 6),
-                            ],
-                            Expanded(
-                              child: Text(
-                                dataEvento.isEmpty
-                                    ? 'Data do evento não informada'
-                                    : dataEvento,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.grey.shade700,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
+                        Text(
+                          dataEvento.isEmpty
+                              ? 'Data evento não informada'
+                              : 'Data evento: $dataEvento',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                        if (tipoIngresso.isNotEmpty) ...[
+                        if (lote.isNotEmpty ||
+                            setor.isNotEmpty ||
+                            modalidade.isNotEmpty ||
+                            tipoIngresso.isNotEmpty) ...[
                           const SizedBox(height: 4),
-                          Text(
-                            tipoIngresso,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          _linhaDetalhesIngresso(
+                            lote: lote,
+                            setor: setor,
+                            modalidade: modalidade,
+                            alternativa: tipoIngresso,
                           ),
                         ],
                         if (enderecoEvento.isNotEmpty) ...[
@@ -835,7 +827,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       children: [
                         Expanded(
                           child: SizedBox(
-                            height: 46,
+                            height: 42,
                             child: ElevatedButton.icon(
                               onPressed: () =>
                                   _abrirQrOuRetirada(context, item),
@@ -867,7 +859,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: SizedBox(
-                            height: 46,
+                            height: 42,
                             child: OutlinedButton.icon(
                               onPressed: () => _compartilharIngresso(item),
                               icon: const Icon(
@@ -1023,21 +1015,50 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
   }
 
-  Widget _badgeCortesia() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE1F5E8),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Text(
-        'Cortesia',
-        style: TextStyle(
-          color: Color(0xFF18763B),
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
+  Widget _linhaDetalhesIngresso({
+    required String lote,
+    required String setor,
+    required String modalidade,
+    required String alternativa,
+  }) {
+    final estiloBase = TextStyle(
+      color: Colors.blue.shade700,
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+    );
+    final partes = <InlineSpan>[];
+
+    void adicionar(String texto, {Color? cor}) {
+      if (texto.isEmpty) {
+        return;
+      }
+      if (partes.isNotEmpty) {
+        partes.add(TextSpan(text: ' . ', style: estiloBase));
+      }
+      partes.add(
+        TextSpan(
+          text: texto,
+          style: estiloBase.copyWith(color: cor),
         ),
-      ),
+      );
+    }
+
+    adicionar(lote);
+    adicionar(setor);
+    adicionar(
+      modalidade,
+      cor: modalidade.toUpperCase() == 'CORTESIA'
+          ? const Color(0xFF18763B)
+          : null,
+    );
+    if (partes.isEmpty) {
+      adicionar(alternativa);
+    }
+
+    return Text.rich(
+      TextSpan(children: partes),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 
