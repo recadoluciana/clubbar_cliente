@@ -149,8 +149,24 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             .trim()
             .toUpperCase();
 
-        if (statusSelecionado != 'TODOS' && usado != statusSelecionado) {
-          return false;
+        final situacao = (item['sititvenda'] ?? 'ATIVO')
+            .toString()
+            .trim()
+            .toUpperCase();
+
+        switch (statusSelecionado) {
+          case 'NAO':
+            if (situacao != 'ATIVO' || usado != 'NAO') return false;
+            break;
+          case 'SIM':
+            if (situacao != 'ATIVO' || usado != 'SIM') return false;
+            break;
+          case 'CANCELADO':
+            if (situacao != 'CANCELADO') return false;
+            break;
+          case 'CANCELAMENTO_SOLICITADO':
+            if (situacao != 'CANCELAMENTO_SOLICITADO') return false;
+            break;
         }
 
         if (pesquisa.isEmpty) {
@@ -1027,6 +1043,18 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             titulo: 'Utilizados',
             status: 'SIM',
             icone: Icons.check_circle_outline_rounded,
+          ),
+          const SizedBox(width: 8),
+          _botaoStatus(
+            titulo: 'Cancelados',
+            status: 'CANCELADO',
+            icone: Icons.cancel_outlined,
+          ),
+          const SizedBox(width: 8),
+          _botaoStatus(
+            titulo: 'Cancelamento solicitado',
+            status: 'CANCELAMENTO_SOLICITADO',
+            icone: Icons.pending_actions_rounded,
           ),
         ],
       ),
