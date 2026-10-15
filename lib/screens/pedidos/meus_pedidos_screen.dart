@@ -559,7 +559,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     );
   }
 
-  Widget _itemPedido(Map<String, dynamic> item) {
+  Widget _itemPedido(Map<String, dynamic> item, {bool ocultarEvento = false}) {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final entreguePor =
         (item['nmuserentregaitvenda'] ?? item['userentregaitvenda'] ?? '')
@@ -595,7 +595,20 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ingresso
-                  ? _fotoEvento(item, tamanho: 46)
+                  ? ocultarEvento
+                        ? Container(
+                            width: 46,
+                            height: 46,
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(
+                              Icons.confirmation_number_outlined,
+                              color: Colors.blue.shade700,
+                            ),
+                          )
+                        : _fotoEvento(item, tamanho: 46)
                   : _fotoProduto(item, tamanho: 46),
               const SizedBox(width: 10),
               Expanded(
@@ -603,7 +616,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      (item['nmproduto'] ?? '').toString(),
+                      ingresso && ocultarEvento
+                          ? 'Ingresso'
+                          : (item['nmproduto'] ?? '').toString(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -611,7 +626,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (ingresso && dataEvento.isNotEmpty) ...[
+                    if (ingresso &&
+                        !ocultarEvento &&
+                        dataEvento.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         'Evento: $dataEvento',
@@ -804,11 +821,17 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                   children: [
                     ingressos
                         ? _fotoEvento(primeiroIngresso!, tamanho: 50)
-                        : _fotoEstabelecimento(
-                            _buildImageUrl(
-                              (pedido['urllogoloja'] ?? '').toString(),
+                        : Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            tamanho: 50,
+                            child: Icon(
+                              Icons.receipt_long_rounded,
+                              color: Colors.amber.shade800,
+                            ),
                           ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -816,9 +839,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            ingressos
-                                ? nomeEvento
-                                : (pedido['nmloja'] ?? 'Loja').toString(),
+                            ingressos ? nomeEvento : 'Venda #$vendaId',
                             maxLines: ingressos ? 2 : 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -838,7 +859,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                           Text(
                             ingressos
                                 ? 'Venda #$vendaId • Compra: ${(pedido['dtcriacao'] ?? '').toString()}'
-                                : 'Venda #$vendaId • ${(pedido['dtcriacao'] ?? '').toString()}',
+                                : 'Compra: ${(pedido['dtcriacao'] ?? '').toString()}',
                             style: TextStyle(
                               color: Colors.grey.shade700,
                               fontSize: 11,
@@ -900,7 +921,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                 child: Column(
                   children: [
-                    ...itens.map(_itemPedido),
+                    ...itens.map(
+                      (item) => _itemPedido(item, ocultarEvento: ingressos),
+                    ),
                     if (podeCancelar)
                       SizedBox(
                         width: double.infinity,
@@ -920,6 +943,80 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  List<Widget> _vendasAgrupadasPorLoja() {
+    final grupos = <String, List<Map<String, dynamic>>>{};
+    for (final pedido in pedidosFiltrados) {
+      final lojaId = (pedido['loja_id'] ?? '').toString();
+      final nomeLoja = (pedido['nmloja'] ?? 'Loja').toString();
+      final chave = lojaId.isEmpty ? nomeLoja : lojaId;
+      grupos.putIfAbsent(chave, () => []).add(pedido);
+    }
+    return grupos.values.map(_cardLoja).toList();
+  }
+
+  Widget _cardLoja(List<Map<String, dynamic>> vendasDaLoja) {
+    final loja = vendasDaLoja.first;
+    final nomeLoja = (loja['nmloja'] ?? 'Loja').toString();
+    final logo = _buildImageUrl((loja['urllogoloja'] ?? '').toString());
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                _fotoEstabelecimento(logo, tamanho: 52),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nomeLoja,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${vendasDaLoja.length} ${vendasDaLoja.length == 1 ? 'venda' : 'vendas'}',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: Colors.grey.shade200),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+            child: Column(children: vendasDaLoja.map(_cardPedido).toList()),
+          ),
+        ],
       ),
     );
   }
@@ -996,7 +1093,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         else if (pedidosFiltrados.isEmpty)
                           _estadoVazioPesquisa()
                         else
-                          ...pedidosFiltrados.map(_cardPedido),
+                          ..._vendasAgrupadasPorLoja(),
                       ],
                     ),
                   ),
