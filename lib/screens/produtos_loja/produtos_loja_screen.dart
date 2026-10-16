@@ -567,160 +567,158 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         borderRadius: BorderRadius.circular(18),
         elevation: 2,
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: () {
-            MainNavigationController.abrirTela(
-              ProdutoCompartilhadoScreen(
-                produtoId: produto.produtoId,
-                lojaId: widget.loja.id,
+        child: SizedBox(
+          height: 140,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _imagemProdutoCard(
+                imagem: imagem,
+                temDesconto: temDesconto,
+                seloDesconto: seloDesconto,
+                ehCortesia: ehCortesia,
+                onTap: () => _abrirDetalhesProduto(produto),
               ),
-            );
-          },
-          child: SizedBox(
-            height: 140,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _imagemProdutoCard(
-                  imagem: imagem,
-                  temDesconto: temDesconto,
-                  seloDesconto: seloDesconto,
-                  ehCortesia: ehCortesia,
-                ),
-                VerticalDivider(width: 1, color: Colors.grey.shade100),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          produto.nmproduto,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
+              VerticalDivider(width: 1, color: Colors.grey.shade100),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        produto.nmproduto,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: temDesconto
-                                  ? Text.rich(
-                                      TextSpan(
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 10,
-                                        ),
-                                        children: [
-                                          const TextSpan(text: 'de '),
-                                          TextSpan(
-                                            text: ValueFormatters.moeda(
-                                              produto.vrprecoprod,
-                                            ),
-                                            style: const TextStyle(
-                                              decoration:
-                                                  TextDecoration.lineThrough,
-                                            ),
-                                          ),
-                                          const TextSpan(text: ' por '),
-                                          TextSpan(
-                                            text: ValueFormatters.moeda(
-                                              precoAtual,
-                                            ),
-                                            style: TextStyle(
-                                              color: Colors.green.shade700,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    )
-                                  : Text(
-                                      ValueFormatters.moeda(precoAtual),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: temDesconto
+                                ? Text.rich(
+                                    TextSpan(
                                       style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.black,
+                                        color: Colors.grey,
+                                        fontSize: 10,
                                       ),
+                                      children: [
+                                        const TextSpan(text: 'de '),
+                                        TextSpan(
+                                          text: ValueFormatters.moeda(
+                                            produto.vrprecoprod,
+                                          ),
+                                          style: const TextStyle(
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                        const TextSpan(text: ' por '),
+                                        TextSpan(
+                                          text: ValueFormatters.moeda(
+                                            precoAtual,
+                                          ),
+                                          style: TextStyle(
+                                            color: Colors.green.shade700,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                            ),
-                            _controleQuantidadeProduto(produto),
-                          ],
-                        ),
-
-                        const SizedBox(height: 4),
-                        Expanded(
-                          child: Align(
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              produto.dsproduto.trim().isNotEmpty
-                                  ? produto.dsproduto
-                                  : ' ',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 10,
-                                height: 1.2,
-                                color: Colors.grey.shade700,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 34,
-                          child: ElevatedButton.icon(
-                            onPressed:
-                                produtosEmAlteracao.contains(
-                                  _chaveItemCardapio(produto),
-                                )
-                                ? null
-                                : () => adicionarProdutoAoCarrinho(
-                                    produto,
-                                    quantidade:
-                                        quantidadesSelecionadas[_chaveItemCardapio(
-                                          produto,
-                                        )] ??
-                                        1,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                : Text(
+                                    ValueFormatters.moeda(precoAtual),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.black,
+                                    ),
                                   ),
-                            icon: const Icon(
-                              Icons.add_shopping_cart_rounded,
-                              size: 17,
-                            ),
-                            label: const Text('Carrinho'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              foregroundColor: Colors.black,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                              textStyle: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                          ),
+                          _controleQuantidadeProduto(produto),
+                        ],
+                      ),
+
+                      const SizedBox(height: 4),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.topLeft,
+                          child: Text(
+                            produto.dsproduto.trim().isNotEmpty
+                                ? produto.dsproduto
+                                : ' ',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              height: 1.2,
+                              color: Colors.grey.shade700,
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 34,
+                        child: ElevatedButton.icon(
+                          onPressed:
+                              produtosEmAlteracao.contains(
+                                _chaveItemCardapio(produto),
+                              )
+                              ? null
+                              : () => adicionarProdutoAoCarrinho(
+                                  produto,
+                                  quantidade:
+                                      quantidadesSelecionadas[_chaveItemCardapio(
+                                        produto,
+                                      )] ??
+                                      1,
+                                ),
+                          icon: const Icon(
+                            Icons.add_shopping_cart_rounded,
+                            size: 17,
+                          ),
+                          label: const Text('Carrinho'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _abrirDetalhesProduto(Produto produto) {
+    MainNavigationController.abrirTela(
+      ProdutoCompartilhadoScreen(
+        produtoId: produto.produtoId,
+        lojaId: widget.loja.id,
       ),
     );
   }
@@ -730,47 +728,51 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     required bool temDesconto,
     required String seloDesconto,
     required bool ehCortesia,
+    required VoidCallback onTap,
   }) {
     return SizedBox(
       width: 104,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          imagem.isEmpty
-              ? Container(
-                  color: Colors.grey.shade100,
-                  child: const Icon(Icons.fastfood_outlined, size: 34),
-                )
-              : ColoredBox(
-                  color: Colors.grey.shade50,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Image.network(
-                      imagem,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => Container(
-                        color: Colors.grey.shade100,
-                        child: const Icon(
-                          Icons.image_not_supported_outlined,
-                          size: 30,
+      child: InkWell(
+        onTap: onTap,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            imagem.isEmpty
+                ? Container(
+                    color: Colors.grey.shade100,
+                    child: const Icon(Icons.fastfood_outlined, size: 34),
+                  )
+                : ColoredBox(
+                    color: Colors.grey.shade50,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: Image.network(
+                        imagem,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => Container(
+                          color: Colors.grey.shade100,
+                          child: const Icon(
+                            Icons.image_not_supported_outlined,
+                            size: 30,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-          if (temDesconto)
-            Positioned(
-              left: 7,
-              top: 7,
-              child: _seloProduto(seloDesconto, Colors.red),
-            ),
-          if (ehCortesia)
-            Positioned(
-              left: 7,
-              bottom: 7,
-              child: _seloProduto('Cortesia', Colors.green.shade700),
-            ),
-        ],
+            if (temDesconto)
+              Positioned(
+                left: 7,
+                top: 7,
+                child: _seloProduto(seloDesconto, Colors.red),
+              ),
+            if (ehCortesia)
+              Positioned(
+                left: 7,
+                bottom: 7,
+                child: _seloProduto('Cortesia', Colors.green.shade700),
+              ),
+          ],
+        ),
       ),
     );
   }
