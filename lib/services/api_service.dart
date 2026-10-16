@@ -746,6 +746,22 @@ class ApiService {
     }
   }
 
+  Future<void> excluirMinhaConta({required String senhaAtual}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/clientes/me'),
+        headers: await _headersAutenticado(),
+        body: jsonEncode({'senha_atual': senhaAtual}),
+      );
+
+      if (response.statusCode == 204) return;
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
   Future<List<Map<String, dynamic>>> listarEstados() async {
     final response = await http.get(Uri.parse('$baseUrl/localidades/estados'));
     if (response.statusCode != 200) {
