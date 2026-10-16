@@ -26,6 +26,19 @@ const int _limiteIngressosPorTransacao = 5;
 const String _mensagemLimiteIngressosPorTransacao =
     'Máximo de 5 ingressos por compra. Caso necessite de mais ingressos realize duas ou mais compras.';
 
+bool _ehCortesia(EventoLote lote) => lote.preco <= 0;
+
+int _limitePorTransacao(EventoLote lote) =>
+    _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
+
+String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
+    ? 'Limite de 1 cortesia por transação'
+    : 'Limite de 5 ingressos por transação';
+
+String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
+    ? 'Cortesia limitada a 1 ingresso por transação.'
+    : _mensagemLimiteIngressosPorTransacao;
+
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
   final Loja loja;
@@ -155,13 +168,13 @@ class _ModalidadesIngressoScreenState
 
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
-    final ehCortesia = lote.tipoIngresso.trim().toUpperCase() == 'CORTESIA';
+    final ehCortesia = _ehCortesia(lote);
     final ehMeiaLegal = lote.aplicaCotaLegal;
     final disponivelModalidade = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivelModalidade > 0;
     final podeDiminuir = quantidade > 1;
     final podeAumentar =
-        quantidade >= _limiteIngressosPorTransacao ||
+        quantidade < _limitePorTransacao(lote) &&
         quantidade < disponivelModalidade;
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
@@ -263,8 +276,8 @@ class _ModalidadesIngressoScreenState
               ),
             ],
             const SizedBox(height: 3),
-            const Text(
-              'Limite de 5 ingressos por transação',
+            Text(
+              _textoLimitePorTransacao(lote),
               style: TextStyle(fontSize: 11, color: Colors.black54),
             ),
             const SizedBox(height: 6),
@@ -369,10 +382,10 @@ class _ModalidadesIngressoScreenState
             onPressed: !podeAumentar
                 ? null
                 : () {
-                    if (quantidade >= _limiteIngressosPorTransacao) {
+                    if (quantidade >= _limitePorTransacao(lote)) {
                       AppSnackBar.aviso(
                         context,
-                        _mensagemLimiteIngressosPorTransacao,
+                        _mensagemLimitePorTransacao(lote),
                       );
                       return;
                     }
@@ -710,6 +723,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       return;
     }
     var quantidade = quantidadeSelecionada ?? 1;
+    final limitePorTransacao = _limitePorTransacao(lote);
     bool? confirmada = quantidadeSelecionada != null;
     if (quantidadeSelecionada == null) {
       confirmada = await showDialog<bool>(
@@ -744,13 +758,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                     IconButton(
                       onPressed:
-                          quantidade >= _limiteIngressosPorTransacao ||
+                          quantidade < limitePorTransacao &&
                               quantidade < lote.qtDisponivelParaCompra
                           ? () {
-                              if (quantidade >= _limiteIngressosPorTransacao) {
+                              if (quantidade >= limitePorTransacao) {
                                 AppSnackBar.aviso(
                                   dialogContext,
-                                  _mensagemLimiteIngressosPorTransacao,
+                                  _mensagemLimitePorTransacao(lote),
                                 );
                                 return;
                               }
@@ -778,8 +792,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
     }
     if (confirmada != true || !mounted) return;
-    if (quantidade > _limiteIngressosPorTransacao) {
-      AppSnackBar.aviso(context, _mensagemLimiteIngressosPorTransacao);
+    if (quantidade > limitePorTransacao) {
+      AppSnackBar.aviso(context, _mensagemLimitePorTransacao(lote));
       return;
     }
     if (quantidade > lote.qtDisponivelParaCompra) {
@@ -998,7 +1012,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget _cardModalidadeDireta(EventoLote lote) {
     final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 1;
-    final ehCortesia = lote.tipoIngresso.trim().toUpperCase() == 'CORTESIA';
+    final ehCortesia = _ehCortesia(lote);
     final ehMeiaLegal = lote.aplicaCotaLegal;
     final vendaDisponivel = lote.podeComprarEm(DateTime.now());
     final disponivel = lote.qtDisponivelParaCompra;
@@ -1062,8 +1076,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             ),
             const SizedBox(height: 3),
-            const Text(
-              'Limite de 5 ingressos por transação',
+            Text(
+              _textoLimitePorTransacao(lote),
               style: TextStyle(fontSize: 11, color: Colors.black54),
             ),
             const SizedBox(height: 6),
@@ -1137,8 +1151,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     required int disponibilidade,
   }) {
     final podeAumentar =
-        quantidade < disponibilidade &&
-        quantidade < _limiteIngressosPorTransacao;
+        quantidade < disponibilidade && quantidade < _limitePorTransacao(lote);
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,

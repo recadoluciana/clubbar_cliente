@@ -797,6 +797,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final chaveItem = _chaveItemCardapio(produto);
     final quantidade = quantidadesSelecionadas[chaveItem] ?? 1;
     final alterando = produtosEmAlteracao.contains(chaveItem);
+    final precoAtual = produto.descontoativo
+        ? produto.vrprecofinal
+        : produto.vrprecoprod;
+    final ehCortesia = precoAtual <= 0;
 
     return Container(
       decoration: BoxDecoration(
@@ -835,8 +839,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ),
           ),
           IconButton(
-            tooltip: 'Aumentar quantidade',
-            onPressed: !alterando
+            tooltip: ehCortesia
+                ? 'Cortesia limitada a 1 unidade por transação'
+                : 'Aumentar quantidade',
+            onPressed: !alterando && !ehCortesia
                 ? () => setState(
                     () => quantidadesSelecionadas[chaveItem] = quantidade + 1,
                   )

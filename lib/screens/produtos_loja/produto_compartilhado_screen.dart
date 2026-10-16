@@ -50,8 +50,25 @@ class _ProdutoCompartilhadoScreenState
 
   int get _quantidade => int.tryParse(_quantidadeCtrl.text) ?? 1;
 
+  bool get _ehCortesia {
+    final item = produto;
+    if (item == null) return false;
+    final descontoAtivo =
+        item['descontoativo'] == true ||
+        item['descontoativo'] == 1 ||
+        item['descontoativo']?.toString().toLowerCase() == 'true';
+    final preco = _valorDouble(
+      descontoAtivo
+          ? item['vrprecofinal'] ?? item['vrprecoprod']
+          : item['vrprecoprod'],
+    );
+    return preco <= 0;
+  }
+
+  int get _limiteQuantidade => _ehCortesia ? 1 : 999;
+
   void _alterarQuantidade(int valor) {
-    final novaQuantidade = valor.clamp(1, 999);
+    final novaQuantidade = valor.clamp(1, _limiteQuantidade);
     _quantidadeCtrl.value = TextEditingValue(
       text: '$novaQuantidade',
       selection: TextSelection.collapsed(offset: '$novaQuantidade'.length),
@@ -120,8 +137,15 @@ class _ProdutoCompartilhadoScreenState
     if (produto == null || loja == null) return;
 
     final quantidade = int.tryParse(_quantidadeCtrl.text);
-    if (quantidade == null || quantidade < 1 || quantidade > 999) {
-      AppSnackBar.info(context, 'Informe uma quantidade entre 1 e 999.');
+    if (quantidade == null ||
+        quantidade < 1 ||
+        quantidade > _limiteQuantidade) {
+      AppSnackBar.info(
+        context,
+        _ehCortesia
+            ? 'Cortesia limitada a 1 unidade por transação.'
+            : 'Informe uma quantidade entre 1 e 999.',
+      );
       return;
     }
 
@@ -201,7 +225,9 @@ class _ProdutoCompartilhadoScreenState
               )
             : const Icon(Icons.add_shopping_cart_rounded),
         label: Text(
-          'Adicionar $_quantidade ao carrinho',
+          _ehCortesia
+              ? 'Resgatar cortesia'
+              : 'Adicionar $_quantidade ao carrinho',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
@@ -454,7 +480,7 @@ class _ProdutoCompartilhadoScreenState
                       const SizedBox(width: 8),
                       IconButton.filledTonal(
                         tooltip: 'Aumentar quantidade',
-                        onPressed: _quantidade < 999
+                        onPressed: _quantidade < _limiteQuantidade
                             ? () => _alterarQuantidade(_quantidade + 1)
                             : null,
                         icon: const Icon(Icons.add_rounded, size: 20),
@@ -465,7 +491,7 @@ class _ProdutoCompartilhadoScreenState
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Máximo 999',
+                        'Máximo $_limiteQuantidade',
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 12,

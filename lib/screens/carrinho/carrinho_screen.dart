@@ -402,7 +402,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   }
 
   Widget _controleQuantidade(ItemCarrinhoAgrupado item) {
-    final permiteAumentar = item.idtipoproduto != 'I';
+    final ehCortesia = item.precoFinal <= 0;
+    final permiteAumentar = item.idtipoproduto != 'I' && !ehCortesia;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -433,6 +434,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
               IconButton(
                 tooltip: permiteAumentar
                     ? 'Aumentar quantidade'
+                    : ehCortesia
+                    ? 'Cortesia limitada a 1 unidade por transação'
                     : 'Adicione outro ingresso pela agenda',
                 onPressed: alterandoQuantidade || !permiteAumentar
                     ? null
