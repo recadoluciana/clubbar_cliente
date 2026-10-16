@@ -32,7 +32,7 @@ int _limitePorTransacao(EventoLote lote) =>
     _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
 
 String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
-    ? 'Limite de 1 cortesia por transação'
+    ? 'Limite de 1 ingresso por transação'
     : 'Limite de 5 ingressos por transação';
 
 String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
