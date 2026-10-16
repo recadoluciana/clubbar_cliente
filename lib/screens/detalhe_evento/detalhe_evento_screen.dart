@@ -402,6 +402,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   EventoDetalhe? evento;
   List<EventoLote> lotes = [];
+  final Map<int, int> _quantidadesModalidades = {};
 
   @override
   void initState() {
@@ -964,202 +965,214 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     bool exibirNomeSetor = true,
   }) {
     final lote = opcoes.first;
-    final agora = DateTime.now();
-    final precos = opcoes.map((opcao) => opcao.preco).toSet().toList()..sort();
-    final textoPreco = precos.length == 1
-        ? 'Preço: ${ValueFormatters.moeda(precos.first)}'
-        : 'A partir de ${ValueFormatters.moeda(precos.first)}';
-    final descricaoSetor = lote.descricaoSetor.trim();
-    final descricaoSetorPadrao =
-        descricaoSetor.toLowerCase() ==
-        'setor ${lote.nomeSetor.trim().toLowerCase()} do evento';
-    final vendaDisponivel = lote.podeComprarEm(agora);
-    final reservaTemporaria = lote.indisponivelPorReservasTemporarias;
-    final textoBadge = reservaTemporaria
-        ? 'Reservado temporariamente'
-        : lote.situacaoVendaEm(agora);
-    final vendaFutura = textoBadge == 'Em breve';
-    final textoDisponibilidade = lote.qtDisponivel > 0
-        ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'}'
-        : reservaTemporaria
-        ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} reservados temporariamente'
-        : null;
-    final corBadge = vendaDisponivel
-        ? Colors.green
-        : reservaTemporaria
-        ? Colors.orange.shade800
-        : vendaFutura
-        ? Colors.amber.shade800
-        : Colors.red;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(0, 4, 0, 12),
-      child: Material(
-        color: Colors.white,
-        elevation: 1,
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (exibirNomeLote)
-                          Text(
-                            lote.nome,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        if (exibirNomeSetor && lote.nomeSetor.isNotEmpty) ...[
-                          if (exibirNomeLote) const SizedBox(height: 2),
-                          Text(
-                            'Setor: ${lote.nomeSetor}',
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: corBadge.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      textoBadge,
-                      style: TextStyle(
-                        color: corBadge,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-                ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (exibirNomeLote)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 4),
+              child: Text(
+                lote.nome,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Text(
-                    textoPreco,
+            ),
+          if (exibirNomeSetor && lote.nomeSetor.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 6),
+              child: Text(
+                'Setor: ${lote.nomeSetor}',
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
+              ),
+            ),
+          ...opcoes.map(_cardModalidadeDireta),
+        ],
+      ),
+    );
+  }
+
+  Widget _cardModalidadeDireta(EventoLote lote) {
+    final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 1;
+    final ehCortesia = lote.tipoIngresso.trim().toUpperCase() == 'CORTESIA';
+    final ehMeiaLegal = lote.aplicaCotaLegal;
+    final vendaDisponivel = lote.podeComprarEm(DateTime.now());
+    final disponivel = lote.qtDisponivelParaCompra;
+    final modalidadeDisponivel = disponivel > 0;
+    final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
+    final taxa = lote.preco <= 0
+        ? 0.0
+        : (taxaPercentual > widget.loja.vrtaxaminimaingresso
+              ? taxaPercentual
+              : widget.loja.vrtaxaminimaingresso);
+    final total = (lote.preco + taxa) * quantidade;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _nomeModalidade(lote),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 15,
+                      fontSize: 18,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  if (textoDisponibilidade != null) ...[
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        textoDisponibilidade,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          color: lote.qtDisponivel > 0
-                              ? Colors.green.shade700
-                              : Colors.orange.shade800,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                        ),
+                ),
+                if (ehMeiaLegal)
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const MeiaEntradaScreen(),
                       ),
                     ),
-                  ],
-                ],
+                    child: const Text('Quem tem direito'),
+                  ),
+              ],
+            ),
+            if (lote.exigeComprovante)
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: Text(
+                  'Comprovante obrigatório',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
               ),
-              if (lote.qtDisponivel > 0 && lote.temReservasTemporarias) ...[
-                const SizedBox(height: 2),
+            const SizedBox(height: 6),
+            Text(
+              '$disponivel ingresso${disponivel == 1 ? '' : 's'} disponíve${disponivel == 1 ? 'l' : 'is'} ${ehMeiaLegal && lote.qtLimiteModalidade == null ? 'nesta cota' : 'nesta modalidade'}',
+              style: TextStyle(
+                fontSize: 12,
+                color: modalidadeDisponivel
+                    ? Colors.green.shade700
+                    : Colors.red,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            const Text(
+              'Limite de 5 ingressos por transação',
+              style: TextStyle(fontSize: 11, color: Colors.black54),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                _controleQuantidadeModalidade(
+                  lote: lote,
+                  quantidade: quantidade,
+                  disponibilidade: disponivel,
+                ),
+              ],
+            ),
+            const Divider(height: 18),
+            Row(
+              children: [
+                const Text(
+                  'Total a pagar',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const Spacer(),
                 Text(
-                  '${lote.qtReservada} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}',
-                  style: TextStyle(
-                    color: Colors.orange.shade800,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
+                  ValueFormatters.moeda(total),
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ],
-              const SizedBox(height: 3),
-              Text(
-                'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.grey.shade700,
-                  fontSize: 10,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              if (descricaoSetor.isNotEmpty && !descricaoSetorPadrao) ...[
-                const SizedBox(height: 4),
-                Text(
-                  descricaoSetor,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
-                ),
-              ],
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                height: 36,
-                child: vendaDisponivel
-                    ? ElevatedButton.icon(
-                        onPressed: () => _abrirModalidades(opcoes),
-                        icon: const Icon(Icons.confirmation_number_outlined),
-                        label: const Text('Comprar ingresso'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          foregroundColor: Colors.black87,
-                          elevation: 0,
-                        ),
-                      )
-                    : OutlinedButton.icon(
-                        onPressed: () => _abrirModalidades(opcoes),
-                        icon: const Icon(Icons.arrow_forward_rounded),
-                        label: const Text('Consultar modalidades'),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed:
+                    !vendaDisponivel ||
+                        processandoCompra ||
+                        !modalidadeDisponivel
+                    ? null
+                    : () => iniciarReserva(
+                        lote,
+                        quantidadeSelecionada: quantidade,
                       ),
+                icon: const Icon(Icons.local_activity_outlined),
+                label: Text(ehCortesia ? 'Resgatar' : 'Comprar ingresso'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.amareloCerveja,
+                  foregroundColor: Colors.black,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _abrirModalidades(List<EventoLote> opcoes) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => _ModalidadesIngressoScreen(
-          opcoes: opcoes,
-          nomeLoja: widget.loja.nome,
-          nomeEvento: evento?.titulo ?? '',
-          dataHoraEvento: evento == null
-              ? ''
-              : 'Evento: ${DateFormatters.dataHoraSimples(evento!.dataInicio)}',
-          imagemEventoUrl: evento?.bannerUrl ?? '',
-          taxaPercentual: widget.loja.vrtaxaing,
-          taxaMinima: widget.loja.vrtaxaminimaingresso,
-          nomeModalidade: _nomeModalidade,
-          onComprar: (lote, quantidade) =>
-              iniciarReserva(lote, quantidadeSelecionada: quantidade),
-          onEntenderTaxa: _abrirExplicacaoTaxas,
-        ),
+  Widget _controleQuantidadeModalidade({
+    required EventoLote lote,
+    required int quantidade,
+    required int disponibilidade,
+  }) {
+    final podeAumentar =
+        quantidade < disponibilidade &&
+        quantidade < _limiteIngressosPorTransacao;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Diminuir quantidade',
+            onPressed: quantidade > 1
+                ? () => setState(
+                    () => _quantidadesModalidades[lote.lotePrecoId] =
+                        quantidade - 1,
+                  )
+                : null,
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove_rounded, size: 19),
+          ),
+          Text(
+            '$quantidade',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          IconButton(
+            tooltip: 'Aumentar quantidade',
+            onPressed: !podeAumentar
+                ? null
+                : () => setState(
+                    () => _quantidadesModalidades[lote.lotePrecoId] =
+                        quantidade + 1,
+                  ),
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add_rounded, size: 19),
+          ),
+        ],
       ),
     );
   }
@@ -1820,6 +1833,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 exibirNomeLote:
                                     _lotesGlobaisAgrupados.length > 1,
                                 exibirNomeSetor: _exibirNomeSetor,
+                              ),
+                            ),
+                            Center(
+                              child: TextButton.icon(
+                                onPressed: _abrirExplicacaoTaxas,
+                                icon: const Icon(
+                                  Icons.receipt_long_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Entenda nossa taxa'),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  textStyle: const TextStyle(fontSize: 12),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
                               ),
                             ),
                           ],
