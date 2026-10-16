@@ -221,24 +221,6 @@ class _ParticipantesReservaScreenState
         : (double.tryParse('${reserva['valor_total']}') ?? 0);
   }
 
-  Widget _linhaResumo(String titulo, String valor) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 9),
-      child: Text.rich(
-        TextSpan(
-          style: const TextStyle(color: Colors.black87, height: 1.3),
-          children: [
-            TextSpan(
-              text: '$titulo: ',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            TextSpan(text: valor),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _resumoCompacto(String titulo, String valor) {
     return Text.rich(
       TextSpan(
@@ -370,19 +352,25 @@ class _ParticipantesReservaScreenState
                         _logoEvento(),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            widget.nomeEvento,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              height: 1.2,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.nomeEvento,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 7),
+                              _resumoCompacto('Data', widget.dataHoraEvento),
+                            ],
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _linhaResumo('Data e hora', widget.dataHoraEvento),
                     Wrap(
                       spacing: 12,
                       runSpacing: 2,
