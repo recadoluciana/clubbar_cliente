@@ -10,6 +10,7 @@ class ClubbarContactLinks extends StatelessWidget {
   final bool centralizado;
   final bool tituloEmNegrito;
   final Color? cor;
+  final double tamanhoFonteLinks;
 
   const ClubbarContactLinks({
     super.key,
@@ -21,6 +22,7 @@ class ClubbarContactLinks extends StatelessWidget {
     this.centralizado = false,
     this.tituloEmNegrito = true,
     this.cor,
+    this.tamanhoFonteLinks = 14,
   });
 
   bool get _temContato => [
@@ -54,7 +56,13 @@ class ClubbarContactLinks extends StatelessWidget {
     return TextButton.icon(
       onPressed: () => _abrir(context, uri),
       icon: Icon(icone, size: 17),
-      label: Text(texto, style: const TextStyle(fontWeight: FontWeight.normal)),
+      label: Text(
+        texto,
+        style: TextStyle(
+          fontSize: tamanhoFonteLinks,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
       style: TextButton.styleFrom(
         foregroundColor: cor ?? Colors.blue.shade800,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

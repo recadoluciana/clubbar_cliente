@@ -1431,6 +1431,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 whatsappEvento: detalhe.whatsappEvento,
                 mostrarContatoEvento: true,
                 centralizado: true,
+                tamanhoFonteLinks: 12,
                 tituloEmNegrito: false,
                 cor: corRodape,
               ),
