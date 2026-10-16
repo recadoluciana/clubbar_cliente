@@ -1201,7 +1201,10 @@ class ApiService {
   Future<List<EventoLote>> buscarLotesDoEvento(int eventoId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/eventos/$eventoId/lotes_todos'),
+        // O cliente compra somente no lote comercial vigente. O endpoint
+        // específico resolve a virada sequencial e nunca devolve os lotes
+        // anteriores ou os próximos.
+        Uri.parse('$baseUrl/eventos/$eventoId/lotes'),
         headers: {'Content-Type': 'application/json'},
       );
 
