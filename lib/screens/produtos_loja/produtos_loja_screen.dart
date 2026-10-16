@@ -553,6 +553,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
     final ehCortesia = precoAtual <= 0;
+    final cortesiaDisponivel = produto.cortesiaDisponivel == true;
 
     final seloDesconto = produto.tipodesconto.toUpperCase() == 'PERCENTUAL'
         ? '${produto.vrdesconto.toStringAsFixed(0)}% OFF'
@@ -576,7 +577,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 imagem: imagem,
                 temDesconto: temDesconto,
                 seloDesconto: seloDesconto,
-                ehCortesia: ehCortesia,
                 onTap: () => _abrirDetalhesProduto(produto),
               ),
               VerticalDivider(width: 1, color: Colors.grey.shade100),
@@ -669,38 +669,51 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       SizedBox(
                         width: double.infinity,
                         height: 34,
-                        child: ElevatedButton.icon(
-                          onPressed:
-                              produtosEmAlteracao.contains(
-                                _chaveItemCardapio(produto),
-                              )
-                              ? null
-                              : () => adicionarProdutoAoCarrinho(
-                                  produto,
-                                  quantidade:
-                                      quantidadesSelecionadas[_chaveItemCardapio(
+                        child: Row(
+                          children: [
+                            if (ehCortesia) ...[
+                              _seloCortesiaDisponibilidade(cortesiaDisponivel),
+                              const SizedBox(width: 8),
+                            ],
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed:
+                                    produtosEmAlteracao.contains(
+                                          _chaveItemCardapio(produto),
+                                        ) ||
+                                        (ehCortesia && !cortesiaDisponivel)
+                                    ? null
+                                    : () => adicionarProdutoAoCarrinho(
                                         produto,
-                                      )] ??
-                                      1,
+                                        quantidade:
+                                            quantidadesSelecionadas[_chaveItemCardapio(
+                                              produto,
+                                            )] ??
+                                            1,
+                                      ),
+                                icon: const Icon(
+                                  Icons.add_shopping_cart_rounded,
+                                  size: 17,
                                 ),
-                          icon: const Icon(
-                            Icons.add_shopping_cart_rounded,
-                            size: 17,
-                          ),
-                          label: const Text('Carrinho'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber,
-                            foregroundColor: Colors.black,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            textStyle: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                                label: const Text('Carrinho'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.amber,
+                                  foregroundColor: Colors.black,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  textStyle: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                          ],
                         ),
                       ),
                     ],
@@ -727,7 +740,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     required String imagem,
     required bool temDesconto,
     required String seloDesconto,
-    required bool ehCortesia,
     required VoidCallback onTap,
   }) {
     return SizedBox(
@@ -765,12 +777,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 top: 7,
                 child: _seloProduto(seloDesconto, Colors.red),
               ),
-            if (ehCortesia)
-              Positioned(
-                left: 7,
-                bottom: 7,
-                child: _seloProduto('Cortesia', Colors.green.shade700),
-              ),
           ],
         ),
       ),
@@ -789,6 +795,29 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         style: const TextStyle(
           color: Colors.white,
           fontSize: 9,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _seloCortesiaDisponibilidade(bool disponivel) {
+    final cor = disponivel ? Colors.green.shade700 : Colors.red.shade700;
+    final texto = disponivel ? 'Cortesia disponível' : 'Cortesia esgotada';
+
+    return Container(
+      height: 30,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: cor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        texto,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
           fontWeight: FontWeight.w800,
         ),
       ),
