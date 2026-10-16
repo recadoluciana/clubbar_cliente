@@ -931,14 +931,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : lote.nomeModalidade;
   }
 
-  bool get _exibirNomeSetor {
-    final setores = lotes
-        .map((lote) => lote.nomeSetor.trim())
-        .where((nome) => nome.isNotEmpty)
-        .toSet();
-    return setores.length > 1;
-  }
-
   Widget cardLoteGlobal(
     List<List<EventoLote>> setores, {
     required bool exibirNomeLote,
@@ -954,7 +946,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(2, 0, 2, 6),
               child: Text(
-                lote.nome,
+                'Lote: ${lote.nome}',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
@@ -1017,6 +1009,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final vendaDisponivel = lote.podeComprarEm(DateTime.now());
     final disponivel = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivel > 0;
+    final cortesiaEsgotada = ehCortesia && !modalidadeDisponivel;
     final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
     final taxa = lote.preco <= 0
         ? 0.0
@@ -1056,6 +1049,29 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   ),
               ],
             ),
+            if (cortesiaEsgotada)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.red.shade300),
+                  ),
+                  child: Text(
+                    'Cortesias esgotadas',
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
             if (lote.exigeComprovante)
               const Padding(
                 padding: EdgeInsets.only(top: 2),
@@ -1844,9 +1860,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ..._lotesGlobaisAgrupados.map(
                               (setores) => cardLoteGlobal(
                                 setores,
-                                exibirNomeLote:
-                                    _lotesGlobaisAgrupados.length > 1,
-                                exibirNomeSetor: _exibirNomeSetor,
+                                exibirNomeLote: true,
+                                exibirNomeSetor: true,
                               ),
                             ),
                             Center(
