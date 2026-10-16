@@ -813,6 +813,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             dataHoraEvento: DateFormatters.dataHoraSimples(
               evento?.dataInicio ?? '',
             ),
+            imagemEventoUrl: evento?.bannerUrl ?? '',
             nomeLote: lote.nome,
             nomeSetor: lote.nomeSetor.trim().isEmpty
                 ? 'Setor não informado'

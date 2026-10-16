@@ -17,6 +17,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
   final Map<String, dynamic> reserva;
   final String nomeEvento;
   final String dataHoraEvento;
+  final String imagemEventoUrl;
   final String nomeLote;
   final String nomeSetor;
   final String modalidade;
@@ -28,6 +29,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
     required this.reserva,
     required this.nomeEvento,
     required this.dataHoraEvento,
+    this.imagemEventoUrl = '',
     required this.nomeLote,
     required this.nomeSetor,
     required this.modalidade,
@@ -252,6 +254,59 @@ class _ParticipantesReservaScreenState
     );
   }
 
+  Widget _logoEvento() {
+    final imagem = widget.imagemEventoUrl.trim();
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: SizedBox(
+        width: 64,
+        height: 64,
+        child: imagem.isEmpty
+            ? Container(
+                color: Colors.white.withValues(alpha: 0.7),
+                child: const Icon(
+                  Icons.local_activity_outlined,
+                  color: Colors.black87,
+                  size: 30,
+                ),
+              )
+            : Image.network(
+                imagem,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Container(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  child: const Icon(
+                    Icons.local_activity_outlined,
+                    color: Colors.black87,
+                    size: 30,
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  InputDecoration _campoParticipante(String texto) {
+    return InputDecoration(
+      labelText: texto,
+      isDense: true,
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade400),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Colors.green, width: 1.5),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
@@ -294,21 +349,39 @@ class _ParticipantesReservaScreenState
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Card(
-              color: Colors.white,
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFFF9E9), Color(0xFFFFE6A6)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFECCB72)),
+              ),
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
+                padding: const EdgeInsets.all(14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.nomeEvento,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _logoEvento(),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            widget.nomeEvento,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              height: 1.2,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     _linhaResumo('Data e hora', widget.dataHoraEvento),
                     Wrap(
                       spacing: 12,
@@ -343,58 +416,69 @@ class _ParticipantesReservaScreenState
             ),
             const SizedBox(height: 12),
             for (var i = 0; i < nomes.length; i++)
-              Card(
+              Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Participante ${i + 1}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: nomes[i],
-                        decoration: const InputDecoration(
-                          labelText: 'Nome completo',
-                          isDense: true,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: cpfs[i],
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'CPF',
-                          isDense: true,
-                        ),
-                      ),
-                      if (widget.beneficios.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        DropdownButtonFormField<int>(
-                          initialValue: beneficiosParticipantes[i],
-                          isDense: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Benefício',
-                            isDense: true,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 28,
+                          height: 28,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            shape: BoxShape.circle,
                           ),
-                          items: widget.beneficios
-                              .map(
-                                (beneficio) => DropdownMenuItem<int>(
-                                  value: beneficio.id,
-                                  child: Text(beneficio.nome),
-                                ),
-                              )
-                              .toList(growable: false),
-                          onChanged: (valor) => setState(
-                            () => beneficiosParticipantes[i] = valor,
+                          child: Icon(
+                            Icons.person_outline_rounded,
+                            size: 17,
+                            color: Colors.grey.shade700,
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Participante ${i + 1}',
+                          style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: nomes[i],
+                      decoration: _campoParticipante('Nome completo'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: cpfs[i],
+                      keyboardType: TextInputType.number,
+                      decoration: _campoParticipante('CPF'),
+                    ),
+                    if (widget.beneficios.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<int>(
+                        initialValue: beneficiosParticipantes[i],
+                        isDense: true,
+                        decoration: _campoParticipante('Benefício'),
+                        items: widget.beneficios
+                            .map(
+                              (beneficio) => DropdownMenuItem<int>(
+                                value: beneficio.id,
+                                child: Text(beneficio.nome),
+                              ),
+                            )
+                            .toList(growable: false),
+                        onChanged: (valor) =>
+                            setState(() => beneficiosParticipantes[i] = valor),
+                      ),
                     ],
-                  ),
+                  ],
                 ),
               ),
             const SizedBox(height: 12),
