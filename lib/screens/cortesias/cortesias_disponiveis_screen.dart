@@ -31,7 +31,7 @@ class CortesiasDisponiveisScreen extends StatelessWidget {
             ? const Icon(Icons.local_activity_outlined, size: 32)
             : Image.network(
                 url,
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 errorBuilder: (_, _, _) =>
                     const Icon(Icons.local_activity_outlined, size: 32),
               ),
@@ -98,7 +98,10 @@ class CortesiasDisponiveisScreen extends StatelessWidget {
                       evento.nomeLoja,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 13,
+                      ),
                     ),
                     const SizedBox(height: 7),
                     const Row(
@@ -154,10 +157,8 @@ class CortesiasDisponiveisScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               itemCount: eventos.length,
               separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) => _cardEvento(
-                context,
-                eventos[index],
-              ),
+              itemBuilder: (context, index) =>
+                  _cardEvento(context, eventos[index]),
             ),
           ),
         ],
