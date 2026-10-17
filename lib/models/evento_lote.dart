@@ -47,6 +47,9 @@ class EventoLote {
   final int? qtCapacidadeRestante;
   final int? qtLimiteModalidade;
   final int? qtDisponivelModalidade;
+  final int? minutosAposInicioParaEntrada;
+  final bool travarEntradaAposLimite;
+  final String? horarioLimiteEntrada;
   final String status;
   final String dataInicioVenda;
   final String dataFimVenda;
@@ -78,6 +81,9 @@ class EventoLote {
     this.qtCapacidadeRestante,
     this.qtLimiteModalidade,
     this.qtDisponivelModalidade,
+    this.minutosAposInicioParaEntrada,
+    this.travarEntradaAposLimite = false,
+    this.horarioLimiteEntrada,
     required this.status,
     required this.dataInicioVenda,
     required this.dataFimVenda,
@@ -179,6 +185,11 @@ class EventoLote {
       qtDisponivelModalidade: json['qtdisponivelmodalidade'] == null
           ? null
           : _toInt(json['qtdisponivelmodalidade']),
+      minutosAposInicioParaEntrada: json['nrminutosaposinicio'] == null
+          ? null
+          : _toInt(json['nrminutosaposinicio']),
+      travarEntradaAposLimite: json['travarentradaaposlimite'] == true,
+      horarioLimiteEntrada: json['horariolimiteentradacortesia']?.toString(),
       status: (json['statuslote'] ?? 'ATIVO').toString(),
       dataInicioVenda: (json['dtiniciovenda'] ?? '').toString(),
       dataFimVenda: (json['dtfimvenda'] ?? '').toString(),

@@ -378,6 +378,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       'nmparticipante',
     ], padrao: 'Não informado');
     final cpfParticipante = _formatarCpf(item['cpfparticipante'] ?? '');
+    final horarioLimiteEntrada = (item['horariolimiteentradacortesia'] ?? '')
+        .toString()
+        .trim();
 
     if (token.isEmpty) {
       AppSnackBar.erro(context, 'QR Code não disponível para este item.');
@@ -435,6 +438,26 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         Text('Setor: $setor'),
                         const SizedBox(height: 4),
                         Text('Modalidade: $modalidade'),
+                        if (horarioLimiteEntrada.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.orange.shade300),
+                            ),
+                            child: Text(
+                              'Válido para entrada até as $horarioLimiteEntrada horas.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.deepOrange.shade700,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
                         if (beneficio.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text('Benefício: $beneficio'),

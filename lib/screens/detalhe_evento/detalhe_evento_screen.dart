@@ -1080,6 +1080,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ),
+            if (ehCortesia && lote.horarioLimiteEntrada != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  'Válido para entrada até as ${lote.horarioLimiteEntrada} horas.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.deepOrange.shade700,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
             const SizedBox(height: 6),
             Text(
               '$disponivel ingresso${disponivel == 1 ? '' : 's'} disponíve${disponivel == 1 ? 'l' : 'is'} ${ehMeiaLegal && lote.qtLimiteModalidade == null ? 'nesta cota' : 'nesta modalidade'}',
