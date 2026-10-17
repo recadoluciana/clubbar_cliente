@@ -613,6 +613,29 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<Map<String, dynamic>> resgatarCortesiaProduto({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+    required int cardapioItemId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/resgatar-cortesia-produto'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+        'cardapioitem_id': cardapioItemId,
+      }),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<void> cadastrarCliente({
     required String nome,
     required String email,

@@ -6,6 +6,7 @@ import '../../models/produto.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
@@ -212,6 +213,44 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       if (!mounted) return;
 
       AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+    } finally {
+      if (mounted) {
+        setState(() => produtosEmAlteracao.remove(chaveItem));
+      }
+    }
+  }
+
+  Future<void> resgatarCortesiaProduto(Produto produto) async {
+    if (clienteId == null || clienteId == 0) {
+      await direcionarParaLogin(
+        context,
+        mensagem: 'Entre para resgatar a cortesia.',
+      );
+      return;
+    }
+    if (produto.cardapioItemId == null) {
+      AppSnackBar.erro(context, 'Esta cortesia não está disponível agora.');
+      return;
+    }
+
+    final chaveItem = _chaveItemCardapio(produto);
+    if (produtosEmAlteracao.contains(chaveItem)) return;
+    setState(() => produtosEmAlteracao.add(chaveItem));
+
+    try {
+      await apiService.resgatarCortesiaProduto(
+        clienteId: clienteId!,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        cardapioItemId: produto.cardapioItemId!,
+      );
+      CarteiraBadgeNotifier.atualizar();
+      await carregarDados();
+      if (!mounted) return;
+      AppSnackBar.sucesso(context, 'Cortesia resgatada com sucesso.');
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     } finally {
       if (mounted) {
         setState(() => produtosEmAlteracao.remove(chaveItem));
@@ -554,6 +593,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
     final ehCortesia = precoAtual <= 0;
     final cortesiaDisponivel = produto.cortesiaDisponivel == true;
+    final cortesiasRestantes = produto.cortesiasRestantes ?? 0;
+    final resgatandoCortesia = produtosEmAlteracao.contains(
+      _chaveItemCardapio(produto),
+    );
 
     final seloDesconto = produto.tipodesconto.toUpperCase() == 'PERCENTUAL'
         ? '${produto.vrdesconto.toStringAsFixed(0)}% OFF'
@@ -576,6 +619,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               _imagemProdutoCard(
                 imagem: imagem,
                 temDesconto: temDesconto,
+                ehCortesia: ehCortesia,
                 seloDesconto: seloDesconto,
                 onTap: () => _abrirDetalhesProduto(produto),
               ),
@@ -665,6 +709,21 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ),
                         ),
                       ),
+                      if (ehCortesia) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          cortesiaDisponivel
+                              ? '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
+                              : 'Cortesias esgotadas',
+                          style: TextStyle(
+                            color: cortesiaDisponivel
+                                ? Colors.green.shade800
+                                : Colors.red.shade700,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 5),
                       SizedBox(
                         width: double.infinity,
@@ -672,16 +731,58 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         child: Row(
                           children: [
                             if (ehCortesia) ...[
-                              _seloCortesiaDisponibilidade(cortesiaDisponivel),
+                              Expanded(
+                                flex: 3,
+                                child: ElevatedButton.icon(
+                                  onPressed:
+                                      resgatandoCortesia || !cortesiaDisponivel
+                                      ? null
+                                      : () => resgatarCortesiaProduto(produto),
+                                  icon: resgatandoCortesia
+                                      ? const SizedBox(
+                                          width: 15,
+                                          height: 15,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const Icon(
+                                          Icons.redeem_rounded,
+                                          size: 16,
+                                        ),
+                                  label: const Text('Resgatar cortesia'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green.shade700,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor:
+                                        Colors.grey.shade300,
+                                    disabledForegroundColor:
+                                        Colors.grey.shade600,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 7,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
                               const SizedBox(width: 8),
                             ],
                             Expanded(
+                              flex: ehCortesia ? 2 : 1,
                               child: ElevatedButton.icon(
-                                onPressed:
-                                    produtosEmAlteracao.contains(
-                                          _chaveItemCardapio(produto),
-                                        ) ||
-                                        (ehCortesia && !cortesiaDisponivel)
+                                onPressed: ehCortesia
+                                    ? null
+                                    : produtosEmAlteracao.contains(
+                                        _chaveItemCardapio(produto),
+                                      )
                                     ? null
                                     : () => adicionarProdutoAoCarrinho(
                                         produto,
@@ -699,6 +800,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.amber,
                                   foregroundColor: Colors.black,
+                                  disabledBackgroundColor: Colors.grey.shade300,
+                                  disabledForegroundColor: Colors.grey.shade600,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -739,6 +842,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget _imagemProdutoCard({
     required String imagem,
     required bool temDesconto,
+    required bool ehCortesia,
     required String seloDesconto,
     required VoidCallback onTap,
   }) {
@@ -777,6 +881,12 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 top: 7,
                 child: _seloProduto(seloDesconto, Colors.red),
               ),
+            if (ehCortesia)
+              Positioned(
+                left: 7,
+                bottom: 7,
+                child: _seloProduto('Cortesia', Colors.green.shade700),
+              ),
           ],
         ),
       ),
@@ -795,29 +905,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         style: const TextStyle(
           color: Colors.white,
           fontSize: 9,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-
-  Widget _seloCortesiaDisponibilidade(bool disponivel) {
-    final cor = disponivel ? Colors.green.shade700 : Colors.red.shade700;
-    final texto = disponivel ? 'Cortesia disponível' : 'Cortesia esgotada';
-
-    return Container(
-      height: 30,
-      padding: const EdgeInsets.symmetric(horizontal: 9),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: cor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        texto,
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 10,
           fontWeight: FontWeight.w800,
         ),
       ),

@@ -20,6 +20,8 @@ class Produto {
   final double vrprecofinal;
   final bool descontoativo;
   final bool? cortesiaDisponivel;
+  final int? cortesiasResgatadas;
+  final int? cortesiasRestantes;
   final String nmloja;
   final int quantidadeVendida;
 
@@ -42,6 +44,8 @@ class Produto {
     required this.vrprecofinal,
     required this.descontoativo,
     this.cortesiaDisponivel,
+    this.cortesiasResgatadas,
+    this.cortesiasRestantes,
     this.nmloja = '',
     this.quantidadeVendida = 0,
   });
@@ -76,6 +80,12 @@ class Produto {
           .toDouble(),
       descontoativo: json['descontoativo'] ?? false,
       cortesiaDisponivel: json['cortesia_disponivel'] as bool?,
+      cortesiasResgatadas: int.tryParse(
+        (json['qtcortesiasresgatadas'] ?? '').toString(),
+      ),
+      cortesiasRestantes: int.tryParse(
+        (json['qtcortesiasrestantes'] ?? '').toString(),
+      ),
       nmloja: (json['nmloja'] ?? '').toString(),
       quantidadeVendida:
           int.tryParse((json['quantidade_vendida'] ?? 0).toString()) ?? 0,
