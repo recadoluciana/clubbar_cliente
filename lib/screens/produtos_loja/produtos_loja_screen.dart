@@ -612,7 +612,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         elevation: 2,
         clipBehavior: Clip.antiAlias,
         child: SizedBox(
-          height: 140,
+          height: 156,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
