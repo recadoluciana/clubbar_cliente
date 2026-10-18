@@ -16,6 +16,7 @@ import '../login/login_screen.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/horario_brasil.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -285,7 +286,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (valor.trim().isEmpty) return 'Data não informada';
 
     try {
-      final data = DateTime.parse(valor).toLocal();
+      final data = HorarioBrasil.deTextoBrasil(valor);
+      if (data == null) return valor;
       return DateFormat('dd/MM/yyyy - HH:mm').format(data);
     } catch (_) {
       return valor;
@@ -657,7 +659,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _lojaNova(Loja loja) {
     final data = loja.dataCriacao;
     if (data == null) return false;
-    final agora = DateTime.now();
+    final agora = HorarioBrasil.agora();
     final anoMesAnterior = agora.month == 1 ? agora.year - 1 : agora.year;
     final mesAnterior = agora.month == 1 ? 12 : agora.month - 1;
     final diaLimite = min(

@@ -1,3 +1,5 @@
+import '../utils/horario_brasil.dart';
+
 class BeneficioIngresso {
   final int id;
   final String codigo;
@@ -121,8 +123,8 @@ class EventoLote {
     if (statusNormalizado != 'ATIVO') return false;
     if (qtDisponivelParaCompra <= 0) return false;
 
-    final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
-    final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
+    final inicio = HorarioBrasil.deTextoBrasil(dataInicioVenda);
+    final fim = HorarioBrasil.deTextoBrasil(dataFimVenda);
     if (inicio != null && agora.isBefore(inicio)) return false;
     if (fim != null && agora.isAfter(fim)) return false;
     return true;
@@ -137,8 +139,8 @@ class EventoLote {
     if (statusNormalizado == 'AGUARDANDO') return 'Em breve';
     if (statusNormalizado == 'ENCERRADO') return 'Vendas encerradas';
 
-    final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
-    final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
+    final inicio = HorarioBrasil.deTextoBrasil(dataInicioVenda);
+    final fim = HorarioBrasil.deTextoBrasil(dataFimVenda);
     if (inicio != null && agora.isBefore(inicio)) return 'Em breve';
     if (fim != null && agora.isAfter(fim)) return 'Vendas encerradas';
     return statusNormalizado == 'ATIVO' ? 'Disponível' : 'Indisponível';

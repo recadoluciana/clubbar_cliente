@@ -5,6 +5,7 @@ import '../../models/evento.dart';
 import '../../services/api_service.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/horario_brasil.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
@@ -15,7 +16,7 @@ class CortesiasDisponiveisScreen extends StatelessWidget {
   const CortesiasDisponiveisScreen({super.key, required this.eventos});
 
   String _formatarData(String valor) {
-    final data = DateTime.tryParse(valor)?.toLocal();
+    final data = HorarioBrasil.deTextoBrasil(valor);
     if (data == null) return 'Data não informada';
     return DateFormat("EEEE, dd/MM 'às' HH'h'", 'pt_BR').format(data);
   }

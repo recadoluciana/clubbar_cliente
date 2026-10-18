@@ -2,12 +2,15 @@
 
 import 'package:intl/intl.dart';
 
+import 'horario_brasil.dart';
+
 class DateFormatters {
   static String dataCompleta(String valor) {
     if (valor.trim().isEmpty) return 'Data não informada';
 
     try {
-      final data = DateTime.parse(valor).toLocal();
+      final data = HorarioBrasil.deTextoBrasil(valor);
+      if (data == null) return valor;
 
       final diaSemana = DateFormat('EEEE', 'pt_BR').format(data);
       final dataFormatada = DateFormat('dd/MM/yyyy').format(data);
@@ -26,7 +29,8 @@ class DateFormatters {
     if (valor.trim().isEmpty) return 'Não informado';
 
     try {
-      final data = DateTime.parse(valor).toLocal();
+      final data = HorarioBrasil.deTextoBrasil(valor);
+      if (data == null) return valor;
 
       return DateFormat('dd/MM/yyyy \'às\' HH\'h\'mm', 'pt_BR').format(data);
     } catch (_) {

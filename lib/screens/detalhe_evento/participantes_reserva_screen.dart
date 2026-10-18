@@ -7,6 +7,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/cpf_utils.dart';
+import '../../utils/horario_brasil.dart';
 import '../../utils/value_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
@@ -64,14 +65,14 @@ class _ParticipantesReservaScreenState
       beneficiosParticipantes.add(null);
     }
     expiraEm =
-        DateTime.tryParse('${widget.reserva['data_expiracao']}') ??
-        DateTime.now().add(const Duration(minutes: 5));
+        HorarioBrasil.deTextoBrasil(widget.reserva['data_expiracao']) ??
+        HorarioBrasil.agora().add(const Duration(minutes: 5));
     _tick();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
 
   void _tick() {
-    final valor = expiraEm.difference(DateTime.now());
+    final valor = expiraEm.difference(HorarioBrasil.agora());
     if (!mounted) return;
     setState(() => restante = valor.isNegative ? Duration.zero : valor);
     if (valor <= Duration.zero) {

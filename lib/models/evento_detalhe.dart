@@ -1,3 +1,5 @@
+import '../utils/horario_brasil.dart';
+
 class EventoDetalhe {
   final int id;
   final String titulo;
@@ -48,10 +50,9 @@ class EventoDetalhe {
   });
 
   bool get jaIniciado {
-    final inicio = DateTime.tryParse(dataInicio);
+    final inicio = HorarioBrasil.deTextoBrasil(dataInicio);
     if (inicio == null) return false;
-    final inicioLocal = inicio.isUtc ? inicio.toLocal() : inicio;
-    return !DateTime.now().isBefore(inicioLocal);
+    return !HorarioBrasil.agora().isBefore(inicio);
   }
 
   factory EventoDetalhe.fromJson(Map<String, dynamic> json) {

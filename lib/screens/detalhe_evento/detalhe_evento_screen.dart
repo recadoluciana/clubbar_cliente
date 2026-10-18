@@ -17,6 +17,7 @@ import '../../core/theme/app_colors.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
+import '../../utils/horario_brasil.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import 'participantes_reserva_screen.dart';
 import '../pagamento/politica_compra_screen.dart';
@@ -93,7 +94,7 @@ class _ModalidadesIngressoScreenState
   @override
   Widget build(BuildContext context) {
     final lote = widget.opcoes.first;
-    final vendaDisponivel = lote.podeComprarEm(DateTime.now());
+    final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
     final nomeSetor = lote.nomeSetor.trim();
     final descricaoSetor = lote.descricaoSetor.trim();
     final descricaoPadrao =
@@ -1006,7 +1007,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 1;
     final ehCortesia = _ehCortesia(lote);
     final ehMeiaLegal = lote.aplicaCotaLegal;
-    final vendaDisponivel = lote.podeComprarEm(DateTime.now());
+    final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
     final disponivel = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivel > 0;
     final cortesiaEsgotada = ehCortesia && !modalidadeDisponivel;

@@ -18,6 +18,7 @@ import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../carteira/carteira_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/horario_brasil.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -126,7 +127,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     final expiracao = widget.reservaExpiracao;
     if (expiracao == null || _reservaExpirada) return;
 
-    final restante = expiracao.difference(DateTime.now());
+    final restante = expiracao.difference(HorarioBrasil.agora());
     final atualizado = restante.isNegative ? Duration.zero : restante;
     if (mounted) setState(() => _tempoReservaRestante = atualizado);
     if (atualizado > Duration.zero) return;

@@ -1,3 +1,5 @@
+import '../utils/horario_brasil.dart';
+
 class AtracaoEvento {
   final int id;
   final String nome;
@@ -19,9 +21,11 @@ class AtracaoEvento {
           .toString()
           .trim(),
       estilos: (json['estilos'] as List? ?? const [])
-          .map((estilo) => estilo is Map
-              ? (estilo['nmestilomusical'] ?? '').toString().trim()
-              : estilo.toString().trim())
+          .map(
+            (estilo) => estilo is Map
+                ? (estilo['nmestilomusical'] ?? '').toString().trim()
+                : estilo.toString().trim(),
+          )
           .where((estilo) => estilo.isNotEmpty)
           .toList(growable: false),
     );
@@ -61,10 +65,9 @@ class Evento {
   });
 
   bool get jaIniciado {
-    final inicio = DateTime.tryParse(data);
+    final inicio = HorarioBrasil.deTextoBrasil(data);
     if (inicio == null) return false;
-    final inicioLocal = inicio.isUtc ? inicio.toLocal() : inicio;
-    return !DateTime.now().isBefore(inicioLocal);
+    return !HorarioBrasil.agora().isBefore(inicio);
   }
 
   factory Evento.fromJson(Map<String, dynamic> json) {
