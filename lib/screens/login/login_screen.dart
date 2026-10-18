@@ -85,16 +85,26 @@ class _LoginScreenState extends State<LoginScreen> {
   String traduzirErro(String erro) {
     final msg = erro.toLowerCase();
 
+    if (msg.contains('e-mail digitado não encontrado') ||
+        msg.contains('email digitado não encontrado')) {
+      return 'E-mail digitado não encontrado. Verifique o e-mail informado.';
+    }
+
+    if (msg.contains('senha não está correta') ||
+        msg.contains('senha nao esta correta')) {
+      return 'Senha não está correta. Verifique e tente novamente.';
+    }
+
     if (msg.contains('invalid credentials')) {
-      return 'E-mail ou senha inválidos.Verifique e tente novamente.';
+      return 'E-mail digitado não encontrado. Verifique o e-mail informado.';
     }
 
     if (msg.contains('senha')) {
-      return 'Senha inválida. Verifique e tente novamente.';
+      return 'Senha não está correta. Verifique e tente novamente.';
     }
 
     if (msg.contains('email') || msg.contains('e-mail')) {
-      return 'E-mail inválido. Verifique e tente novamente.';
+      return 'E-mail digitado não encontrado. Verifique o e-mail informado.';
     }
 
     if (msg.contains('connection') ||
