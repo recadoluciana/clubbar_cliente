@@ -235,6 +235,30 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
     final chaveItem = _chaveItemCardapio(produto);
     if (produtosEmAlteracao.contains(chaveItem)) return;
+
+    final confirmou = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Resgatar cortesia'),
+        content: Text('Confirma o resgate da cortesia ${produto.nmproduto}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade700,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Resgatar'),
+          ),
+        ],
+      ),
+    );
+    if (!mounted || confirmou != true) return;
+
     setState(() => produtosEmAlteracao.add(chaveItem));
 
     try {
