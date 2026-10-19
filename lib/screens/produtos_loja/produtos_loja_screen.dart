@@ -1095,10 +1095,10 @@ class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
     super.initState();
     const angulosPorPremio = <int, double>{
       0: 0,
-      10: math.pi * 2 / 5,
-      20: math.pi * 4 / 5,
-      30: math.pi * 6 / 5,
-      50: math.pi * 8 / 5,
+      10: math.pi * 8 / 5,
+      20: math.pi * 6 / 5,
+      30: math.pi * 4 / 5,
+      50: math.pi * 2 / 5,
     };
     _controller = AnimationController(
       vsync: this,
@@ -1142,12 +1142,7 @@ class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
                 animation: _rotacao,
                 builder: (_, child) =>
                     Transform.rotate(angle: _rotacao.value, child: child),
-                child: Image.asset(
-                  'assets/images/roleta_promocional.png',
-                  width: 245,
-                  height: 245,
-                  fit: BoxFit.contain,
-                ),
+                child: const _RoletaComPercentuais(),
               ),
             ),
             const SizedBox(height: 3),
@@ -1188,6 +1183,56 @@ class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
           child: const Text('Usar desconto'),
         ),
       ],
+    );
+  }
+}
+
+class _RoletaComPercentuais extends StatelessWidget {
+  const _RoletaComPercentuais();
+
+  @override
+  Widget build(BuildContext context) {
+    const estilo = TextStyle(
+      color: Colors.white,
+      fontSize: 23,
+      fontWeight: FontWeight.w900,
+      shadows: [
+        Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(1, 2)),
+      ],
+    );
+    return SizedBox(
+      width: 245,
+      height: 245,
+      child: Stack(
+        children: const [
+          Positioned.fill(
+            child: Image(
+              image: AssetImage('assets/images/roleta_promocional.png'),
+              fit: BoxFit.contain,
+            ),
+          ),
+          Align(
+            alignment: Alignment(0, -0.48),
+            child: Text('0%', style: estilo),
+          ),
+          Align(
+            alignment: Alignment(0.52, -0.15),
+            child: Text('10%', style: estilo),
+          ),
+          Align(
+            alignment: Alignment(0.33, 0.48),
+            child: Text('20%', style: estilo),
+          ),
+          Align(
+            alignment: Alignment(-0.33, 0.48),
+            child: Text('30%', style: estilo),
+          ),
+          Align(
+            alignment: Alignment(-0.52, -0.15),
+            child: Text('50%', style: estilo),
+          ),
+        ],
+      ),
     );
   }
 }
