@@ -454,6 +454,25 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<Map<String, dynamic>> resgatarCortesiaDaCampanha({
+    required int campanhaId,
+    required int clienteId,
+  }) async {
+    final token = await AuthStorage().obterToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/resgatar-cortesia'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'cliente_id': clienteId}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> criarReservaIngresso({
     required int clienteId,
     required int loteId,

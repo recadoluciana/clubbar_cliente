@@ -47,6 +47,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   final Map<int, int> quantidadesSelecionadas = {};
   final Set<int> produtosEmAlteracao = {};
   final Map<int, Map<String, dynamic>> _roletasPorProduto = {};
+  final Map<int, Map<String, dynamic>> _cortesiasPorProduto = {};
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -86,18 +87,22 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       produtos = (resultados[1] as List<Produto>)
           .where((produto) => produto.sitproduto.toUpperCase() == 'ATIVO')
           .toList();
+      _roletasPorProduto.clear();
+      _cortesiasPorProduto.clear();
       if (clienteId != null && clienteId! > 0) {
         final ofertas = await apiService.beneficiosProdutosAtivos(
           lojaId: widget.loja.id,
           clienteId: clienteId!,
         );
-        _roletasPorProduto
-          ..clear()
-          ..addEntries(
-            ofertas
-                .where((o) => o['tipo'] == 'ROLETA')
-                .map((o) => MapEntry(int.parse('${o['produto_id']}'), o)),
-          );
+        for (final oferta in ofertas) {
+          final produtoId = int.tryParse('${oferta['produto_id']}');
+          if (produtoId == null) continue;
+          if (oferta['tipo'] == 'ROLETA') {
+            _roletasPorProduto[produtoId] = oferta;
+          } else if (oferta['tipo'] == 'CORTESIA') {
+            _cortesiasPorProduto[produtoId] = oferta;
+          }
+        }
       }
       final categoriasComProdutos = produtos
           .map((produto) => produto.categoriaId)
@@ -276,7 +281,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     }
   }
 
-  Future<void> resgatarCortesiaProduto(Produto produto) async {
+  Future<void> resgatarCortesiaProduto(
+    Produto produto,
+    Map<String, dynamic>? campanha,
+  ) async {
     if (clienteId == null || clienteId == 0) {
       await direcionarParaLogin(
         context,
@@ -284,7 +292,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       );
       return;
     }
-    if (produto.cardapioItemId == null) {
+    if (campanha == null && produto.cardapioItemId == null) {
       AppSnackBar.erro(context, 'Esta cortesia não está disponível agora.');
       return;
     }
@@ -318,12 +326,19 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     setState(() => produtosEmAlteracao.add(chaveItem));
 
     try {
-      await apiService.resgatarCortesiaProduto(
-        clienteId: clienteId!,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-        cardapioItemId: produto.cardapioItemId!,
-      );
+      if (campanha != null) {
+        await apiService.resgatarCortesiaDaCampanha(
+          campanhaId: int.parse('${campanha['campanha_id']}'),
+          clienteId: clienteId!,
+        );
+      } else {
+        await apiService.resgatarCortesiaProduto(
+          clienteId: clienteId!,
+          organizacaoId: widget.loja.organizacaoId,
+          lojaId: widget.loja.id,
+          cardapioItemId: produto.cardapioItemId!,
+        );
+      }
       CarteiraBadgeNotifier.atualizar();
       await carregarDados();
       if (!mounted) return;
@@ -671,9 +686,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final temDesconto = produto.descontoativo;
 
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
-    final ehCortesia = precoAtual <= 0;
-    final cortesiaDisponivel = produto.cortesiaDisponivel == true;
-    final cortesiasRestantes = produto.cortesiasRestantes ?? 0;
+    final campanhaCortesia = _cortesiasPorProduto[produto.produtoId];
+    final ehCortesiaLegada = precoAtual <= 0;
+    final ehCortesia = campanhaCortesia != null || ehCortesiaLegada;
+    final cortesiaDisponivel = campanhaCortesia != null
+        ? true
+        : produto.cortesiaDisponivel == true;
+    final cortesiasRestantes = campanhaCortesia == null
+        ? produto.cortesiasRestantes ?? 0
+        : int.tryParse('${campanhaCortesia['restantes']}') ?? 0;
+    final cortesiasIlimitadas = campanhaCortesia?['restantes'] == null;
     final resgatandoCortesia = produtosEmAlteracao.contains(
       _chaveItemCardapio(produto),
     );
@@ -724,7 +746,39 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
-                            child: temDesconto
+                            child: ehCortesia
+                                ? Text.rich(
+                                    TextSpan(
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 10,
+                                      ),
+                                      children: [
+                                        const TextSpan(text: 'Cortesia: de '),
+                                        TextSpan(
+                                          text: ValueFormatters.moeda(
+                                            produto.vrprecoprod,
+                                          ),
+                                          style: const TextStyle(
+                                            decoration:
+                                                TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                        const TextSpan(text: ' por '),
+                                        TextSpan(
+                                          text: ValueFormatters.moeda(0),
+                                          style: TextStyle(
+                                            color: Colors.green.shade700,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  )
+                                : temDesconto
                                 ? Text.rich(
                                     TextSpan(
                                       style: const TextStyle(
@@ -793,7 +847,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         const SizedBox(height: 2),
                         Text(
                           cortesiaDisponivel
-                              ? '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
+                              ? cortesiasIlimitadas
+                                    ? 'Cortesias disponíveis'
+                                    : '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
                               : 'Cortesias esgotadas',
                           style: TextStyle(
                             color: cortesiaDisponivel
@@ -804,10 +860,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ),
                         ),
                       ],
-                      if (!ehCortesia &&
-                          _roletasPorProduto.containsKey(
-                            produto.produtoId,
-                          )) ...[
+                      if (_roletasPorProduto.containsKey(
+                        produto.produtoId,
+                      )) ...[
                         const SizedBox(height: 3),
                         InkWell(
                           onTap: () => _girarRoleta(produto),
@@ -834,7 +889,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   onPressed:
                                       resgatandoCortesia || !cortesiaDisponivel
                                       ? null
-                                      : () => resgatarCortesiaProduto(produto),
+                                      : () => resgatarCortesiaProduto(
+                                          produto,
+                                          campanhaCortesia,
+                                        ),
                                   icon: resgatandoCortesia
                                       ? const SizedBox(
                                           width: 15,
@@ -875,11 +933,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             Expanded(
                               flex: ehCortesia ? 2 : 1,
                               child: ElevatedButton.icon(
-                                onPressed: ehCortesia
-                                    ? null
-                                    : produtosEmAlteracao.contains(
-                                        _chaveItemCardapio(produto),
-                                      )
+                                onPressed:
+                                    produtosEmAlteracao.contains(
+                                      _chaveItemCardapio(produto),
+                                    )
                                     ? null
                                     : () => adicionarProdutoAoCarrinho(
                                         produto,
@@ -893,7 +950,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   Icons.add_shopping_cart_rounded,
                                   size: 17,
                                 ),
-                                label: const Text('Carrinho'),
+                                label: Text(
+                                  ehCortesia
+                                      ? 'Comprar ${ValueFormatters.moeda(produto.vrprecoprod)}'
+                                      : 'Carrinho',
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.amber,
                                   foregroundColor: Colors.black,
@@ -1012,10 +1073,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final chaveItem = _chaveItemCardapio(produto);
     final quantidade = quantidadesSelecionadas[chaveItem] ?? 1;
     final alterando = produtosEmAlteracao.contains(chaveItem);
-    final precoAtual = produto.descontoativo
-        ? produto.vrprecofinal
-        : produto.vrprecoprod;
-    final ehCortesia = precoAtual <= 0;
 
     return Container(
       decoration: BoxDecoration(
@@ -1054,10 +1111,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ),
           ),
           IconButton(
-            tooltip: ehCortesia
-                ? 'Cortesia limitada a 1 unidade por transação'
-                : 'Aumentar quantidade',
-            onPressed: !alterando && !ehCortesia
+            tooltip: 'Aumentar quantidade',
+            onPressed: !alterando
                 ? () => setState(
                     () => quantidadesSelecionadas[chaveItem] = quantidade + 1,
                   )
