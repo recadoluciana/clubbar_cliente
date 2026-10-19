@@ -689,8 +689,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final campanhaCortesia = _cortesiasPorProduto[produto.produtoId];
     final ehCortesiaLegada = precoAtual <= 0;
     final ehCortesia = campanhaCortesia != null || ehCortesiaLegada;
+    final cortesiaBloqueadaParaCliente =
+        campanhaCortesia?['disponivel_para_cliente'] == false;
     final cortesiaDisponivel = campanhaCortesia != null
-        ? true
+        ? !cortesiaBloqueadaParaCliente
         : produto.cortesiaDisponivel == true;
     final cortesiasRestantes = campanhaCortesia == null
         ? produto.cortesiasRestantes ?? 0
@@ -846,7 +848,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       if (ehCortesia) ...[
                         const SizedBox(height: 2),
                         Text(
-                          cortesiaDisponivel
+                          cortesiaBloqueadaParaCliente
+                              ? 'Você já possui uma cortesia válida deste produto'
+                              : cortesiaDisponivel
                               ? cortesiasIlimitadas
                                     ? 'Cortesias disponíveis'
                                     : '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
