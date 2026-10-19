@@ -838,7 +838,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ? 'Setor não informado'
                 : lote.nomeSetor,
             modalidade: _nomeModalidade(lote),
-            beneficios: lote.beneficios,
+            // A relação retornada ao criar a reserva é a que o servidor
+            // aceitará ao salvar os participantes. Ela evita que uma lista
+            // carregada antes da reserva mostre um benefício já inválido.
+            beneficios: _beneficiosValidosDaReserva(reserva, lote.beneficios),
           ),
         ),
       );
@@ -928,6 +931,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       }
       return porSetor.values.toList();
     }).toList();
+  }
+
+  List<BeneficioIngresso> _beneficiosValidosDaReserva(
+    Map<String, dynamic> reserva,
+    List<BeneficioIngresso> beneficiosDoLote,
+  ) {
+    final dados = reserva['beneficios_validos'];
+    if (dados is! List) return beneficiosDoLote;
+
+    return dados
+        .whereType<Map>()
+        .map(
+          (item) => BeneficioIngresso.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .where((beneficio) => beneficio.id > 0)
+        .toList(growable: false);
   }
 
   String _nomeModalidade(EventoLote lote) {
