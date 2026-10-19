@@ -867,7 +867,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         InkWell(
                           onTap: () => _girarRoleta(produto),
                           child: Text(
-                            '🎰 Girar roleta: até 50% OFF',
+                            '🎰 Girar roleta: 10% ou 20% OFF',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
