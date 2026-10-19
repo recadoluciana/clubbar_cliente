@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../models/categoria.dart';
@@ -252,36 +254,25 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         clienteId: clienteId!,
       );
       if (!mounted) return;
-      final percentual = premio['percentual_desconto'];
-      await showDialog<void>(
+      final percentual = int.tryParse('${premio['percentual_desconto']}') ?? 0;
+      final usarDesconto = await showDialog<bool>(
         context: context,
-        builder: (c) => AlertDialog(
-          title: const Text('Roleta promocional'),
-          content: Text(
-            'Resultado: $percentual% de desconto em ${produto.nmproduto}. Use agora: o prêmio expira em 20 minutos.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(c),
-              child: const Text('Agora não'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(c);
-                await adicionarProdutoAoCarrinho(
-                  produto,
-                  quantidade: 1,
-                  beneficioResgateId: int.parse('${premio['resgate_id']}'),
-                );
-              },
-              child: const Text('Usar desconto'),
-            ),
-          ],
+        barrierDismissible: false,
+        builder: (_) => _RoletaPremioDialog(
+          produtoNome: produto.nmproduto,
+          percentual: percentual,
         ),
       );
+      if (!mounted || usarDesconto != true) return;
+      await adicionarProdutoAoCarrinho(
+        produto,
+        quantidade: 1,
+        beneficioResgateId: int.parse('${premio['resgate_id']}'),
+      );
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+      }
     }
   }
 
@@ -1076,6 +1067,127 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _RoletaPremioDialog extends StatefulWidget {
+  final String produtoNome;
+  final int percentual;
+
+  const _RoletaPremioDialog({
+    required this.produtoNome,
+    required this.percentual,
+  });
+
+  @override
+  State<_RoletaPremioDialog> createState() => _RoletaPremioDialogState();
+}
+
+class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _rotacao;
+  var _concluida = false;
+
+  @override
+  void initState() {
+    super.initState();
+    const angulosPorPremio = <int, double>{
+      0: 0,
+      10: math.pi * 2 / 5,
+      20: math.pi * 4 / 5,
+      30: math.pi * 6 / 5,
+      50: math.pi * 8 / 5,
+    };
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3400),
+    );
+    _rotacao = Tween<double>(
+      begin: 0,
+      end: (math.pi * 2 * 6) + (angulosPorPremio[widget.percentual] ?? 0),
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() => _concluida = true);
+      }
+    });
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Roleta promocional'),
+      content: SizedBox(
+        width: 290,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.arrow_drop_down_rounded,
+              color: Color(0xfff2b600),
+              size: 58,
+            ),
+            Transform.translate(
+              offset: const Offset(0, -21),
+              child: AnimatedBuilder(
+                animation: _rotacao,
+                builder: (_, child) =>
+                    Transform.rotate(angle: _rotacao.value, child: child),
+                child: Image.asset(
+                  'assets/images/roleta_promocional.png',
+                  width: 245,
+                  height: 245,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              _concluida
+                  ? 'Você ganhou ${widget.percentual}% de desconto!'
+                  : 'Girando a roleta...',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: _concluida
+                    ? Colors.green.shade700
+                    : Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 7),
+            Text(
+              _concluida
+                  ? 'Use agora em ${widget.produtoNome}. O prêmio expira em 20 minutos.'
+                  : 'Aguarde o resultado do seu sorteio.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _concluida ? () => Navigator.pop(context, false) : null,
+          child: const Text('Agora não'),
+        ),
+        ElevatedButton(
+          onPressed: _concluida ? () => Navigator.pop(context, true) : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green.shade700,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Usar desconto'),
+        ),
+      ],
     );
   }
 }
