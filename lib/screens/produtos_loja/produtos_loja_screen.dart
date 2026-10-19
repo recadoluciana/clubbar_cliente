@@ -1144,21 +1144,7 @@ class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
                         Transform.rotate(angle: _rotacao.value, child: child),
                     child: const _RoletaComPercentuais(),
                   ),
-                  const Positioned(
-                    top: -9,
-                    child: Icon(
-                      Icons.arrow_drop_down_rounded,
-                      color: Color(0xffd89c00),
-                      size: 72,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black45,
-                          blurRadius: 4,
-                          offset: Offset(1, 2),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const Positioned(top: 0, child: _IndicadorRoleta()),
                 ],
               ),
             ),
@@ -1254,4 +1240,56 @@ class _RoletaComPercentuais extends StatelessWidget {
       ),
     );
   }
+}
+
+class _IndicadorRoleta extends StatelessWidget {
+  const _IndicadorRoleta();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(50, 43),
+      painter: _IndicadorRoletaPainter(),
+    );
+  }
+}
+
+class _IndicadorRoletaPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final sombra = Path()
+      ..moveTo(2, 2)
+      ..lineTo(size.width - 2, 2)
+      ..lineTo(size.width / 2, size.height - 1)
+      ..close();
+    canvas.drawShadow(sombra, Colors.black, 4, true);
+    canvas.drawPath(
+      sombra,
+      Paint()
+        ..color = const Color(0xff3d2600)
+        ..style = PaintingStyle.fill,
+    );
+
+    final ponteiro = Path()
+      ..moveTo(6, 5)
+      ..lineTo(size.width - 6, 5)
+      ..lineTo(size.width / 2, size.height - 6)
+      ..close();
+    canvas.drawPath(
+      ponteiro,
+      Paint()
+        ..color = const Color(0xffffc928)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawPath(
+      ponteiro,
+      Paint()
+        ..color = const Color(0xfffff0b0)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
