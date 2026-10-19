@@ -1131,18 +1131,35 @@ class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.arrow_drop_down_rounded,
-              color: Color(0xfff2b600),
-              size: 58,
-            ),
-            Transform.translate(
-              offset: const Offset(0, -21),
-              child: AnimatedBuilder(
-                animation: _rotacao,
-                builder: (_, child) =>
-                    Transform.rotate(angle: _rotacao.value, child: child),
-                child: const _RoletaComPercentuais(),
+            SizedBox(
+              width: 260,
+              height: 260,
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  AnimatedBuilder(
+                    animation: _rotacao,
+                    builder: (_, child) =>
+                        Transform.rotate(angle: _rotacao.value, child: child),
+                    child: const _RoletaComPercentuais(),
+                  ),
+                  const Positioned(
+                    top: -9,
+                    child: Icon(
+                      Icons.arrow_drop_down_rounded,
+                      color: Color(0xffd89c00),
+                      size: 72,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black45,
+                          blurRadius: 4,
+                          offset: Offset(1, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 3),
@@ -1207,7 +1224,9 @@ class _RoletaComPercentuais extends StatelessWidget {
         children: const [
           Positioned.fill(
             child: Image(
-              image: AssetImage('assets/images/roleta_promocional.png'),
+              image: AssetImage(
+                'assets/images/roleta_promocional_sem_ponteiro.png',
+              ),
               fit: BoxFit.contain,
             ),
           ),
