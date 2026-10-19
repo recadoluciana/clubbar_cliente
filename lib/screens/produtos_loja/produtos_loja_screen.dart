@@ -44,6 +44,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   int quantidadeCarrinho = 0;
   final Map<int, int> quantidadesSelecionadas = {};
   final Set<int> produtosEmAlteracao = {};
+  final Map<int, Map<String, dynamic>> _roletasPorProduto = {};
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -83,6 +84,19 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       produtos = (resultados[1] as List<Produto>)
           .where((produto) => produto.sitproduto.toUpperCase() == 'ATIVO')
           .toList();
+      if (clienteId != null && clienteId! > 0) {
+        final ofertas = await apiService.beneficiosProdutosAtivos(
+          lojaId: widget.loja.id,
+          clienteId: clienteId!,
+        );
+        _roletasPorProduto
+          ..clear()
+          ..addEntries(
+            ofertas
+                .where((o) => o['tipo'] == 'ROLETA')
+                .map((o) => MapEntry(int.parse('${o['produto_id']}'), o)),
+          );
+      }
       final categoriasComProdutos = produtos
           .map((produto) => produto.categoriaId)
           .toSet();
@@ -173,6 +187,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     Produto produto, {
     required int quantidade,
     String observacao = '',
+    int? beneficioResgateId,
   }) async {
     if (clienteId == null || clienteId == 0) {
       await direcionarParaLogin(
@@ -196,6 +211,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         cardapioItemId: produto.cardapioItemId,
         quantidade: quantidade,
         observacao: observacao,
+        beneficioResgateId: beneficioResgateId,
       );
 
       if (!mounted) return;
@@ -217,6 +233,55 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       if (mounted) {
         setState(() => produtosEmAlteracao.remove(chaveItem));
       }
+    }
+  }
+
+  Future<void> _girarRoleta(Produto produto) async {
+    if (clienteId == null || clienteId == 0) {
+      await direcionarParaLogin(
+        context,
+        mensagem: 'Entre para girar a roleta.',
+      );
+      return;
+    }
+    final campanha = _roletasPorProduto[produto.produtoId];
+    if (campanha == null) return;
+    try {
+      final premio = await apiService.girarRoletaProduto(
+        campanhaId: int.parse('${campanha['campanha_id']}'),
+        clienteId: clienteId!,
+      );
+      if (!mounted) return;
+      final percentual = premio['percentual_desconto'];
+      await showDialog<void>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('Roleta promocional'),
+          content: Text(
+            'Resultado: $percentual% de desconto em ${produto.nmproduto}. Use agora: o prêmio expira em 20 minutos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(c),
+              child: const Text('Agora não'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(c);
+                await adicionarProdutoAoCarrinho(
+                  produto,
+                  quantidade: 1,
+                  beneficioResgateId: int.parse('${premio['resgate_id']}'),
+                );
+              },
+              child: const Text('Usar desconto'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted)
+        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
     }
   }
 
@@ -745,6 +810,23 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 : Colors.red.shade700,
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                      if (!ehCortesia &&
+                          _roletasPorProduto.containsKey(
+                            produto.produtoId,
+                          )) ...[
+                        const SizedBox(height: 3),
+                        InkWell(
+                          onTap: () => _girarRoleta(produto),
+                          child: Text(
+                            '🎰 Girar roleta: até 50% OFF',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.deepPurple.shade700,
+                            ),
                           ),
                         ),
                       ],
