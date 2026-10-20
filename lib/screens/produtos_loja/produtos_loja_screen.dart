@@ -824,194 +824,214 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 140),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _imagemProdutoCard(
-                  imagem: imagem,
-                  temDesconto: temDesconto,
-                  ehCortesia: ehCortesia,
-                  seloDesconto: seloDesconto,
-                  onTap: () => _abrirDetalhesProduto(produto),
-                ),
-                VerticalDivider(width: 1, color: Colors.grey.shade100),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          produto.nmproduto,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Expanded(
-                              child: ehCortesia
-                                  ? Text(
-                                      ValueFormatters.moeda(
-                                        produto.vrprecoprod,
-                                      ),
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.black,
-                                      ),
-                                    )
-                                  : temDesconto
-                                  ? Text.rich(
-                                      TextSpan(
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 10,
-                                        ),
-                                        children: [
-                                          const TextSpan(text: 'de '),
-                                          TextSpan(
-                                            text: ValueFormatters.moeda(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 108),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _imagemProdutoCard(
+                        imagem: imagem,
+                        temDesconto: temDesconto,
+                        seloDesconto: seloDesconto,
+                        onTap: () => _abrirDetalhesProduto(produto),
+                      ),
+                      VerticalDivider(width: 1, color: Colors.grey.shade100),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                produto.nmproduto,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: ehCortesia
+                                        ? Text(
+                                            ValueFormatters.moeda(
                                               produto.vrprecoprod,
                                             ),
                                             style: const TextStyle(
-                                              decoration:
-                                                  TextDecoration.lineThrough,
-                                            ),
-                                          ),
-                                          const TextSpan(text: ' por '),
-                                          TextSpan(
-                                            text: ValueFormatters.moeda(
-                                              precoAtual,
-                                            ),
-                                            style: TextStyle(
-                                              color: Colors.green.shade700,
                                               fontSize: 16,
                                               fontWeight: FontWeight.w900,
+                                              color: Colors.black,
+                                            ),
+                                          )
+                                        : temDesconto
+                                        ? Text.rich(
+                                            TextSpan(
+                                              style: const TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 10,
+                                              ),
+                                              children: [
+                                                const TextSpan(text: 'de '),
+                                                TextSpan(
+                                                  text: ValueFormatters.moeda(
+                                                    produto.vrprecoprod,
+                                                  ),
+                                                  style: const TextStyle(
+                                                    decoration: TextDecoration
+                                                        .lineThrough,
+                                                  ),
+                                                ),
+                                                const TextSpan(text: ' por '),
+                                                TextSpan(
+                                                  text: ValueFormatters.moeda(
+                                                    precoAtual,
+                                                  ),
+                                                  style: TextStyle(
+                                                    color:
+                                                        Colors.green.shade700,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          )
+                                        : Text(
+                                            ValueFormatters.moeda(precoAtual),
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.black,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    )
-                                  : Text(
-                                      ValueFormatters.moeda(precoAtual),
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.black,
+                                  ),
+                                  _controleQuantidadeProduto(produto),
+                                ],
+                              ),
+
+                              if (produto.dsproduto.trim().isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  produto.dsproduto,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    height: 1.2,
+                                    color: Colors.grey.shade700,
+                                  ),
+                                ),
+                              ],
+                              if (ehCortesia) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Cortesia ${ValueFormatters.moeda(0)}',
+                                  style: TextStyle(
+                                    color: Colors.green.shade700,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  cortesiaBloqueadaParaCliente
+                                      ? 'Você já possui uma cortesia válida deste produto'
+                                      : cortesiaDisponivel
+                                      ? cortesiasIlimitadas
+                                            ? 'Cortesias disponíveis'
+                                            : '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
+                                      : 'Cortesias esgotadas',
+                                  style: TextStyle(
+                                    color: cortesiaDisponivel
+                                        ? Colors.green.shade800
+                                        : Colors.red.shade700,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                              if (campanhaRoleta != null) ...[
+                                const SizedBox(height: 3),
+                                if (tempoAteProximaRodada != null)
+                                  Text(
+                                    '🎰 Próxima rodada em ${_formatarContagemRoleta(tempoAteProximaRodada)}',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.deepPurple.shade700,
+                                    ),
+                                  )
+                                else
+                                  InkWell(
+                                    onTap: vendasHabilitadas
+                                        ? () => _girarRoleta(produto)
+                                        : null,
+                                    child: Text(
+                                      '🎰 Girar roleta: até 50% OFF',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                        color: vendasHabilitadas
+                                            ? Colors.deepPurple.shade700
+                                            : Colors.grey.shade600,
                                       ),
                                     ),
-                            ),
-                            _controleQuantidadeProduto(produto),
-                          ],
-                        ),
-
-                        if (produto.dsproduto.trim().isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            produto.dsproduto,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 10,
-                              height: 1.2,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
-                        if (ehCortesia) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            'Cortesia ${ValueFormatters.moeda(0)}',
-                            style: TextStyle(
-                              color: Colors.green.shade700,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            cortesiaBloqueadaParaCliente
-                                ? 'Você já possui uma cortesia válida deste produto'
-                                : cortesiaDisponivel
-                                ? cortesiasIlimitadas
-                                      ? 'Cortesias disponíveis'
-                                      : '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
-                                : 'Cortesias esgotadas',
-                            style: TextStyle(
-                              color: cortesiaDisponivel
-                                  ? Colors.green.shade800
-                                  : Colors.red.shade700,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
-                        if (campanhaRoleta != null) ...[
-                          const SizedBox(height: 3),
-                          if (tempoAteProximaRodada != null)
-                            Text(
-                              '🎰 Próxima rodada em ${_formatarContagemRoleta(tempoAteProximaRodada)}',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.deepPurple.shade700,
-                              ),
-                            )
-                          else
-                            InkWell(
-                              onTap: vendasHabilitadas
-                                  ? () => _girarRoleta(produto)
-                                  : null,
-                              child: Text(
-                                '🎰 Girar roleta: até 50% OFF',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: vendasHabilitadas
-                                      ? Colors.deepPurple.shade700
-                                      : Colors.grey.shade600,
+                                  ),
+                              ],
+                              if (temPacote) ...[
+                                const SizedBox(height: 3),
+                                Text(
+                                  'Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                                  style: TextStyle(
+                                    color: Colors.red.shade700,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
-                              ),
-                            ),
-                        ],
-                        if (temPacote) ...[
-                          const SizedBox(height: 3),
-                          Text(
-                            'Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
-                            style: TextStyle(
-                              color: Colors.red.shade700,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                            ),
+                              ],
+                            ],
                           ),
-                        ],
-                        const SizedBox(height: 8),
-                        _acoesDoProduto(
-                          produto: produto,
-                          campanhaPacote: campanhaPacote,
-                          quantidadePacote: quantidadePacote,
-                          valorPacote: valorPacote,
-                          temPacote: temPacote,
-                          ehCortesia: ehCortesia,
-                          cortesiaDisponivel: cortesiaDisponivel,
-                          resgatandoCortesia: resgatandoCortesia,
-                          campanhaCortesia: campanhaCortesia,
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(7),
+                    child: _acoesDoProduto(
+                      produto: produto,
+                      campanhaPacote: campanhaPacote,
+                      quantidadePacote: quantidadePacote,
+                      valorPacote: valorPacote,
+                      temPacote: temPacote,
+                      ehCortesia: ehCortesia,
+                      cortesiaDisponivel: cortesiaDisponivel,
+                      resgatandoCortesia: resgatandoCortesia,
+                      campanhaCortesia: campanhaCortesia,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1060,7 +1080,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   quantidadesSelecionadas[_chaveItemCardapio(produto)] ?? 1,
             ),
       icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
-      label: Text(ehCortesia ? 'Carrinho' : 'Adicionar ao carrinho'),
+      label: const Text('Adicionar produto ao carrinho'),
       style: _estiloBotaoProduto(
         fundo: Colors.amber,
         texto: Colors.black,
@@ -1099,7 +1119,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               campanhaId: int.tryParse('${campanhaPacote!['campanha_id']}'),
             ),
       icon: const Icon(Icons.local_offer_rounded, size: 16),
-      label: const Text('Aproveitar promoção'),
+      label: const Text('Adicionar promoção ao carrinho'),
       style: _estiloBotaoProduto(
         fundo: Colors.green.shade700,
         texto: Colors.white,
@@ -1112,21 +1132,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       children: [
         if (temPacote) ...[
           SizedBox(width: double.infinity, height: 38, child: botaoPacote),
-          const SizedBox(height: 7),
+          const SizedBox(height: 6),
         ],
-        SizedBox(
-          width: double.infinity,
-          height: 38,
-          child: ehCortesia
-              ? Row(
-                  children: [
-                    Expanded(child: botaoCortesia),
-                    const SizedBox(width: 8),
-                    Expanded(child: botaoComprar),
-                  ],
-                )
-              : botaoComprar,
-        ),
+        SizedBox(width: double.infinity, height: 38, child: botaoComprar),
+        if (ehCortesia) ...[
+          const SizedBox(height: 6),
+          SizedBox(width: double.infinity, height: 38, child: botaoCortesia),
+        ],
       ],
     );
   }
@@ -1143,7 +1155,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget _imagemProdutoCard({
     required String imagem,
     required bool temDesconto,
-    required bool ehCortesia,
     required String seloDesconto,
     required VoidCallback onTap,
   }) {
@@ -1191,16 +1202,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 left: 7,
                 top: 7,
                 child: _seloProduto(seloDesconto, Colors.red),
-              ),
-            if (ehCortesia)
-              Positioned(
-                bottom: 7,
-                left: 0,
-                right: 0,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _seloProduto('Cortesia', Colors.green.shade700),
-                ),
               ),
           ],
         ),
