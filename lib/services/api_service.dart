@@ -51,6 +51,10 @@ class ApiService {
       return 'Sistema em atualização. Tente novamente em instantes.';
     }
 
+    if (textoLower.contains('valor mínimo para pagamento')) {
+      return 'Para seguir com o pagamento, adicione mais itens ao pedido até atingir R\$ 5,00.';
+    }
+
     // Preserva a mensagem amigável enviada pela API
     if (texto.startsWith('Exception: ')) {
       return texto.replaceFirst('Exception: ', '');
@@ -1704,7 +1708,7 @@ class ApiService {
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception(response.body);
+      throw Exception(_extrairMensagemHttp(response));
     }
 
     return jsonDecode(response.body);

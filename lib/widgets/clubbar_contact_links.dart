@@ -11,6 +11,7 @@ class ClubbarContactLinks extends StatelessWidget {
   final bool tituloEmNegrito;
   final Color? cor;
   final double tamanhoFonteLinks;
+  final String titulo;
 
   const ClubbarContactLinks({
     super.key,
@@ -23,6 +24,7 @@ class ClubbarContactLinks extends StatelessWidget {
     this.tituloEmNegrito = true,
     this.cor,
     this.tamanhoFonteLinks = 14,
+    this.titulo = 'Fale com o organizador/estabelecimento',
   });
 
   bool get _temContato => [
@@ -92,7 +94,7 @@ class ClubbarContactLinks extends StatelessWidget {
               : CrossAxisAlignment.start,
           children: [
             Text(
-              'Fale com o organizador/estabelecimento',
+              titulo,
               textAlign: centralizado ? TextAlign.center : TextAlign.start,
               style: TextStyle(
                 fontSize: 12,
