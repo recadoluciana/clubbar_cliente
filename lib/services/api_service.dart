@@ -296,7 +296,7 @@ class ApiService {
   // ===============================
   // CATEGORIAS
   // ===============================
-  Future<List<Categoria>> buscarCategoriasPorLoja(int lojaId) async {
+  Future<Map<String, dynamic>> buscarCardapioPublicado(int lojaId) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/lojas/$lojaId/cardapio-publicado'),
@@ -305,17 +305,26 @@ class ApiService {
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
-
-        if (data is Map && data['categorias'] is List) {
-          return (data['categorias'] as List)
-              .map((e) => Categoria.fromJson(e))
-              .toList();
-        }
-
-        return [];
+        return data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
       }
 
       throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
+  Future<List<Categoria>> buscarCategoriasPorLoja(int lojaId) async {
+    try {
+      final data = await buscarCardapioPublicado(lojaId);
+      if (data['categorias'] is List) {
+        return (data['categorias'] as List)
+            .map((e) => Categoria.fromJson(e))
+            .toList();
+      }
+      return [];
     } catch (e) {
       throw Exception(mensagemErroAmigavel(e));
     }
@@ -326,25 +335,14 @@ class ApiService {
   // ===============================
   Future<List<Produto>> buscarProdutosPorLoja(int lojaId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/lojas/$lojaId/cardapio-publicado'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = jsonDecode(response.body);
-
-        if (data is Map && data['categorias'] is List) {
-          return (data['categorias'] as List)
-              .expand((categoria) => (categoria['itens'] as List? ?? const []))
-              .map((e) => Produto.fromJson(Map<String, dynamic>.from(e)))
-              .toList();
-        }
-
-        return [];
+      final data = await buscarCardapioPublicado(lojaId);
+      if (data['categorias'] is List) {
+        return (data['categorias'] as List)
+            .expand((categoria) => (categoria['itens'] as List? ?? const []))
+            .map((e) => Produto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
       }
-
-      throw Exception(_extrairMensagemHttp(response));
+      return [];
     } catch (e) {
       throw Exception(mensagemErroAmigavel(e));
     }
@@ -1804,6 +1802,8 @@ class ApiService {
       for (final item in categoria['itens'] as List? ?? const []) {
         final produto = Map<String, dynamic>.from(item as Map);
         if (int.tryParse('${produto['produto_id']}') == produtoId) {
+          produto['vendas_habilitadas'] =
+              cardapio['vendas_habilitadas'] != false;
           return produto;
         }
       }

@@ -36,6 +36,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
   bool carregando = true;
   bool semCardapioPublicado = false;
+  bool vendasHabilitadas = true;
   String? erro;
 
   List<Categoria> categorias = [];
@@ -78,13 +79,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     try {
       clienteId = await authStorage.obterClienteId();
 
-      final resultados = await Future.wait([
-        apiService.buscarCategoriasPorLoja(widget.loja.id),
-        apiService.buscarProdutosPorLoja(widget.loja.id),
-      ]);
-
-      categorias = resultados[0] as List<Categoria>;
-      produtos = (resultados[1] as List<Produto>)
+      final cardapio = await apiService.buscarCardapioPublicado(widget.loja.id);
+      categorias = (cardapio['categorias'] as List? ?? const [])
+          .map((item) => Categoria.fromJson(item))
+          .toList();
+      produtos = (cardapio['categorias'] as List? ?? const [])
+          .expand((categoria) => (categoria['itens'] as List? ?? const []))
+          .map((item) => Produto.fromJson(Map<String, dynamic>.from(item)))
           .where((produto) => produto.sitproduto.toUpperCase() == 'ATIVO')
           .toList();
       _roletasPorProduto.clear();
@@ -119,6 +120,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           : null;
 
       setState(() {
+        vendasHabilitadas = cardapio['vendas_habilitadas'] != false;
         carregando = false;
       });
 
@@ -196,6 +198,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     String observacao = '',
     int? beneficioResgateId,
   }) async {
+    if (!vendasHabilitadas) {
+      AppSnackBar.aviso(
+        context,
+        'Este estabelecimento ainda está implantando o seu cardápio. Logo estará disponível para vendas.',
+      );
+      return;
+    }
     if (clienteId == null || clienteId == 0) {
       await direcionarParaLogin(
         context,
@@ -244,6 +253,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   }
 
   Future<void> _girarRoleta(Produto produto) async {
+    if (!vendasHabilitadas) return;
     if (clienteId == null || clienteId == 0) {
       await direcionarParaLogin(
         context,
@@ -285,6 +295,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     Produto produto,
     Map<String, dynamic>? campanha,
   ) async {
+    if (!vendasHabilitadas) return;
     if (clienteId == null || clienteId == 0) {
       await direcionarParaLogin(
         context,
@@ -573,7 +584,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
-        mostrarCarrinho: true,
+        mostrarCarrinho: vendasHabilitadas,
         quantidadeCarrinho: quantidadeCarrinho,
         onCarrinhoTap: _abrirCarrinhoDaLoja,
         onVoltar: () {
@@ -605,6 +616,33 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ? Column(children: [Expanded(child: _erroWidget())])
           : Column(
               children: [
+                if (!vendasHabilitadas)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.blue.shade100),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.storefront_outlined,
+                          color: Colors.blue.shade800,
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Text(
+                            'Este estabelecimento ainda está implantando o seu cardápio. Logo estará disponível para vendas.',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
                   child: _campoPesquisa(),
@@ -869,13 +907,17 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       )) ...[
                         const SizedBox(height: 3),
                         InkWell(
-                          onTap: () => _girarRoleta(produto),
+                          onTap: vendasHabilitadas
+                              ? () => _girarRoleta(produto)
+                              : null,
                           child: Text(
                             '🎰 Girar roleta: 10% ou 20% OFF',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
-                              color: Colors.deepPurple.shade700,
+                              color: vendasHabilitadas
+                                  ? Colors.deepPurple.shade700
+                                  : Colors.grey.shade600,
                             ),
                           ),
                         ),
@@ -891,7 +933,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 flex: 3,
                                 child: ElevatedButton.icon(
                                   onPressed:
-                                      resgatandoCortesia || !cortesiaDisponivel
+                                      !vendasHabilitadas ||
+                                          resgatandoCortesia ||
+                                          !cortesiaDisponivel
                                       ? null
                                       : () => resgatarCortesiaProduto(
                                           produto,
@@ -938,9 +982,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                               flex: ehCortesia ? 2 : 1,
                               child: ElevatedButton.icon(
                                 onPressed:
-                                    produtosEmAlteracao.contains(
-                                      _chaveItemCardapio(produto),
-                                    )
+                                    !vendasHabilitadas ||
+                                        produtosEmAlteracao.contains(
+                                          _chaveItemCardapio(produto),
+                                        )
                                     ? null
                                     : () => adicionarProdutoAoCarrinho(
                                         produto,
@@ -1088,7 +1133,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         children: [
           IconButton(
             tooltip: 'Diminuir quantidade',
-            onPressed: !alterando && quantidade > 1
+            onPressed: vendasHabilitadas && !alterando && quantidade > 1
                 ? () => setState(
                     () => quantidadesSelecionadas[chaveItem] = quantidade - 1,
                   )
@@ -1116,7 +1161,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ),
           IconButton(
             tooltip: 'Aumentar quantidade',
-            onPressed: !alterando
+            onPressed: vendasHabilitadas && !alterando
                 ? () => setState(
                     () => quantidadesSelecionadas[chaveItem] = quantidade + 1,
                   )

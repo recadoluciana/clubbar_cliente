@@ -37,6 +37,7 @@ class _ProdutoCompartilhadoScreenState
   bool carregando = true;
   bool adicionando = false;
   bool produtoAdicionado = false;
+  bool vendasHabilitadas = true;
   String? erro;
 
   Map<String, dynamic>? produto;
@@ -120,6 +121,7 @@ class _ProdutoCompartilhadoScreenState
 
       setState(() {
         produto = prod;
+        vendasHabilitadas = prod['vendas_habilitadas'] != false;
         loja = lojaDados;
         carregando = false;
       });
@@ -135,6 +137,13 @@ class _ProdutoCompartilhadoScreenState
 
   Future<void> adicionarAoCarrinho() async {
     if (produto == null || loja == null) return;
+    if (!vendasHabilitadas) {
+      AppSnackBar.aviso(
+        context,
+        'Este estabelecimento ainda está implantando o seu cardápio. Logo estará disponível para vendas.',
+      );
+      return;
+    }
 
     final quantidade = int.tryParse(_quantidadeCtrl.text);
     if (quantidade == null ||
@@ -213,7 +222,9 @@ class _ProdutoCompartilhadoScreenState
     return SizedBox(
       height: 56,
       child: ElevatedButton.icon(
-        onPressed: adicionando ? null : adicionarAoCarrinho,
+        onPressed: adicionando || !vendasHabilitadas
+            ? null
+            : adicionarAoCarrinho,
         icon: adicionando
             ? const SizedBox(
                 width: 20,
@@ -225,7 +236,9 @@ class _ProdutoCompartilhadoScreenState
               )
             : const Icon(Icons.add_shopping_cart_rounded),
         label: Text(
-          _ehCortesia
+          !vendasHabilitadas
+              ? 'Vendas indisponíveis no momento'
+              : _ehCortesia
               ? 'Resgatar cortesia'
               : 'Adicionar $_quantidade ao carrinho',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -501,6 +514,20 @@ class _ProdutoCompartilhadoScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
+                if (!vendasHabilitadas)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Este estabelecimento ainda está implantando o seu cardápio. Logo estará disponível para vendas.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 _botaoAdicionar(),
                 const SizedBox(height: 32),
               ],
