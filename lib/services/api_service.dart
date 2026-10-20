@@ -429,8 +429,9 @@ class ApiService {
       ),
       headers: {if (token != null) 'Authorization': 'Bearer $token'},
     );
-    if (response.statusCode != 200)
+    if (response.statusCode != 200) {
       throw Exception(_extrairMensagemHttp(response));
+    }
     return (jsonDecode(response.body) as List)
         .map((e) => Map<String, dynamic>.from(e))
         .toList();
@@ -449,8 +450,9 @@ class ApiService {
       },
       body: jsonEncode({'cliente_id': clienteId}),
     );
-    if (response.statusCode != 200)
+    if (response.statusCode != 200) {
       throw Exception(_extrairMensagemHttp(response));
+    }
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
