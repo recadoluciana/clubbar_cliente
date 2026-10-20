@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/horario_brasil.dart';
 import '../../utils/login_redirect.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
@@ -50,6 +52,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   final Map<int, Map<String, dynamic>> _roletasPorProduto = {};
   final Map<int, Map<String, dynamic>> _cortesiasPorProduto = {};
   final Map<int, Map<String, dynamic>> _pacotesPorProduto = {};
+  Timer? _timerRoleta;
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -65,8 +68,58 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
   @override
   void dispose() {
+    _timerRoleta?.cancel();
     _buscaController.dispose();
     super.dispose();
+  }
+
+  DateTime? _proximaRodada(Map<String, dynamic>? campanha) {
+    return HorarioBrasil.deTextoBrasil(campanha?['proxima_rodada_em']);
+  }
+
+  Duration? _tempoAteProximaRodada(Map<String, dynamic>? campanha) {
+    final proxima = _proximaRodada(campanha);
+    if (proxima == null) return null;
+    final restante = proxima.difference(HorarioBrasil.agora());
+    return restante > Duration.zero ? restante : null;
+  }
+
+  String _formatarContagemRoleta(Duration restante) {
+    final horas = restante.inHours;
+    final minutos = restante.inMinutes.remainder(60);
+    final segundos = restante.inSeconds.remainder(60);
+    return '${horas.toString().padLeft(2, '0')}:'
+        '${minutos.toString().padLeft(2, '0')}:'
+        '${segundos.toString().padLeft(2, '0')}';
+  }
+
+  void _atualizarContagemRoleta() {
+    if (!mounted) return;
+    final existeContagem = _roletasPorProduto.values.any(
+      (campanha) => _tempoAteProximaRodada(campanha) != null,
+    );
+    if (existeContagem) {
+      setState(() {});
+      return;
+    }
+    _timerRoleta?.cancel();
+    _timerRoleta = null;
+    if (!carregando) unawaited(carregarDados());
+  }
+
+  void _iniciarContagemRoletaSeNecessario() {
+    final existeContagem = _roletasPorProduto.values.any(
+      (campanha) => _tempoAteProximaRodada(campanha) != null,
+    );
+    if (!existeContagem) {
+      _timerRoleta?.cancel();
+      _timerRoleta = null;
+      return;
+    }
+    _timerRoleta ??= Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => _atualizarContagemRoleta(),
+    );
   }
 
   Future<void> carregarDados() async {
@@ -127,6 +180,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         vendasHabilitadas = cardapio['vendas_habilitadas'] != false;
         carregando = false;
       });
+      _iniciarContagemRoletaSeNecessario();
 
       await carregarQuantidadeCarrinho();
     } catch (e) {
@@ -284,6 +338,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           percentual: percentual,
         ),
       );
+      if (!mounted) return;
+      await carregarDados();
       if (!mounted || usarDesconto != true) return;
       await adicionarProdutoAoCarrinho(
         produto,
@@ -731,6 +787,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
     final campanhaCortesia = _cortesiasPorProduto[produto.produtoId];
+    final campanhaRoleta = _roletasPorProduto[produto.produtoId];
+    final tempoAteProximaRodada = _tempoAteProximaRodada(campanhaRoleta);
     final campanhaPacote = _pacotesPorProduto[produto.produtoId];
     final quantidadePacote =
         int.tryParse('${campanhaPacote?['qtitenspacote']}') ?? 0;
@@ -909,25 +967,33 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                             ),
                           ),
                         ],
-                        if (_roletasPorProduto.containsKey(
-                          produto.produtoId,
-                        )) ...[
+                        if (campanhaRoleta != null) ...[
                           const SizedBox(height: 3),
-                          InkWell(
-                            onTap: vendasHabilitadas
-                                ? () => _girarRoleta(produto)
-                                : null,
-                            child: Text(
-                              '🎰 Girar roleta: até 50% OFF',
+                          if (tempoAteProximaRodada != null)
+                            Text(
+                              '🎰 Próxima rodada em ${_formatarContagemRoleta(tempoAteProximaRodada)}',
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
-                                color: vendasHabilitadas
-                                    ? Colors.deepPurple.shade700
-                                    : Colors.grey.shade600,
+                                color: Colors.deepPurple.shade700,
+                              ),
+                            )
+                          else
+                            InkWell(
+                              onTap: vendasHabilitadas
+                                  ? () => _girarRoleta(produto)
+                                  : null,
+                              child: Text(
+                                '🎰 Girar roleta: até 50% OFF',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: vendasHabilitadas
+                                      ? Colors.deepPurple.shade700
+                                      : Colors.grey.shade600,
+                                ),
                               ),
                             ),
-                          ),
                         ],
                         if (temPacote) ...[
                           const SizedBox(height: 3),
