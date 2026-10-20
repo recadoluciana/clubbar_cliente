@@ -385,6 +385,7 @@ class ApiService {
     String? nmparticipante,
     String? cpfparticipante,
     int? beneficioResgateId,
+    int? campanhaId,
   }) async {
     try {
       final response = await http.post(
@@ -403,6 +404,7 @@ class ApiService {
           'nmparticipante': nmparticipante,
           'cpfparticipante': cpfparticipante,
           'beneficio_resgate_id': beneficioResgateId,
+          'campanha_id': campanhaId,
         }),
       );
 
@@ -605,6 +607,7 @@ class ApiService {
     required int carrinhoId,
     required int produtoId,
     int? cardapioItemId,
+    int? campanhaId,
     required String observacao,
   }) async {
     try {
@@ -616,6 +619,7 @@ class ApiService {
               'observacao': observacao,
               if (cardapioItemId != null)
                 'cardapioitem_id': cardapioItemId.toString(),
+              if (campanhaId != null) 'campanha_id': campanhaId.toString(),
             },
           );
 

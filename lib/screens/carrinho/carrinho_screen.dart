@@ -15,6 +15,9 @@ class ItemCarrinhoAgrupado {
   final int itCarrinhoId;
   final int produtoId;
   final int? cardapioItemId;
+  final int? campanhaId;
+  final int? quantidadePacote;
+  final double? valorPacote;
   final String nome;
   final String observacao;
   final String fotoUrl;
@@ -32,6 +35,9 @@ class ItemCarrinhoAgrupado {
     required this.itCarrinhoId,
     required this.produtoId,
     this.cardapioItemId,
+    this.campanhaId,
+    this.quantidadePacote,
+    this.valorPacote,
     required this.nome,
     required this.observacao,
     required this.fotoUrl,
@@ -86,6 +92,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
       final chave =
           '${item.produtoId}__${item.cardapioItemId ?? 'sem-cardapio'}__'
+          '${item.campanhaId ?? 'sem-campanha'}__'
           '${obs.toLowerCase()}__'
           '${nome.toLowerCase()}__${cpf.toLowerCase()}';
 
@@ -96,6 +103,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           itCarrinhoId: atual.itCarrinhoId,
           produtoId: atual.produtoId,
           cardapioItemId: atual.cardapioItemId,
+          campanhaId: atual.campanhaId,
+          quantidadePacote: atual.quantidadePacote,
+          valorPacote: atual.valorPacote,
           nome: atual.nome,
           observacao: atual.observacao,
           fotoUrl: atual.fotoUrl,
@@ -114,6 +124,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           itCarrinhoId: item.itCarrinhoId,
           produtoId: item.produtoId,
           cardapioItemId: item.cardapioItemId,
+          campanhaId: item.campanhaId,
+          quantidadePacote: item.quantidadePacote,
+          valorPacote: item.valorPacote,
           nome: item.nome,
           observacao: obs,
           fotoUrl: item.fotoUrl,
@@ -200,6 +213,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         lojaId: widget.loja.id,
         produtoId: item.produtoId,
         cardapioItemId: item.cardapioItemId,
+        campanhaId: item.campanhaId,
         quantidade: 1,
         observacao: item.observacao,
       );
@@ -295,6 +309,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         carrinhoId: carrinhoId!,
         produtoId: item.produtoId,
         cardapioItemId: item.cardapioItemId,
+        campanhaId: item.campanhaId,
         observacao: item.observacao,
       );
 
@@ -379,6 +394,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           carrinhoId: carrinhoId!,
           produtoId: item.produtoId,
           cardapioItemId: item.cardapioItemId,
+          campanhaId: item.campanhaId,
           observacao: item.observacao,
         );
       }
@@ -403,6 +419,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
   Widget _controleQuantidade(ItemCarrinhoAgrupado item) {
     final ehCortesia = item.precoFinal <= 0;
+    final ehPacote = item.campanhaId != null;
     final permiteAumentar = item.idtipoproduto != 'I' && !ehCortesia;
 
     return Row(
@@ -425,7 +442,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 icon: const Icon(Icons.remove_rounded, size: 19),
               ),
               Text(
-                '${item.quantidade}',
+                ehPacote
+                    ? '${item.quantidade} ${item.quantidade == 1 ? 'pacote' : 'pacotes'}'
+                    : '${item.quantidade}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -433,7 +452,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
               ),
               IconButton(
                 tooltip: permiteAumentar
-                    ? 'Aumentar quantidade'
+                    ? (ehPacote
+                          ? 'Adicionar outro pacote'
+                          : 'Aumentar quantidade')
                     : ehCortesia
                     ? 'Cortesia limitada a 1 unidade por transação'
                     : 'Adicione outro ingresso pela agenda',

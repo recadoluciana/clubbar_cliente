@@ -49,6 +49,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   final Set<int> produtosEmAlteracao = {};
   final Map<int, Map<String, dynamic>> _roletasPorProduto = {};
   final Map<int, Map<String, dynamic>> _cortesiasPorProduto = {};
+  final Map<int, Map<String, dynamic>> _pacotesPorProduto = {};
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -90,6 +91,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           .toList();
       _roletasPorProduto.clear();
       _cortesiasPorProduto.clear();
+      _pacotesPorProduto.clear();
       if (clienteId != null && clienteId! > 0) {
         final ofertas = await apiService.beneficiosProdutosAtivos(
           lojaId: widget.loja.id,
@@ -102,6 +104,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             _roletasPorProduto[produtoId] = oferta;
           } else if (oferta['tipo'] == 'CORTESIA') {
             _cortesiasPorProduto[produtoId] = oferta;
+          } else if (oferta['tipo'] == 'PACOTE') {
+            _pacotesPorProduto[produtoId] = oferta;
           }
         }
       }
@@ -197,6 +201,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     required int quantidade,
     String observacao = '',
     int? beneficioResgateId,
+    int? campanhaId,
   }) async {
     if (!vendasHabilitadas) {
       AppSnackBar.aviso(
@@ -228,6 +233,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         quantidade: quantidade,
         observacao: observacao,
         beneficioResgateId: beneficioResgateId,
+        campanhaId: campanhaId,
       );
 
       if (!mounted) return;
@@ -725,6 +731,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
     final campanhaCortesia = _cortesiasPorProduto[produto.produtoId];
+    final campanhaPacote = _pacotesPorProduto[produto.produtoId];
+    final quantidadePacote =
+        int.tryParse('${campanhaPacote?['qtitenspacote']}') ?? 0;
+    final valorPacote = double.tryParse('${campanhaPacote?['vrpacote']}') ?? 0;
+    final temPacote = quantidadePacote >= 2 && valorPacote > 0;
     final ehCortesiaLegada = precoAtual <= 0;
     final ehCortesia = campanhaCortesia != null || ehCortesiaLegada;
     final cortesiaBloqueadaParaCliente =
@@ -754,7 +765,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         elevation: 2,
         clipBehavior: Clip.antiAlias,
         child: SizedBox(
-          height: 156,
+          height: temPacote ? 184 : 156,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -922,12 +933,70 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ),
                         ),
                       ],
+                      if (temPacote) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          'Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                          style: TextStyle(
+                            color: Colors.green.shade800,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 5),
                       SizedBox(
                         width: double.infinity,
                         height: 34,
                         child: Row(
                           children: [
+                            if (temPacote) ...[
+                              Expanded(
+                                flex: 3,
+                                child: ElevatedButton.icon(
+                                  onPressed:
+                                      !vendasHabilitadas ||
+                                          produtosEmAlteracao.contains(
+                                            _chaveItemCardapio(produto),
+                                          )
+                                      ? null
+                                      : () => adicionarProdutoAoCarrinho(
+                                          produto,
+                                          quantidade: 1,
+                                          campanhaId: int.tryParse(
+                                            '${campanhaPacote!['campanha_id']}',
+                                          ),
+                                        ),
+                                  icon: const Icon(
+                                    Icons.local_offer_rounded,
+                                    size: 15,
+                                  ),
+                                  label: Text(
+                                    '$quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green.shade700,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor:
+                                        Colors.grey.shade300,
+                                    disabledForegroundColor:
+                                        Colors.grey.shade600,
+                                    elevation: 0,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                            ],
                             if (ehCortesia) ...[
                               Expanded(
                                 flex: 3,
@@ -979,7 +1048,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                               const SizedBox(width: 8),
                             ],
                             Expanded(
-                              flex: ehCortesia ? 2 : 1,
+                              flex: ehCortesia || temPacote ? 2 : 1,
                               child: ElevatedButton.icon(
                                 onPressed:
                                     !vendasHabilitadas ||
