@@ -1099,9 +1099,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               campanhaId: int.tryParse('${campanhaPacote!['campanha_id']}'),
             ),
       icon: const Icon(Icons.local_offer_rounded, size: 16),
-      label: Text(
-        'Aproveitar promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
-      ),
+      label: const Text('Aproveitar promoção'),
       style: _estiloBotaoProduto(
         fundo: Colors.green.shade700,
         texto: Colors.white,
