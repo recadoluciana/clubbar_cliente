@@ -1022,7 +1022,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               padding: const EdgeInsets.only(left: 2, bottom: 6),
               child: Text(
                 'Setor: ${lote.nomeSetor}',
-                style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
+                style: TextStyle(
+                  color: Colors.blue.shade700,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ...opcoes.map(_cardModalidadeDireta),
