@@ -764,126 +764,123 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         borderRadius: BorderRadius.circular(18),
         elevation: 2,
         clipBehavior: Clip.antiAlias,
-        child: SizedBox(
-          height: temPacote ? 184 : 156,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _imagemProdutoCard(
-                imagem: imagem,
-                temDesconto: temDesconto,
-                ehCortesia: ehCortesia,
-                seloDesconto: seloDesconto,
-                onTap: () => _abrirDetalhesProduto(produto),
-              ),
-              VerticalDivider(width: 1, color: Colors.grey.shade100),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        produto.nmproduto,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: ehCortesia
-                                ? Text.rich(
-                                    TextSpan(
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 10,
-                                      ),
-                                      children: [
-                                        const TextSpan(text: 'Cortesia: de '),
-                                        TextSpan(
-                                          text: ValueFormatters.moeda(
-                                            produto.vrprecoprod,
-                                          ),
-                                          style: const TextStyle(
-                                            decoration:
-                                                TextDecoration.lineThrough,
-                                          ),
-                                        ),
-                                        const TextSpan(text: ' por '),
-                                        TextSpan(
-                                          text: ValueFormatters.moeda(0),
-                                          style: TextStyle(
-                                            color: Colors.green.shade700,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                : temDesconto
-                                ? Text.rich(
-                                    TextSpan(
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 10,
-                                      ),
-                                      children: [
-                                        const TextSpan(text: 'de '),
-                                        TextSpan(
-                                          text: ValueFormatters.moeda(
-                                            produto.vrprecoprod,
-                                          ),
-                                          style: const TextStyle(
-                                            decoration:
-                                                TextDecoration.lineThrough,
-                                          ),
-                                        ),
-                                        const TextSpan(text: ' por '),
-                                        TextSpan(
-                                          text: ValueFormatters.moeda(
-                                            precoAtual,
-                                          ),
-                                          style: TextStyle(
-                                            color: Colors.green.shade700,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                : Text(
-                                    ValueFormatters.moeda(precoAtual),
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.black,
-                                    ),
-                                  ),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 140),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _imagemProdutoCard(
+                  imagem: imagem,
+                  temDesconto: temDesconto,
+                  ehCortesia: ehCortesia,
+                  seloDesconto: seloDesconto,
+                  onTap: () => _abrirDetalhesProduto(produto),
+                ),
+                VerticalDivider(width: 1, color: Colors.grey.shade100),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          produto.nmproduto,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
                           ),
-                          _controleQuantidadeProduto(produto),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: ehCortesia
+                                  ? Text.rich(
+                                      TextSpan(
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 10,
+                                        ),
+                                        children: [
+                                          const TextSpan(text: 'Cortesia: de '),
+                                          TextSpan(
+                                            text: ValueFormatters.moeda(
+                                              produto.vrprecoprod,
+                                            ),
+                                            style: const TextStyle(
+                                              decoration:
+                                                  TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                          const TextSpan(text: ' por '),
+                                          TextSpan(
+                                            text: ValueFormatters.moeda(0),
+                                            style: TextStyle(
+                                              color: Colors.green.shade700,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  : temDesconto
+                                  ? Text.rich(
+                                      TextSpan(
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 10,
+                                        ),
+                                        children: [
+                                          const TextSpan(text: 'de '),
+                                          TextSpan(
+                                            text: ValueFormatters.moeda(
+                                              produto.vrprecoprod,
+                                            ),
+                                            style: const TextStyle(
+                                              decoration:
+                                                  TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                          const TextSpan(text: ' por '),
+                                          TextSpan(
+                                            text: ValueFormatters.moeda(
+                                              precoAtual,
+                                            ),
+                                            style: TextStyle(
+                                              color: Colors.green.shade700,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  : Text(
+                                      ValueFormatters.moeda(precoAtual),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                            ),
+                            _controleQuantidadeProduto(produto),
+                          ],
+                        ),
 
-                      const SizedBox(height: 4),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.topLeft,
-                          child: Text(
-                            produto.dsproduto.trim().isNotEmpty
-                                ? produto.dsproduto
-                                : ' ',
+                        if (produto.dsproduto.trim().isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            produto.dsproduto,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -892,67 +889,162 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                               color: Colors.grey.shade700,
                             ),
                           ),
-                        ),
-                      ),
-                      if (ehCortesia) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          cortesiaBloqueadaParaCliente
-                              ? 'Você já possui uma cortesia válida deste produto'
-                              : cortesiaDisponivel
-                              ? cortesiasIlimitadas
-                                    ? 'Cortesias disponíveis'
-                                    : '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
-                              : 'Cortesias esgotadas',
-                          style: TextStyle(
-                            color: cortesiaDisponivel
-                                ? Colors.green.shade800
-                                : Colors.red.shade700,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                      if (_roletasPorProduto.containsKey(
-                        produto.produtoId,
-                      )) ...[
-                        const SizedBox(height: 3),
-                        InkWell(
-                          onTap: vendasHabilitadas
-                              ? () => _girarRoleta(produto)
-                              : null,
-                          child: Text(
-                            '🎰 Girar roleta: até 50% OFF',
+                        ],
+                        if (ehCortesia) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            cortesiaBloqueadaParaCliente
+                                ? 'Você já possui uma cortesia válida deste produto'
+                                : cortesiaDisponivel
+                                ? cortesiasIlimitadas
+                                      ? 'Cortesias disponíveis'
+                                      : '$cortesiasRestantes ${cortesiasRestantes == 1 ? 'cortesia restante' : 'cortesias restantes'}'
+                                : 'Cortesias esgotadas',
                             style: TextStyle(
+                              color: cortesiaDisponivel
+                                  ? Colors.green.shade800
+                                  : Colors.red.shade700,
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
-                              color: vendasHabilitadas
-                                  ? Colors.deepPurple.shade700
-                                  : Colors.grey.shade600,
                             ),
                           ),
-                        ),
-                      ],
-                      if (temPacote) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          'Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
-                          style: TextStyle(
-                            color: Colors.green.shade800,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                        ],
+                        if (_roletasPorProduto.containsKey(
+                          produto.produtoId,
+                        )) ...[
+                          const SizedBox(height: 3),
+                          InkWell(
+                            onTap: vendasHabilitadas
+                                ? () => _girarRoleta(produto)
+                                : null,
+                            child: Text(
+                              '🎰 Girar roleta: até 50% OFF',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: vendasHabilitadas
+                                    ? Colors.deepPurple.shade700
+                                    : Colors.grey.shade600,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 5),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 34,
-                        child: Row(
-                          children: [
-                            if (temPacote) ...[
+                        ],
+                        if (temPacote) ...[
+                          const SizedBox(height: 3),
+                          Text(
+                            'Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                            style: TextStyle(
+                              color: Colors.green.shade800,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 5),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 34,
+                          child: Row(
+                            children: [
+                              if (temPacote) ...[
+                                Expanded(
+                                  flex: 3,
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                        !vendasHabilitadas ||
+                                            produtosEmAlteracao.contains(
+                                              _chaveItemCardapio(produto),
+                                            )
+                                        ? null
+                                        : () => adicionarProdutoAoCarrinho(
+                                            produto,
+                                            quantidade: 1,
+                                            campanhaId: int.tryParse(
+                                              '${campanhaPacote!['campanha_id']}',
+                                            ),
+                                          ),
+                                    icon: const Icon(
+                                      Icons.local_offer_rounded,
+                                      size: 15,
+                                    ),
+                                    label: Text(
+                                      '$quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green.shade700,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor:
+                                          Colors.grey.shade300,
+                                      disabledForegroundColor:
+                                          Colors.grey.shade600,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 5,
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              if (ehCortesia) ...[
+                                Expanded(
+                                  flex: 3,
+                                  child: ElevatedButton.icon(
+                                    onPressed:
+                                        !vendasHabilitadas ||
+                                            resgatandoCortesia ||
+                                            !cortesiaDisponivel
+                                        ? null
+                                        : () => resgatarCortesiaProduto(
+                                            produto,
+                                            campanhaCortesia,
+                                          ),
+                                    icon: resgatandoCortesia
+                                        ? const SizedBox(
+                                            width: 15,
+                                            height: 15,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.redeem_rounded,
+                                            size: 16,
+                                          ),
+                                    label: const Text('Resgatar cortesia'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green.shade700,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor:
+                                          Colors.grey.shade300,
+                                      disabledForegroundColor:
+                                          Colors.grey.shade600,
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
                               Expanded(
-                                flex: 3,
+                                flex: ehCortesia || temPacote ? 2 : 1,
                                 child: ElevatedButton.icon(
                                   onPressed:
                                       !vendasHabilitadas ||
@@ -962,32 +1054,35 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                       ? null
                                       : () => adicionarProdutoAoCarrinho(
                                           produto,
-                                          quantidade: 1,
-                                          campanhaId: int.tryParse(
-                                            '${campanhaPacote!['campanha_id']}',
-                                          ),
+                                          quantidade:
+                                              quantidadesSelecionadas[_chaveItemCardapio(
+                                                produto,
+                                              )] ??
+                                              1,
                                         ),
                                   icon: const Icon(
-                                    Icons.local_offer_rounded,
-                                    size: 15,
+                                    Icons.add_shopping_cart_rounded,
+                                    size: 17,
                                   ),
                                   label: Text(
-                                    '$quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                                    ehCortesia
+                                        ? 'Comprar ${ValueFormatters.moeda(produto.vrprecoprod)}'
+                                        : 'Carrinho',
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green.shade700,
-                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.amber,
+                                    foregroundColor: Colors.black,
                                     disabledBackgroundColor:
                                         Colors.grey.shade300,
                                     disabledForegroundColor:
                                         Colors.grey.shade600,
                                     elevation: 0,
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 5,
+                                      horizontal: 8,
                                     ),
                                     textStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -995,111 +1090,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
                             ],
-                            if (ehCortesia) ...[
-                              Expanded(
-                                flex: 3,
-                                child: ElevatedButton.icon(
-                                  onPressed:
-                                      !vendasHabilitadas ||
-                                          resgatandoCortesia ||
-                                          !cortesiaDisponivel
-                                      ? null
-                                      : () => resgatarCortesiaProduto(
-                                          produto,
-                                          campanhaCortesia,
-                                        ),
-                                  icon: resgatandoCortesia
-                                      ? const SizedBox(
-                                          width: 15,
-                                          height: 15,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
-                                          ),
-                                        )
-                                      : const Icon(
-                                          Icons.redeem_rounded,
-                                          size: 16,
-                                        ),
-                                  label: const Text('Resgatar cortesia'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green.shade700,
-                                    foregroundColor: Colors.white,
-                                    disabledBackgroundColor:
-                                        Colors.grey.shade300,
-                                    disabledForegroundColor:
-                                        Colors.grey.shade600,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 7,
-                                    ),
-                                    textStyle: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                            ],
-                            Expanded(
-                              flex: ehCortesia || temPacote ? 2 : 1,
-                              child: ElevatedButton.icon(
-                                onPressed:
-                                    !vendasHabilitadas ||
-                                        produtosEmAlteracao.contains(
-                                          _chaveItemCardapio(produto),
-                                        )
-                                    ? null
-                                    : () => adicionarProdutoAoCarrinho(
-                                        produto,
-                                        quantidade:
-                                            quantidadesSelecionadas[_chaveItemCardapio(
-                                              produto,
-                                            )] ??
-                                            1,
-                                      ),
-                                icon: const Icon(
-                                  Icons.add_shopping_cart_rounded,
-                                  size: 17,
-                                ),
-                                label: Text(
-                                  ehCortesia
-                                      ? 'Comprar ${ValueFormatters.moeda(produto.vrprecoprod)}'
-                                      : 'Carrinho',
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.amber,
-                                  foregroundColor: Colors.black,
-                                  disabledBackgroundColor: Colors.grey.shade300,
-                                  disabledForegroundColor: Colors.grey.shade600,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                  ),
-                                  textStyle: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
