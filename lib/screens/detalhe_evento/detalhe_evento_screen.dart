@@ -29,6 +29,10 @@ const String _mensagemLimiteIngressosPorTransacao =
 
 bool _ehCortesia(EventoLote lote) => lote.preco <= 0;
 
+bool _ehModalidadeMeiaEntrada(EventoLote lote) =>
+    lote.aplicaCotaLegal ||
+    lote.tipoIngresso.trim().toUpperCase() == 'MEIA_IDOSO';
+
 int _limitePorTransacao(EventoLote lote) =>
     _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
 
@@ -171,6 +175,7 @@ class _ModalidadesIngressoScreenState
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
     final ehCortesia = _ehCortesia(lote);
     final ehMeiaLegal = lote.aplicaCotaLegal;
+    final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
     final disponivelModalidade = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivelModalidade > 0;
     final podeDiminuir = quantidade > 1;
@@ -192,7 +197,7 @@ class _ModalidadesIngressoScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (ehMeiaLegal)
+            if (ehMeiaEntrada)
               Row(
                 children: [
                   Expanded(
@@ -1029,7 +1034,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Widget _cardModalidadeDireta(EventoLote lote) {
     final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 1;
     final ehCortesia = _ehCortesia(lote);
-    final ehMeiaLegal = lote.aplicaCotaLegal;
+    final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
     final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
     final disponivel = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivel > 0;
@@ -1062,7 +1067,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                   ),
                 ),
-                if (ehMeiaLegal)
+                if (ehMeiaEntrada)
                   TextButton(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
