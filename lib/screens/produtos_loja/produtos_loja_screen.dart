@@ -523,8 +523,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
-          width: 62,
           height: 56,
+          constraints: const BoxConstraints(minWidth: 62),
           decoration: BoxDecoration(
             color: selecionada ? Colors.amber : Colors.white,
             borderRadius: BorderRadius.circular(13),
@@ -540,9 +540,10 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   CategoriaIconUtils.porCategoria(
@@ -556,8 +557,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 Text(
                   categoria.nome,
                   textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                   style: TextStyle(
                     fontSize: 10,
                     height: 1.15,
