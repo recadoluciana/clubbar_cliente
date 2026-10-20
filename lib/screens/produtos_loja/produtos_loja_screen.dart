@@ -857,29 +857,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           children: [
                             Expanded(
                               child: ehCortesia
-                                  ? Text.rich(
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: 'Cortesia ',
-                                            style: TextStyle(
-                                              color: Colors.green.shade700,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: ValueFormatters.moeda(0),
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w900,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
+                                  ? Text(
+                                      ValueFormatters.moeda(
+                                        produto.vrprecoprod,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black,
+                                      ),
                                     )
                                   : temDesconto
                                   ? Text.rich(
@@ -942,6 +928,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ),
                         ],
                         if (ehCortesia) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            'Cortesia ${ValueFormatters.moeda(0)}',
+                            style: TextStyle(
+                              color: Colors.green.shade700,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                           const SizedBox(height: 2),
                           Text(
                             cortesiaBloqueadaParaCliente
@@ -1065,11 +1060,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   quantidadesSelecionadas[_chaveItemCardapio(produto)] ?? 1,
             ),
       icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
-      label: Text(
-        ehCortesia
-            ? 'Comprar ${ValueFormatters.moeda(produto.vrprecoprod)}'
-            : 'Adicionar ao carrinho',
-      ),
+      label: Text(ehCortesia ? 'Carrinho' : 'Adicionar ao carrinho'),
       style: _estiloBotaoProduto(
         fundo: Colors.amber,
         texto: Colors.black,
