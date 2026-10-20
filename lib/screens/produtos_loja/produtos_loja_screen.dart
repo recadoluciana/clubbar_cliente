@@ -988,9 +988,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           Text(
                             'Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
                             style: TextStyle(
-                              color: Colors.green.shade800,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
+                              color: Colors.red.shade700,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
                             ),
                           ),
                         ],
