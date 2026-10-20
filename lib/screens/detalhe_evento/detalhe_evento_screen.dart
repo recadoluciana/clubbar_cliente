@@ -172,10 +172,6 @@ class _ModalidadesIngressoScreenState
     final ehCortesia = _ehCortesia(lote);
     final ehMeiaLegal = lote.aplicaCotaLegal;
     final disponivelModalidade = lote.qtDisponivelParaCompra;
-    final disponibilizadosModalidade =
-        ehMeiaLegal && lote.qtLimiteModalidade == null
-        ? lote.cotaLegal
-        : (lote.qtLimiteModalidade ?? lote.qtTotal);
     final modalidadeDisponivel = disponivelModalidade > 0;
     final podeDiminuir = quantidade > 1;
     final podeAumentar =
@@ -258,7 +254,9 @@ class _ModalidadesIngressoScreenState
               ),
               const SizedBox(height: 2),
               Text(
-                '$disponibilizadosModalidade ingresso${disponibilizadosModalidade == 1 ? '' : 's'} disponibilizado${disponibilizadosModalidade == 1 ? '' : 's'} e $disponivelModalidade disponíve${disponivelModalidade == 1 ? 'l' : 'is'} ${lote.qtLimiteModalidade == null ? 'nesta cota' : 'nesta modalidade'}',
+                disponivelModalidade == 1
+                    ? '1 ingresso disponível'
+                    : '$disponivelModalidade ingressos disponíveis',
                 style: TextStyle(
                   fontSize: 12,
                   color: disponivelModalidade > 0
@@ -270,7 +268,9 @@ class _ModalidadesIngressoScreenState
             ] else ...[
               const SizedBox(height: 8),
               Text(
-                '$disponibilizadosModalidade ingresso${disponibilizadosModalidade == 1 ? '' : 's'} disponibilizado${disponibilizadosModalidade == 1 ? '' : 's'} e $disponivelModalidade disponíve${disponivelModalidade == 1 ? 'l' : 'is'} nesta modalidade',
+                disponivelModalidade == 1
+                    ? '1 ingresso disponível'
+                    : '$disponivelModalidade ingressos disponíveis',
                 style: TextStyle(
                   fontSize: 12,
                   color: disponivelModalidade > 0
@@ -1032,9 +1032,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final ehMeiaLegal = lote.aplicaCotaLegal;
     final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
     final disponivel = lote.qtDisponivelParaCompra;
-    final disponibilizados = ehMeiaLegal && lote.qtLimiteModalidade == null
-        ? lote.cotaLegal
-        : (lote.qtLimiteModalidade ?? lote.qtTotal);
     final modalidadeDisponivel = disponivel > 0;
     final cortesiaEsgotada = ehCortesia && !modalidadeDisponivel;
     final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
@@ -1121,7 +1118,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             const SizedBox(height: 6),
             Text(
-              '$disponibilizados ingresso${disponibilizados == 1 ? '' : 's'} disponibilizado${disponibilizados == 1 ? '' : 's'} e $disponivel disponíve${disponivel == 1 ? 'l' : 'is'} ${ehMeiaLegal && lote.qtLimiteModalidade == null ? 'nesta cota' : 'nesta modalidade'}',
+              disponivel == 1
+                  ? '1 ingresso disponível'
+                  : '$disponivel ingressos disponíveis',
               style: TextStyle(
                 fontSize: 12,
                 color: modalidadeDisponivel
