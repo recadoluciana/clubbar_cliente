@@ -922,7 +922,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                               ? () => _girarRoleta(produto)
                               : null,
                           child: Text(
-                            '🎰 Girar roleta: 10% ou 20% OFF',
+                            '🎰 Girar roleta: até 50% OFF',
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
