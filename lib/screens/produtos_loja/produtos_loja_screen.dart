@@ -1219,9 +1219,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               ),
             if (ehCortesia)
               Positioned(
-                left: 7,
                 bottom: 7,
-                child: _seloProduto('Cortesia', Colors.green.shade700),
+                left: 0,
+                right: 0,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: _seloProduto('Cortesia', Colors.green.shade700),
+                ),
               ),
           ],
         ),
