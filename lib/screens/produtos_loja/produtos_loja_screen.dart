@@ -1136,16 +1136,26 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   )
                 : ColoredBox(
                     color: Colors.grey.shade50,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Image.network(
-                        imagem,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => Container(
-                          color: Colors.grey.shade100,
-                          child: const Icon(
-                            Icons.image_not_supported_outlined,
-                            size: 30,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: SizedBox.square(
+                            dimension: 88,
+                            child: Image.network(
+                              imagem,
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.medium,
+                              errorBuilder: (_, _, _) => Container(
+                                color: Colors.grey.shade100,
+                                child: const Icon(
+                                  Icons.image_not_supported_outlined,
+                                  size: 30,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),
