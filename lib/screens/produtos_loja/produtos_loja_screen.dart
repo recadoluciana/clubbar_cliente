@@ -857,43 +857,29 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           children: [
                             Expanded(
                               child: ehCortesia
-                                  ? Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text.rich(
+                                  ? Text.rich(
+                                      TextSpan(
+                                        children: [
                                           TextSpan(
-                                            style: const TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 10,
+                                            text: 'Cortesia ',
+                                            style: TextStyle(
+                                              color: Colors.green.shade700,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
                                             ),
-                                            children: [
-                                              const TextSpan(
-                                                text: 'Cortesia: de ',
-                                              ),
-                                              TextSpan(
-                                                text: ValueFormatters.moeda(
-                                                  produto.vrprecoprod,
-                                                ),
-                                                style: const TextStyle(
-                                                  decoration: TextDecoration
-                                                      .lineThrough,
-                                                ),
-                                              ),
-                                            ],
                                           ),
-                                        ),
-                                        const SizedBox(height: 1),
-                                        Text(
-                                          'Por ${ValueFormatters.moeda(0)}',
-                                          style: TextStyle(
-                                            color: Colors.green.shade700,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w900,
+                                          TextSpan(
+                                            text: ValueFormatters.moeda(0),
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.black,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     )
                                   : temDesconto
                                   ? Text.rich(
