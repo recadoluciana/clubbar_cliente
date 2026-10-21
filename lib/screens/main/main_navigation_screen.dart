@@ -13,6 +13,8 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
+import '../produtos_loja/produtos_loja_screen.dart';
+import '../agenda/agenda_eventos_screen.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../../utils/url_cleaner.dart';
@@ -115,9 +117,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     return ValueListenableBuilder<Widget?>(
       valueListenable: MainNavigationController.telaInterna,
       builder: (context, telaInterna, _) {
-        if (telaInterna != null &&
-            telaInterna is! PerfilScreen &&
-            telaInterna is! AtendimentoCoraScreen) {
+        final manterNavegacaoVisivel =
+            telaInterna == null ||
+            telaInterna is PerfilScreen ||
+            telaInterna is AtendimentoCoraScreen ||
+            telaInterna is DetalheLojaScreen ||
+            telaInterna is ProdutosLojaScreen ||
+            telaInterna is ProdutoCompartilhadoScreen ||
+            telaInterna is AgendaEventosScreen ||
+            telaInterna is DetalheEventoScreen;
+        if (!manterNavegacaoVisivel) {
           return const SizedBox.shrink();
         }
 
@@ -157,25 +166,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     estaSelecionado: homeSelecionada,
                   ),
 
-                  if (logado) ...[
-                    _itemBarraNavegacao(
-                      index: 1,
-                      icone: _iconeCarrinhoComBadge(
-                        selecionado: carrinhoSelecionado,
-                      ),
-                      texto: 'Carrinho',
-                      estaSelecionado: carrinhoSelecionado,
+                  _itemBarraNavegacao(
+                    index: 1,
+                    icone: _iconeCarrinhoComBadge(
+                      selecionado: carrinhoSelecionado,
                     ),
+                    texto: 'Carrinho',
+                    estaSelecionado: carrinhoSelecionado,
+                  ),
 
-                    _itemBarraNavegacao(
-                      index: 2,
-                      icone: _iconeCarteiraComBadge(
-                        selecionado: carteiraSelecionada,
-                      ),
-                      texto: 'Carteira',
-                      estaSelecionado: carteiraSelecionada,
+                  _itemBarraNavegacao(
+                    index: 2,
+                    icone: _iconeCarteiraComBadge(
+                      selecionado: carteiraSelecionada,
                     ),
-                  ],
+                    texto: 'Carteira',
+                    estaSelecionado: carteiraSelecionada,
+                  ),
 
                   Expanded(
                     child: ApiStatusIndicator(
