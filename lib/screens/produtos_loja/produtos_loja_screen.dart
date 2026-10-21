@@ -415,7 +415,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       CarteiraBadgeNotifier.atualizar();
       await carregarDados();
       if (!mounted) return;
-      AppSnackBar.sucesso(context, 'Cortesia resgatada com sucesso.');
+      await _mostrarConfirmacaoCortesiaResgatada(produto);
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
@@ -424,6 +424,43 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         setState(() => produtosEmAlteracao.remove(chaveItem));
       }
     }
+  }
+
+  Future<void> _mostrarConfirmacaoCortesiaResgatada(Produto produto) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Icon(
+          Icons.check_circle_rounded,
+          color: Colors.green.shade700,
+          size: 42,
+        ),
+        title: const Text('Cortesia resgatada!'),
+        content: Text(
+          '${produto.nmproduto} já está disponível na sua Carteira.',
+          textAlign: TextAlign.center,
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Continuar no cardápio'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              MainNavigationController.irParaCarteira();
+            },
+            icon: const Icon(Icons.account_balance_wallet_rounded),
+            label: const Text('Ver na carteira'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.green.shade700,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _abrirCarrinhoDaLoja() async {
