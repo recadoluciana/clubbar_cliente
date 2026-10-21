@@ -1,6 +1,3 @@
-import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import '../../models/categoria.dart';
@@ -12,7 +9,6 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
-import '../../utils/horario_brasil.dart';
 import '../../utils/login_redirect.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
@@ -49,10 +45,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   int quantidadeCarrinho = 0;
   final Map<int, int> quantidadesSelecionadas = {};
   final Set<int> produtosEmAlteracao = {};
-  final Map<int, Map<String, dynamic>> _roletasPorProduto = {};
+  final Map<int, Map<String, dynamic>> _promocoesPercentuaisPorProduto = {};
   final Map<int, Map<String, dynamic>> _cortesiasPorProduto = {};
   final Map<int, Map<String, dynamic>> _pacotesPorProduto = {};
-  Timer? _timerRoleta;
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -68,58 +63,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
   @override
   void dispose() {
-    _timerRoleta?.cancel();
     _buscaController.dispose();
     super.dispose();
-  }
-
-  DateTime? _proximaRodada(Map<String, dynamic>? campanha) {
-    return HorarioBrasil.deTextoBrasil(campanha?['proxima_rodada_em']);
-  }
-
-  Duration? _tempoAteProximaRodada(Map<String, dynamic>? campanha) {
-    final proxima = _proximaRodada(campanha);
-    if (proxima == null) return null;
-    final restante = proxima.difference(HorarioBrasil.agora());
-    return restante > Duration.zero ? restante : null;
-  }
-
-  String _formatarContagemRoleta(Duration restante) {
-    final horas = restante.inHours;
-    final minutos = restante.inMinutes.remainder(60);
-    final segundos = restante.inSeconds.remainder(60);
-    return '${horas.toString().padLeft(2, '0')}:'
-        '${minutos.toString().padLeft(2, '0')}:'
-        '${segundos.toString().padLeft(2, '0')}';
-  }
-
-  void _atualizarContagemRoleta() {
-    if (!mounted) return;
-    final existeContagem = _roletasPorProduto.values.any(
-      (campanha) => _tempoAteProximaRodada(campanha) != null,
-    );
-    if (existeContagem) {
-      setState(() {});
-      return;
-    }
-    _timerRoleta?.cancel();
-    _timerRoleta = null;
-    if (!carregando) unawaited(carregarDados());
-  }
-
-  void _iniciarContagemRoletaSeNecessario() {
-    final existeContagem = _roletasPorProduto.values.any(
-      (campanha) => _tempoAteProximaRodada(campanha) != null,
-    );
-    if (!existeContagem) {
-      _timerRoleta?.cancel();
-      _timerRoleta = null;
-      return;
-    }
-    _timerRoleta ??= Timer.periodic(
-      const Duration(seconds: 1),
-      (_) => _atualizarContagemRoleta(),
-    );
   }
 
   Future<void> carregarDados() async {
@@ -142,7 +87,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           .map((item) => Produto.fromJson(Map<String, dynamic>.from(item)))
           .where((produto) => produto.sitproduto.toUpperCase() == 'ATIVO')
           .toList();
-      _roletasPorProduto.clear();
+      _promocoesPercentuaisPorProduto.clear();
       _cortesiasPorProduto.clear();
       _pacotesPorProduto.clear();
       if (clienteId != null && clienteId! > 0) {
@@ -153,8 +98,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         for (final oferta in ofertas) {
           final produtoId = int.tryParse('${oferta['produto_id']}');
           if (produtoId == null) continue;
-          if (oferta['tipo'] == 'ROLETA') {
-            _roletasPorProduto[produtoId] = oferta;
+          if (oferta['tipo'] == 'PERCENTUAL') {
+            _promocoesPercentuaisPorProduto[produtoId] = oferta;
           } else if (oferta['tipo'] == 'CORTESIA') {
             _cortesiasPorProduto[produtoId] = oferta;
           } else if (oferta['tipo'] == 'PACOTE') {
@@ -180,8 +125,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         vendasHabilitadas = cardapio['vendas_habilitadas'] != false;
         carregando = false;
       });
-      _iniciarContagemRoletaSeNecessario();
-
       await carregarQuantidadeCarrinho();
     } catch (e) {
       final mensagem = apiService.mensagemErroAmigavel(e);
@@ -308,47 +251,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     } finally {
       if (mounted) {
         setState(() => produtosEmAlteracao.remove(chaveItem));
-      }
-    }
-  }
-
-  Future<void> _girarRoleta(Produto produto) async {
-    if (!vendasHabilitadas) return;
-    if (clienteId == null || clienteId == 0) {
-      await direcionarParaLogin(
-        context,
-        mensagem: 'Entre para girar a roleta.',
-      );
-      return;
-    }
-    final campanha = _roletasPorProduto[produto.produtoId];
-    if (campanha == null) return;
-    try {
-      final premio = await apiService.girarRoletaProduto(
-        campanhaId: int.parse('${campanha['campanha_id']}'),
-        clienteId: clienteId!,
-      );
-      if (!mounted) return;
-      final percentual = int.tryParse('${premio['percentual_desconto']}') ?? 0;
-      final usarDesconto = await showDialog<bool>(
-        context: context,
-        barrierDismissible: false,
-        builder: (_) => _RoletaPremioDialog(
-          produtoNome: produto.nmproduto,
-          percentual: percentual,
-        ),
-      );
-      if (!mounted) return;
-      await carregarDados();
-      if (!mounted || usarDesconto != true) return;
-      await adicionarProdutoAoCarrinho(
-        produto,
-        quantidade: 1,
-        beneficioResgateId: int.parse('${premio['resgate_id']}'),
-      );
-    } catch (e) {
-      if (mounted) {
-        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
       }
     }
   }
@@ -824,8 +726,14 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
     final campanhaCortesia = _cortesiasPorProduto[produto.produtoId];
-    final campanhaRoleta = _roletasPorProduto[produto.produtoId];
-    final tempoAteProximaRodada = _tempoAteProximaRodada(campanhaRoleta);
+    final campanhaPercentual =
+        _promocoesPercentuaisPorProduto[produto.produtoId];
+    final percentualPromocao =
+        double.tryParse('${campanhaPercentual?['percentual_desconto']}') ?? 0;
+    final temPromocaoPercentual =
+        percentualPromocao > 0 && percentualPromocao < 100;
+    final precoPromocional =
+        ((precoAtual * (1 - percentualPromocao / 100)) * 100).round() / 100;
     final campanhaPacote = _pacotesPorProduto[produto.produtoId];
     final quantidadePacote =
         int.tryParse('${campanhaPacote?['qtitenspacote']}') ?? 0;
@@ -907,6 +815,40 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                               fontWeight: FontWeight.w900,
                                               color: Colors.black,
                                             ),
+                                          )
+                                        : temPromocaoPercentual
+                                        ? Text.rich(
+                                            TextSpan(
+                                              style: const TextStyle(
+                                                color: Colors.grey,
+                                                fontSize: 10,
+                                              ),
+                                              children: [
+                                                const TextSpan(text: 'de '),
+                                                TextSpan(
+                                                  text: ValueFormatters.moeda(
+                                                    precoAtual,
+                                                  ),
+                                                  style: const TextStyle(
+                                                    decoration: TextDecoration
+                                                        .lineThrough,
+                                                  ),
+                                                ),
+                                                const TextSpan(text: ' por '),
+                                                TextSpan(
+                                                  text: ValueFormatters.moeda(
+                                                    precoPromocional,
+                                                  ),
+                                                  style: TextStyle(
+                                                    color: Colors.red.shade700,
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w900,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           )
                                         : temDesconto
                                         ? Text.rich(
@@ -997,33 +939,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   ),
                                 ),
                               ],
-                              if (campanhaRoleta != null) ...[
+                              if (temPromocaoPercentual) ...[
                                 const SizedBox(height: 3),
-                                if (tempoAteProximaRodada != null)
-                                  Text(
-                                    '🎰 Próxima rodada em ${_formatarContagemRoleta(tempoAteProximaRodada)}',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.deepPurple.shade700,
-                                    ),
-                                  )
-                                else
-                                  InkWell(
-                                    onTap: vendasHabilitadas
-                                        ? () => _girarRoleta(produto)
-                                        : null,
-                                    child: Text(
-                                      '🎰 Girar roleta: até 50% OFF',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w800,
-                                        color: vendasHabilitadas
-                                            ? Colors.deepPurple.shade700
-                                            : Colors.grey.shade600,
-                                      ),
-                                    ),
+                                Text(
+                                  'Promoção: ${percentualPromocao.toStringAsFixed(percentualPromocao.truncateToDouble() == percentualPromocao ? 0 : 2)}% OFF',
+                                  style: TextStyle(
+                                    color: Colors.red.shade700,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
                                   ),
+                                ),
                               ],
                               if (temPacote) ...[
                                 const SizedBox(height: 3),
@@ -1057,9 +982,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     child: _acoesDoProduto(
                       produto: produto,
                       campanhaPacote: campanhaPacote,
+                      campanhaPercentual: campanhaPercentual,
                       quantidadePacote: quantidadePacote,
                       valorPacote: valorPacote,
                       temPacote: temPacote,
+                      temPromocaoPercentual: temPromocaoPercentual,
                       ehCortesia: ehCortesia,
                       cortesiaDisponivel: cortesiaDisponivel,
                       resgatandoCortesia: resgatandoCortesia,
@@ -1095,9 +1022,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   Widget _acoesDoProduto({
     required Produto produto,
     required Map<String, dynamic>? campanhaPacote,
+    required Map<String, dynamic>? campanhaPercentual,
     required int quantidadePacote,
     required double valorPacote,
     required bool temPacote,
+    required bool temPromocaoPercentual,
     required bool ehCortesia,
     required bool cortesiaDisponivel,
     required bool resgatandoCortesia,
@@ -1164,11 +1093,37 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       ),
     );
 
+    final botaoPromocaoPercentual = ElevatedButton.icon(
+      onPressed: !podeComprar
+          ? null
+          : () => adicionarProdutoAoCarrinho(
+              produto,
+              quantidade:
+                  quantidadesSelecionadas[_chaveItemCardapio(produto)] ?? 1,
+              campanhaId: int.tryParse('${campanhaPercentual!['campanha_id']}'),
+            ),
+      icon: const Icon(Icons.percent_rounded, size: 17),
+      label: const Text('Adicionar promoção ao carrinho'),
+      style: _estiloBotaoProduto(
+        fundo: Colors.red.shade700,
+        texto: Colors.white,
+        tamanhoFonte: 11,
+      ),
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (temPacote) ...[
           SizedBox(width: double.infinity, height: 38, child: botaoPacote),
+          const SizedBox(height: 6),
+        ],
+        if (temPromocaoPercentual) ...[
+          SizedBox(
+            width: double.infinity,
+            height: 38,
+            child: botaoPromocaoPercentual,
+          ),
           const SizedBox(height: 6),
         ],
         SizedBox(width: double.infinity, height: 38, child: botaoComprar),
@@ -1319,227 +1274,4 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       ),
     );
   }
-}
-
-class _RoletaPremioDialog extends StatefulWidget {
-  final String produtoNome;
-  final int percentual;
-
-  const _RoletaPremioDialog({
-    required this.produtoNome,
-    required this.percentual,
-  });
-
-  @override
-  State<_RoletaPremioDialog> createState() => _RoletaPremioDialogState();
-}
-
-class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _rotacao;
-  var _concluida = false;
-
-  @override
-  void initState() {
-    super.initState();
-    const angulosPorPremio = <int, double>{
-      0: 0,
-      10: math.pi * 8 / 5,
-      20: math.pi * 6 / 5,
-      30: math.pi * 4 / 5,
-      50: math.pi * 2 / 5,
-    };
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 3400),
-    );
-    _rotacao = Tween<double>(
-      begin: 0,
-      end: (math.pi * 2 * 6) + (angulosPorPremio[widget.percentual] ?? 0),
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed && mounted) {
-        setState(() => _concluida = true);
-      }
-    });
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Roleta promocional'),
-      content: SizedBox(
-        width: 290,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 260,
-              height: 260,
-              child: Stack(
-                alignment: Alignment.center,
-                clipBehavior: Clip.none,
-                children: [
-                  AnimatedBuilder(
-                    animation: _rotacao,
-                    builder: (_, child) =>
-                        Transform.rotate(angle: _rotacao.value, child: child),
-                    child: const _RoletaComPercentuais(),
-                  ),
-                  const Positioned(top: 0, child: _IndicadorRoleta()),
-                ],
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              _concluida
-                  ? 'Você ganhou ${widget.percentual}% de desconto!'
-                  : 'Girando a roleta...',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: _concluida
-                    ? Colors.green.shade700
-                    : Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 7),
-            Text(
-              _concluida
-                  ? 'Use agora em ${widget.produtoNome}. O prêmio expira em 20 minutos.'
-                  : 'Aguarde o resultado do seu sorteio.',
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _concluida ? () => Navigator.pop(context, false) : null,
-          child: const Text('Agora não'),
-        ),
-        ElevatedButton(
-          onPressed: _concluida ? () => Navigator.pop(context, true) : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green.shade700,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('Usar desconto'),
-        ),
-      ],
-    );
-  }
-}
-
-class _RoletaComPercentuais extends StatelessWidget {
-  const _RoletaComPercentuais();
-
-  @override
-  Widget build(BuildContext context) {
-    const estilo = TextStyle(
-      color: Colors.white,
-      fontSize: 23,
-      fontWeight: FontWeight.w900,
-      shadows: [
-        Shadow(color: Colors.black54, blurRadius: 4, offset: Offset(1, 2)),
-      ],
-    );
-    return SizedBox(
-      width: 245,
-      height: 245,
-      child: Stack(
-        children: const [
-          Positioned.fill(
-            child: Image(
-              image: AssetImage(
-                'assets/images/roleta_promocional_sem_ponteiro.png',
-              ),
-              fit: BoxFit.contain,
-            ),
-          ),
-          Align(
-            alignment: Alignment(0, -0.48),
-            child: Text('0%', style: estilo),
-          ),
-          Align(
-            alignment: Alignment(0.52, -0.15),
-            child: Text('10%', style: estilo),
-          ),
-          Align(
-            alignment: Alignment(0.33, 0.48),
-            child: Text('20%', style: estilo),
-          ),
-          Align(
-            alignment: Alignment(-0.33, 0.48),
-            child: Text('30%', style: estilo),
-          ),
-          Align(
-            alignment: Alignment(-0.52, -0.15),
-            child: Text('50%', style: estilo),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _IndicadorRoleta extends StatelessWidget {
-  const _IndicadorRoleta();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(50, 43),
-      painter: _IndicadorRoletaPainter(),
-    );
-  }
-}
-
-class _IndicadorRoletaPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final sombra = Path()
-      ..moveTo(2, 2)
-      ..lineTo(size.width - 2, 2)
-      ..lineTo(size.width / 2, size.height - 1)
-      ..close();
-    canvas.drawShadow(sombra, Colors.black, 4, true);
-    canvas.drawPath(
-      sombra,
-      Paint()
-        ..color = const Color(0xff3d2600)
-        ..style = PaintingStyle.fill,
-    );
-
-    final ponteiro = Path()
-      ..moveTo(6, 5)
-      ..lineTo(size.width - 6, 5)
-      ..lineTo(size.width / 2, size.height - 6)
-      ..close();
-    canvas.drawPath(
-      ponteiro,
-      Paint()
-        ..color = const Color(0xffffc928)
-        ..style = PaintingStyle.fill,
-    );
-    canvas.drawPath(
-      ponteiro,
-      Paint()
-        ..color = const Color(0xfffff0b0)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

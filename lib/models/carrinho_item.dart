@@ -5,6 +5,7 @@ class ItemCarrinho {
   final int produtoId;
   final int? cardapioItemId;
   final int? campanhaId;
+  final String? tipoCampanha;
   final int? quantidadePacote;
   final double? valorPacote;
   final String nome;
@@ -26,6 +27,7 @@ class ItemCarrinho {
     required this.produtoId,
     this.cardapioItemId,
     this.campanhaId,
+    this.tipoCampanha,
     this.quantidadePacote,
     this.valorPacote,
     required this.nome,
@@ -52,6 +54,7 @@ class ItemCarrinho {
       campanhaId: json['campanha_id'] == null
           ? null
           : _toInt(json['campanha_id']),
+      tipoCampanha: json['tipo_campanha']?.toString(),
       quantidadePacote: json['qtitenspacote'] == null
           ? null
           : _toInt(json['qtitenspacote']),

@@ -16,6 +16,7 @@ class ItemCarrinhoAgrupado {
   final int produtoId;
   final int? cardapioItemId;
   final int? campanhaId;
+  final String? tipoCampanha;
   final int? quantidadePacote;
   final double? valorPacote;
   final String nome;
@@ -36,6 +37,7 @@ class ItemCarrinhoAgrupado {
     required this.produtoId,
     this.cardapioItemId,
     this.campanhaId,
+    this.tipoCampanha,
     this.quantidadePacote,
     this.valorPacote,
     required this.nome,
@@ -104,6 +106,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           produtoId: atual.produtoId,
           cardapioItemId: atual.cardapioItemId,
           campanhaId: atual.campanhaId,
+          tipoCampanha: atual.tipoCampanha,
           quantidadePacote: atual.quantidadePacote,
           valorPacote: atual.valorPacote,
           nome: atual.nome,
@@ -125,6 +128,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           produtoId: item.produtoId,
           cardapioItemId: item.cardapioItemId,
           campanhaId: item.campanhaId,
+          tipoCampanha: item.tipoCampanha,
           quantidadePacote: item.quantidadePacote,
           valorPacote: item.valorPacote,
           nome: item.nome,
@@ -419,7 +423,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
   Widget _controleQuantidade(ItemCarrinhoAgrupado item) {
     final ehCortesia = item.precoFinal <= 0;
-    final ehPacote = item.campanhaId != null;
+    final ehPacote = item.tipoCampanha == 'PACOTE';
     final permiteAumentar = item.idtipoproduto != 'I' && !ehCortesia;
 
     return Row(
