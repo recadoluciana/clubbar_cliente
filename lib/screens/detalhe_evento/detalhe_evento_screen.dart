@@ -198,19 +198,17 @@ class _ModalidadesIngressoScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (ehMeiaEntrada)
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      widget.nomeModalidade(lote),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
+                  Text(
+                    widget.nomeModalidade(lote),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   TextButton.icon(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
@@ -224,7 +222,7 @@ class _ModalidadesIngressoScreenState
                     label: const Text('Quem tem direito'),
                     style: TextButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       textStyle: const TextStyle(fontSize: 11),
@@ -1058,28 +1056,38 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    _nomeModalidade(lote),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
+                Text(
+                  _nomeModalidade(lote),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-                if (ehMeiaEntrada)
-                  TextButton(
+                if (ehMeiaEntrada) ...[
+                  const SizedBox(height: 2),
+                  TextButton.icon(
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const MeiaEntradaScreen(),
                       ),
                     ),
-                    child: const Text('Quem tem direito'),
+                    icon: const Icon(
+                      Icons.workspace_premium_outlined,
+                      size: 16,
+                    ),
+                    label: const Text('Quem tem direito'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      textStyle: const TextStyle(fontSize: 11),
+                    ),
                   ),
+                ],
               ],
             ),
             if (cortesiaEsgotada)
