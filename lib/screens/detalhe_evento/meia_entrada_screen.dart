@@ -24,7 +24,9 @@ Além da lei federal, legislações locais e estaduais (como em São Paulo) pode
 
 • Doadores regulares de sangue ou medula óssea (comprovados por carteira oficial do hemocentro).
 
-É obrigatória a apresentação de comprovante na entrada.''';
+É obrigatória a apresentação de comprovante na entrada.
+
+O desconto de 50% da meia-entrada não se acumula com outros descontos e promoções de ingressos.''';
 
   @override
   Widget build(BuildContext context) => Scaffold(
