@@ -1254,6 +1254,7 @@ class ApiService {
         return EventoDetalhe(
           id: evento.id,
           titulo: evento.titulo,
+          classificacaoEtaria: evento.classificacaoEtaria,
           descricao: evento.descricao,
           dataInicio: evento.dataInicio,
           dataFim: evento.dataFim,

@@ -24,4 +24,18 @@ void main() {
 
     expect(evento.jaIniciado, isFalse);
   });
+
+  test('formata endereço do evento sem repetir a localidade', () {
+    final evento = EventoDetalhe.fromJson({
+      'dsendlocevento': 'Rua: 7 de setembro, 353 Centro',
+      'dsbairroloja': 'Centro',
+      'nmcidade': 'Três Pontas',
+      'sgestado': 'MG',
+    });
+
+    expect(
+      evento.enderecoFormatado,
+      'Rua 7 de setembro, 353, Centro, Três Pontas - MG',
+    );
+  });
 }
