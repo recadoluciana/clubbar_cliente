@@ -1711,6 +1711,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
+                          if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(Icons.verified_user_outlined, size: 17),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Classificação etária: ${ev.classificacaoEtaria}',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                           if (ev.jaIniciado) ...[
                             const SizedBox(height: 8),
                             Align(
