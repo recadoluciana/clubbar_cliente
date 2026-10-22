@@ -56,30 +56,31 @@ class Produto {
   static String? buildUrl(String? path) {
     if (path == null || path.isEmpty) return null;
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
-    return '$baseUrl$path';
+    return '$baseUrl${path.startsWith('/') ? '' : '/'}$path';
   }
 
   factory Produto.fromJson(Map<String, dynamic> json) {
     return Produto(
-      produtoId: json['produto_id'] ?? 0,
+      produtoId: _toInt(json['produto_id']),
       cardapioItemId: int.tryParse((json['cardapioitem_id'] ?? '').toString()),
-      organizacaoId: json['organizacao_id'] ?? 0,
-      lojaId: json['loja_id'] ?? 0,
-      categoriaId: json['categoria_id'] ?? 0,
+      organizacaoId: _toInt(json['organizacao_id']),
+      lojaId: _toInt(json['loja_id']),
+      categoriaId: _toInt(json['categoria_id']),
       nmproduto: json['nmproduto'] ?? '',
       dsproduto: json['dsproduto'] ?? '',
-      vrprecoprod: (json['vrprecoprod'] ?? 0).toDouble(),
+      vrprecoprod: _toDouble(json['vrprecoprod']),
       sitproduto: json['sitproduto'] ?? '',
       nmcategoria: json['nmcategoria'] ?? '',
       urlfotoproduto: buildUrl(json['urlfotoproduto']),
       tipodesconto: json['tipodesconto'] ?? 'NENHUM',
-      vrdesconto: (json['vrdesconto'] ?? 0).toDouble(),
+      vrdesconto: _toDouble(json['vrdesconto']),
       dtinidesconto: json['dtinidesconto'],
       dtfimdesconto: json['dtfimdesconto'],
-      vrprecofinal: (json['vrprecofinal'] ?? json['vrprecoprod'] ?? 0)
-          .toDouble(),
-      descontoativo: json['descontoativo'] ?? false,
-      cortesiaDisponivel: json['cortesia_disponivel'] as bool?,
+      vrprecofinal: _toDouble(json['vrprecofinal'] ?? json['vrprecoprod']),
+      descontoativo: _toBool(json['descontoativo']),
+      cortesiaDisponivel: json.containsKey('cortesia_disponivel')
+          ? _toBool(json['cortesia_disponivel'])
+          : null,
       cortesiasResgatadas: int.tryParse(
         (json['qtcortesiasresgatadas'] ?? '').toString(),
       ),
@@ -90,5 +91,23 @@ class Produto {
       quantidadeVendida:
           int.tryParse((json['quantidade_vendida'] ?? 0).toString()) ?? 0,
     );
+  }
+
+  static int _toInt(dynamic valor) {
+    if (valor is int) return valor;
+    return int.tryParse(valor?.toString() ?? '') ?? 0;
+  }
+
+  static double _toDouble(dynamic valor) {
+    if (valor is double) return valor;
+    if (valor is int) return valor.toDouble();
+    return double.tryParse(valor?.toString().replaceAll(',', '.') ?? '') ?? 0;
+  }
+
+  static bool _toBool(dynamic valor) {
+    if (valor is bool) return valor;
+    if (valor is num) return valor != 0;
+    return valor?.toString().trim().toLowerCase() == 'true' ||
+        valor?.toString().trim() == '1';
   }
 }
