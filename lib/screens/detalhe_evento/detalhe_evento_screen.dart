@@ -1570,6 +1570,28 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return '';
   }
 
+  Widget _informacaoDoEvento({required IconData icone, required String texto}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icone, size: 16, color: Colors.grey.shade700),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            texto,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              height: 1.25,
+              color: Colors.grey.shade700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ev = evento;
@@ -1736,18 +1758,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ),
                           if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
                             const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                const Icon(Icons.verified_user_outlined, size: 17),
-                                const SizedBox(width: 6),
-                                Text(
+                            _informacaoDoEvento(
+                              icone: Icons.verified_user_outlined,
+                              texto:
                                   'Classificação etária: ${ev.classificacaoEtaria}',
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ],
                             ),
                           ],
                           if (ev.jaIniciado) ...[
@@ -1811,24 +1825,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                             const SizedBox(height: 2),
                           ],
-                          Text(
-                            [
-                              [
-                                ev.endereco.trim(),
-                                ev.numeroEndereco.trim(),
-                              ].where((parte) => parte.isNotEmpty).join(', '),
-                              ev.bairro.trim(),
-                              ev.sgEstado.trim().isEmpty
-                                  ? ev.nomeCidade.trim()
-                                  : '${ev.nomeCidade.trim()} - ${ev.sgEstado.trim()}',
-                            ].where((parte) => parte.isNotEmpty).join(' • '),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              height: 1.25,
-                              color: Colors.grey.shade700,
-                            ),
+                          _informacaoDoEvento(
+                            icone: Icons.location_on_outlined,
+                            texto: ev.enderecoFormatado,
                           ),
                           if (atracoesOrdenadas.isNotEmpty) ...[
                             const SizedBox(height: 14),

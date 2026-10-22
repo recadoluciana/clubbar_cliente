@@ -57,6 +57,71 @@ class EventoDetalhe {
     return !HorarioBrasil.agora().isBefore(inicio);
   }
 
+  /// Endereço exibido ao cliente sem repetir bairro, cidade ou estado que já
+  /// tenham vindo junto do logradouro em registros antigos.
+  String get enderecoFormatado {
+    final bairroLimpo = bairro.trim();
+    final cidadeLimpa = nomeCidade.trim();
+    final estadoLimpo = sgEstado.trim();
+    final cidadeEstado = estadoLimpo.isEmpty
+        ? cidadeLimpa
+        : '${cidadeLimpa.isEmpty ? '' : '$cidadeLimpa - '}$estadoLimpo';
+
+    final partes = endereco
+        .split(',')
+        .map((parte) => parte.trim())
+        .where((parte) => parte.isNotEmpty)
+        .where(
+          (parte) =>
+              !_mesmoTexto(parte, bairroLimpo) &&
+              !_mesmoTexto(parte, cidadeLimpa) &&
+              !_mesmoTexto(parte, cidadeEstado),
+        )
+        .toList();
+
+    var numero = numeroEndereco.trim();
+    if (numero.isEmpty && bairroLimpo.isNotEmpty && partes.isNotEmpty) {
+      final ultimaParte = partes.last;
+      final bairroEscapado = RegExp.escape(bairroLimpo);
+      final encontrado = RegExp(
+        '^(.+?)\\s+$bairroEscapado\$',
+        caseSensitive: false,
+      ).firstMatch(ultimaParte);
+      final candidatoNumero = encontrado?.group(1)?.trim() ?? '';
+      if (candidatoNumero.isNotEmpty &&
+          RegExp(r'^\d+[\w/-]*$').hasMatch(candidatoNumero)) {
+        numero = candidatoNumero;
+        partes.removeLast();
+      }
+    }
+
+    var logradouro = partes
+        .join(', ')
+        .replaceFirst(RegExp(r'^rua\s*:\s*', caseSensitive: false), 'Rua ');
+    if (numero.isNotEmpty &&
+        !RegExp(
+          '(^|\\D)${RegExp.escape(numero)}(\\D|\$)',
+        ).hasMatch(logradouro)) {
+      logradouro = [
+        logradouro,
+        numero,
+      ].where((parte) => parte.isNotEmpty).join(', ');
+    }
+
+    return [
+      logradouro,
+      bairroLimpo,
+      cidadeEstado,
+    ].where((parte) => parte.isNotEmpty).join(', ');
+  }
+
+  static bool _mesmoTexto(String primeiro, String segundo) {
+    if (primeiro.isEmpty || segundo.isEmpty) return false;
+    String normalizar(String valor) =>
+        valor.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
+    return normalizar(primeiro) == normalizar(segundo);
+  }
+
   factory EventoDetalhe.fromJson(Map<String, dynamic> json) {
     final politicaLoja = Map<String, dynamic>.from(
       json['politica_loja'] as Map? ?? const {},
