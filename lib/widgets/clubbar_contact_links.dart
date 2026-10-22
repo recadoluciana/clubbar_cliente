@@ -8,7 +8,10 @@ class ClubbarContactLinks extends StatelessWidget {
   final String whatsappEvento;
   final bool mostrarContatoEvento;
   final bool centralizado;
+  final bool tituloEmNegrito;
   final Color? cor;
+  final double tamanhoFonteLinks;
+  final String titulo;
 
   const ClubbarContactLinks({
     super.key,
@@ -18,7 +21,10 @@ class ClubbarContactLinks extends StatelessWidget {
     this.whatsappEvento = '',
     this.mostrarContatoEvento = false,
     this.centralizado = false,
+    this.tituloEmNegrito = true,
     this.cor,
+    this.tamanhoFonteLinks = 14,
+    this.titulo = 'Fale com o organizador/estabelecimento',
   });
 
   bool get _temContato => [
@@ -52,7 +58,13 @@ class ClubbarContactLinks extends StatelessWidget {
     return TextButton.icon(
       onPressed: () => _abrir(context, uri),
       icon: Icon(icone, size: 17),
-      label: Text(texto),
+      label: Text(
+        texto,
+        style: TextStyle(
+          fontSize: tamanhoFonteLinks,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
       style: TextButton.styleFrom(
         foregroundColor: cor ?? Colors.blue.shade800,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -73,55 +85,64 @@ class ClubbarContactLinks extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 2),
-      child: Column(
-        crossAxisAlignment: centralizado
-            ? CrossAxisAlignment.center
-            : CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Fale com o organizador/estabelecimento',
-            textAlign: centralizado ? TextAlign.center : TextAlign.start,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 2),
-          Wrap(
-            alignment: centralizado
-                ? WrapAlignment.center
-                : WrapAlignment.start,
-            spacing: 2,
-            runSpacing: 2,
-            children: [
-              if (mostrarContatoEvento && emailDoEvento.isNotEmpty)
-                _link(
-                  context,
-                  icone: Icons.email_outlined,
-                  texto: 'E-mail',
-                  uri: Uri(scheme: 'mailto', path: emailDoEvento),
-                )
-              else if (emailLoja.isNotEmpty)
-                _link(
-                  context,
-                  icone: Icons.email_outlined,
-                  texto: 'E-mail',
-                  uri: Uri(scheme: 'mailto', path: emailLoja),
-                ),
-              if (mostrarContatoEvento && zapEvento.isNotEmpty)
-                _link(
-                  context,
-                  icone: Icons.chat_outlined,
-                  texto: 'WhatsApp',
-                  uri: Uri.parse('https://wa.me/$zapEvento'),
-                )
-              else if (zapLoja.isNotEmpty)
-                _link(
-                  context,
-                  icone: Icons.chat_outlined,
-                  texto: 'WhatsApp',
-                  uri: Uri.parse('https://wa.me/$zapLoja'),
-                ),
-            ],
-          ),
-        ],
+      child: Align(
+        alignment: centralizado ? Alignment.center : Alignment.centerLeft,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: centralizado
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
+          children: [
+            Text(
+              titulo,
+              textAlign: centralizado ? TextAlign.center : TextAlign.start,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: tituloEmNegrito
+                    ? FontWeight.w700
+                    : FontWeight.normal,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Wrap(
+              alignment: centralizado
+                  ? WrapAlignment.center
+                  : WrapAlignment.start,
+              spacing: 2,
+              runSpacing: 2,
+              children: [
+                if (mostrarContatoEvento && emailDoEvento.isNotEmpty)
+                  _link(
+                    context,
+                    icone: Icons.email_outlined,
+                    texto: 'E-mail',
+                    uri: Uri(scheme: 'mailto', path: emailDoEvento),
+                  )
+                else if (emailLoja.isNotEmpty)
+                  _link(
+                    context,
+                    icone: Icons.email_outlined,
+                    texto: 'E-mail',
+                    uri: Uri(scheme: 'mailto', path: emailLoja),
+                  ),
+                if (mostrarContatoEvento && zapEvento.isNotEmpty)
+                  _link(
+                    context,
+                    icone: Icons.chat_outlined,
+                    texto: 'WhatsApp',
+                    uri: Uri.parse('https://wa.me/$zapEvento'),
+                  )
+                else if (zapLoja.isNotEmpty)
+                  _link(
+                    context,
+                    icone: Icons.chat_outlined,
+                    texto: 'WhatsApp',
+                    uri: Uri.parse('https://wa.me/$zapLoja'),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

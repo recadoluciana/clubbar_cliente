@@ -17,10 +17,32 @@ import '../../core/theme/app_colors.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
+import '../../utils/horario_brasil.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import 'participantes_reserva_screen.dart';
 import '../pagamento/politica_compra_screen.dart';
 import 'meia_entrada_screen.dart';
+
+const int _limiteIngressosPorTransacao = 5;
+const String _mensagemLimiteIngressosPorTransacao =
+    'Máximo de 5 ingressos por compra. Caso necessite de mais ingressos realize duas ou mais compras.';
+
+bool _ehCortesia(EventoLote lote) => lote.preco <= 0;
+
+bool _ehModalidadeMeiaEntrada(EventoLote lote) =>
+    lote.aplicaCotaLegal ||
+    lote.tipoIngresso.trim().toUpperCase() == 'MEIA_IDOSO';
+
+int _limitePorTransacao(EventoLote lote) =>
+    _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
+
+String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
+    ? 'Limite de 1 ingresso por transação'
+    : 'Limite de 5 ingressos por transação';
+
+String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
+    ? 'Cortesia limitada a 1 ingresso por transação.'
+    : _mensagemLimiteIngressosPorTransacao;
 
 class DetalheEventoScreen extends StatefulWidget {
   final int eventoId;
@@ -42,21 +64,25 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final List<EventoLote> opcoes;
   final String nomeLoja;
   final String nomeEvento;
-  final String imagemLojaUrl;
+  final String dataHoraEvento;
+  final String imagemEventoUrl;
   final double taxaPercentual;
   final double taxaMinima;
   final String Function(EventoLote) nomeModalidade;
   final Future<void> Function(EventoLote lote, int quantidade) onComprar;
+  final VoidCallback onEntenderTaxa;
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
     required this.nomeLoja,
     required this.nomeEvento,
-    required this.imagemLojaUrl,
+    required this.dataHoraEvento,
+    required this.imagemEventoUrl,
     required this.taxaPercentual,
     required this.taxaMinima,
     required this.nomeModalidade,
     required this.onComprar,
+    required this.onEntenderTaxa,
   });
 
   @override
@@ -72,7 +98,7 @@ class _ModalidadesIngressoScreenState
   @override
   Widget build(BuildContext context) {
     final lote = widget.opcoes.first;
-    final vendaDisponivel = lote.podeComprarEm(DateTime.now());
+    final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
     final nomeSetor = lote.nomeSetor.trim();
     final descricaoSetor = lote.descricaoSetor.trim();
     final descricaoPadrao =
@@ -91,13 +117,14 @@ class _ModalidadesIngressoScreenState
             titulo: widget.nomeEvento.trim().isEmpty
                 ? 'Escolha a modalidade'
                 : widget.nomeEvento,
-            subtitulo: '',
+            subtitulo: widget.dataHoraEvento,
             icone: Icons.confirmation_number_rounded,
-            imagemAvatarUrl: widget.imagemLojaUrl,
+            imagemAvatarUrl: widget.imagemEventoUrl,
             tamanhoAvatar: 56,
             larguraAvatar: 86,
             avatarRetangular: true,
             corTitulo: Colors.black87,
+            maxLinhasTitulo: 2,
           ),
           Expanded(
             child: ListView(
@@ -114,6 +141,28 @@ class _ModalidadesIngressoScreenState
                   (opcao) =>
                       _cardModalidade(opcao, vendaDisponivel: vendaDisponivel),
                 ),
+                const SizedBox(height: 4),
+                Center(
+                  child: TextButton.icon(
+                    onPressed: widget.onEntenderTaxa,
+                    icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                    label: const Text(
+                      'Entenda nossa taxa',
+                      style: TextStyle(fontWeight: FontWeight.normal),
+                    ),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      textStyle: const TextStyle(fontSize: 12),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
               ],
             ),
           ),
@@ -124,16 +173,15 @@ class _ModalidadesIngressoScreenState
 
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
+    final ehCortesia = _ehCortesia(lote);
     final ehMeiaLegal = lote.aplicaCotaLegal;
-    final disponivelModalidade = ehMeiaLegal
-        ? lote.qtDisponivelCotaLegal
-        : lote.qtDisponivel;
-    final modalidadeDisponivel = !ehMeiaLegal || disponivelModalidade > 0;
+    final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
+    final disponivelModalidade = lote.qtDisponivelParaCompra;
+    final modalidadeDisponivel = disponivelModalidade > 0;
     final podeDiminuir = quantidade > 1;
     final podeAumentar =
-        quantidade < 20 &&
-        quantidade < lote.qtDisponivel &&
-        (!ehMeiaLegal || quantidade < disponivelModalidade);
+        quantidade < _limitePorTransacao(lote) &&
+        quantidade < disponivelModalidade;
     final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
     final taxaUnitaria = lote.preco <= 0
         ? 0.0
@@ -143,16 +191,53 @@ class _ModalidadesIngressoScreenState
     final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 10),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              widget.nomeModalidade(lote),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
-            ),
+            if (ehMeiaEntrada)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.nomeModalidade(lote),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  TextButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const MeiaEntradaScreen(),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.workspace_premium_outlined,
+                      size: 16,
+                    ),
+                    label: const Text('Quem tem direito'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      textStyle: const TextStyle(fontSize: 11),
+                    ),
+                  ),
+                ],
+              )
+            else
+              Text(
+                widget.nomeModalidade(lote),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
             if (lote.exigeComprovante)
               const Padding(
                 padding: EdgeInsets.only(top: 3),
@@ -162,7 +247,7 @@ class _ModalidadesIngressoScreenState
                 ),
               ),
             if (ehMeiaLegal) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
                 'Cota legal do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'} (${lote.percentualCotaLegal == lote.percentualCotaLegal.roundToDouble() ? lote.percentualCotaLegal.toInt() : lote.percentualCotaLegal}% da capacidade)',
                 style: const TextStyle(
@@ -172,10 +257,12 @@ class _ModalidadesIngressoScreenState
               ),
               const SizedBox(height: 2),
               Text(
-                '${lote.qtDisponivelCotaLegal} ingresso${lote.qtDisponivelCotaLegal == 1 ? '' : 's'} disponíve${lote.qtDisponivelCotaLegal == 1 ? 'l' : 'is'} nesta cota',
+                disponivelModalidade == 1
+                    ? '1 ingresso disponível'
+                    : '$disponivelModalidade ingressos disponíveis',
                 style: TextStyle(
                   fontSize: 12,
-                  color: lote.qtDisponivelCotaLegal > 0
+                  color: disponivelModalidade > 0
                       ? Colors.green.shade700
                       : Colors.red,
                   fontWeight: FontWeight.w700,
@@ -184,7 +271,9 @@ class _ModalidadesIngressoScreenState
             ] else ...[
               const SizedBox(height: 8),
               Text(
-                '$disponivelModalidade ingresso${disponivelModalidade == 1 ? '' : 's'} disponíve${disponivelModalidade == 1 ? 'l' : 'is'} nesta modalidade',
+                disponivelModalidade == 1
+                    ? '1 ingresso disponível'
+                    : '$disponivelModalidade ingressos disponíveis',
                 style: TextStyle(
                   fontSize: 12,
                   color: disponivelModalidade > 0
@@ -194,73 +283,33 @@ class _ModalidadesIngressoScreenState
                 ),
               ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: 3),
             Text(
-              '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+              _textoLimitePorTransacao(lote),
+              style: TextStyle(fontSize: 11, color: Colors.black54),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 6),
             Row(
               children: [
-                const Text('Quantidade'),
-                const Spacer(),
-                IconButton.filled(
-                  tooltip: 'Diminuir quantidade',
-                  onPressed: !podeDiminuir
-                      ? null
-                      : () => setState(
-                          () => _quantidades[lote.lotePrecoId] = quantidade - 1,
-                        ),
-                  icon: Text(
-                    '−',
-                    style: TextStyle(
-                      color: podeDiminuir ? Colors.black : Colors.grey.shade700,
-                      fontSize: 25,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
-                    ),
-                  ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.amareloCerveja,
-                    foregroundColor: Colors.black,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
-                  ),
-                ),
-                SizedBox(
-                  width: 40,
+                Expanded(
                   child: Text(
-                    '$quantidade',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.w900),
-                  ),
-                ),
-                IconButton.filled(
-                  tooltip: 'Aumentar quantidade',
-                  onPressed: !podeAumentar
-                      ? null
-                      : () => setState(
-                          () => _quantidades[lote.lotePrecoId] = quantidade + 1,
-                        ),
-                  icon: Text(
-                    '+',
-                    style: TextStyle(
-                      color: podeAumentar ? Colors.black : Colors.grey.shade700,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
+                    '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: AppColors.amareloCerveja,
-                    foregroundColor: Colors.black,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
-                  ),
+                ),
+                const SizedBox(width: 8),
+                _controleQuantidade(
+                  lote: lote,
+                  quantidade: quantidade,
+                  podeDiminuir: podeDiminuir,
+                  podeAumentar: podeAumentar,
                 ),
               ],
             ),
-            const Divider(height: 24),
+            const Divider(height: 18),
             Row(
               children: [
                 const Text(
@@ -277,7 +326,7 @@ class _ModalidadesIngressoScreenState
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
@@ -293,7 +342,7 @@ class _ModalidadesIngressoScreenState
                         }
                       },
                 icon: const Icon(Icons.local_activity_outlined),
-                label: const Text('Comprar ingresso'),
+                label: Text(ehCortesia ? 'Resgatar' : 'Comprar ingresso'),
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.amareloCerveja,
                   foregroundColor: Colors.black,
@@ -307,12 +356,65 @@ class _ModalidadesIngressoScreenState
       ),
     );
   }
+
+  Widget _controleQuantidade({
+    required EventoLote lote,
+    required int quantidade,
+    required bool podeDiminuir,
+    required bool podeAumentar,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Diminuir quantidade',
+            onPressed: !podeDiminuir
+                ? null
+                : () => setState(
+                    () => _quantidades[lote.lotePrecoId] = quantidade - 1,
+                  ),
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove_rounded, size: 19),
+          ),
+          Text(
+            '$quantidade',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          IconButton(
+            tooltip: 'Aumentar quantidade',
+            onPressed: !podeAumentar
+                ? null
+                : () {
+                    if (quantidade >= _limitePorTransacao(lote)) {
+                      AppSnackBar.aviso(
+                        context,
+                        _mensagemLimitePorTransacao(lote),
+                      );
+                      return;
+                    }
+                    setState(
+                      () => _quantidades[lote.lotePrecoId] = quantidade + 1,
+                    );
+                  },
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add_rounded, size: 19),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
   final Map<int, Map<String, dynamic>> _statusLotes = {};
+  final GlobalKey _ingressosKey = GlobalKey();
 
   bool carregando = true;
   bool atualizandoLotes = false;
@@ -321,6 +423,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   EventoDetalhe? evento;
   List<EventoLote> lotes = [];
+  final Map<int, int> _quantidadesModalidades = {};
 
   @override
   void initState() {
@@ -365,6 +468,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     } finally {
       if (mounted) setState(() => atualizandoLotes = false);
     }
+  }
+
+  Future<void> _irParaIngressos() async {
+    final contextoIngressos = _ingressosKey.currentContext;
+    if (contextoIngressos == null) return;
+
+    await Scrollable.ensureVisible(
+      contextoIngressos,
+      alignment: 0.08,
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   Future<void> compartilharEvento() async {
@@ -471,20 +586,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Widget _fotoAtracao(AtracaoEventoDetalhe atracao) {
+  Widget _fotoAtracao(AtracaoEventoDetalhe atracao, {double tamanho = 48}) {
     final imagem = atracao.bannerUrl.trim();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+    return ClipOval(
       child: SizedBox(
-        width: 60,
-        height: 60,
+        width: tamanho,
+        height: tamanho,
         child: imagem.isEmpty
             ? Container(
                 color: Colors.blue.shade50,
                 child: Icon(
                   Icons.music_note_rounded,
                   color: Colors.blue.shade700,
-                  size: 30,
+                  size: tamanho / 2,
                 ),
               )
             : Image.network(
@@ -495,32 +609,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   child: Icon(
                     Icons.music_note_rounded,
                     color: Colors.blue.shade700,
-                    size: 30,
+                    size: 24,
                   ),
                 ),
               ),
       ),
     );
-  }
-
-  String _duracaoPrevista(AtracaoEventoDetalhe atracao) {
-    try {
-      final inicio = DateTime.parse(atracao.inicio).toLocal();
-      final fim = DateTime.parse(atracao.fim).toLocal();
-      final duracao = fim.difference(inicio);
-      if (duracao.inMinutes <= 0) return 'Duração prevista não informada';
-
-      final horas = duracao.inHours;
-      final minutos = duracao.inMinutes.remainder(60);
-      final texto = horas == 0
-          ? '$minutos min'
-          : minutos == 0
-          ? '${horas}h'
-          : '${horas}h ${minutos}min';
-      return 'Duração prevista: $texto';
-    } catch (_) {
-      return 'Duração prevista não informada';
-    }
   }
 
   void _abrirDetalhesAtracao(AtracaoEventoDetalhe atracao) {
@@ -626,7 +720,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     int? quantidadeSelecionada,
   }) async {
     if (processandoCompra) return;
-    if (lote.qtDisponivel <= 0) {
+    if (lote.qtDisponivelParaCompra <= 0) {
       await carregarStatusLotes();
       if (mounted) {
         AppSnackBar.aviso(
@@ -637,6 +731,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       return;
     }
     var quantidade = quantidadeSelecionada ?? 1;
+    final limitePorTransacao = _limitePorTransacao(lote);
     bool? confirmada = quantidadeSelecionada != null;
     if (quantidadeSelecionada == null) {
       confirmada = await showDialog<bool>(
@@ -671,8 +766,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                     IconButton(
                       onPressed:
-                          quantidade < 20 && quantidade < lote.qtDisponivel
-                          ? () => setDialogState(() => quantidade++)
+                          quantidade < limitePorTransacao &&
+                              quantidade < lote.qtDisponivelParaCompra
+                          ? () {
+                              if (quantidade >= limitePorTransacao) {
+                                AppSnackBar.aviso(
+                                  dialogContext,
+                                  _mensagemLimitePorTransacao(lote),
+                                );
+                                return;
+                              }
+                              setDialogState(() => quantidade++);
+                            }
                           : null,
                       icon: const Icon(Icons.add_circle_outline),
                     ),
@@ -695,7 +800,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
     }
     if (confirmada != true || !mounted) return;
-    if (quantidade > lote.qtDisponivel) {
+    if (quantidade > limitePorTransacao) {
+      AppSnackBar.aviso(context, _mensagemLimitePorTransacao(lote));
+      return;
+    }
+    if (quantidade > lote.qtDisponivelParaCompra) {
       await carregarStatusLotes();
       if (mounted) {
         AppSnackBar.aviso(
@@ -705,23 +814,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       }
       return;
     }
-    BeneficioIngresso? beneficio;
-    if (lote.exigeBeneficio || lote.aplicaCotaLegal) {
-      beneficio = await showDialog<BeneficioIngresso>(
-        context: context,
-        builder: (c) => SimpleDialog(
-          title: const Text('Qual é o benefício?'),
-          children: [
-            for (final item in lote.beneficios)
-              SimpleDialogOption(
-                onPressed: () => Navigator.pop(c, item),
-                child: Text(item.nome),
-              ),
-          ],
-        ),
-      );
-      if (beneficio == null || !mounted) return;
-    }
     setState(() => processandoCompra = true);
     try {
       final clienteId = await _obterClienteIdLogado();
@@ -730,8 +822,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         clienteId: clienteId,
         loteId: lote.loteId,
         lotePrecoId: lote.lotePrecoId,
-        beneficioId: beneficio?.id,
-        tipoBeneficio: beneficio?.codigo,
         quantidade: quantidade,
       );
       if (!mounted) return;
@@ -745,12 +835,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             dataHoraEvento: DateFormatters.dataHoraSimples(
               evento?.dataInicio ?? '',
             ),
+            imagemEventoUrl: evento?.bannerUrl ?? '',
             nomeLote: lote.nome,
             nomeSetor: lote.nomeSetor.trim().isEmpty
                 ? 'Setor não informado'
                 : lote.nomeSetor,
             modalidade: _nomeModalidade(lote),
-            beneficio: beneficio?.nome ?? 'Não se aplica',
+            // A relação retornada ao criar a reserva é a que o servidor
+            // aceitará ao salvar os participantes. Ela evita que uma lista
+            // carregada antes da reserva mostre um benefício já inválido.
+            beneficios: _beneficiosValidosDaReserva(reserva, lote.beneficios),
           ),
         ),
       );
@@ -842,18 +936,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }).toList();
   }
 
+  List<BeneficioIngresso> _beneficiosValidosDaReserva(
+    Map<String, dynamic> reserva,
+    List<BeneficioIngresso> beneficiosDoLote,
+  ) {
+    final dados = reserva['beneficios_validos'];
+    if (dados is! List) return beneficiosDoLote;
+
+    return dados
+        .whereType<Map>()
+        .map(
+          (item) => BeneficioIngresso.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .where((beneficio) => beneficio.id > 0)
+        .toList(growable: false);
+  }
+
   String _nomeModalidade(EventoLote lote) {
     return lote.nomeModalidade.trim().isEmpty
         ? 'Ingresso'
         : lote.nomeModalidade;
-  }
-
-  bool get _exibirNomeSetor {
-    final setores = lotes
-        .map((lote) => lote.nomeSetor.trim())
-        .where((nome) => nome.isNotEmpty)
-        .toSet();
-    return setores.length > 1;
   }
 
   Widget cardLoteGlobal(
@@ -871,7 +973,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(2, 0, 2, 6),
               child: Text(
-                lote.nome,
+                'Lote: ${lote.nome}',
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w900,
@@ -897,191 +999,265 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     bool exibirNomeSetor = true,
   }) {
     final lote = opcoes.first;
-    final agora = DateTime.now();
-    final precos = opcoes.map((opcao) => opcao.preco).toSet().toList()..sort();
-    final textoPreco = precos.length == 1
-        ? 'Preço: ${ValueFormatters.moeda(precos.first)}'
-        : 'A partir de ${ValueFormatters.moeda(precos.first)}';
-    final descricaoSetor = lote.descricaoSetor.trim();
-    final descricaoSetorPadrao =
-        descricaoSetor.toLowerCase() ==
-        'setor ${lote.nomeSetor.trim().toLowerCase()} do evento';
-    final vendaDisponivel = lote.podeComprarEm(agora);
-    final reservaTemporaria = lote.indisponivelPorReservasTemporarias;
-    final textoBadge = reservaTemporaria
-        ? 'Reservado temporariamente'
-        : lote.situacaoVendaEm(agora);
-    final vendaFutura = textoBadge == 'Em breve';
-    final textoDisponibilidade = lote.qtDisponivel > 0
-        ? '${lote.qtDisponivel} ingresso${lote.qtDisponivel == 1 ? '' : 's'} ${lote.qtDisponivel == 1 ? 'disponível' : 'disponíveis'}'
-        : reservaTemporaria
-        ? '${lote.qtReservada} ingresso${lote.qtReservada == 1 ? '' : 's'} reservados temporariamente'
-        : null;
-    final corBadge = vendaDisponivel
-        ? Colors.green
-        : reservaTemporaria
-        ? Colors.orange.shade800
-        : vendaFutura
-        ? Colors.amber.shade800
-        : Colors.red;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(0, 4, 0, 12),
-      child: Material(
-        color: Colors.white,
-        elevation: 1,
-        borderRadius: BorderRadius.circular(16),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (exibirNomeLote)
-                          Text(
-                            lote.nome,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        if (exibirNomeSetor && lote.nomeSetor.isNotEmpty) ...[
-                          if (exibirNomeLote) const SizedBox(height: 2),
-                          Text(
-                            'Setor: ${lote.nomeSetor}',
-                            style: TextStyle(
-                              color: Colors.grey.shade700,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: corBadge.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      textoBadge,
-                      style: TextStyle(
-                        color: corBadge,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Text(
-                    textoPreco,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  if (textoDisponibilidade != null) ...[
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        textoDisponibilidade,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          color: lote.qtDisponivel > 0
-                              ? Colors.green.shade700
-                              : Colors.orange.shade800,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              if (lote.qtDisponivel > 0 && lote.temReservasTemporarias) ...[
-                const SizedBox(height: 2),
-                Text(
-                  '${lote.qtReservada} temporariamente ${lote.qtReservada == 1 ? 'reservado' : 'reservados'}',
-                  style: TextStyle(
-                    color: Colors.orange.shade800,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (exibirNomeLote)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 4),
+              child: Text(
+                lote.nome,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
                 ),
-              ],
-              const SizedBox(height: 3),
-              Text(
-                'Vendas: ${formatarPeriodoVenda(lote.dataInicioVenda, lote.dataFimVenda)}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          if (exibirNomeSetor && lote.nomeSetor.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 2, bottom: 6),
+              child: Text(
+                'Setor: ${lote.nomeSetor}',
                 style: TextStyle(
-                  color: Colors.grey.shade700,
-                  fontSize: 10,
-                  fontStyle: FontStyle.italic,
+                  color: Colors.blue.shade700,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-              if (descricaoSetor.isNotEmpty && !descricaoSetorPadrao) ...[
-                const SizedBox(height: 4),
+            ),
+          ...opcoes.map(_cardModalidadeDireta),
+        ],
+      ),
+    );
+  }
+
+  Widget _cardModalidadeDireta(EventoLote lote) {
+    final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 1;
+    final ehCortesia = _ehCortesia(lote);
+    final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
+    final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
+    final disponivel = lote.qtDisponivelParaCompra;
+    final modalidadeDisponivel = disponivel > 0;
+    final cortesiaEsgotada = ehCortesia && !modalidadeDisponivel;
+    final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
+    final taxa = lote.preco <= 0
+        ? 0.0
+        : (taxaPercentual > widget.loja.vrtaxaminimaingresso
+              ? taxaPercentual
+              : widget.loja.vrtaxaminimaingresso);
+    final total = (lote.preco + taxa) * quantidade;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  descricaoSetor,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey.shade700, fontSize: 11),
+                  _nomeModalidade(lote),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
+                if (ehMeiaEntrada) ...[
+                  const SizedBox(height: 2),
+                  TextButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const MeiaEntradaScreen(),
+                      ),
+                    ),
+                    icon: const Icon(
+                      Icons.workspace_premium_outlined,
+                      size: 16,
+                    ),
+                    label: const Text('Quem tem direito'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      textStyle: const TextStyle(fontSize: 11),
+                    ),
+                  ),
+                ],
               ],
-              const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                height: 36,
-                child: OutlinedButton.icon(
-                  onPressed: () => _abrirModalidades(opcoes),
-                  icon: const Icon(Icons.arrow_forward_rounded),
-                  label: Text(
-                    vendaDisponivel
-                        ? 'Escolher modalidade'
-                        : 'Consultar modalidades',
+            ),
+            if (cortesiaEsgotada)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.red.shade300),
+                  ),
+                  child: Text(
+                    'Cortesias esgotadas',
+                    style: TextStyle(
+                      color: Colors.red.shade700,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
+            if (lote.exigeComprovante)
+              const Padding(
+                padding: EdgeInsets.only(top: 2),
+                child: Text(
+                  'Comprovante obrigatório',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ),
+            if (ehCortesia && lote.horarioLimiteEntrada != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Text(
+                  'Válido para entrada até as ${lote.horarioLimiteEntrada} horas.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.deepOrange.shade700,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            const SizedBox(height: 6),
+            Text(
+              disponivel == 1
+                  ? '1 ingresso disponível'
+                  : '$disponivel ingressos disponíveis',
+              style: TextStyle(
+                fontSize: 12,
+                color: modalidadeDisponivel
+                    ? Colors.green.shade700
+                    : Colors.red,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              _textoLimitePorTransacao(lote),
+              style: TextStyle(fontSize: 11, color: Colors.black54),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                _controleQuantidadeModalidade(
+                  lote: lote,
+                  quantidade: quantidade,
+                  disponibilidade: disponivel,
+                ),
+              ],
+            ),
+            const Divider(height: 18),
+            Row(
+              children: [
+                const Text(
+                  'Total a pagar',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const Spacer(),
+                Text(
+                  ValueFormatters.moeda(total),
+                  style: const TextStyle(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed:
+                    !vendaDisponivel ||
+                        processandoCompra ||
+                        !modalidadeDisponivel
+                    ? null
+                    : () => iniciarReserva(
+                        lote,
+                        quantidadeSelecionada: quantidade,
+                      ),
+                icon: const Icon(Icons.local_activity_outlined),
+                label: Text(ehCortesia ? 'Resgatar' : 'Comprar ingresso'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.amareloCerveja,
+                  foregroundColor: Colors.black,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Future<void> _abrirModalidades(List<EventoLote> opcoes) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => _ModalidadesIngressoScreen(
-          opcoes: opcoes,
-          nomeLoja: widget.loja.nome,
-          nomeEvento: evento?.titulo ?? '',
-          imagemLojaUrl: widget.loja.imagemUrl,
-          taxaPercentual: widget.loja.vrtaxaing,
-          taxaMinima: widget.loja.vrtaxaminimaingresso,
-          nomeModalidade: _nomeModalidade,
-          onComprar: (lote, quantidade) =>
-              iniciarReserva(lote, quantidadeSelecionada: quantidade),
-        ),
+  Widget _controleQuantidadeModalidade({
+    required EventoLote lote,
+    required int quantidade,
+    required int disponibilidade,
+  }) {
+    final podeAumentar =
+        quantidade < disponibilidade && quantidade < _limitePorTransacao(lote);
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'Diminuir quantidade',
+            onPressed: quantidade > 1
+                ? () => setState(
+                    () => _quantidadesModalidades[lote.lotePrecoId] =
+                        quantidade - 1,
+                  )
+                : null,
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.remove_rounded, size: 19),
+          ),
+          Text(
+            '$quantidade',
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          ),
+          IconButton(
+            tooltip: 'Aumentar quantidade',
+            onPressed: !podeAumentar
+                ? null
+                : () => setState(
+                    () => _quantidadesModalidades[lote.lotePrecoId] =
+                        quantidade + 1,
+                  ),
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(Icons.add_rounded, size: 19),
+          ),
+        ],
       ),
     );
   }
@@ -1308,6 +1484,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget _politicaEvento() {
     final detalhe = evento;
+    final corRodape = Theme.of(context).colorScheme.primary;
     final emailEstabelecimento = _primeiroContato(
       detalhe?.emailEstabelecimento,
       widget.loja.emailContato,
@@ -1323,47 +1500,39 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextButton.icon(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+          Center(
+            child: TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+                ),
               ),
-            ),
-            icon: const Icon(Icons.policy_outlined, size: 19),
-            label: const Text(
-              'Política de compra de ingresso',
-              style: TextStyle(fontSize: 13),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              alignment: Alignment.centerLeft,
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
-            ),
-            icon: const Icon(Icons.workspace_premium_outlined, size: 19),
-            label: const Text(
-              'Quem tem direito à meia-entrada',
-              style: TextStyle(fontSize: 13),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              alignment: Alignment.centerLeft,
+              icon: const Icon(Icons.policy_outlined, size: 19),
+              label: const Text(
+                'Política de compra de ingresso',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: corRodape,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ),
           if (detalhe != null)
-            ClubbarContactLinks(
-              emailEstabelecimento: emailEstabelecimento,
-              whatsappEstabelecimento: whatsappEstabelecimento,
-              emailEvento: detalhe.emailEvento,
-              whatsappEvento: detalhe.whatsappEvento,
-              mostrarContatoEvento: true,
+            Center(
+              child: ClubbarContactLinks(
+                emailEstabelecimento: emailEstabelecimento,
+                whatsappEstabelecimento: whatsappEstabelecimento,
+                emailEvento: detalhe.emailEvento,
+                whatsappEvento: detalhe.whatsappEvento,
+                mostrarContatoEvento: true,
+                centralizado: true,
+                tamanhoFonteLinks: 12,
+                tituloEmNegrito: false,
+                cor: corRodape,
+              ),
             ),
         ],
       ),
@@ -1426,7 +1595,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                     child: Image.network(
                                       ev.bannerUrl,
                                       width: double.infinity,
-                                      fit: BoxFit.cover,
+                                      fit: BoxFit.fill,
                                     ),
                                   )
                                 : SizedBox(
@@ -1508,6 +1677,32 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ],
                           ),
+                          if (lotes.isNotEmpty)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton.icon(
+                                onPressed: _irParaIngressos,
+                                icon: const Icon(
+                                  Icons.confirmation_number_outlined,
+                                  size: 17,
+                                ),
+                                label: const Text('Comprar ingresso'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.amber.shade900,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                  textStyle: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
                           const SizedBox(height: 6),
                           Text(
                             ev.titulo,
@@ -1608,126 +1803,109 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                             const SizedBox(height: 10),
-                            ...atracoesOrdenadas.map(
-                              (atracao) => Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Material(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: InkWell(
-                                    onTap: () => _abrirDetalhesAtracao(atracao),
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
+                            SizedBox(
+                              height: 148,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: atracoesOrdenadas.length,
+                                separatorBuilder: (_, _) =>
+                                    const SizedBox(width: 10),
+                                itemBuilder: (context, index) {
+                                  final atracao = atracoesOrdenadas[index];
+                                  return SizedBox(
+                                    width: 128,
+                                    child: Material(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: InkWell(
+                                        onTap: () =>
+                                            _abrirDetalhesAtracao(atracao),
                                         borderRadius: BorderRadius.circular(16),
-                                        border: Border.all(
-                                          color: Colors.blue.shade600,
-                                          width: 1.4,
-                                        ),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.blue.shade600,
+                                              width: 1.4,
+                                            ),
+                                          ),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              Icon(
-                                                Icons.schedule_rounded,
-                                                size: 18,
-                                                color: Colors.blue.shade700,
+                                              Text(
+                                                atracao.nome,
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w900,
+                                                  height: 1.15,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text.rich(
-                                                  TextSpan(
-                                                    children: [
-                                                      TextSpan(
-                                                        text: atracao.nome,
-                                                        style: const TextStyle(
-                                                          color: Colors.black87,
-                                                          fontSize: 15,
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                        ),
-                                                      ),
-                                                      TextSpan(
-                                                        text:
-                                                            ' • ${_duracaoPrevista(atracao)}',
-                                                        style: TextStyle(
-                                                          color: Colors
-                                                              .grey
-                                                              .shade700,
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                              const SizedBox(height: 6),
+                                              _fotoAtracao(
+                                                atracao,
+                                                tamanho: 56,
+                                              ),
+                                              const SizedBox(height: 6),
+                                              Text(
+                                                atracao.estilos.join(' • '),
+                                                textAlign: TextAlign.center,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: Colors.blue.shade700,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w700,
                                                 ),
                                               ),
-                                              Icon(
-                                                Icons.chevron_right_rounded,
-                                                color: Colors.blue.shade700,
-                                                size: 26,
-                                              ),
                                             ],
                                           ),
-                                          const SizedBox(height: 8),
-                                          Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              _fotoAtracao(atracao),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: atracao.estilos.isEmpty
-                                                    ? const SizedBox()
-                                                    : _badgesEstilos(atracao),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               ),
                             ),
                           ],
 
                           const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              const Expanded(
-                                child: Text(
-                                  'Ingressos',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                          Container(
+                            key: _ingressosKey,
+                            child: Row(
+                              children: [
+                                const Expanded(
+                                  child: Text(
+                                    'Ingressos',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              TextButton.icon(
-                                onPressed: atualizandoLotes
-                                    ? null
-                                    : atualizarLotes,
-                                icon: atualizandoLotes
-                                    ? const SizedBox.square(
-                                        dimension: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                    : const Icon(Icons.refresh, size: 18),
-                                label: const Text('Atualizar ingressos'),
-                              ),
-                            ],
+                                TextButton.icon(
+                                  onPressed: atualizandoLotes
+                                      ? null
+                                      : atualizarLotes,
+                                  icon: atualizandoLotes
+                                      ? const SizedBox.square(
+                                          dimension: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(Icons.refresh, size: 18),
+                                  label: const Text('Atualizar ingressos'),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 18),
 
@@ -1737,40 +1915,31 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ..._lotesGlobaisAgrupados.map(
                               (setores) => cardLoteGlobal(
                                 setores,
-                                exibirNomeLote:
-                                    _lotesGlobaisAgrupados.length > 1,
-                                exibirNomeSetor: _exibirNomeSetor,
+                                exibirNomeLote: true,
+                                exibirNomeSetor: true,
+                              ),
+                            ),
+                            Center(
+                              child: TextButton.icon(
+                                onPressed: _abrirExplicacaoTaxas,
+                                icon: const Icon(
+                                  Icons.receipt_long_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text('Entenda nossa taxa'),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  textStyle: const TextStyle(fontSize: 12),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
                               ),
                             ),
                           ],
-                          const SizedBox(height: 2),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton.icon(
-                              onPressed: _abrirExplicacaoTaxas,
-                              icon: const Icon(
-                                Icons.receipt_long_outlined,
-                                size: 18,
-                              ),
-                              label: const Text('Entenda nossa taxa'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                textStyle: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                alignment: Alignment.centerLeft,
-                              ),
-                            ),
-                          ),
                           _politicaEvento(),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[

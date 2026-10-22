@@ -18,6 +18,7 @@ import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../carteira/carteira_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/horario_brasil.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -126,7 +127,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     final expiracao = widget.reservaExpiracao;
     if (expiracao == null || _reservaExpirada) return;
 
-    final restante = expiracao.difference(DateTime.now());
+    final restante = expiracao.difference(HorarioBrasil.agora());
     final atualizado = restante.isNegative ? Duration.zero : restante;
     if (mounted) setState(() => _tempoReservaRestante = atualizado);
     if (atualizado > Duration.zero) return;
@@ -1454,22 +1455,23 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 32, 8),
-            child: Text(
-              compraDeProdutos
-                  ? 'Para cancelamento da compra, acesse Perfil/Minhas compras.'
-                  : 'Para cancelamento da compra, acesse Perfil/Minhas compras. Para alteração de participante, acesse sua Carteira/Ingressos.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 15),
+          if (!compraDeProdutos)
+            const Padding(
+              padding: EdgeInsets.fromLTRB(32, 0, 32, 8),
+              child: Text(
+                'Para alterar os participantes, acesse sua Carteira/Ingressos.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15),
+              ),
             ),
-          ),
           if (compraDeProdutos)
             ClubbarContactLinks(
               emailEstabelecimento: widget.loja.emailContato,
               whatsappEstabelecimento: widget.loja.whatsapp,
               centralizado: true,
               cor: Theme.of(context).colorScheme.primary,
+              titulo:
+                  'Precisa de ajuda com seu pedido? Fale com o estabelecimento.',
             ),
         ],
       ),

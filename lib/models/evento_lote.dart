@@ -1,3 +1,5 @@
+import '../utils/horario_brasil.dart';
+
 class BeneficioIngresso {
   final int id;
   final String codigo;
@@ -45,6 +47,11 @@ class EventoLote {
   final int qtVendida;
   final int qtReservada;
   final int? qtCapacidadeRestante;
+  final int? qtLimiteModalidade;
+  final int? qtDisponivelModalidade;
+  final int? minutosAposInicioParaEntrada;
+  final bool travarEntradaAposLimite;
+  final String? horarioLimiteEntrada;
   final String status;
   final String dataInicioVenda;
   final String dataFimVenda;
@@ -74,6 +81,11 @@ class EventoLote {
     required this.qtVendida,
     this.qtReservada = 0,
     this.qtCapacidadeRestante,
+    this.qtLimiteModalidade,
+    this.qtDisponivelModalidade,
+    this.minutosAposInicioParaEntrada,
+    this.travarEntradaAposLimite = false,
+    this.horarioLimiteEntrada,
     required this.status,
     required this.dataInicioVenda,
     required this.dataFimVenda,
@@ -90,6 +102,17 @@ class EventoLote {
     return disponivel < 0 ? 0 : disponivel;
   }
 
+  int get qtDisponivelParaCompra {
+    final limiteModalidade = qtDisponivelModalidade;
+    final disponibilidadeDaModalidade = limiteModalidade == null
+        ? qtDisponivel
+        : (limiteModalidade < qtDisponivel ? limiteModalidade : qtDisponivel);
+    if (!aplicaCotaLegal) return disponibilidadeDaModalidade;
+    return qtDisponivelCotaLegal < disponibilidadeDaModalidade
+        ? qtDisponivelCotaLegal
+        : disponibilidadeDaModalidade;
+  }
+
   bool get temReservasTemporarias => qtReservada > 0;
 
   bool get indisponivelPorReservasTemporarias =>
@@ -98,10 +121,10 @@ class EventoLote {
   bool podeComprarEm(DateTime agora) {
     final statusNormalizado = status.trim().toUpperCase();
     if (statusNormalizado != 'ATIVO') return false;
-    if (qtDisponivel <= 0) return false;
+    if (qtDisponivelParaCompra <= 0) return false;
 
-    final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
-    final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
+    final inicio = HorarioBrasil.deTextoBrasil(dataInicioVenda);
+    final fim = HorarioBrasil.deTextoBrasil(dataFimVenda);
     if (inicio != null && agora.isBefore(inicio)) return false;
     if (fim != null && agora.isAfter(fim)) return false;
     return true;
@@ -109,15 +132,15 @@ class EventoLote {
 
   String situacaoVendaEm(DateTime agora) {
     final statusNormalizado = status.trim().toUpperCase();
-    if (statusNormalizado == 'ESGOTADO' || qtDisponivel <= 0) {
+    if (statusNormalizado == 'ESGOTADO' || qtDisponivelParaCompra <= 0) {
       return 'Esgotado';
     }
     if (statusNormalizado == 'INATIVO') return 'Indisponível';
     if (statusNormalizado == 'AGUARDANDO') return 'Em breve';
     if (statusNormalizado == 'ENCERRADO') return 'Vendas encerradas';
 
-    final inicio = DateTime.tryParse(dataInicioVenda)?.toLocal();
-    final fim = DateTime.tryParse(dataFimVenda)?.toLocal();
+    final inicio = HorarioBrasil.deTextoBrasil(dataInicioVenda);
+    final fim = HorarioBrasil.deTextoBrasil(dataFimVenda);
     if (inicio != null && agora.isBefore(inicio)) return 'Em breve';
     if (fim != null && agora.isAfter(fim)) return 'Vendas encerradas';
     return statusNormalizado == 'ATIVO' ? 'Disponível' : 'Indisponível';
@@ -158,6 +181,17 @@ class EventoLote {
       qtCapacidadeRestante: json['qtdisponivel'] == null
           ? null
           : _toInt(json['qtdisponivel']),
+      qtLimiteModalidade: json['qtlimitemodalidade'] == null
+          ? null
+          : _toInt(json['qtlimitemodalidade']),
+      qtDisponivelModalidade: json['qtdisponivelmodalidade'] == null
+          ? null
+          : _toInt(json['qtdisponivelmodalidade']),
+      minutosAposInicioParaEntrada: json['nrminutosaposinicio'] == null
+          ? null
+          : _toInt(json['nrminutosaposinicio']),
+      travarEntradaAposLimite: json['travarentradaaposlimite'] == true,
+      horarioLimiteEntrada: json['horariolimiteentradacortesia']?.toString(),
       status: (json['statuslote'] ?? 'ATIVO').toString(),
       dataInicioVenda: (json['dtiniciovenda'] ?? '').toString(),
       dataFimVenda: (json['dtfimvenda'] ?? '').toString(),

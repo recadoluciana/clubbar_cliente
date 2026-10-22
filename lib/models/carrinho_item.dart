@@ -1,7 +1,13 @@
 import '../services/api_service.dart';
 
 class ItemCarrinho {
+  final int itCarrinhoId;
   final int produtoId;
+  final int? cardapioItemId;
+  final int? campanhaId;
+  final String? tipoCampanha;
+  final int? quantidadePacote;
+  final double? valorPacote;
   final String nome;
   final String observacao;
   final String fotoUrl;
@@ -17,7 +23,13 @@ class ItemCarrinho {
   final String cpfparticipante;
 
   ItemCarrinho({
+    required this.itCarrinhoId,
     required this.produtoId,
+    this.cardapioItemId,
+    this.campanhaId,
+    this.tipoCampanha,
+    this.quantidadePacote,
+    this.valorPacote,
     required this.nome,
     required this.observacao,
     required this.fotoUrl,
@@ -34,7 +46,21 @@ class ItemCarrinho {
 
   factory ItemCarrinho.fromJson(Map<String, dynamic> json) {
     return ItemCarrinho(
+      itCarrinhoId: _toInt(json['itcarrinho_id']),
       produtoId: _toInt(json['produto_id']),
+      cardapioItemId: json['cardapioitem_id'] == null
+          ? null
+          : _toInt(json['cardapioitem_id']),
+      campanhaId: json['campanha_id'] == null
+          ? null
+          : _toInt(json['campanha_id']),
+      tipoCampanha: json['tipo_campanha']?.toString(),
+      quantidadePacote: json['qtitenspacote'] == null
+          ? null
+          : _toInt(json['qtitenspacote']),
+      valorPacote: json['vrpacote'] == null
+          ? null
+          : _toDouble(json['vrpacote']),
       nome: (json['nmproduto'] ?? '').toString(),
       observacao: (json['observacao'] ?? json['dsobsitcar'] ?? '').toString(),
       fotoUrl: _buildUrl((json['urlfotoproduto'] ?? '').toString()),

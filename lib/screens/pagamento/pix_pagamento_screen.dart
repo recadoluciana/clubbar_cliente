@@ -10,6 +10,7 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/pix_expiration.dart';
+import '../../utils/horario_brasil.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import 'pagamento_sucesso_screen.dart';
@@ -65,7 +66,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
           ? const Duration(minutes: 15)
           : const Duration(minutes: 5),
     );
-    final duracaoInicial = _expiraEm.difference(DateTime.now());
+    final duracaoInicial = _expiraEm.difference(HorarioBrasil.agora());
     _duracaoValidade = duracaoInicial.isNegative
         ? Duration.zero
         : duracaoInicial;
@@ -91,7 +92,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
   void _atualizarTempoRestante() {
     if (_confirmacaoProcessada) return;
-    final restante = _expiraEm.difference(DateTime.now());
+    final restante = _expiraEm.difference(HorarioBrasil.agora());
     final atualizado = restante.isNegative ? Duration.zero : restante;
     if (mounted) setState(() => _tempoRestante = atualizado);
     if (atualizado > Duration.zero) return;

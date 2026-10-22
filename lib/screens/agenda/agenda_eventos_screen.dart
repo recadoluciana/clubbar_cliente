@@ -24,6 +24,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   bool carregando = true;
   String? erro;
   List<Evento> eventos = [];
+  String pesquisa = '';
 
   @override
   void initState() {
@@ -56,6 +57,30 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
 
   String formatarCabecalhoData(String valor) {
     return DateFormatters.dataCompleta(valor);
+  }
+
+  String _normalizarBusca(String texto) {
+    return texto
+        .toLowerCase()
+        .replaceAll(RegExp('[áàâãä]'), 'a')
+        .replaceAll(RegExp('[éèêë]'), 'e')
+        .replaceAll(RegExp('[íìîï]'), 'i')
+        .replaceAll(RegExp('[óòôõö]'), 'o')
+        .replaceAll(RegExp('[úùûü]'), 'u')
+        .replaceAll('ç', 'c');
+  }
+
+  bool _correspondePesquisa(Evento evento) {
+    final termo = _normalizarBusca(pesquisa.trim());
+    if (termo.isEmpty) return true;
+
+    final conteudo = [
+      evento.titulo,
+      formatarCabecalhoData(evento.data),
+      evento.data,
+      ...evento.atracoes.map((atracao) => atracao.nome),
+    ].join(' ');
+    return _normalizarBusca(conteudo).contains(termo);
   }
 
   List<String> _estilosDoEvento(Evento evento) {
@@ -338,12 +363,23 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final eventosFiltrados = eventos.where(_correspondePesquisa).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
         titulo: 'Agenda - ${widget.loja.nome}',
+        iconeTitulo: Icons.confirmation_number_rounded,
+        corIconeTitulo: Colors.blue,
         mostrarVoltar: true,
         mostrarSessao: false,
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar agenda',
+            onPressed: carregarEventos,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
         onVoltar: () {
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
@@ -354,11 +390,38 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: TextField(
+              onChanged: (valor) => setState(() => pesquisa = valor),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: 'evento, atração, dia da semana',
+                hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                prefixIcon: const Icon(Icons.search_rounded, size: 21),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: Colors.blue, width: 1.5),
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: RefreshIndicator(
               onRefresh: carregarEventos,
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                 children: [
                   if (carregando)
                     const Padding(
@@ -381,7 +444,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                         ],
                       ),
                     )
-                  else if (eventos.isEmpty)
+                  else if (eventosFiltrados.isEmpty)
                     Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
@@ -392,8 +455,10 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                             color: Colors.grey.shade400,
                           ),
                           const SizedBox(height: 14),
-                          const Text(
-                            'Nenhum evento encontrado',
+                          Text(
+                            pesquisa.trim().isEmpty
+                                ? 'Nenhum evento encontrado'
+                                : 'Nenhum evento encontrado para esta busca',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -403,7 +468,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
                       ),
                     )
                   else
-                    ...eventos.map(itemEvento),
+                    ...eventosFiltrados.map(itemEvento),
                   const SizedBox(height: 24),
                 ],
               ),

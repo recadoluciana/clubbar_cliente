@@ -51,6 +51,10 @@ class ApiService {
       return 'Sistema em atualização. Tente novamente em instantes.';
     }
 
+    if (textoLower.contains('valor mínimo para pagamento')) {
+      return 'Para seguir com o pagamento, adicione mais itens ao pedido até atingir R\$ 5,00.';
+    }
+
     // Preserva a mensagem amigável enviada pela API
     if (texto.startsWith('Exception: ')) {
       return texto.replaceFirst('Exception: ', '');
@@ -296,30 +300,35 @@ class ApiService {
   // ===============================
   // CATEGORIAS
   // ===============================
-  Future<List<Categoria>> buscarCategoriasPorLoja(int lojaId) async {
+  Future<Map<String, dynamic>> buscarCardapioPublicado(int lojaId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/lojas/$lojaId/categorias'),
+        Uri.parse('$baseUrl/lojas/$lojaId/cardapio-publicado'),
         headers: {'Content-Type': 'application/json'},
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = jsonDecode(response.body);
-
-        if (data is List) {
-          return data.map((e) => Categoria.fromJson(e)).toList();
-        }
-
-        if (data is Map && data['items'] is List) {
-          return (data['items'] as List)
-              .map((e) => Categoria.fromJson(e))
-              .toList();
-        }
-
-        return [];
+        return data is Map<String, dynamic>
+            ? data
+            : Map<String, dynamic>.from(data as Map);
       }
 
       throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
+  Future<List<Categoria>> buscarCategoriasPorLoja(int lojaId) async {
+    try {
+      final data = await buscarCardapioPublicado(lojaId);
+      if (data['categorias'] is List) {
+        return (data['categorias'] as List)
+            .map((e) => Categoria.fromJson(e))
+            .toList();
+      }
+      return [];
     } catch (e) {
       throw Exception(mensagemErroAmigavel(e));
     }
@@ -330,25 +339,14 @@ class ApiService {
   // ===============================
   Future<List<Produto>> buscarProdutosPorLoja(int lojaId) async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/lojas/$lojaId/cardapio-publicado'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final data = jsonDecode(response.body);
-
-        if (data is Map && data['categorias'] is List) {
-          return (data['categorias'] as List)
-              .expand((categoria) => (categoria['itens'] as List? ?? const []))
-              .map((e) => Produto.fromJson(Map<String, dynamic>.from(e)))
-              .toList();
-        }
-
-        return [];
+      final data = await buscarCardapioPublicado(lojaId);
+      if (data['categorias'] is List) {
+        return (data['categorias'] as List)
+            .expand((categoria) => (categoria['itens'] as List? ?? const []))
+            .map((e) => Produto.fromJson(Map<String, dynamic>.from(e)))
+            .toList();
       }
-
-      throw Exception(_extrairMensagemHttp(response));
+      return [];
     } catch (e) {
       throw Exception(mensagemErroAmigavel(e));
     }
@@ -390,6 +388,8 @@ class ApiService {
     String? observacao,
     String? nmparticipante,
     String? cpfparticipante,
+    int? beneficioResgateId,
+    int? campanhaId,
   }) async {
     try {
       final response = await http.post(
@@ -407,6 +407,8 @@ class ApiService {
           'obs': observacao,
           'nmparticipante': nmparticipante,
           'cpfparticipante': cpfparticipante,
+          'beneficio_resgate_id': beneficioResgateId,
+          'campanha_id': campanhaId,
         }),
       );
 
@@ -418,6 +420,44 @@ class ApiService {
     } catch (e) {
       throw Exception(mensagemErroAmigavel(e));
     }
+  }
+
+  Future<List<Map<String, dynamic>>> beneficiosProdutosAtivos({
+    required int lojaId,
+    required int clienteId,
+  }) async {
+    final token = await AuthStorage().obterToken();
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/beneficios-produtos/lojas/$lojaId/ofertas?cliente_id=$clienteId',
+      ),
+      headers: {if (token != null) 'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode != 200) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return (jsonDecode(response.body) as List)
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> resgatarCortesiaDaCampanha({
+    required int campanhaId,
+    required int clienteId,
+  }) async {
+    final token = await AuthStorage().obterToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/resgatar-cortesia'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'cliente_id': clienteId}),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
   Future<Map<String, dynamic>> criarReservaIngresso({
@@ -448,7 +488,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> salvarParticipantesReserva({
     required int reservaId,
-    required List<Map<String, String>> participantes,
+    required List<Map<String, dynamic>> participantes,
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/reservas-ingressos/$reservaId/participantes'),
@@ -553,12 +593,22 @@ class ApiService {
   Future<void> removerItemCarrinho({
     required int carrinhoId,
     required int produtoId,
+    int? cardapioItemId,
+    int? campanhaId,
     required String observacao,
   }) async {
     try {
-      final uri = Uri.parse(
-        '$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um',
-      ).replace(queryParameters: {'observacao': observacao});
+      final uri =
+          Uri.parse(
+            '$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um',
+          ).replace(
+            queryParameters: {
+              'observacao': observacao,
+              if (cardapioItemId != null)
+                'cardapioitem_id': cardapioItemId.toString(),
+              if (campanhaId != null) 'campanha_id': campanhaId.toString(),
+            },
+          );
 
       final response = await http.delete(
         uri,
@@ -586,6 +636,50 @@ class ApiService {
       lojaId: lojaId,
       dsmetodopag: 'PIX',
     );
+  }
+
+  Future<Map<String, dynamic>> resgatarCortesiaCarrinho({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/resgatar-cortesia'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+      }),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> resgatarCortesiaProduto({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+    required int cardapioItemId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/resgatar-cortesia-produto'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+        'cardapioitem_id': cardapioItemId,
+      }),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
   Future<void> cadastrarCliente({
@@ -714,6 +808,22 @@ class ApiService {
             : null;
         return Map<String, dynamic>.from(data);
       }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
+  Future<void> excluirMinhaConta({required String senhaAtual}) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/clientes/me'),
+        headers: await _headersAutenticado(),
+        body: jsonEncode({'senha_atual': senhaAtual}),
+      );
+
+      if (response.statusCode == 204) return;
 
       throw Exception(_extrairMensagemHttp(response));
     } catch (e) {
@@ -1176,7 +1286,10 @@ class ApiService {
   Future<List<EventoLote>> buscarLotesDoEvento(int eventoId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/eventos/$eventoId/lotes_todos'),
+        // O cliente compra somente no lote comercial vigente. O endpoint
+        // específico resolve a virada sequencial e nunca devolve os lotes
+        // anteriores ou os próximos.
+        Uri.parse('$baseUrl/eventos/$eventoId/lotes'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -1190,6 +1303,10 @@ class ApiService {
           final lote = Map<String, dynamic>.from(bruto as Map);
           for (final p in (lote['precos'] as List? ?? const [])) {
             final preco = Map<String, dynamic>.from(p as Map);
+            if ((preco['situacao'] ?? 'ATIVO').toString().toUpperCase() !=
+                'ATIVO') {
+              continue;
+            }
             opcoes.add(
               EventoLote.fromJson({
                 ...lote,
@@ -1572,7 +1689,7 @@ class ApiService {
     );
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception(response.body);
+      throw Exception(_extrairMensagemHttp(response));
     }
 
     return jsonDecode(response.body);
@@ -1676,6 +1793,8 @@ class ApiService {
       for (final item in categoria['itens'] as List? ?? const []) {
         final produto = Map<String, dynamic>.from(item as Map);
         if (int.tryParse('${produto['produto_id']}') == produtoId) {
+          produto['vendas_habilitadas'] =
+              cardapio['vendas_habilitadas'] != false;
           return produto;
         }
       }

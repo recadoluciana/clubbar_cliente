@@ -273,12 +273,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     Map<String, dynamic> item,
   ) async {
     final qrData = _montarDadosQr(item);
-    final nomeLoja = (item['nmloja'] ?? '').toString().trim().isNotEmpty
-        ? (item['nmloja'] ?? '').toString().trim()
-        : widget.nomeLoja;
-    final imagemProduto = _buildImageUrl(
-      (item['urlfotoproduto'] ?? '').toString(),
-    );
 
     if (qrData.isEmpty) {
       AppSnackBar.erro(
@@ -298,123 +292,72 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
     await showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       builder: (dialogContext) {
         return Dialog(
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Colors.amber, width: 2),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  width: double.infinity,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 42),
-                        child: Text(
-                          nomeLoja,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          tooltip: 'Fechar',
-                          onPressed: () => Navigator.pop(dialogContext),
-                          icon: const Icon(Icons.close),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 56,
+                width: double.infinity,
+                color: Colors.black,
+                child: Stack(
+                  alignment: Alignment.center,
                   children: [
-                    SizedBox(
-                      width: 54,
-                      height: 54,
-                      child: imagemProduto.isEmpty
-                          ? _placeholderItem(item)
-                          : ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: Image.network(
-                                imagemProduto,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) =>
-                                    _placeholderItem(item),
-                              ),
-                            ),
-                    ),
-                    const SizedBox(width: 12),
-                    Flexible(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
                         _isDelivery(item)
                             ? 'Pedido para entrega'
                             : (item['nmproduto'] ?? '').toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ],
                 ),
-                if ((item['dsobsitvenda'] ?? '')
-                    .toString()
-                    .trim()
-                    .isNotEmpty) ...[
-                  const SizedBox(height: 8),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      border: Border.all(color: Colors.red),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      (item['dsobsitvenda'] ?? '').toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: QrImageView(
+                        data: qrData,
+                        size: 200,
+                        backgroundColor: Colors.white,
                       ),
                     ),
-                  ),
-                ],
-
-                const SizedBox(height: 16),
-
-                QrImageView(
-                  data: qrData,
-                  size: 220,
-                  backgroundColor: Colors.white,
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black,
+                        ),
+                        child: const Text('Voltar'),
+                      ),
+                    ),
+                  ],
                 ),
-                if (_isDelivery(item)) ...[
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Apresente este QR Code ao motoboy no recebimento.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -451,9 +394,42 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
+      child: Text(texto, style: const TextStyle(fontSize: 12)),
+    );
+  }
+
+  Widget _chipCortesia() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE1F5E8),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Text(
+        'Cortesia',
+        style: TextStyle(
+          color: Color(0xFF18763B),
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
+  Widget _chipValidade(String validade) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFEBEE),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Text(
-        texto,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+        'Válido até $validade',
+        style: const TextStyle(
+          color: Color(0xFFC62828),
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
@@ -487,6 +463,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString();
+    final ehCortesia = (double.tryParse('${item['vrunititvenda']}') ?? 0) <= 0;
     final entrega = _isDelivery(item);
     final situacaoEntrega = (item['situacaoentrega'] ?? '')
         .toString()
@@ -540,14 +517,13 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              _chip('Venda: #${item['venda_id'] ?? ''}'),
                               if (dataCompra.isNotEmpty)
-                                _chip('Compra: $dataCompra'),
+                                _chip('Data da compra: $dataCompra'),
                               _chip(
                                 'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
                               ),
-                              if (validade.isNotEmpty)
-                                _chip('Validade: $validade'),
+                              if (ehCortesia) _chipCortesia(),
+                              if (validade.isNotEmpty) _chipValidade(validade),
                               if (entrega) _chipStatusEntrega(item),
                             ],
                           ),
@@ -571,96 +547,132 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                 const SizedBox(height: 16),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: pedidoAceito ? 58 : 46,
-                  child: ElevatedButton(
-                    onPressed: entrega && !emRota
-                        ? null
-                        : () => _abrirQrOuRetirada(context, item),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: emRota
-                          ? Colors.amber
-                          : pedidoAceito
-                          ? const Color(0xFFE1F5E8)
-                          : Colors.amber,
-                      disabledBackgroundColor: pedidoAceito
-                          ? const Color(0xFFE1F5E8)
-                          : Colors.grey.shade300,
-                      foregroundColor: emRota
-                          ? Colors.black
-                          : pedidoAceito
-                          ? const Color(0xFF18763B)
-                          : Colors.black,
-                      disabledForegroundColor: pedidoAceito
-                          ? const Color(0xFF18763B)
-                          : Colors.grey.shade500,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                if (!entrega)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 42,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _abrirQrOuRetirada(context, item),
+                            icon: const Icon(Icons.qr_code_2_rounded, size: 21),
+                            label: const Text(
+                              'Exibir QR Code',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          pedidoAceito
-                              ? Icons.storefront_rounded
-                              : Icons.qr_code_2_rounded,
-                          size: 22,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: SizedBox(
+                          height: 42,
+                          child: OutlinedButton.icon(
+                            onPressed: () => _confirmarCompartilhamento(item),
+                            icon: const Icon(
+                              Icons.card_giftcard_rounded,
+                              size: 18,
+                            ),
+                            label: const Text('Presentear'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF7A5A00),
+                              side: const BorderSide(color: Color(0xFFE0C36A)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: pedidoAceito
-                              ? Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      'Pedido aceito',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w800,
-                                      ),
-                                    ),
-                                    if (dataAceite.isNotEmpty)
-                                      Text(
-                                        botaoAceite,
-                                        style: const TextStyle(fontSize: 11),
-                                      ),
-                                  ],
-                                )
-                              : Text(
-                                  entrega
-                                      ? (emRota
-                                            ? 'Exibir QR Code de entrega'
-                                            : _statusEntrega(item))
-                                      : 'Exibir produto e QR Code',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                if (!entrega) ...[
-                  const SizedBox(height: 10),
+                      ),
+                    ],
+                  )
+                else
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _confirmarCompartilhamento(item),
-                      icon: const Icon(Icons.card_giftcard_rounded, size: 18),
-                      label: const Text('Presentear'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF7A5A00),
-                        side: const BorderSide(color: Color(0xFFE0C36A)),
+                    height: pedidoAceito ? 58 : 46,
+                    child: ElevatedButton(
+                      onPressed: !emRota
+                          ? null
+                          : () => _abrirQrOuRetirada(context, item),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: emRota
+                            ? Colors.amber
+                            : pedidoAceito
+                            ? const Color(0xFFE1F5E8)
+                            : Colors.grey.shade300,
+                        disabledBackgroundColor: pedidoAceito
+                            ? const Color(0xFFE1F5E8)
+                            : Colors.grey.shade300,
+                        foregroundColor: emRota
+                            ? Colors.black
+                            : pedidoAceito
+                            ? const Color(0xFF18763B)
+                            : Colors.grey.shade500,
+                        disabledForegroundColor: pedidoAceito
+                            ? const Color(0xFF18763B)
+                            : Colors.grey.shade500,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            pedidoAceito
+                                ? Icons.storefront_rounded
+                                : Icons.qr_code_2_rounded,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: pedidoAceito
+                                ? Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'Pedido aceito',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      if (dataAceite.isNotEmpty)
+                                        Text(
+                                          botaoAceite,
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                    ],
+                                  )
+                                : Text(
+                                    emRota
+                                        ? 'Exibir QR Code de entrega'
+                                        : _statusEntrega(item),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
 
                 const SizedBox(height: 8),
 
@@ -778,10 +790,28 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
-        titulo: 'Carteira de produto',
+        titulo: 'Minha Carteira - Produtos',
+        iconeTitulo: Icons.account_balance_wallet_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar carteira',
+            onPressed: _atualizando ? null : _atualizarItens,
+            icon: _atualizando
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.refresh_rounded),
+          ),
+        ],
       ),
 
       body: Column(
@@ -793,22 +823,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                 : '$totalUnidades itens disponíveis',
             icone: Icons.inventory_2_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
-            trailing: IconButton(
-              tooltip: 'Atualizar carteira',
-              onPressed: _atualizando ? null : _atualizarItens,
-              icon: _atualizando
-                  ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2.5),
-                    )
-                  : const Icon(Icons.refresh_rounded),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: 0.92),
-                foregroundColor: Colors.black87,
-                elevation: 2,
-              ),
-            ),
           ),
 
           Expanded(

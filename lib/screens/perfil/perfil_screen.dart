@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../services/cart_badge_notifier.dart';
 import '../login/login_screen.dart';
 import '../esqueceu_senha/alterar_senha_screen.dart';
 import '../dados_pessoais/dados_pessoais_screen.dart';
@@ -88,7 +89,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     if (!mounted) return;
 
-    AppSnackBar.erro(context, 'Logout realizado com sucesso.');
+    AppSnackBar.sucesso(context, 'Logout realizado com sucesso.');
 
     Navigator.pushAndRemoveUntil(
       context,
@@ -97,6 +98,76 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       (route) => false,
     );
+  }
+
+  Future<void> excluirMinhaConta() async {
+    final senhaController = TextEditingController();
+    final senha = await showDialog<String>(
+      context: context,
+      builder: (contextoDialogo) => AlertDialog(
+        title: const Text('Excluir conta permanentemente?'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Seu acesso será encerrado e seus dados pessoais serão excluídos. '
+                'Registros de pagamento poderão ser mantidos somente quando exigidos por lei.',
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: senhaController,
+                obscureText: true,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: 'Confirme sua senha',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(contextoDialogo),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final senha = senhaController.text;
+              if (senha.isNotEmpty) Navigator.pop(contextoDialogo, senha);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Excluir conta'),
+          ),
+        ],
+      ),
+    );
+    senhaController.dispose();
+
+    if (senha == null || senha.isEmpty || !mounted) return;
+
+    try {
+      await apiService.excluirMinhaConta(senhaAtual: senha);
+      await authStorage.limparToken();
+      CartBadgeNotifier.limpar();
+
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const LoginScreen(mostrarVoltar: false),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   void abrirCashback() {
@@ -248,6 +319,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     );
                   },
                   iconColor: Colors.blueGrey,
+                ),
+
+                const SizedBox(height: 10),
+
+                _itemAcao(
+                  icon: Icons.delete_forever_rounded,
+                  titulo: 'Excluir minha conta',
+                  onTap: excluirMinhaConta,
+                  iconColor: Colors.red,
                 ),
 
                 const SizedBox(height: 10),

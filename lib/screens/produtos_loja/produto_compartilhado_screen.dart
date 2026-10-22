@@ -37,6 +37,7 @@ class _ProdutoCompartilhadoScreenState
   bool carregando = true;
   bool adicionando = false;
   bool produtoAdicionado = false;
+  bool vendasHabilitadas = true;
   String? erro;
 
   Map<String, dynamic>? produto;
@@ -50,8 +51,25 @@ class _ProdutoCompartilhadoScreenState
 
   int get _quantidade => int.tryParse(_quantidadeCtrl.text) ?? 1;
 
+  bool get _ehCortesia {
+    final item = produto;
+    if (item == null) return false;
+    final descontoAtivo =
+        item['descontoativo'] == true ||
+        item['descontoativo'] == 1 ||
+        item['descontoativo']?.toString().toLowerCase() == 'true';
+    final preco = _valorDouble(
+      descontoAtivo
+          ? item['vrprecofinal'] ?? item['vrprecoprod']
+          : item['vrprecoprod'],
+    );
+    return preco <= 0;
+  }
+
+  int get _limiteQuantidade => _ehCortesia ? 1 : 999;
+
   void _alterarQuantidade(int valor) {
-    final novaQuantidade = valor.clamp(1, 999);
+    final novaQuantidade = valor.clamp(1, _limiteQuantidade);
     _quantidadeCtrl.value = TextEditingValue(
       text: '$novaQuantidade',
       selection: TextSelection.collapsed(offset: '$novaQuantidade'.length),
@@ -103,6 +121,7 @@ class _ProdutoCompartilhadoScreenState
 
       setState(() {
         produto = prod;
+        vendasHabilitadas = prod['vendas_habilitadas'] != false;
         loja = lojaDados;
         carregando = false;
       });
@@ -118,10 +137,24 @@ class _ProdutoCompartilhadoScreenState
 
   Future<void> adicionarAoCarrinho() async {
     if (produto == null || loja == null) return;
+    if (!vendasHabilitadas) {
+      AppSnackBar.aviso(
+        context,
+        'Este estabelecimento ainda está implantando o seu cardápio. Logo estará disponível para vendas.',
+      );
+      return;
+    }
 
     final quantidade = int.tryParse(_quantidadeCtrl.text);
-    if (quantidade == null || quantidade < 1 || quantidade > 999) {
-      AppSnackBar.info(context, 'Informe uma quantidade entre 1 e 999.');
+    if (quantidade == null ||
+        quantidade < 1 ||
+        quantidade > _limiteQuantidade) {
+      AppSnackBar.info(
+        context,
+        _ehCortesia
+            ? 'Cortesia limitada a 1 unidade por transação.'
+            : 'Informe uma quantidade entre 1 e 999.',
+      );
       return;
     }
 
@@ -189,7 +222,9 @@ class _ProdutoCompartilhadoScreenState
     return SizedBox(
       height: 56,
       child: ElevatedButton.icon(
-        onPressed: adicionando ? null : adicionarAoCarrinho,
+        onPressed: adicionando || !vendasHabilitadas
+            ? null
+            : adicionarAoCarrinho,
         icon: adicionando
             ? const SizedBox(
                 width: 20,
@@ -201,7 +236,11 @@ class _ProdutoCompartilhadoScreenState
               )
             : const Icon(Icons.add_shopping_cart_rounded),
         label: Text(
-          'Adicionar $_quantidade ao carrinho',
+          !vendasHabilitadas
+              ? 'Vendas indisponíveis no momento'
+              : _ehCortesia
+              ? 'Resgatar cortesia'
+              : 'Adicionar $_quantidade ao carrinho',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(
@@ -454,7 +493,7 @@ class _ProdutoCompartilhadoScreenState
                       const SizedBox(width: 8),
                       IconButton.filledTonal(
                         tooltip: 'Aumentar quantidade',
-                        onPressed: _quantidade < 999
+                        onPressed: _quantidade < _limiteQuantidade
                             ? () => _alterarQuantidade(_quantidade + 1)
                             : null,
                         icon: const Icon(Icons.add_rounded, size: 20),
@@ -465,7 +504,7 @@ class _ProdutoCompartilhadoScreenState
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Máximo 999',
+                        'Máximo $_limiteQuantidade',
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 12,
@@ -475,6 +514,20 @@ class _ProdutoCompartilhadoScreenState
                   ),
                 ),
                 const SizedBox(height: 14),
+                if (!vendasHabilitadas)
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Este estabelecimento ainda está implantando o seu cardápio. Logo estará disponível para vendas.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 _botaoAdicionar(),
                 const SizedBox(height: 32),
               ],

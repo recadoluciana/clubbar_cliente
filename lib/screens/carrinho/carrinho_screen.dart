@@ -7,11 +7,18 @@ import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
+import '../pagamento/pagamento_sucesso_screen.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_app_bar.dart';
 
 class ItemCarrinhoAgrupado {
+  final int itCarrinhoId;
   final int produtoId;
+  final int? cardapioItemId;
+  final int? campanhaId;
+  final String? tipoCampanha;
+  final int? quantidadePacote;
+  final double? valorPacote;
   final String nome;
   final String observacao;
   final String fotoUrl;
@@ -26,7 +33,13 @@ class ItemCarrinhoAgrupado {
   final String idtipoproduto;
 
   ItemCarrinhoAgrupado({
+    required this.itCarrinhoId,
     required this.produtoId,
+    this.cardapioItemId,
+    this.campanhaId,
+    this.tipoCampanha,
+    this.quantidadePacote,
+    this.valorPacote,
     required this.nome,
     required this.observacao,
     required this.fotoUrl,
@@ -62,6 +75,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   int? clienteId;
   int? carrinhoId;
   bool alterandoQuantidade = false;
+  bool resgatandoCortesia = false;
   List<ItemCarrinho> itensCarrinho = [];
 
   @override
@@ -79,14 +93,22 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       final cpf = item.cpfparticipante.trim();
 
       final chave =
-          '${item.produtoId}__${obs.toLowerCase()}__'
+          '${item.produtoId}__${item.cardapioItemId ?? 'sem-cardapio'}__'
+          '${item.campanhaId ?? 'sem-campanha'}__'
+          '${obs.toLowerCase()}__'
           '${nome.toLowerCase()}__${cpf.toLowerCase()}';
 
       if (mapa.containsKey(chave)) {
         final atual = mapa[chave]!;
 
         mapa[chave] = ItemCarrinhoAgrupado(
+          itCarrinhoId: atual.itCarrinhoId,
           produtoId: atual.produtoId,
+          cardapioItemId: atual.cardapioItemId,
+          campanhaId: atual.campanhaId,
+          tipoCampanha: atual.tipoCampanha,
+          quantidadePacote: atual.quantidadePacote,
+          valorPacote: atual.valorPacote,
           nome: atual.nome,
           observacao: atual.observacao,
           fotoUrl: atual.fotoUrl,
@@ -102,7 +124,13 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         );
       } else {
         mapa[chave] = ItemCarrinhoAgrupado(
+          itCarrinhoId: item.itCarrinhoId,
           produtoId: item.produtoId,
+          cardapioItemId: item.cardapioItemId,
+          campanhaId: item.campanhaId,
+          tipoCampanha: item.tipoCampanha,
+          quantidadePacote: item.quantidadePacote,
+          valorPacote: item.valorPacote,
           nome: item.nome,
           observacao: obs,
           fotoUrl: item.fotoUrl,
@@ -188,6 +216,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         organizacaoId: widget.loja.organizacaoId,
         lojaId: widget.loja.id,
         produtoId: item.produtoId,
+        cardapioItemId: item.cardapioItemId,
+        campanhaId: item.campanhaId,
         quantidade: 1,
         observacao: item.observacao,
       );
@@ -282,6 +312,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       await apiService.removerItemCarrinho(
         carrinhoId: carrinhoId!,
         produtoId: item.produtoId,
+        cardapioItemId: item.cardapioItemId,
+        campanhaId: item.campanhaId,
         observacao: item.observacao,
       );
 
@@ -365,6 +397,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         await apiService.removerItemCarrinho(
           carrinhoId: carrinhoId!,
           produtoId: item.produtoId,
+          cardapioItemId: item.cardapioItemId,
+          campanhaId: item.campanhaId,
           observacao: item.observacao,
         );
       }
@@ -388,7 +422,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   }
 
   Widget _controleQuantidade(ItemCarrinhoAgrupado item) {
-    final permiteAumentar = item.idtipoproduto != 'I';
+    final ehCortesia = item.precoFinal <= 0;
+    final ehPacote = item.tipoCampanha == 'PACOTE';
+    final permiteAumentar = item.idtipoproduto != 'I' && !ehCortesia;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -410,7 +446,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                 icon: const Icon(Icons.remove_rounded, size: 19),
               ),
               Text(
-                '${item.quantidade}',
+                ehPacote
+                    ? '${item.quantidade} ${item.quantidade == 1 ? 'pacote' : 'pacotes'}'
+                    : '${item.quantidade}',
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -418,7 +456,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
               ),
               IconButton(
                 tooltip: permiteAumentar
-                    ? 'Aumentar quantidade'
+                    ? (ehPacote
+                          ? 'Adicionar outro pacote'
+                          : 'Aumentar quantidade')
+                    : ehCortesia
+                    ? 'Cortesia limitada a 1 unidade por transação'
                     : 'Adicione outro ingresso pela agenda',
                 onPressed: alterandoQuantidade || !permiteAumentar
                     ? null
@@ -467,6 +509,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       totalProdutos += item.precoFinal * item.quantidade;
     }
 
+    if (totalProdutos <= 0) {
+      await _resgatarCortesia();
+      return;
+    }
+
     try {
       final lojaAtualizada = await apiService.buscarDadosLoja(widget.loja.id);
 
@@ -488,6 +535,42 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         context,
         'Erro ao buscar dados da loja: ${apiService.mensagemErroAmigavel(e)}',
       );
+    }
+  }
+
+  Future<void> _resgatarCortesia() async {
+    if (resgatandoCortesia) return;
+    if (clienteId == null || clienteId == 0) {
+      AppSnackBar.erro(context, 'Cliente não identificado.');
+      return;
+    }
+
+    setState(() => resgatandoCortesia = true);
+    try {
+      await apiService.resgatarCortesiaCarrinho(
+        clienteId: clienteId!,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+      );
+      final quantidade = await apiService.buscarQuantidadeCarrinho(
+        clienteId: clienteId!,
+      );
+      CartBadgeNotifier.atualizar(quantidade);
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const PagamentoSucessoScreen(
+            tituloSucesso: 'Cortesia resgatada com sucesso',
+            descricaoSucesso: 'Acompanhe seus produtos pela sua carteira.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) setState(() => resgatandoCortesia = false);
     }
   }
 
@@ -532,6 +615,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   Widget _itemCarrinho(ItemCarrinhoAgrupado item) {
     final bool temDesconto = item.descontoAtivo;
     final bool ehIngresso = item.idtipoproduto == 'I';
+    final bool ehCortesia = !ehIngresso && item.precoFinal <= 0;
 
     final String seloDesconto = item.tipodesconto.toUpperCase() == 'PERCENTUAL'
         ? '${item.vrdesconto.toStringAsFixed(0)}% OFF'
@@ -586,6 +670,38 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 0.7,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (ehCortesia)
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade50,
+                          borderRadius: BorderRadius.circular(9),
+                          border: Border.all(color: Colors.green.shade300),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.card_giftcard_rounded,
+                              color: Colors.green.shade700,
+                              size: 15,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Cortesia',
+                              style: TextStyle(
+                                color: Colors.green.shade800,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ],
@@ -787,10 +903,11 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   }
 
   Widget _botaoPagar() {
+    final ehSomenteCortesia = total <= 0;
     return SizedBox(
       height: 42,
       child: ElevatedButton(
-        onPressed: () => abrirEscolhaPagamento(),
+        onPressed: resgatandoCortesia ? null : abrirEscolhaPagamento,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
           foregroundColor: Colors.white,
@@ -799,7 +916,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           ),
         ),
         child: Text(
-          'Continuar para pagamento',
+          ehSomenteCortesia ? 'Resgatar cortesia' : 'Continuar para pagamento',
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),

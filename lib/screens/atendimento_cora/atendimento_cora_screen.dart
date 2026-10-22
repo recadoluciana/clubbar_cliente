@@ -6,6 +6,7 @@ import '../../services/http_with_timeout.dart' as http;
 import '../../config/app_config.dart';
 import '../../services/auth_storage.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../utils/horario_brasil.dart';
 import '../../widgets/clubbar_app_bar.dart';
 
 class AtendimentoCoraScreen extends StatefulWidget {
@@ -463,8 +464,7 @@ class _Mensagem {
     texto: json['mensagem']?.toString() ?? '',
     cliente: json['origem'] == 'CLIENTE',
     horario:
-        DateTime.tryParse(json['dtcriacao']?.toString() ?? '')?.toLocal() ??
-        DateTime.now(),
+        HorarioBrasil.deTextoBrasil(json['dtcriacao']) ?? HorarioBrasil.agora(),
   );
 }
 

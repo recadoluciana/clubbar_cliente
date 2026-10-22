@@ -5,7 +5,6 @@ EventoLote lote({
   String status = 'ATIVO',
   int total = 100,
   int vendida = 0,
-  bool semLimite = false,
   String inicio = '',
   String fim = '',
 }) {
@@ -16,7 +15,6 @@ EventoLote lote({
     preco: 20,
     qtTotal: total,
     qtVendida: vendida,
-    semLimite: semLimite,
     status: status,
     dataInicioVenda: inicio,
     dataFimVenda: fim,
@@ -48,8 +46,4 @@ void main() {
     expect(encerrado.situacaoVendaEm(agora), 'Vendas encerradas');
   });
 
-  test('lote ilimitado não esgota por quantidade', () {
-    final item = lote(total: 0, vendida: 500, semLimite: true);
-    expect(item.podeComprarEm(agora), isTrue);
-  });
 }

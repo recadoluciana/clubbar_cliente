@@ -45,21 +45,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   @override
   void initState() {
     super.initState();
-    itensTela = _somenteIngressosNaJanela(widget.itens);
+    itensTela = _ordenarIngressos(widget.itens);
   }
 
-  List<Map<String, dynamic>> _somenteIngressosNaJanela(
+  List<Map<String, dynamic>> _ordenarIngressos(
     List<Map<String, dynamic>> itens,
   ) {
-    final agora = DateTime.now();
+    // A API já filtra os ingressos pelo término efetivo do evento. Não
+    // repetimos a regra no Client para evitar esconder eventos em andamento.
     final ingressos = itens
-        .where((item) {
-          final inicio = DateTime.tryParse(
-            (item['dtinicioevento'] ?? '').toString(),
-          );
-          if (inicio == null) return true;
-          return !agora.isAfter(inicio.add(const Duration(hours: 6)));
-        })
         .map((item) => Map<String, dynamic>.from(item))
         .toList();
 
@@ -259,7 +253,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(dialogContext),
-                child: const Text('Cancelar compra'),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Cancelar'),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -298,6 +293,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     'confirmar_meia_entrada': confirmouMeiaEntrada,
                   });
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
                 child: const Text('Transferir'),
               ),
             ],
@@ -351,21 +350,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   ) async {
     final token = (item['qrtokenitvenda'] ?? '').toString().trim();
     final qrData = 'CLUBBAR-INGRESSO:$token';
-    final nomeEstabelecimento = _primeiroTexto(item, const [
-      'nmloja',
-      'nome_loja',
-    ], padrao: widget.nomeLoja);
     final nomeEvento = _primeiroTexto(item, const [
       'nmevento',
       'nmproduto',
     ], padrao: 'Ingresso Clubbar');
-    final lote = _primeiroTexto(item, const ['nmlote', 'lote']);
-    final numeroLote = _primeiroTexto(item, const ['nrlote', 'numero_lote']);
-    final loteExibicao = lote.isNotEmpty
-        ? lote
-        : numeroLote.isNotEmpty
-        ? 'Lote $numeroLote'
-        : 'Não informado';
     final setor = _primeiroTexto(item, const [
       'nmsetor',
       'nmsetoringresso',
@@ -381,20 +369,18 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         : _primeiroTexto(item, const [
             'tipo_ingresso',
           ], padrao: 'Não informada');
-    final dataEvento = _primeiroTexto(item, const [
-      'dtinicioevento_fmt',
-      'dtinicioevento',
-    ], padrao: 'Não informada');
-    final localEvento = _primeiroTexto(item, const [
-      'nmlocalevento',
-      'nmloja',
-    ], padrao: nomeEstabelecimento);
-    final enderecoEvento = _primeiroTexto(item, const [
-      'dsendlocevento',
-      'endereco_estabelecimento',
-      'endloja',
-      'dsinstaloja',
-    ], padrao: 'Endereço do estabelecimento');
+    final beneficio = _primeiroTexto(item, const [
+      'nmbeneficiosnapshot',
+      'nmbeneficio',
+      'beneficio',
+    ]);
+    final nomeParticipante = _primeiroTexto(item, const [
+      'nmparticipante',
+    ], padrao: 'Não informado');
+    final cpfParticipante = _formatarCpf(item['cpfparticipante'] ?? '');
+    final horarioLimiteEntrada = (item['horariolimiteentradacortesia'] ?? '')
+        .toString()
+        .trim();
 
     if (token.isEmpty) {
       AppSnackBar.erro(context, 'QR Code não disponível para este item.');
@@ -403,11 +389,13 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
     await showDialog(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       builder: (dialogContext) {
         return Dialog(
+          clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Colors.amber, width: 2),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -415,101 +403,112 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               maxHeight: MediaQuery.sizeOf(context).height * 0.90,
             ),
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(
+                  Container(
+                    height: 56,
                     width: double.infinity,
+                    color: Colors.black,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 42),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: Text(
-                            nomeEstabelecimento,
+                            nomeEvento,
                             textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.normal,
                             ),
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            tooltip: 'Fechar',
-                            onPressed: () => Navigator.pop(dialogContext),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    nomeEvento,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _detalheIngresso('Lote', loteExibicao),
-                  _detalheIngresso('Setor', setor),
-                  _detalheIngresso('Modalidade', modalidade),
-                  _detalheIngresso('Data e hora', dataEvento),
-                  _detalheIngresso('Local', localEvento),
-                  _detalheIngresso('Endereço', enderecoEvento),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Participante',
-                          style: TextStyle(fontWeight: FontWeight.w600),
-                        ),
+                        Text('Setor: $setor'),
                         const SizedBox(height: 4),
-                        Text(
-                          _primeiroTexto(item, const [
-                            'nmparticipante',
-                          ], padrao: 'Não informado'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.bold,
+                        Text('Modalidade: $modalidade'),
+                        if (horarioLimiteEntrada.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.orange.shade300),
+                            ),
+                            child: Text(
+                              'Válido para entrada até as $horarioLimiteEntrada horas.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.deepOrange.shade700,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (beneficio.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text('Benefício: $beneficio'),
+                        ],
+                        const SizedBox(height: 16),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Column(
+                            children: [
+                              Text('Participante: $nomeParticipante'),
+                              if (cpfParticipante.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(cpfParticipante),
+                              ],
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatarCpf(item['cpfparticipante'] ?? ''),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Apresente seu documento de identificação.',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                        ),
+                        const SizedBox(height: 16),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: QrImageView(
+                            data: qrData,
+                            size: 200,
+                            backgroundColor: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              foregroundColor: Colors.black,
+                            ),
+                            child: const Text('Voltar'),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Apresente seu documento de identificação.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  QrImageView(
-                    data: qrData,
-                    size: 210,
-                    backgroundColor: Colors.white,
                   ),
                 ],
               ),
@@ -528,7 +527,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       if (!mounted) return;
 
       setState(() {
-        itensTela = _somenteIngressosNaJanela(novosItens);
+        itensTela = _ordenarIngressos(novosItens);
       });
     }
   }
@@ -543,20 +542,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       if (valor.isNotEmpty && valor.toLowerCase() != 'null') return valor;
     }
     return padrao;
-  }
-
-  Widget _detalheIngresso(String titulo, String valor) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Text.rich(
-        TextSpan(
-          text: '$titulo: ',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-          children: [TextSpan(text: valor)],
-        ),
-        textAlign: TextAlign.center,
-      ),
-    );
   }
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
@@ -590,6 +575,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
+    final lote = (item['lote'] ?? '').toString().trim();
+    final setor = (item['nmsetor'] ?? '').toString().trim();
+    final modalidade = (item['nmpreco'] ?? '').toString().trim();
     final enderecoEvento =
         (item['endereco_evento_completo'] ??
                 item['dsendlocevento'] ??
@@ -663,25 +651,26 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         const SizedBox(height: 4),
                         Text(
                           dataEvento.isEmpty
-                              ? 'Data do evento não informada'
-                              : dataEvento,
+                              ? 'Data evento não informada'
+                              : 'Data evento: $dataEvento',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        if (tipoIngresso.isNotEmpty) ...[
+                        if (lote.isNotEmpty ||
+                            setor.isNotEmpty ||
+                            modalidade.isNotEmpty ||
+                            tipoIngresso.isNotEmpty) ...[
                           const SizedBox(height: 4),
-                          Text(
-                            tipoIngresso,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.blue.shade700,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          _linhaDetalhesIngresso(
+                            lote: lote,
+                            setor: setor,
+                            modalidade: modalidade,
+                            alternativa: tipoIngresso,
                           ),
                         ],
                         if (enderecoEvento.isNotEmpty) ...[
@@ -833,17 +822,27 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           ),
                         ),
 
-                        IconButton(
-                          tooltip: 'Transferir ingresso',
+                        OutlinedButton.icon(
                           onPressed: () =>
                               _abrirDialogAlterarParticipante(item),
-                          style: IconButton.styleFrom(
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text('Alterar participante'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: Size.zero,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 9,
+                            ),
                             backgroundColor: Colors.amber.withValues(
                               alpha: 0.18,
                             ),
                             foregroundColor: Colors.black87,
+                            side: BorderSide.none,
+                            textStyle: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                          icon: const Icon(Icons.edit_outlined, size: 19),
                         ),
                       ],
                     ),
@@ -851,41 +850,63 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
                   const SizedBox(height: 14),
                   ...[
-                    SizedBox(
-                      width: double.infinity,
-                      height: 46,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _abrirQrOuRetirada(context, item),
-                        icon: const Icon(Icons.qr_code_2_rounded, size: 22),
-                        label: const Text(
-                          'Exibir ingresso e QR Code',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 42,
+                            child: ElevatedButton.icon(
+                              onPressed: () =>
+                                  _abrirQrOuRetirada(context, item),
+                              icon: const Icon(
+                                Icons.qr_code_2_rounded,
+                                size: 21,
+                              ),
+                              label: const Text(
+                                'Exibir QR Code',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          foregroundColor: Colors.black,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: SizedBox(
+                            height: 42,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _compartilharIngresso(item),
+                              icon: const Icon(
+                                Icons.card_giftcard_rounded,
+                                size: 18,
+                              ),
+                              label: const Text('Presentear'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF7A5A00),
+                                side: const BorderSide(
+                                  color: Color(0xFFE0C36A),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _compartilharIngresso(item),
-                        icon: const Icon(Icons.card_giftcard_rounded),
-                        label: const Text('Presentear'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF7A5A00),
-                          side: const BorderSide(color: Color(0xFFE0C36A)),
-                        ),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Center(
@@ -1021,6 +1042,53 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
   }
 
+  Widget _linhaDetalhesIngresso({
+    required String lote,
+    required String setor,
+    required String modalidade,
+    required String alternativa,
+  }) {
+    final estiloBase = TextStyle(
+      color: Colors.blue.shade700,
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+    );
+    final partes = <InlineSpan>[];
+
+    void adicionar(String texto, {Color? cor}) {
+      if (texto.isEmpty) {
+        return;
+      }
+      if (partes.isNotEmpty) {
+        partes.add(TextSpan(text: ' . ', style: estiloBase));
+      }
+      partes.add(
+        TextSpan(
+          text: texto,
+          style: estiloBase.copyWith(color: cor),
+        ),
+      );
+    }
+
+    adicionar(lote);
+    adicionar(setor);
+    adicionar(
+      modalidade,
+      cor: modalidade.toUpperCase() == 'CORTESIA'
+          ? const Color(0xFF18763B)
+          : null,
+    );
+    if (partes.isEmpty) {
+      adicionar(alternativa);
+    }
+
+    return Text.rich(
+      TextSpan(children: partes),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final totalUnidades = itensTela.fold<int>(0, (total, item) {
@@ -1037,7 +1105,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
-        titulo: 'Carteira de ingressos',
+        titulo: 'Minha Carteira - Ingressos',
+        iconeTitulo: Icons.account_balance_wallet_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
@@ -1065,7 +1135,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 if (!mounted) return;
 
                 setState(() {
-                  itensTela = _somenteIngressosNaJanela(novosItens);
+                  itensTela = _ordenarIngressos(novosItens);
                 });
               },
               child: ListView(

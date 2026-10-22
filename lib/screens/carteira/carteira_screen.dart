@@ -491,11 +491,20 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Carteira',
+        titulo: 'Minha Carteira',
         iconeTitulo: Icons.account_balance_wallet_rounded,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
+        mostrarSessao: false,
         onVoltar: MainNavigationController.irParaHome,
+        actions: [
+          IconButton(
+            tooltip: 'Atualizar carteira',
+            onPressed: carregando ? null : carregarTela,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
+        ],
       ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())

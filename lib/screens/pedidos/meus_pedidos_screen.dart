@@ -1,20 +1,150 @@
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 import '../perfil/cancelar_transacao_screen.dart';
 
-class MeusPedidosScreen extends StatefulWidget {
+class MeusPedidosScreen extends StatelessWidget {
   const MeusPedidosScreen({super.key});
 
   @override
-  State<MeusPedidosScreen> createState() => _MeusPedidosScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+      appBar: const ClubbarAppBar(
+        titulo: 'Minhas compras',
+        iconeTitulo: Icons.receipt_long_rounded,
+        corIconeTitulo: Colors.orange,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 540),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'O que você deseja consultar?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Escolha uma categoria para ver suas compras.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey.shade700),
+                ),
+                const SizedBox(height: 24),
+                _OpcaoCompras(
+                  titulo: 'Produtos',
+                  descricao: 'Produtos, status de uso e cancelamentos.',
+                  icone: Icons.local_drink_rounded,
+                  cor: Colors.amber.shade800,
+                  onTap: () => MainNavigationController.abrirTela(
+                    const PedidosPorTipoScreen(tipo: 'P'),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _OpcaoCompras(
+                  titulo: 'Ingressos',
+                  descricao: 'Ingressos, participantes e cancelamentos.',
+                  icone: Icons.confirmation_number_outlined,
+                  cor: Colors.blue,
+                  onTap: () => MainNavigationController.abrirTela(
+                    const PedidosPorTipoScreen(tipo: 'I'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
+class _OpcaoCompras extends StatelessWidget {
+  final String titulo;
+  final String descricao;
+  final IconData icone;
+  final Color cor;
+  final VoidCallback onTap;
+
+  const _OpcaoCompras({
+    required this.titulo,
+    required this.descricao,
+    required this.icone,
+    required this.cor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: cor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(icone, color: cor, size: 28),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      titulo,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      descricao,
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: cor, size: 30),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PedidosPorTipoScreen extends StatefulWidget {
+  final String tipo;
+
+  const PedidosPorTipoScreen({super.key, required this.tipo});
+
+  @override
+  State<PedidosPorTipoScreen> createState() => _PedidosPorTipoScreenState();
+}
+
+class _PedidosPorTipoScreenState extends State<PedidosPorTipoScreen> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
 
@@ -29,7 +159,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
-  String tipoSelecionado = 'P';
+  late String tipoSelecionado;
   String statusSelecionado = 'TODOS';
   final Set<int> _vendasExpandidas = <int>{};
 
@@ -44,6 +174,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   @override
   void initState() {
     super.initState();
+    tipoSelecionado = widget.tipo;
     _carregarCabecalho();
     carregarPedidos();
   }
@@ -149,8 +280,24 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             .trim()
             .toUpperCase();
 
-        if (statusSelecionado != 'TODOS' && usado != statusSelecionado) {
-          return false;
+        final situacao = (item['sititvenda'] ?? 'ATIVO')
+            .toString()
+            .trim()
+            .toUpperCase();
+
+        switch (statusSelecionado) {
+          case 'NAO':
+            if (situacao != 'ATIVO' || usado != 'NAO') return false;
+            break;
+          case 'SIM':
+            if (situacao != 'ATIVO' || usado != 'SIM') return false;
+            break;
+          case 'CANCELADO':
+            if (situacao != 'CANCELADO') return false;
+            break;
+          case 'CANCELAMENTO_SOLICITADO':
+            if (situacao != 'CANCELAMENTO_SOLICITADO') return false;
+            break;
         }
 
         if (pesquisa.isEmpty) {
@@ -201,74 +348,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         .replaceAll('ç', 'c');
   }
 
-  Widget _filtrosTipo() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _abaTipo(
-              titulo: 'Produtos',
-              icone: Icons.shopping_bag_outlined,
-              tipo: 'P',
-            ),
-          ),
-          Expanded(
-            child: _abaTipo(
-              titulo: 'Ingressos',
-              icone: Icons.confirmation_number_outlined,
-              tipo: 'I',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _abaTipo({
-    required String titulo,
-    required IconData icone,
-    required String tipo,
-  }) {
-    final selecionado = tipoSelecionado == tipo;
-
-    return InkWell(
-      onTap: () => setState(() => tipoSelecionado = tipo),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 42,
-        decoration: BoxDecoration(
-          color: selecionado ? Colors.amber : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icone,
-              size: 19,
-              color: selecionado ? Colors.amber.shade900 : Colors.black54,
-            ),
-            const SizedBox(width: 7),
-            Text(
-              titulo,
-              style: TextStyle(
-                color: selecionado ? Colors.black : Colors.black54,
-                fontSize: 13,
-                fontWeight: selecionado ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _campoPesquisa() {
     return TextField(
       controller: _buscaController,
@@ -279,8 +358,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       },
       decoration: InputDecoration(
         hintText: tipoSelecionado == 'I'
-            ? 'Pesquisar ingresso, participante, CPF ou bar'
-            : 'Pesquisar produto, descrição, observação ou bar',
+            ? 'ingresso, participante, CPF, bar'
+            : 'produto, descrição, observação, bar',
         hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
         prefixIcon: const Icon(Icons.search_rounded),
         suffixIcon: termoBusca.isEmpty
@@ -543,7 +622,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
     );
   }
 
-  Widget _itemPedido(Map<String, dynamic> item) {
+  Widget _itemPedido(Map<String, dynamic> item, {bool ocultarEvento = false}) {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final entreguePor =
         (item['nmuserentregaitvenda'] ?? item['userentregaitvenda'] ?? '')
@@ -575,58 +654,93 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _fotoProduto(item, tamanho: 46),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      (item['nmproduto'] ?? '').toString(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (ingresso && dataEvento.isNotEmpty) ...[
-                      const SizedBox(height: 2),
+          if (!(ingresso && ocultarEvento)) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ingresso
+                    ? _fotoEvento(item, tamanho: 46)
+                    : _fotoProduto(item, tamanho: 46),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'Evento: $dataEvento',
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 11,
+                        (item['nmproduto'] ?? '').toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      if (ingresso && dataEvento.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Evento: $dataEvento',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 6),
-              _badgeTipo(item),
+                const SizedBox(width: 6),
+                _badgeTipo(item),
+              ],
+            ),
+            const SizedBox(height: 6),
+          ],
+          if (ingresso) ...[
+            Wrap(
+              spacing: 14,
+              runSpacing: 3,
+              children: [
+                if (tipoIngresso.isNotEmpty)
+                  Text(
+                    'Tipo: $tipoIngresso',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                if (lote.isNotEmpty)
+                  Text('Lote: $lote', style: const TextStyle(fontSize: 12)),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Text(
+                  'Taxa: ${ValueFormatters.moeda(taxa)}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                const SizedBox(width: 8),
+                _badgeEntrega(item),
+                const Spacer(),
+                Text(
+                  'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            if (badgeSituacao case final Widget situacao) ...[
+              const SizedBox(height: 5),
+              situacao,
             ],
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              if (ingresso && tipoIngresso.isNotEmpty)
-                _chipInfo('Tipo: $tipoIngresso'),
-              if (ingresso && lote.isNotEmpty) _chipInfo('Lote: $lote'),
-              if (!ingresso) _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
-              _chipInfo(
-                'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
-              ),
-              if (ingresso) _chipInfo('Taxa: ${ValueFormatters.moeda(taxa)}'),
-              _badgeEntrega(item),
-              if (badgeSituacao case final Widget situacao) situacao,
-            ],
-          ),
+          ] else
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _chipInfo('Qtd: ${item['qtitvenda'] ?? 0}'),
+                _chipInfo(
+                  'Valor: ${ValueFormatters.moeda(item['vrunititvenda'])}',
+                ),
+                _badgeEntrega(item),
+                if (badgeSituacao case final Widget situacao) situacao,
+              ],
+            ),
           if (obs.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
@@ -639,15 +753,16 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ),
           ],
           if (ingresso && participante.isNotEmpty) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
-              'Participante: $participante${cpfParticipante.isEmpty ? '' : ' • CPF: $cpfParticipante'}',
-              style: TextStyle(
-                color: Colors.blue.shade900,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
+              'Participante: $participante',
+              style: TextStyle(color: Colors.blue.shade900, fontSize: 12),
             ),
+            if (cpfParticipante.isNotEmpty)
+              Text(
+                'CPF: $cpfParticipante',
+                style: TextStyle(color: Colors.blue.shade900, fontSize: 12),
+              ),
           ],
           if (ingresso && historico.isNotEmpty) ...[
             const SizedBox(height: 7),
@@ -718,12 +833,18 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
         .toList();
     final vendaId = int.tryParse('${pedido['venda_id'] ?? ''}') ?? 0;
     final expandida = _vendasExpandidas.contains(vendaId);
-    final itemEvento = itens.firstWhere(
-      _isIngresso,
-      orElse: () => <String, dynamic>{},
-    );
     final podeCancelar =
         (pedido['sitvenda'] ?? '').toString().toUpperCase() == 'PAGA';
+    final ingressos = itens.isNotEmpty && itens.every(_isIngresso);
+    final primeiroIngresso = ingressos ? itens.first : null;
+    final nomeEvento =
+        (primeiroIngresso?['nmevento'] ??
+                primeiroIngresso?['nmproduto'] ??
+                'Evento')
+            .toString();
+    final dataEvento = (primeiroIngresso?['dtinicioevento'] ?? '')
+        .toString()
+        .trim();
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -746,13 +867,19 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                 padding: const EdgeInsets.all(14),
                 child: Row(
                   children: [
-                    tipoSelecionado == 'I'
-                        ? _fotoEvento(itemEvento, tamanho: 50)
-                        : _fotoEstabelecimento(
-                            _buildImageUrl(
-                              (pedido['urllogoloja'] ?? '').toString(),
+                    ingressos
+                        ? _fotoEvento(primeiroIngresso!, tamanho: 50)
+                        : Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(14),
                             ),
-                            tamanho: 50,
+                            child: Icon(
+                              Icons.receipt_long_rounded,
+                              color: Colors.amber.shade800,
+                            ),
                           ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -760,8 +887,8 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            (pedido['nmloja'] ?? 'Loja').toString(),
-                            maxLines: 1,
+                            ingressos ? nomeEvento : 'Venda #$vendaId',
+                            maxLines: ingressos ? 2 : 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 16,
@@ -769,8 +896,18 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                             ),
                           ),
                           const SizedBox(height: 2),
+                          if (ingressos && dataEvento.isNotEmpty)
+                            Text(
+                              'Evento: $dataEvento',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 11,
+                              ),
+                            ),
                           Text(
-                            'Venda #$vendaId • ${(pedido['dtcriacao'] ?? '').toString()}',
+                            ingressos
+                                ? 'Compra: #$vendaId realizada em ${(pedido['dtcriacao'] ?? '').toString()}'
+                                : 'Compra: ${(pedido['dtcriacao'] ?? '').toString()}',
                             style: TextStyle(
                               color: Colors.grey.shade700,
                               fontSize: 11,
@@ -832,7 +969,9 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                 padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
                 child: Column(
                   children: [
-                    ...itens.map(_itemPedido),
+                    ...itens.map(
+                      (item) => _itemPedido(item, ocultarEvento: ingressos),
+                    ),
                     if (podeCancelar)
                       SizedBox(
                         width: double.infinity,
@@ -852,6 +991,80 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  List<Widget> _vendasAgrupadasPorLoja() {
+    final grupos = <String, List<Map<String, dynamic>>>{};
+    for (final pedido in pedidosFiltrados) {
+      final lojaId = (pedido['loja_id'] ?? '').toString();
+      final nomeLoja = (pedido['nmloja'] ?? 'Loja').toString();
+      final chave = lojaId.isEmpty ? nomeLoja : lojaId;
+      grupos.putIfAbsent(chave, () => []).add(pedido);
+    }
+    return grupos.values.map(_cardLoja).toList();
+  }
+
+  Widget _cardLoja(List<Map<String, dynamic>> vendasDaLoja) {
+    final loja = vendasDaLoja.first;
+    final nomeLoja = (loja['nmloja'] ?? 'Loja').toString();
+    final logo = _buildImageUrl((loja['urllogoloja'] ?? '').toString());
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                _fotoEstabelecimento(logo, tamanho: 52),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nomeLoja,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        '${vendasDaLoja.length} ${vendasDaLoja.length == 1 ? 'venda' : 'vendas'}',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, color: Colors.grey.shade200),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+            child: Column(children: vendasDaLoja.map(_cardPedido).toList()),
+          ),
+        ],
       ),
     );
   }
@@ -884,8 +1097,10 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(
-        titulo: 'Minhas compras',
+      appBar: ClubbarAppBar(
+        titulo: tipoSelecionado == 'I'
+            ? 'Minhas compras - Ingressos'
+            : 'Minhas compras - Produtos',
         iconeTitulo: Icons.receipt_long_rounded,
         corIconeTitulo: Colors.orange,
         mostrarVoltar: true,
@@ -903,11 +1118,6 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         corTitulo: Colors.blue,
                       )
                     : const SizedBox(height: 70),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: _filtrosTipo(),
-                ),
-
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: carregarPedidos,
@@ -928,7 +1138,7 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
                         else if (pedidosFiltrados.isEmpty)
                           _estadoVazioPesquisa()
                         else
-                          ...pedidosFiltrados.map(_cardPedido),
+                          ..._vendasAgrupadasPorLoja(),
                       ],
                     ),
                   ),
@@ -1001,6 +1211,18 @@ class _MeusPedidosScreenState extends State<MeusPedidosScreen> {
             titulo: 'Utilizados',
             status: 'SIM',
             icone: Icons.check_circle_outline_rounded,
+          ),
+          const SizedBox(width: 8),
+          _botaoStatus(
+            titulo: 'Cancelados',
+            status: 'CANCELADO',
+            icone: Icons.cancel_outlined,
+          ),
+          const SizedBox(width: 8),
+          _botaoStatus(
+            titulo: 'Cancelamento solicitado',
+            status: 'CANCELAMENTO_SOLICITADO',
+            icone: Icons.pending_actions_rounded,
           ),
         ],
       ),
