@@ -181,42 +181,39 @@ class _ModalidadesIngressoScreenState
 
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 4,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Row(
         children: [
-          if (mostrarQuemTemDireito)
-            TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
-              ),
-              icon: const Icon(Icons.workspace_premium_outlined, size: 16),
-              label: const Text('Quem tem direito'),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary,
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-                textStyle: const TextStyle(fontSize: 12),
-              ),
-            ),
           if (exigeComprovante)
             const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.description_outlined,
-                  size: 16,
+                  size: 17,
                   color: Colors.black54,
                 ),
                 SizedBox(width: 4),
                 Text(
                   'Comprovante obrigatório',
-                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                  style: TextStyle(fontSize: 13, color: Colors.black54),
                 ),
               ],
+            ),
+          if (exigeComprovante && mostrarQuemTemDireito) const Spacer(),
+          if (mostrarQuemTemDireito)
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
+              ),
+              icon: const Icon(Icons.workspace_premium_outlined, size: 17),
+              label: const Text('Quem tem direito'),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(fontSize: 13),
+              ),
             ),
         ],
       ),
@@ -1054,42 +1051,39 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 4,
-        crossAxisAlignment: WrapCrossAlignment.center,
+      child: Row(
         children: [
-          if (mostrarQuemTemDireito)
-            TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
-              ),
-              icon: const Icon(Icons.workspace_premium_outlined, size: 16),
-              label: const Text('Quem tem direito'),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.primary,
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-                textStyle: const TextStyle(fontSize: 12),
-              ),
-            ),
           if (exigeComprovante)
             const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.description_outlined,
-                  size: 16,
+                  size: 17,
                   color: Colors.black54,
                 ),
                 SizedBox(width: 4),
                 Text(
                   'Comprovante obrigatório',
-                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                  style: TextStyle(fontSize: 13, color: Colors.black54),
                 ),
               ],
+            ),
+          if (exigeComprovante && mostrarQuemTemDireito) const Spacer(),
+          if (mostrarQuemTemDireito)
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
+              ),
+              icon: const Icon(Icons.workspace_premium_outlined, size: 17),
+              label: const Text('Quem tem direito'),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(fontSize: 13),
+              ),
             ),
         ],
       ),
