@@ -171,6 +171,58 @@ class _ModalidadesIngressoScreenState
     );
   }
 
+  Widget _informacoesMeiaEntrada({
+    required bool mostrarQuemTemDireito,
+    required bool exigeComprovante,
+  }) {
+    if (!mostrarQuemTemDireito && !exigeComprovante) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (mostrarQuemTemDireito)
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
+              ),
+              icon: const Icon(Icons.workspace_premium_outlined, size: 16),
+              label: const Text('Quem tem direito'),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                textStyle: const TextStyle(fontSize: 12),
+              ),
+            ),
+          if (exigeComprovante)
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.description_outlined,
+                  size: 16,
+                  color: Colors.black54,
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'Comprovante obrigatório',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
     final ehCortesia = _ehCortesia(lote);
@@ -197,55 +249,14 @@ class _ModalidadesIngressoScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (ehMeiaEntrada)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.nomeModalidade(lote),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  TextButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const MeiaEntradaScreen(),
-                      ),
-                    ),
-                    icon: const Icon(
-                      Icons.workspace_premium_outlined,
-                      size: 16,
-                    ),
-                    label: const Text('Quem tem direito'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      textStyle: const TextStyle(fontSize: 11),
-                    ),
-                  ),
-                ],
-              )
-            else
-              Text(
-                widget.nomeModalidade(lote),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            if (lote.exigeComprovante)
-              const Padding(
-                padding: EdgeInsets.only(top: 3),
-                child: Text(
-                  'Comprovante obrigatório',
-                  style: TextStyle(fontSize: 12, color: Colors.black54),
-                ),
-              ),
+            Text(
+              widget.nomeModalidade(lote),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            ),
+            _informacoesMeiaEntrada(
+              mostrarQuemTemDireito: ehMeiaEntrada,
+              exigeComprovante: lote.exigeComprovante,
+            ),
             if (ehMeiaLegal) ...[
               const SizedBox(height: 6),
               Text(
@@ -1033,6 +1044,58 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
+  Widget _informacoesMeiaEntrada({
+    required bool mostrarQuemTemDireito,
+    required bool exigeComprovante,
+  }) {
+    if (!mostrarQuemTemDireito && !exigeComprovante) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (mostrarQuemTemDireito)
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
+              ),
+              icon: const Icon(Icons.workspace_premium_outlined, size: 16),
+              label: const Text('Quem tem direito'),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.primary,
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+                textStyle: const TextStyle(fontSize: 12),
+              ),
+            ),
+          if (exigeComprovante)
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.description_outlined,
+                  size: 16,
+                  color: Colors.black54,
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'Comprovante obrigatório',
+                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
   Widget _cardModalidadeDireta(EventoLote lote) {
     final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 1;
     final ehCortesia = _ehCortesia(lote);
@@ -1056,39 +1119,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _nomeModalidade(lote),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                if (ehMeiaEntrada) ...[
-                  const SizedBox(height: 2),
-                  TextButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const MeiaEntradaScreen(),
-                      ),
-                    ),
-                    icon: const Icon(
-                      Icons.workspace_premium_outlined,
-                      size: 16,
-                    ),
-                    label: const Text('Quem tem direito'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      padding: EdgeInsets.zero,
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      textStyle: const TextStyle(fontSize: 11),
-                    ),
-                  ),
-                ],
-              ],
+            Text(
+              _nomeModalidade(lote),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            ),
+            _informacoesMeiaEntrada(
+              mostrarQuemTemDireito: ehMeiaEntrada,
+              exigeComprovante: lote.exigeComprovante,
             ),
             if (cortesiaEsgotada)
               Padding(
@@ -1111,14 +1148,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                ),
-              ),
-            if (lote.exigeComprovante)
-              const Padding(
-                padding: EdgeInsets.only(top: 2),
-                child: Text(
-                  'Comprovante obrigatório',
-                  style: TextStyle(fontSize: 12, color: Colors.black54),
                 ),
               ),
             if (ehCortesia && lote.horarioLimiteEntrada != null)
