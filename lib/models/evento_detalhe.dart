@@ -3,6 +3,7 @@ import '../utils/horario_brasil.dart';
 class EventoDetalhe {
   final int id;
   final String titulo;
+  final String classificacaoEtaria;
   final String descricao;
   final String politicaCancelamento;
   final String politicaLoja;
@@ -27,6 +28,7 @@ class EventoDetalhe {
   EventoDetalhe({
     required this.id,
     required this.titulo,
+    this.classificacaoEtaria = 'Livre',
     required this.descricao,
     this.politicaCancelamento = '',
     this.politicaLoja = '',
@@ -62,6 +64,7 @@ class EventoDetalhe {
     return EventoDetalhe(
       id: _toInt(json['evento_id'] ?? json['id'] ?? 0),
       titulo: (json['nmtituloevento'] ?? 'Evento').toString(),
+      classificacaoEtaria: (json['classificacaoetaria'] ?? 'Livre').toString(),
       descricao: (json['dsdescevento'] ?? '').toString(),
       politicaCancelamento: (json['dspoliticacancelamento'] ?? '').toString(),
       politicaLoja: (politicaLoja['dspoliticaingresso'] ?? '').toString(),
