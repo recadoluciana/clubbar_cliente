@@ -22,48 +22,41 @@ class MeusPedidosScreen extends StatelessWidget {
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 540),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'O que você deseja consultar?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Escolha uma categoria para ver suas compras.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey.shade700),
-                ),
-                const SizedBox(height: 24),
-                _OpcaoCompras(
-                  titulo: 'Produtos',
-                  descricao: 'Produtos, status de uso e cancelamentos.',
-                  icone: Icons.local_drink_rounded,
-                  cor: Colors.amber.shade800,
-                  onTap: () => MainNavigationController.abrirTela(
-                    const PedidosPorTipoScreen(tipo: 'P'),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _OpcaoCompras(
-                  titulo: 'Ingressos',
-                  descricao: 'Ingressos, participantes e cancelamentos.',
-                  icone: Icons.confirmation_number_outlined,
-                  cor: Colors.blue,
-                  onTap: () => MainNavigationController.abrirTela(
-                    const PedidosPorTipoScreen(tipo: 'I'),
-                  ),
-                ),
-              ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'O que você deseja consultar?',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
             ),
-          ),
+            const SizedBox(height: 8),
+            Text(
+              'Escolha uma categoria para ver suas compras.',
+              style: TextStyle(color: Colors.grey.shade700),
+            ),
+            const SizedBox(height: 24),
+            _OpcaoCompras(
+              titulo: 'Produtos',
+              descricao: 'Produtos, status de uso e cancelamentos.',
+              icone: Icons.local_drink_rounded,
+              cor: Colors.amber.shade800,
+              onTap: () => MainNavigationController.abrirTela(
+                const PedidosPorTipoScreen(tipo: 'P'),
+              ),
+            ),
+            const SizedBox(height: 14),
+            _OpcaoCompras(
+              titulo: 'Ingressos',
+              descricao: 'Ingressos, participantes e cancelamentos.',
+              icone: Icons.confirmation_number_outlined,
+              cor: Colors.blue,
+              onTap: () => MainNavigationController.abrirTela(
+                const PedidosPorTipoScreen(tipo: 'I'),
+              ),
+            ),
+          ],
         ),
       ),
     );
