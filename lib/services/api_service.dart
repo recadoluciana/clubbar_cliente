@@ -424,12 +424,14 @@ class ApiService {
 
   Future<List<Map<String, dynamic>>> beneficiosProdutosAtivos({
     required int lojaId,
-    required int clienteId,
+    int? clienteId,
   }) async {
     final token = await AuthStorage().obterToken();
+    final clienteValido = clienteId != null && clienteId > 0;
     final response = await http.get(
       Uri.parse(
-        '$baseUrl/beneficios-produtos/lojas/$lojaId/ofertas?cliente_id=$clienteId',
+        '$baseUrl/beneficios-produtos/lojas/$lojaId/ofertas'
+        '${clienteValido ? '?cliente_id=$clienteId' : ''}',
       ),
       headers: {if (token != null) 'Authorization': 'Bearer $token'},
     );

@@ -90,21 +90,19 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       _promocoesPercentuaisPorProduto.clear();
       _cortesiasPorProduto.clear();
       _pacotesPorProduto.clear();
-      if (clienteId != null && clienteId! > 0) {
-        final ofertas = await apiService.beneficiosProdutosAtivos(
-          lojaId: widget.loja.id,
-          clienteId: clienteId!,
-        );
-        for (final oferta in ofertas) {
-          final produtoId = int.tryParse('${oferta['produto_id']}');
-          if (produtoId == null) continue;
-          if (oferta['tipo'] == 'PERCENTUAL') {
-            _promocoesPercentuaisPorProduto[produtoId] = oferta;
-          } else if (oferta['tipo'] == 'CORTESIA') {
-            _cortesiasPorProduto[produtoId] = oferta;
-          } else if (oferta['tipo'] == 'PACOTE') {
-            _pacotesPorProduto[produtoId] = oferta;
-          }
+      final ofertas = await apiService.beneficiosProdutosAtivos(
+        lojaId: widget.loja.id,
+        clienteId: clienteId,
+      );
+      for (final oferta in ofertas) {
+        final produtoId = int.tryParse('${oferta['produto_id']}');
+        if (produtoId == null) continue;
+        if (oferta['tipo'] == 'PERCENTUAL') {
+          _promocoesPercentuaisPorProduto[produtoId] = oferta;
+        } else if (oferta['tipo'] == 'CORTESIA') {
+          _cortesiasPorProduto[produtoId] = oferta;
+        } else if (oferta['tipo'] == 'PACOTE') {
+          _pacotesPorProduto[produtoId] = oferta;
         }
       }
       final categoriasComProdutos = produtos
