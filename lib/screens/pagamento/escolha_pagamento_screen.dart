@@ -192,7 +192,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
   }
 
-  Future<void> _carregarProvedorPagamento() async {
+  Future<void> _carregarProvedorPagamento({bool obrigatorio = false}) async {
     try {
       final dados = await apiService.consultarProvedorPagamentoLoja(
         lojaId: widget.loja.id,
@@ -208,7 +208,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           usarCashback = false;
         }
       });
-    } catch (_) {
+    } catch (erro) {
+      if (obrigatorio) rethrow;
       // Segurança por compatibilidade: se a consulta falhar, preserva Asaas.
     }
   }
@@ -984,6 +985,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
     setState(() => _metodoPagamentoProcessando = 'PIX');
     try {
+      // A escolha do parceiro pode ter acabado de ser alterada. Atualizamos
+      // antes de criar a cobrança para nunca abrir o checkout anterior por
+      // causa da consulta assíncrona iniciada no carregamento da tela.
+      await _carregarProvedorPagamento(obrigatorio: true);
       final clienteId = await authStorage.obterClienteId();
       if (clienteId == null || clienteId == 0) {
         throw Exception('Cliente não identificado');
@@ -1052,6 +1057,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     setState(() => _metodoPagamentoProcessando = 'CARTAO');
 
     try {
+      // Veja a observação equivalente no fluxo PIX acima.
+      await _carregarProvedorPagamento(obrigatorio: true);
       final clienteId = await authStorage.obterClienteId();
 
       if (clienteId == null || clienteId == 0) {
