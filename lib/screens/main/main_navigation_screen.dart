@@ -336,14 +336,27 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!kIsWeb) return;
 
     final checkoutId = Uri.base.queryParameters['checkout_id'];
+    final referenciaMercadoPago = Uri.base.queryParameters['referencia'];
     final retorno = Uri.base.queryParameters['pagamento'];
-    if (checkoutId == null || checkoutId.isEmpty || retorno == null) return;
+    final retornoMercadoPago = retorno == 'mercado_pago';
+    final retornoAsaas = checkoutId != null && checkoutId.isNotEmpty;
+    if (retorno == null ||
+        (!retornoAsaas &&
+            !(retornoMercadoPago &&
+                referenciaMercadoPago != null &&
+                referenciaMercadoPago.isNotEmpty))) {
+      return;
+    }
     limparUrlWeb();
 
     try {
       final api = ApiService();
 
-      final response = await api.consultarCheckoutAsaas(checkoutId: checkoutId);
+      final response = retornoMercadoPago
+          ? await api.consultarCheckoutMercadoPagoPorReferencia(
+              referencia: referenciaMercadoPago!,
+            )
+          : await api.consultarCheckoutAsaas(checkoutId: checkoutId!);
 
       final status = (response['status'] ?? '').toString().toUpperCase();
       final compraDeIngresso =

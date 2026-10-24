@@ -1390,6 +1390,21 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<Map<String, dynamic>> consultarCheckoutMercadoPagoPorReferencia({
+    required String referencia,
+  }) async {
+    final response = await http.get(
+      Uri.parse(
+        '$baseUrl/pagamentos/mercado-pago/status/referencia/${Uri.encodeComponent(referencia)}',
+      ),
+      headers: await _headersAutenticado(),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Loja> buscarDadosLoja(int lojaId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/lojas/dados_loja/$lojaId'),
