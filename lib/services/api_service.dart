@@ -547,6 +547,24 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<Map<String, dynamic>> criarCheckoutReservaMercadoPago({
+    required int reservaId,
+    required int clienteId,
+    required String metodo,
+  }) async {
+    final response = await http.post(
+      Uri.parse(
+        '$baseUrl/reservas-ingressos/$reservaId/mercado-pago?metodo=$metodo',
+      ),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({'cliente_id': clienteId, 'parcelas': 1}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> consultarReserva({
     required int reservaId,
     required int clienteId,
@@ -1346,6 +1364,32 @@ class ApiService {
     return Map<String, dynamic>.from(data);
   }
 
+  Future<Map<String, dynamic>> consultarProvedorPagamentoLoja({
+    required int lojaId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/pagamentos/lojas/$lojaId/provedor'),
+      headers: await _headersAutenticado(),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> consultarCheckoutMercadoPago({
+    required String preferenceId,
+  }) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/pagamentos/mercado-pago/status/$preferenceId'),
+      headers: await _headersAutenticado(),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Loja> buscarDadosLoja(int lojaId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/lojas/dados_loja/$lojaId'),
@@ -1696,6 +1740,34 @@ class ApiService {
     }
 
     return jsonDecode(response.body);
+  }
+
+  Future<Map<String, dynamic>> pagarMercadoPago({
+    required int clienteId,
+    required int organizacaoId,
+    required int lojaId,
+    required String metodo,
+    required double percentualTaxaIngresso,
+    required double percentualTaxaProduto,
+    Map<String, String>? entrega,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/pagamentos/pagar-mercado-pago'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'organizacao_id': organizacaoId,
+        'loja_id': lojaId,
+        'dsmetodopag': metodo,
+        'percentual_taxa_ingresso': percentualTaxaIngresso,
+        'percentual_taxa_produto': percentualTaxaProduto,
+        ...?(entrega == null ? null : {'entrega': entrega}),
+      }),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
   Future<Map<String, dynamic>> criarPedidoEntrega({

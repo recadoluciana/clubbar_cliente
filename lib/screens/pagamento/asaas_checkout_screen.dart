@@ -37,7 +37,8 @@ class _AsaasCheckoutScreenState extends State<AsaasCheckoutScreen> {
           onNavigationRequest: (request) {
             final url = request.url;
 
-            if (url.contains('/asaas/retorno')) {
+            if (url.contains('/asaas/retorno') ||
+                url.contains('/mercado-pago/retorno')) {
               final uri = Uri.parse(url);
               final acao = uri.queryParameters['acao'];
 

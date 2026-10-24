@@ -59,6 +59,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   double cashbackUtilizavel = 0;
   double saldoCashback = 0;
   bool falhaConsultaCashback = false;
+  String _provedorPagamento = 'ASAAS';
   bool receberNoEndereco = false;
   Map<String, dynamic>? campanhaDoacao;
   Timer? _timerReserva;
@@ -66,6 +67,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   bool _reservaExpirada = false;
 
   bool get carregandoPagamento => _metodoPagamentoProcessando != null;
+  bool get _usaMercadoPago => _provedorPagamento == 'MERCADO_PAGO';
 
   String get _tempoReservaFormatado {
     final minutos = _tempoReservaRestante.inMinutes;
@@ -115,6 +117,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       _carregarCashback();
     }
     _carregarCampanhaDoacao();
+    _carregarProvedorPagamento();
   }
 
   @override
@@ -189,6 +192,27 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
   }
 
+  Future<void> _carregarProvedorPagamento() async {
+    try {
+      final dados = await apiService.consultarProvedorPagamentoLoja(
+        lojaId: widget.loja.id,
+      );
+      if (!mounted) return;
+      setState(() {
+        _provedorPagamento = (dados['provedor_pagamento'] ?? 'ASAAS')
+            .toString()
+            .toUpperCase();
+        if (_provedorPagamento == 'MERCADO_PAGO') {
+          // O backend ainda mantém a reserva de cashback ligada ao checkout
+          // Asaas; não a oferecemos enquanto a compra usar Mercado Pago.
+          usarCashback = false;
+        }
+      });
+    } catch (_) {
+      // Segurança por compatibilidade: se a consulta falhar, preserva Asaas.
+    }
+  }
+
   double get percentualTaxaProduto => widget.loja.vrtaxaprod;
   double get percentualTaxaIngresso => widget.loja.vrtaxaing;
 
@@ -215,7 +239,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       : 'Pagamento do ingresso não confirmado.';
 
   double get cashbackAplicado =>
-      compraDeProdutos && usarCashback ? cashbackUtilizavel : 0;
+      compraDeProdutos && !_usaMercadoPago && usarCashback
+      ? cashbackUtilizavel
+      : 0;
 
   double get totalPagar =>
       widget.totalProdutos +
@@ -869,6 +895,82 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     return endereco;
   }
 
+  Future<void> _abrirCheckoutMercadoPago({
+    required String metodo,
+    required int clienteId,
+    Map<String, String>? entrega,
+  }) async {
+    final resposta = widget.reservaIngressoId != null
+        ? await apiService.criarCheckoutReservaMercadoPago(
+            reservaId: widget.reservaIngressoId!,
+            clienteId: clienteId,
+            metodo: metodo,
+          )
+        : await apiService.pagarMercadoPago(
+            clienteId: clienteId,
+            organizacaoId: widget.loja.organizacaoId,
+            lojaId: widget.loja.id,
+            metodo: metodo,
+            percentualTaxaIngresso: percentualTaxaIngresso,
+            percentualTaxaProduto: percentualTaxaProduto,
+            entrega: entrega,
+          );
+    final checkoutUrl = resposta['checkout_url']?.toString() ?? '';
+    if (checkoutUrl.isEmpty) {
+      throw Exception('Checkout Mercado Pago não retornado.');
+    }
+    if (!mounted) return;
+    if (kIsWeb) {
+      await launchUrl(Uri.parse(checkoutUrl), webOnlyWindowName: '_self');
+      return;
+    }
+    final resultado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => AsaasCheckoutScreen(url: checkoutUrl)),
+    );
+    if (resultado != true || !mounted) {
+      if (mounted) {
+        AppSnackBar.aviso(context, _mensagemPagamentoNaoConcluido);
+      }
+      return;
+    }
+    Map<String, dynamic>? confirmacao;
+    for (var tentativa = 0; tentativa < 6; tentativa++) {
+      confirmacao = widget.reservaIngressoId != null
+          ? await apiService.consultarReserva(
+              reservaId: widget.reservaIngressoId!,
+              clienteId: clienteId,
+            )
+          : await apiService.consultarCheckoutMercadoPago(
+              preferenceId: resposta['pagamento_id'].toString(),
+            );
+      if ((confirmacao['status'] ?? '').toString().toUpperCase() == 'PAGO' ||
+          (confirmacao['status_pagamento'] ?? '').toString().toUpperCase() ==
+              'PAGO') {
+        break;
+      }
+      await Future<void>.delayed(const Duration(seconds: 2));
+    }
+    final confirmado =
+        (confirmacao?['status'] ?? '').toString().toUpperCase() == 'PAGO' ||
+        (confirmacao?['status_pagamento'] ?? '').toString().toUpperCase() ==
+            'PAGO';
+    if (!confirmado) {
+      if (mounted) AppSnackBar.aviso(context, _mensagemPagamentoNaoConfirmado);
+      return;
+    }
+    final clienteAtualId = await authStorage.obterClienteId();
+    if (clienteAtualId != null && clienteAtualId > 0) {
+      CartBadgeNotifier.atualizar(
+        await apiService.buscarQuantidadeCarrinho(clienteId: clienteAtualId),
+      );
+      CarteiraBadgeNotifier.atualizar();
+    }
+    if (!mounted) return;
+    MainNavigationController.irParaHome();
+    Navigator.of(context).popUntil((rota) => rota.isFirst);
+  }
+
   Future<void> abrirPix() async {
     if (_reservaExpirada) return;
     if (totalPagar <= 0) {
@@ -890,6 +992,14 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ? await _enderecoEntregaDoPerfil()
           : null;
       if (entregaSelecionada && entrega == null) return;
+      if (_usaMercadoPago) {
+        await _abrirCheckoutMercadoPago(
+          metodo: 'PIX',
+          clienteId: clienteId,
+          entrega: entrega,
+        );
+        return;
+      }
       final pagamento = widget.reservaIngressoId != null
           ? await apiService.criarPixReserva(
               reservaId: widget.reservaIngressoId!,
@@ -946,6 +1056,19 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
       if (clienteId == null || clienteId == 0) {
         throw Exception('Cliente não identificado');
+      }
+
+      if (_usaMercadoPago) {
+        final entrega = entregaSelecionada
+            ? await _enderecoEntregaDoPerfil()
+            : null;
+        if (entregaSelecionada && entrega == null) return;
+        await _abrirCheckoutMercadoPago(
+          metodo: 'CREDIT_CARD',
+          clienteId: clienteId,
+          entrega: entrega,
+        );
+        return;
       }
 
       if (!await _garantirEnderecoParaCartao()) return;
@@ -1285,7 +1408,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                       ),
                     ),
                   ],
-                  if (falhaConsultaCashback)
+                  if (!_usaMercadoPago && falhaConsultaCashback)
                     TextButton.icon(
                       onPressed: _carregarCashback,
                       icon: const Icon(Icons.refresh),
@@ -1293,7 +1416,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                         'Não foi possível consultar o cashback. Tentar novamente',
                       ),
                     ),
-                  if (carregandoCashback || saldoCashback > 0) ...[
+                  if (!_usaMercadoPago &&
+                      (carregandoCashback || saldoCashback > 0)) ...[
                     const Divider(height: 24),
                     SwitchListTile(
                       contentPadding: EdgeInsets.zero,
@@ -1428,8 +1552,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           const SizedBox(height: 20),
 
-          const Text(
-            'Os pagamentos são processados com segurança pelo Asaas.',
+          Text(
+            _usaMercadoPago
+                ? 'Os pagamentos são processados com segurança pelo Mercado Pago.'
+                : 'Os pagamentos são processados com segurança pelo Asaas.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.black54, height: 1.4),
           ),
