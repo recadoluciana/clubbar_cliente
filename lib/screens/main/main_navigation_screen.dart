@@ -23,6 +23,7 @@ import '../../services/deep_link_service.dart';
 import '../../widgets/api_status_indicator.dart';
 import '../atendimento_cora/atendimento_cora_screen.dart';
 import '../pedidos/meus_pedidos_screen.dart';
+import '../pagamento/pagamento_sucesso_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -393,9 +394,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       if (!mounted) return;
 
       if (status == 'PAGO') {
-        // O checkout do cartão já confirma o pagamento ao cliente. Ao voltar
-        // para o Clubbar, evita repetir uma segunda tela de sucesso.
-        MainNavigationController.irParaHome();
+        // O Mercado Pago conclui no seu próprio ambiente. Quando a pessoa
+        // retorna ao Clubbar, exibimos uma confirmação explícita para que ela
+        // saiba que a compra foi registrada e onde encontrar o QR Code.
+        MainNavigationController.limparTelasInternas();
+        MainNavigationController.abrirTela(
+          const PagamentoSucessoScreen(
+            tituloSucesso: 'Pagamento realizado com sucesso',
+            descricaoSucesso:
+                'Seu produto já está disponível na Carteira. O QR Code também será enviado por e-mail.',
+          ),
+        );
       } else {
         if (!compraDeIngresso) {
           MainNavigationController.irParaCarrinho();
