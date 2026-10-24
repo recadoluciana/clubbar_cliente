@@ -240,11 +240,27 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Future<void> _reconciliarPagamentosPendentes() async {
+    final confirmados = <dynamic>[];
+
+    Future<void> conciliar(
+      Future<Map<String, dynamic>> Function() executar,
+    ) async {
+      try {
+        final resultado = await executar();
+        confirmados.addAll(
+          resultado['pagamentos_confirmados'] as List? ?? const [],
+        );
+      } catch (_) {
+        // Os provedores são independentes. Uma indisponibilidade pontual de
+        // um deles não pode impedir a reconciliação do outro.
+      }
+    }
+
+    await conciliar(apiService.reconciliarPagamentosPendentesAsaas);
+    await conciliar(apiService.reconciliarPagamentosPendentesMercadoPago);
+    if (confirmados.isEmpty) return;
+
     try {
-      final resultado = await apiService.reconciliarPagamentosPendentesAsaas();
-      final confirmados =
-          resultado['pagamentos_confirmados'] as List? ?? const [];
-      if (confirmados.isEmpty) return;
       await carregarBadgeCarrinho();
       await carregarBadgeCarteira();
       if (mounted) {
@@ -256,8 +272,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         );
       }
     } catch (_) {
-      // A confirmação automática continua pelo webhook; esta é apenas uma
-      // verificação de segurança ao reabrir o aplicativo.
+      // A venda já foi conciliada; falhas ao atualizar os badges não mudam
+      // seu status e serão corrigidas na próxima abertura do aplicativo.
     }
   }
 
