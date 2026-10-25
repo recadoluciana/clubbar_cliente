@@ -402,7 +402,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           const PagamentoSucessoScreen(
             tituloSucesso: 'Pagamento realizado com sucesso',
             descricaoSucesso:
-                'Seu produto já está disponível na Carteira. O QR Code também será enviado por e-mail.',
+                'Seu produto já está disponível na Carteira.\nO QR Code também será enviado por e-mail.',
           ),
         );
       } else {
