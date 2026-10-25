@@ -582,8 +582,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         iconeTitulo: Icons.local_drink_rounded,
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
-        mostrarSessao: false,
+        mostrarSessao: true,
         mostrarCarrinho: vendasHabilitadas,
+        carrinhoAntesDaSessao: true,
         quantidadeCarrinho: quantidadeCarrinho,
         onCarrinhoTap: _abrirCarrinhoDaLoja,
         onVoltar: () {
@@ -1086,7 +1087,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       icon: const Icon(Icons.local_offer_rounded, size: 16),
       label: const Text('Adicionar promoção ao carrinho'),
       style: _estiloBotaoProduto(
-        fundo: Colors.red.shade700,
+        fundo: const Color(0xFFE57373),
         texto: Colors.white,
         tamanhoFonte: 11,
       ),
@@ -1104,7 +1105,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       icon: const Icon(Icons.percent_rounded, size: 17),
       label: const Text('Adicionar promoção ao carrinho'),
       style: _estiloBotaoProduto(
-        fundo: Colors.red.shade700,
+        fundo: const Color(0xFFE57373),
         texto: Colors.white,
         tamanhoFonte: 11,
       ),

@@ -11,6 +11,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color corIconeTitulo;
   final String? imagemTituloAsset;
   final bool mostrarCarrinho;
+  final bool carrinhoAntesDaSessao;
   final int quantidadeCarrinho;
   final VoidCallback? onCarrinhoTap;
   final bool mostrarVersao;
@@ -32,6 +33,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.corIconeTitulo = Colors.white,
     this.imagemTituloAsset,
     this.mostrarCarrinho = false,
+    this.carrinhoAntesDaSessao = false,
     this.quantidadeCarrinho = 0,
     this.onCarrinhoTap,
     this.mostrarVersao = false,
@@ -140,6 +142,24 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       },
     );
   }
+
+  Widget _acaoCarrinho() => Padding(
+    padding: const EdgeInsets.only(right: 10),
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          onPressed: onCarrinhoTap,
+          icon: const Icon(
+            Icons.shopping_cart_outlined,
+            color: Colors.white,
+            size: 27,
+          ),
+        ),
+        _badgeCarrinho(),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -265,25 +285,10 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
         ...actions,
+        if (mostrarCarrinho && carrinhoAntesDaSessao) _acaoCarrinho(),
         if (mostrarSessao) _botaoSessao(context),
-        if (mostrarCarrinho)
-          Padding(
-            padding: const EdgeInsets.only(right: 10),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IconButton(
-                  onPressed: onCarrinhoTap,
-                  icon: const Icon(
-                    Icons.shopping_cart_outlined,
-                    color: Colors.white,
-                    size: 27,
-                  ),
-                ),
-                _badgeCarrinho(),
-              ],
-            ),
-          )
+        if (mostrarCarrinho && !carrinhoAntesDaSessao)
+          _acaoCarrinho()
         else if (mostrarVersao)
           const Padding(
             padding: EdgeInsets.only(right: 16),
