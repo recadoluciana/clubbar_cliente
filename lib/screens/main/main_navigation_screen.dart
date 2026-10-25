@@ -510,7 +510,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         }
 
         return Badge(
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.blue.shade600,
           label: Text(
             totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
             style: const TextStyle(
