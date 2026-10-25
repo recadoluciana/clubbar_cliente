@@ -23,6 +23,11 @@ class _CancelarTransacaoScreenState extends State<CancelarTransacaoScreen> {
   bool _carregando = true;
   bool _cancelando = false;
 
+  bool get _ehCortesia {
+    final valor = double.tryParse('${_transacao?['valor_total'] ?? 0}') ?? 0;
+    return valor <= 0;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -57,7 +62,9 @@ class _CancelarTransacaoScreenState extends State<CancelarTransacaoScreen> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Confirmar cancelamento'),
         content: Text(
-          'Deseja cancelar a compra #${widget.vendaId}? Todos os itens serão cancelados e o reembolso total será solicitado pelo mesmo meio de pagamento.',
+          _ehCortesia
+              ? 'Deseja cancelar a cortesia #${widget.vendaId}? Todos os itens serão cancelados. Como ela é gratuita, não haverá reembolso.'
+              : 'Deseja cancelar a compra #${widget.vendaId}? Todos os itens serão cancelados e o reembolso total será solicitado pelo mesmo meio de pagamento.',
         ),
         actions: [
           TextButton(
@@ -105,15 +112,17 @@ class _CancelarTransacaoScreenState extends State<CancelarTransacaoScreen> {
       borderRadius: BorderRadius.circular(16),
       border: Border.all(color: const Color(0xFFF0C784)),
     ),
-    child: const Row(
+    child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.info_outline_rounded, color: Color(0xFF9A6100)),
-        SizedBox(width: 10),
+        const Icon(Icons.info_outline_rounded, color: Color(0xFF9A6100)),
+        const SizedBox(width: 10),
         Expanded(
           child: Text(
-            'O cancelamento é sempre da compra inteira. Todos os itens da venda serão cancelados e o valor total será solicitado para reembolso.',
-            style: TextStyle(fontSize: 13, height: 1.4),
+            _ehCortesia
+                ? 'O cancelamento é sempre da compra inteira. Todos os itens da venda serão cancelados. Esta cortesia é gratuita e não exige reembolso.'
+                : 'O cancelamento é sempre da compra inteira. Todos os itens da venda serão cancelados e o valor total será solicitado para reembolso.',
+            style: const TextStyle(fontSize: 13, height: 1.4),
           ),
         ),
       ],
@@ -157,8 +166,8 @@ class _CancelarTransacaoScreenState extends State<CancelarTransacaoScreen> {
           }),
           const Divider(height: 1),
           ListTile(
-            title: const Text(
-              'Total a reembolsar',
+            title: Text(
+              valorTotal <= 0 ? 'Valor da cortesia' : 'Total a reembolsar',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
             trailing: Text(
