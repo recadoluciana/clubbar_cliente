@@ -702,7 +702,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         color: Colors.white,
         elevation: 10,
         child: SizedBox(
-          height: 62,
+          height: 44,
           child: TextButton.icon(
             onPressed: () {
               Navigator.of(context).push(
