@@ -1046,7 +1046,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
       label: const Text('Adicionar produto ao carrinho'),
       style: _estiloBotaoProduto(
-        fundo: Colors.amber,
+        // Amarelo suave: mantém esta ação distinta sem competir com o produto.
+        fundo: const Color(0xFFFFD166),
         texto: Colors.black,
         tamanhoFonte: 11,
       ),
@@ -1068,7 +1069,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           : const Icon(Icons.redeem_rounded, size: 16),
       label: const Text('Resgatar cortesia'),
       style: _estiloBotaoProduto(
-        fundo: Colors.green.shade700,
+        fundo: const Color(0xFF5B9BD5),
         texto: Colors.white,
         tamanhoFonte: 10,
       ),
@@ -1085,7 +1086,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       icon: const Icon(Icons.local_offer_rounded, size: 16),
       label: const Text('Adicionar promoção ao carrinho'),
       style: _estiloBotaoProduto(
-        fundo: Colors.green.shade700,
+        fundo: const Color(0xFF5B9BD5),
         texto: Colors.white,
         tamanhoFonte: 11,
       ),
