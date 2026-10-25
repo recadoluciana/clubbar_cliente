@@ -65,7 +65,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.red,
+            color: Colors.blue.shade600,
             borderRadius: BorderRadius.circular(20),
           ),
           constraints: const BoxConstraints(minWidth: 17, minHeight: 17),

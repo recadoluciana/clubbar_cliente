@@ -611,6 +611,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         },
       ),
 
+      bottomNavigationBar: _barraPoliticaCompra(),
+
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null
@@ -678,37 +680,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                           ...produtosFiltrados.map(_cardProdutoLista),
                           const SizedBox(height: 4),
                           Center(
-                            child: Column(
-                              children: [
-                                TextButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const PoliticaCompraScreen(
-                                              tipo: 'PRODUTO',
-                                            ),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.policy_outlined,
-                                    size: 18,
-                                  ),
-                                  label: const Text(
-                                    'Política de compra de produto',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ),
-                                ClubbarContactLinks(
-                                  emailEstabelecimento:
-                                      widget.loja.emailContato,
-                                  whatsappEstabelecimento: widget.loja.whatsapp,
-                                ),
-                              ],
+                            child: ClubbarContactLinks(
+                              emailEstabelecimento: widget.loja.emailContato,
+                              whatsappEstabelecimento: widget.loja.whatsapp,
                             ),
                           ),
                         ],
@@ -718,6 +692,41 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _barraPoliticaCompra() {
+    return SafeArea(
+      top: false,
+      child: Material(
+        color: Colors.white,
+        elevation: 10,
+        child: SizedBox(
+          height: 62,
+          child: TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PoliticaCompraScreen(tipo: 'PRODUTO'),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.policy_outlined,
+              color: Colors.amber.shade800,
+              size: 20,
+            ),
+            label: Text(
+              'Política de compra de produto',
+              style: TextStyle(
+                color: Colors.amber.shade900,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
