@@ -914,7 +914,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 Text(
                                   'Cortesia ${ValueFormatters.moeda(0)}',
                                   style: TextStyle(
-                                    color: Colors.green.shade700,
+                                    color: const Color(0xFF5B9BD5),
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -930,7 +930,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                       : 'Cortesias esgotadas',
                                   style: TextStyle(
                                     color: cortesiaDisponivel
-                                        ? Colors.green.shade800
+                                        ? const Color(0xFF5B9BD5)
                                         : Colors.red.shade700,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
@@ -1086,7 +1086,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       icon: const Icon(Icons.local_offer_rounded, size: 16),
       label: const Text('Adicionar promoção ao carrinho'),
       style: _estiloBotaoProduto(
-        fundo: const Color(0xFF5B9BD5),
+        fundo: Colors.red.shade700,
         texto: Colors.white,
         tamanhoFonte: 11,
       ),
