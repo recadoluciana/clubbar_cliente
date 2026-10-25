@@ -582,7 +582,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         iconeTitulo: Icons.local_drink_rounded,
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
-        mostrarSessao: true,
+        mostrarSessao: false,
         mostrarIconeSessao: false,
         mostrarCarrinho: vendasHabilitadas,
         carrinhoAntesDaSessao: false,
