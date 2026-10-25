@@ -944,9 +944,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         iconeTitulo: Icons.shopping_cart_outlined,
         mostrarVoltar: true,
         mostrarSessao: false,
-        mostrarCarrinho: true,
-        quantidadeCarrinho: totalItens,
-        onCarrinhoTap: carregarCarrinho,
       ),
 
       body: carregando
