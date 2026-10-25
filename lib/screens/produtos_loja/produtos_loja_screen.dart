@@ -583,8 +583,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: true,
+        mostrarIconeSessao: false,
         mostrarCarrinho: vendasHabilitadas,
-        carrinhoAntesDaSessao: true,
+        carrinhoAntesDaSessao: false,
         quantidadeCarrinho: quantidadeCarrinho,
         onCarrinhoTap: _abrirCarrinhoDaLoja,
         onVoltar: () {

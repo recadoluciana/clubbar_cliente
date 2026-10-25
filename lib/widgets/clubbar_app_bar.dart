@@ -21,6 +21,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget> actions;
   final bool mostrarSessao;
   final bool mostrarPerfil;
+  final bool mostrarIconeSessao;
   final bool logoAlinhadaEsquerda;
   final bool mostrarLogo;
   final bool mostrarCorujaAoLadoDoTitulo;
@@ -43,6 +44,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions = const [],
     this.mostrarSessao = true,
     this.mostrarPerfil = true,
+    this.mostrarIconeSessao = true,
     this.logoAlinhadaEsquerda = false,
     this.mostrarLogo = true,
     this.mostrarCorujaAoLadoDoTitulo = false,
@@ -110,20 +112,31 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
         final sessao = snapshot.data;
         if (sessao?.logado == true) {
           if (!mostrarPerfil) return const SizedBox.shrink();
+          final nome = Text(
+            _primeiroNome(sessao?.nome ?? ''),
+            style: const TextStyle(fontWeight: FontWeight.w800),
+          );
+          void abrirPerfil() {
+            MainNavigationController.abrirTela(const PerfilScreen());
+          }
+
+          final estilo = TextButton.styleFrom(foregroundColor: Colors.white);
+          if (!mostrarIconeSessao) {
+            return TextButton(
+              onPressed: abrirPerfil,
+              style: estilo,
+              child: nome,
+            );
+          }
           return TextButton.icon(
-            onPressed: () {
-              MainNavigationController.abrirTela(const PerfilScreen());
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.white),
+            onPressed: abrirPerfil,
+            style: estilo,
             icon: const Icon(
               Icons.person_rounded,
               size: 20,
               color: Colors.amber,
             ),
-            label: Text(
-              _primeiroNome(sessao?.nome ?? ''),
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
+            label: nome,
           );
         }
         return TextButton.icon(
