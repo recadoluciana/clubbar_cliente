@@ -20,7 +20,6 @@ import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/horario_brasil.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
-import 'aguardando_pagamento_mercado_pago_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -923,28 +922,6 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       throw Exception('Checkout Mercado Pago não retornado.');
     }
     if (!mounted) return;
-    // Para produtos, mantemos o Clubbar aberto em uma aba para acompanhar o
-    // PIX. Reservas de ingresso continuam no fluxo já existente, que usa a
-    // consulta própria da reserva após o retorno do provedor.
-    if (kIsWeb && metodo == 'PIX' && widget.reservaIngressoId == null) {
-      final abriuCheckout = await launchUrl(
-        Uri.parse(checkoutUrl),
-        webOnlyWindowName: 'checkout_mercado_pago',
-      );
-      if (!abriuCheckout) {
-        throw Exception('Não foi possível abrir o Checkout Mercado Pago.');
-      }
-      if (!mounted) return;
-      await Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => AguardandoPagamentoMercadoPagoScreen(
-            loja: widget.loja,
-            preferenceId: resposta['pagamento_id'].toString(),
-          ),
-        ),
-      );
-      return;
-    }
     if (kIsWeb) {
       await launchUrl(Uri.parse(checkoutUrl), webOnlyWindowName: '_self');
       return;
