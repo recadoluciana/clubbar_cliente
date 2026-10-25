@@ -1513,7 +1513,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(Icons.pix, size: 25),
               label: const Text(
@@ -1521,7 +1524,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: const Color(0xFF5B9BD5),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -1540,7 +1543,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.black87,
+                      ),
                     )
                   : const Icon(Icons.account_balance_wallet_outlined, size: 24),
               label: const Text(
@@ -1548,7 +1554,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
+                backgroundColor: const Color(0xFFFFD166),
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
