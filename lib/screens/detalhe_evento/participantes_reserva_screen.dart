@@ -161,8 +161,11 @@ class _ParticipantesReservaScreenState
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) =>
-                const PagamentoSucessoScreen(sucesso: true, cashbackGerado: 0),
+            builder: (_) => PagamentoSucessoScreen(
+              sucesso: true,
+              cashbackGerado: 0,
+              lojaDestino: widget.loja,
+            ),
           ),
         );
         return;

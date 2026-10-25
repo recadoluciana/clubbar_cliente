@@ -560,9 +560,10 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const PagamentoSucessoScreen(
+          builder: (_) => PagamentoSucessoScreen(
             tituloSucesso: 'Cortesia resgatada com sucesso',
             descricaoSucesso: 'Acompanhe seus produtos pela sua carteira.',
+            lojaDestino: widget.loja,
           ),
         ),
       );

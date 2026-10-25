@@ -19,6 +19,7 @@ import '../carteira/carteira_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/horario_brasil.dart';
+import '../detalhe_loja/detalhe_loja_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
   final Loja loja;
@@ -968,7 +969,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       CarteiraBadgeNotifier.atualizar();
     }
     if (!mounted) return;
-    MainNavigationController.irParaHome();
+    MainNavigationController.limparTelasInternas();
+    MainNavigationController.abrirTela(DetalheLojaScreen(loja: widget.loja));
     Navigator.of(context).popUntil((rota) => rota.isFirst);
   }
 
@@ -1184,9 +1186,12 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           if (!mounted) return;
 
-          // O cartão já apresenta a confirmação no checkout do Asaas.
-          // Retornamos ao início sem exibir uma segunda confirmação no app.
-          MainNavigationController.irParaHome();
+          // O checkout já confirma o pagamento. Ao voltar ao app, abrimos a
+          // mesma loja para que a pessoa continue navegando de onde comprou.
+          MainNavigationController.limparTelasInternas();
+          MainNavigationController.abrirTela(
+            DetalheLojaScreen(loja: widget.loja),
+          );
           Navigator.of(context).popUntil((rota) => rota.isFirst);
           return;
         }

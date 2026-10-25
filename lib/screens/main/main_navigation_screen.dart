@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../carteira/carteira_screen.dart';
@@ -389,6 +390,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         CarteiraBadgeNotifier.atualizar();
       }
 
+      Loja? lojaDestino;
+      final lojaId = int.tryParse('${response['loja_id'] ?? ''}');
+      if (status == 'PAGO' && lojaId != null && lojaId > 0) {
+        try {
+          lojaDestino = await api.buscarDadosLoja(lojaId);
+        } catch (erro) {
+          debugPrint('Não foi possível carregar a loja do pagamento: $erro');
+        }
+      }
+
       if (!mounted) return;
 
       if (status == 'PAGO') {
@@ -397,10 +408,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         // saiba que a compra foi registrada e onde encontrar o QR Code.
         MainNavigationController.limparTelasInternas();
         MainNavigationController.abrirTela(
-          const PagamentoSucessoScreen(
+          PagamentoSucessoScreen(
             tituloSucesso: 'Pagamento realizado com sucesso',
             descricaoSucesso:
                 'Seu produto já está disponível na Carteira.\nO QR Code também será enviado por e-mail.',
+            lojaDestino: lojaDestino,
           ),
         );
       } else {

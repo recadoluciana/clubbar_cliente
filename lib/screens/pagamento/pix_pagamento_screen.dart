@@ -183,6 +183,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
               sucesso: true,
               cashbackGerado:
                   double.tryParse('${response['cashback_gerado'] ?? 0}') ?? 0,
+              lojaDestino: widget.loja,
             ),
           ),
         );

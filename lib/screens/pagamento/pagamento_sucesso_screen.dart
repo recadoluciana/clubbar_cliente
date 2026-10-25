@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/auth_storage.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../main/main_navigation_screen.dart';
 
 class PagamentoSucessoScreen extends StatefulWidget {
@@ -13,6 +15,7 @@ class PagamentoSucessoScreen extends StatefulWidget {
   final double cashbackGerado;
   final String? tituloSucesso;
   final String? descricaoSucesso;
+  final Loja? lojaDestino;
 
   const PagamentoSucessoScreen({
     super.key,
@@ -20,6 +23,7 @@ class PagamentoSucessoScreen extends StatefulWidget {
     this.cashbackGerado = 0,
     this.tituloSucesso,
     this.descricaoSucesso,
+    this.lojaDestino,
   });
 
   @override
@@ -50,6 +54,21 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
     } catch (e) {
       debugPrint('Erro ao atualizar badges: $e');
     }
+  }
+
+  void _voltarAoApp() {
+    final loja = widget.lojaDestino;
+    if (loja != null) {
+      MainNavigationController.limparTelasInternas();
+      MainNavigationController.abrirTela(DetalheLojaScreen(loja: loja));
+    } else {
+      MainNavigationController.irParaHome();
+    }
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+      (_) => false,
+    );
   }
 
   @override
@@ -166,18 +185,16 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      MainNavigationController.irParaHome();
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) => const MainNavigationScreen(),
-                        ),
-                        (_) => false,
-                      );
-                    },
-                    icon: const Icon(Icons.home),
-                    label: const Text(
-                      'Ir para Home',
+                    onPressed: _voltarAoApp,
+                    icon: Icon(
+                      widget.lojaDestino == null
+                          ? Icons.home
+                          : Icons.storefront_outlined,
+                    ),
+                    label: Text(
+                      widget.lojaDestino == null
+                          ? 'Ir para Home'
+                          : 'Voltar para ${widget.lojaDestino!.nome}',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
