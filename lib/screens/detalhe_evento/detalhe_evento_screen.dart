@@ -129,6 +129,30 @@ class _ModalidadesIngressoScreenState
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                if (nomeSetor.isNotEmpty) ...[
+                  Text.rich(
+                    TextSpan(
+                      style: TextStyle(color: Colors.blue.shade700),
+                      children: [
+                        const TextSpan(
+                          text: 'Setor: ',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        TextSpan(
+                          text: nomeSetor,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 if (descricaoSetor.isNotEmpty && !descricaoPadrao) ...[
                   Text(
                     descricaoSetor,
