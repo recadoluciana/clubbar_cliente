@@ -57,6 +57,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     required String texto,
     bool? estaSelecionado,
     VoidCallback? onTap,
+    bool exibirTexto = true,
   }) {
     final selecionado = estaSelecionado ?? currentIndex == index;
 
@@ -85,23 +86,24 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       child: SizedBox(height: 23, child: Center(child: icone)),
                     ),
 
-                    // Espaço bem pequeno entre ícone e texto.
-                    const SizedBox(height: 1),
-
-                    Text(
-                      texto,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: corTexto,
-                        fontSize: 10,
-                        height: 1,
-                        fontWeight: selecionado
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                    if (exibirTexto) ...[
+                      // Espaço bem pequeno entre ícone e texto.
+                      const SizedBox(height: 1),
+                      Text(
+                        texto,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: corTexto,
+                          fontSize: 10,
+                          height: 1,
+                          fontWeight: selecionado
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ],
@@ -120,12 +122,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna == null ||
             telaInterna is PerfilScreen ||
             telaInterna is AtendimentoCoraScreen ||
-            telaInterna is ProdutoCompartilhadoScreen;
+            telaInterna is ProdutoCompartilhadoScreen ||
+            telaInterna is DetalheLojaScreen;
         if (!manterNavegacaoVisivel) {
           return const SizedBox.shrink();
         }
 
         final coraAtiva = telaInterna is AtendimentoCoraScreen;
+        final exibirNavegacaoReduzida = telaInterna is DetalheLojaScreen;
         final homeSelecionada = currentIndex == 0 && !coraAtiva;
         final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
         final carteiraSelecionada = currentIndex == 2 && !coraAtiva;
@@ -159,16 +163,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     texto: 'Home',
                     estaSelecionado: homeSelecionada,
+                    exibirTexto: !exibirNavegacaoReduzida,
                   ),
 
-                  _itemBarraNavegacao(
-                    index: 1,
-                    icone: _iconeCarrinhoComBadge(
-                      selecionado: carrinhoSelecionado,
+                  if (!exibirNavegacaoReduzida)
+                    _itemBarraNavegacao(
+                      index: 1,
+                      icone: _iconeCarrinhoComBadge(
+                        selecionado: carrinhoSelecionado,
+                      ),
+                      texto: 'Carrinho',
+                      estaSelecionado: carrinhoSelecionado,
                     ),
-                    texto: 'Carrinho',
-                    estaSelecionado: carrinhoSelecionado,
-                  ),
 
                   _itemBarraNavegacao(
                     index: 2,
@@ -177,16 +183,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     texto: 'Carteira',
                     estaSelecionado: carteiraSelecionada,
+                    exibirTexto: !exibirNavegacaoReduzida,
                   ),
 
-                  Expanded(
-                    child: ApiStatusIndicator(
-                      selecionado: coraAtiva,
-                      onTap: () => MainNavigationController.abrirTela(
-                        const AtendimentoCoraScreen(),
+                  if (!exibirNavegacaoReduzida)
+                    Expanded(
+                      child: ApiStatusIndicator(
+                        selecionado: coraAtiva,
+                        onTap: () => MainNavigationController.abrirTela(
+                          const AtendimentoCoraScreen(),
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -593,7 +601,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna == null ||
                 telaInterna is PerfilScreen ||
                 telaInterna is AtendimentoCoraScreen ||
-                telaInterna is ProdutoCompartilhadoScreen;
+                telaInterna is ProdutoCompartilhadoScreen ||
+                telaInterna is DetalheLojaScreen;
 
             return Scaffold(
               body: PopScope(
