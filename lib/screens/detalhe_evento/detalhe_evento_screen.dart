@@ -1653,7 +1653,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Widget _politicaEvento() {
+  Widget _rodapeEvento() {
     final detalhe = evento;
     final corRodape = Theme.of(context).colorScheme.primary;
     final emailEstabelecimento = _primeiroContato(
@@ -1666,46 +1666,70 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       widget.loja.nrtelloja,
     );
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade200)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 2, 8, 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const PoliticaCompraScreen(tipo: 'INGRESSO'),
+                    ),
+                  ),
+                  icon: const Icon(Icons.policy_outlined, size: 18),
+                  label: const Text(
+                    'Política de compra de ingresso',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    foregroundColor: corRodape,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
               ),
-              icon: const Icon(Icons.policy_outlined, size: 19),
-              label: const Text(
-                'Política de compra de ingresso',
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
-              ),
-              style: TextButton.styleFrom(
-                foregroundColor: corRodape,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
+              if (detalhe != null)
+                Center(
+                  child: ClubbarContactLinks(
+                    emailEstabelecimento: emailEstabelecimento,
+                    whatsappEstabelecimento: whatsappEstabelecimento,
+                    emailEvento: detalhe.emailEvento,
+                    whatsappEvento: detalhe.whatsappEvento,
+                    mostrarContatoEvento: true,
+                    centralizado: true,
+                    tamanhoFonteLinks: 12,
+                    tituloEmNegrito: false,
+                    cor: corRodape,
+                  ),
+                ),
+            ],
           ),
-          if (detalhe != null)
-            Center(
-              child: ClubbarContactLinks(
-                emailEstabelecimento: emailEstabelecimento,
-                whatsappEstabelecimento: whatsappEstabelecimento,
-                emailEvento: detalhe.emailEvento,
-                whatsappEvento: detalhe.whatsappEvento,
-                mostrarContatoEvento: true,
-                centralizado: true,
-                tamanhoFonteLinks: 12,
-                tituloEmNegrito: false,
-                cor: corRodape,
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -1770,6 +1794,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
       ),
+      bottomNavigationBar: ev == null ? null : _rodapeEvento(),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null
@@ -1836,18 +1861,33 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  ev.nomeLoja,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
+                              if (lotes.isNotEmpty)
+                                FilledButton.icon(
+                                  onPressed: _irParaIngressos,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
+                                    minimumSize: const Size(0, 40),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.confirmation_number_outlined,
+                                    size: 18,
+                                  ),
+                                  label: const Text(
+                                    'Comprar ingresso',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 10),
+                              const Spacer(),
                               FilledButton.icon(
                                 onPressed: () {
                                   MainNavigationController.abrirTela(
@@ -1879,32 +1919,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ],
                           ),
-                          if (lotes.isNotEmpty)
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: TextButton.icon(
-                                onPressed: _irParaIngressos,
-                                icon: const Icon(
-                                  Icons.confirmation_number_outlined,
-                                  size: 17,
-                                ),
-                                label: const Text('Comprar ingresso'),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.amber.shade900,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                  textStyle: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ),
                           const SizedBox(height: 6),
                           Text(
                             ev.titulo,
@@ -2130,28 +2144,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 exibirNomeSetor: true,
                               ),
                             ),
-                            Center(
-                              child: TextButton.icon(
-                                onPressed: _abrirExplicacaoTaxas,
-                                icon: const Icon(
-                                  Icons.receipt_long_outlined,
-                                  size: 18,
-                                ),
-                                label: const Text('Entenda nossa taxa'),
-                                style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  textStyle: const TextStyle(fontSize: 12),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                              ),
-                            ),
                           ],
-                          _politicaEvento(),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
                             const SizedBox(height: 20),
