@@ -1757,10 +1757,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : capacidadeDoEvento > 0
         ? capacidadeDoEvento
         : unicoLoteGlobal.qtTotal;
-    final tituloIngressos = unicoLoteGlobal == null
-        ? 'Ingressos'
-        : 'Ingressos · ${unicoLoteGlobal.nome} ($capacidadeExibida ${capacidadeExibida == 1 ? 'ingresso' : 'ingressos'})';
-
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
@@ -2067,13 +2063,38 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    tituloIngressos,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                  child: unicoLoteGlobal == null
+                                      ? const Text(
+                                          'Ingressos',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        )
+                                      : Text.rich(
+                                          TextSpan(
+                                            style: const TextStyle(
+                                              color: Colors.black,
+                                            ),
+                                            children: [
+                                              TextSpan(
+                                                text: unicoLoteGlobal.nome,
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text:
+                                                    ' ($capacidadeExibida ${capacidadeExibida == 1 ? 'ingresso' : 'ingressos'})',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.normal,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                 ),
                                 TextButton.icon(
                                   onPressed: atualizandoLotes
