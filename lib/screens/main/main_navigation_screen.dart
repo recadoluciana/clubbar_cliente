@@ -21,7 +21,6 @@ import '../../utils/app_snackbar.dart';
 import '../../services/deep_link_service.dart';
 import '../../widgets/api_status_indicator.dart';
 import '../atendimento_cora/atendimento_cora_screen.dart';
-import '../pedidos/meus_pedidos_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -590,6 +589,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         return ValueListenableBuilder<Widget?>(
           valueListenable: MainNavigationController.telaInterna,
           builder: (context, telaInterna, _) {
+            final manterNavegacaoVisivel =
+                telaInterna == null ||
+                telaInterna is PerfilScreen ||
+                telaInterna is AtendimentoCoraScreen ||
+                telaInterna is ProdutoCompartilhadoScreen;
+
             return Scaffold(
               body: PopScope(
                 canPop: telaInterna == null && currentIndex == 0,
@@ -604,11 +609,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 },
                 child: telaInterna ?? _buildPage(),
               ),
-              bottomNavigationBar:
-                  telaInterna is MeusPedidosScreen ||
-                      telaInterna is PedidosPorTipoScreen
-                  ? null
-                  : _barraNavegacao(),
+              bottomNavigationBar: manterNavegacaoVisivel
+                  ? _barraNavegacao()
+                  : null,
             );
           },
         );
