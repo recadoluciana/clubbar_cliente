@@ -1952,7 +1952,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 icon: const Icon(
-                                  Icons.restaurant_menu_rounded,
+                                  Icons.shopping_bag_outlined,
                                   size: 18,
                                 ),
                                 label: const Text(
@@ -2036,7 +2036,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                             const SizedBox(height: 10),
                             SizedBox(
-                              height: 76,
+                              height: 60,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: atracoesOrdenadas.length,
@@ -2055,8 +2055,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         borderRadius: BorderRadius.circular(12),
                                         child: Container(
                                           padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 8,
+                                            horizontal: 8,
+                                            vertical: 6,
                                           ),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
@@ -2071,9 +2071,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                             children: [
                                               _fotoAtracao(
                                                 atracao,
-                                                tamanho: 44,
+                                                tamanho: 34,
                                               ),
-                                              const SizedBox(width: 9),
+                                              const SizedBox(width: 7),
                                               Expanded(
                                                 child: Text(
                                                   atracao.nome,
