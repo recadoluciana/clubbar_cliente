@@ -364,38 +364,35 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
 
   Widget _rodapePoliticaIngresso() {
     final cor = Theme.of(context).colorScheme.primary;
-    return Container(
-      decoration: BoxDecoration(
+    return SafeArea(
+      top: false,
+      child: Material(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Center(
-          child: TextButton.icon(
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+        elevation: 8,
+        child: SizedBox(
+          height: 44,
+          child: Center(
+            child: TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
+                ),
               ),
-            ),
-            icon: const Icon(Icons.policy_outlined, size: 18),
-            label: const Text('Política de compra de ingresso'),
-            style: TextButton.styleFrom(
-              foregroundColor: cor,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              textStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.normal,
+              icon: const Icon(Icons.policy_outlined, size: 18),
+              label: const Text('Política de compra de ingresso'),
+              style: TextButton.styleFrom(
+                foregroundColor: cor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ),
         ),
