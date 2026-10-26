@@ -1697,6 +1697,31 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }
   }
 
+  Widget _badgeEventoIniciado() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.red,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: const Text(
+        'Evento já iniciado',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+
   Widget _faixaSituacaoEContato(EventoDetalhe detalhe) {
     final email = _primeiroContato(
       detalhe.emailEvento,
@@ -1715,7 +1740,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : numeroWhatsApp;
     final temContato = email.isNotEmpty || whatsappComDdi.isNotEmpty;
 
-    if (!detalhe.jaIniciado && !temContato) {
+    if (!temContato) {
       return const SizedBox.shrink();
     }
 
@@ -1726,27 +1751,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         runSpacing: 2,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          if (detalhe.jaIniciado)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'Evento já iniciado',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          if (temContato)
-            const Text(
-              'Fale com o organizador',
-              style: TextStyle(fontSize: 11, color: Colors.black87),
-            ),
+          const Text(
+            'Fale com o organizador',
+            style: TextStyle(fontSize: 11, color: Colors.black87),
+          ),
           if (email.isNotEmpty)
             TextButton.icon(
               onPressed: () =>
@@ -1862,25 +1870,34 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            child: ev.bannerUrl.trim().isNotEmpty
-                                ? SizedBox(
-                                    height: 200,
-                                    child: Image.network(
+                            child: SizedBox(
+                              height: 200,
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  if (ev.bannerUrl.trim().isNotEmpty)
+                                    Image.network(
                                       ev.bannerUrl,
                                       width: double.infinity,
                                       fit: BoxFit.fill,
-                                    ),
-                                  )
-                                : SizedBox(
-                                    height: 200,
-                                    child: Container(
+                                    )
+                                  else
+                                    Container(
                                       color: Colors.grey.shade300,
                                       child: const Icon(
                                         Icons.image_not_supported,
                                         size: 48,
                                       ),
                                     ),
-                                  ),
+                                  if (ev.jaIniciado)
+                                    Positioned(
+                                      left: 12,
+                                      bottom: 12,
+                                      child: _badgeEventoIniciado(),
+                                    ),
+                                ],
+                              ),
+                            ),
                           ),
                           Transform.translate(
                             offset: const Offset(0, -22),
