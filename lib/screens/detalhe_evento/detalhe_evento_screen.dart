@@ -432,6 +432,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   EventoDetalhe? evento;
   List<EventoLote> lotes = [];
   final Map<int, int> _quantidadesModalidades = {};
+  final Map<int, int> _setoresSelecionadosPorLote = {};
 
   @override
   void initState() {
@@ -464,6 +465,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       setState(() {
         lotes = listaLotes;
         _statusLotes.clear();
+        _setoresSelecionadosPorLote.clear();
       });
       await carregarStatusLotes();
       if (mounted) {
@@ -535,6 +537,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       setState(() {
         evento = detalhe;
         lotes = listaLotes;
+        _setoresSelecionadosPorLote.clear();
         carregando = false;
       });
       await carregarStatusLotes();
@@ -966,12 +969,92 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : lote.nomeModalidade;
   }
 
+  int _idLoteGlobal(EventoLote lote) =>
+      lote.loteGlobalId == 0 ? lote.loteId : lote.loteGlobalId;
+
+  Widget _cardSelecaoSetor(List<EventoLote> opcoes, int loteGlobalId) {
+    final lote = opcoes.first;
+    final capacidade = lote.qtCapacidadeSetor ?? lote.qtTotal;
+    final disponivel = lote.qtDisponivel;
+    final temIngressoDisponivel = opcoes.any(
+      (opcao) => opcao.podeComprarEm(HorarioBrasil.agora()),
+    );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => setState(
+          () => _setoresSelecionadosPorLote[loteGlobalId] = lote.loteId,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Icon(Icons.stadium_outlined, color: Colors.blue.shade700),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lote.nomeSetor.trim().isEmpty
+                          ? 'Setor não informado'
+                          : lote.nomeSetor,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Capacidade: $capacidade ${capacidade == 1 ? 'pessoa' : 'pessoas'}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      disponivel == 1
+                          ? '1 ingresso disponível'
+                          : '$disponivel ingressos disponíveis',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: temIngressoDisponivel
+                            ? Colors.green.shade700
+                            : Colors.red.shade700,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: Colors.blue.shade700),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget cardLoteGlobal(
     List<List<EventoLote>> setores, {
     required bool exibirNomeLote,
     required bool exibirNomeSetor,
   }) {
     final lote = setores.first.first;
+    final loteGlobalId = _idLoteGlobal(lote);
+    final temMaisDeUmSetor = setores.length > 1;
+    final setorSelecionadoId = _setoresSelecionadosPorLote[loteGlobalId];
+    List<EventoLote>? setorSelecionado;
+    for (final opcoesDoSetor in setores) {
+      if (opcoesDoSetor.first.loteId == setorSelecionadoId) {
+        setorSelecionado = opcoesDoSetor;
+        break;
+      }
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: Column(
@@ -998,13 +1081,43 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             ),
           ],
-          ...setores.map(
-            (opcoes) => cardLote(
-              opcoes,
+          if (!temMaisDeUmSetor)
+            cardLote(
+              setores.single,
               exibirNomeLote: false,
               exibirNomeSetor: exibirNomeSetor,
+            )
+          else if (setorSelecionado == null) ...[
+            const Padding(
+              padding: EdgeInsets.only(left: 2, bottom: 6),
+              child: Text(
+                'Selecione um setor para ver as modalidades',
+                style: TextStyle(fontSize: 13, color: Colors.black54),
+              ),
             ),
-          ),
+            ...setores.map((opcoes) => _cardSelecaoSetor(opcoes, loteGlobalId)),
+          ] else ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => setState(
+                  () => _setoresSelecionadosPorLote.remove(loteGlobalId),
+                ),
+                icon: const Icon(Icons.arrow_back_rounded, size: 17),
+                label: const Text('Trocar setor'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ),
+            cardLote(
+              setorSelecionado,
+              exibirNomeLote: false,
+              exibirNomeSetor: true,
+            ),
+          ],
         ],
       ),
     );
@@ -1964,6 +2077,29 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ),
                           const SizedBox(height: 18),
+
+                          if (ev.capacidadeTotal > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.groups_2_outlined,
+                                    size: 18,
+                                    color: Colors.blue.shade700,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Capacidade total do evento: ${ev.capacidadeTotal} ${ev.capacidadeTotal == 1 ? 'pessoa' : 'pessoas'}',
+                                    style: TextStyle(
+                                      color: Colors.blue.shade700,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
 
                           if (lotes.isEmpty)
                             estadoVazioLotes()

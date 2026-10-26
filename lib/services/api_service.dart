@@ -1278,6 +1278,7 @@ class ApiService {
           descricao: evento.descricao,
           dataInicio: evento.dataInicio,
           dataFim: evento.dataFim,
+          capacidadeTotal: evento.capacidadeTotal,
           local: evento.local,
           endereco: evento.endereco,
           numeroEndereco: evento.numeroEndereco,

@@ -10,6 +10,7 @@ class EventoDetalhe {
   final String orientacoesAcessoLoja;
   final String dataInicio;
   final String dataFim;
+  final int capacidadeTotal;
   final String local;
   final String endereco;
   final String numeroEndereco;
@@ -35,6 +36,7 @@ class EventoDetalhe {
     this.orientacoesAcessoLoja = '',
     required this.dataInicio,
     required this.dataFim,
+    this.capacidadeTotal = 0,
     required this.local,
     required this.endereco,
     this.numeroEndereco = '',
@@ -137,6 +139,7 @@ class EventoDetalhe {
           .toString(),
       dataInicio: (json['dtinicioevento'] ?? '').toString(),
       dataFim: (json['dtfimevento'] ?? '').toString(),
+      capacidadeTotal: _toInt(json['qtcapacidadeevento'] ?? 0),
       local: (json['nmlocalevento'] ?? '').toString(),
       endereco: (json['dsendlocevento'] ?? '').toString(),
       numeroEndereco: (json['nrendlocevento'] ?? '').toString(),
