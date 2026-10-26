@@ -980,12 +980,21 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           if (exibirNomeLote) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(2, 0, 2, 6),
-              child: Text(
-                'Lote: ${lote.nome}',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lote: ${lote.nome}',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    'Capacidade do lote: ${lote.qtTotal} ${lote.qtTotal == 1 ? 'ingresso' : 'ingressos'}',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1026,13 +1035,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           if (exibirNomeSetor && lote.nomeSetor.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 2, bottom: 6),
-              child: Text(
-                'Setor: ${lote.nomeSetor}',
-                style: TextStyle(
-                  color: Colors.blue.shade700,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Setor: ${lote.nomeSetor}',
+                    style: TextStyle(
+                      color: Colors.blue.shade700,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  Text(
+                    'Capacidade do setor: ${lote.qtCapacidadeSetor ?? lote.qtTotal} ${(lote.qtCapacidadeSetor ?? lote.qtTotal) == 1 ? 'ingresso' : 'ingressos'}',
+                    style: TextStyle(color: Colors.blue.shade700, fontSize: 12),
+                  ),
+                ],
               ),
             ),
           ...opcoes.map(_cardModalidadeDireta),

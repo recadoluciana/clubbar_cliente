@@ -46,6 +46,7 @@ class EventoLote {
   final int qtTotal;
   final int qtVendida;
   final int qtReservada;
+  final int? qtCapacidadeSetor;
   final int? qtCapacidadeRestante;
   final int? qtLimiteModalidade;
   final int? qtDisponivelModalidade;
@@ -80,6 +81,7 @@ class EventoLote {
     required this.qtTotal,
     required this.qtVendida,
     this.qtReservada = 0,
+    this.qtCapacidadeSetor,
     this.qtCapacidadeRestante,
     this.qtLimiteModalidade,
     this.qtDisponivelModalidade,
@@ -178,6 +180,9 @@ class EventoLote {
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
       qtReservada: _toInt(json['qtreservadalote'] ?? 0),
+      qtCapacidadeSetor: json['qtcapacidade_setor'] == null
+          ? null
+          : _toInt(json['qtcapacidade_setor']),
       qtCapacidadeRestante: json['qtdisponivel'] == null
           ? null
           : _toInt(json['qtdisponivel']),
