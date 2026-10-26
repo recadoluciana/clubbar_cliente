@@ -431,7 +431,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   EventoDetalhe? evento;
   List<EventoLote> lotes = [];
   final Map<int, int> _quantidadesModalidades = {};
-  final Map<int, int> _setoresSelecionadosPorLote = {};
 
   @override
   void initState() {
@@ -464,7 +463,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       setState(() {
         lotes = listaLotes;
         _statusLotes.clear();
-        _setoresSelecionadosPorLote.clear();
       });
       await carregarStatusLotes();
       if (mounted) {
@@ -536,7 +534,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       setState(() {
         evento = detalhe;
         lotes = listaLotes;
-        _setoresSelecionadosPorLote.clear();
         carregando = false;
       });
       await carregarStatusLotes();
@@ -968,10 +965,34 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : lote.nomeModalidade;
   }
 
-  int _idLoteGlobal(EventoLote lote) =>
-      lote.loteGlobalId == 0 ? lote.loteId : lote.loteGlobalId;
+  Future<void> _abrirModalidadesDoSetor(List<EventoLote> opcoes) async {
+    final detalhe = evento;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => _ModalidadesIngressoScreen(
+          opcoes: opcoes,
+          nomeLoja: widget.loja.nome,
+          nomeEvento: detalhe?.titulo ?? opcoes.first.nome,
+          dataHoraEvento: DateFormatters.dataHoraSimples(
+            detalhe?.dataInicio ?? '',
+          ),
+          imagemEventoUrl: detalhe?.bannerUrl ?? '',
+          taxaPercentual: widget.loja.vrtaxaing,
+          taxaMinima: widget.loja.vrtaxaminimaingresso,
+          nomeModalidade: _nomeModalidade,
+          onComprar: (lote, quantidade) =>
+              iniciarReserva(lote, quantidadeSelecionada: quantidade),
+          onEntenderTaxa: _abrirExplicacaoTaxas,
+        ),
+      ),
+    );
 
-  Widget _cardSelecaoSetor(List<EventoLote> opcoes, int loteGlobalId) {
+    if (mounted) {
+      await carregarStatusLotes();
+    }
+  }
+
+  Widget _cardSelecaoSetor(List<EventoLote> opcoes) {
     final lote = opcoes.first;
     final capacidade = lote.qtCapacidadeSetor ?? lote.qtTotal;
     final disponivel = lote.qtDisponivel;
@@ -983,9 +1004,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => setState(
-          () => _setoresSelecionadosPorLote[loteGlobalId] = lote.loteId,
-        ),
+        onTap: () => _abrirModalidadesDoSetor(opcoes),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
@@ -1043,16 +1062,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     required bool exibirNomeSetor,
   }) {
     final lote = setores.first.first;
-    final loteGlobalId = _idLoteGlobal(lote);
     final temMaisDeUmSetor = setores.length > 1;
-    final setorSelecionadoId = _setoresSelecionadosPorLote[loteGlobalId];
-    List<EventoLote>? setorSelecionado;
-    for (final opcoesDoSetor in setores) {
-      if (opcoesDoSetor.first.loteId == setorSelecionadoId) {
-        setorSelecionado = opcoesDoSetor;
-        break;
-      }
-    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1077,29 +1087,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               exibirNomeLote: false,
               exibirNomeSetor: exibirNomeSetor,
             )
-          else if (setorSelecionado == null) ...[
-            ...setores.map((opcoes) => _cardSelecaoSetor(opcoes, loteGlobalId)),
-          ] else ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () => setState(
-                  () => _setoresSelecionadosPorLote.remove(loteGlobalId),
-                ),
-                icon: const Icon(Icons.arrow_back_rounded, size: 17),
-                label: const Text('Trocar setor'),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ),
-            cardLote(
-              setorSelecionado,
-              exibirNomeLote: false,
-              exibirNomeSetor: true,
-            ),
+          else ...[
+            ...setores.map(_cardSelecaoSetor),
           ],
         ],
       ),
