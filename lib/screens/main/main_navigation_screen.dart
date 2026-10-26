@@ -121,7 +121,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna == null ||
             telaInterna is PerfilScreen ||
             telaInterna is AtendimentoCoraScreen ||
-            telaInterna is DetalheLojaScreen ||
             telaInterna is ProdutoCompartilhadoScreen ||
             telaInterna is DetalheEventoScreen;
         if (!manterNavegacaoVisivel) {
