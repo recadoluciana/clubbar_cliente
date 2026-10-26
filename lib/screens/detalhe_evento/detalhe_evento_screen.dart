@@ -110,6 +110,7 @@ class _ModalidadesIngressoScreenState
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
+      bottomNavigationBar: _rodapeModalidades(),
       body: Column(
         children: [
           ClubbarPageHeader(
@@ -124,35 +125,46 @@ class _ModalidadesIngressoScreenState
             avatarRetangular: true,
             corTitulo: Colors.black87,
             maxLinhasTitulo: 2,
+            conteudoInferior: nomeSetor.isEmpty
+                ? null
+                : Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.stadium_outlined,
+                            size: 16,
+                            color: Colors.blue.shade700,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Setor: $nomeSetor',
+                            style: TextStyle(
+                              color: Colors.blue.shade800,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                if (nomeSetor.isNotEmpty) ...[
-                  Text.rich(
-                    TextSpan(
-                      style: TextStyle(color: Colors.blue.shade700),
-                      children: [
-                        const TextSpan(
-                          text: 'Setor: ',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        TextSpan(
-                          text: nomeSetor,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
                 if (descricaoSetor.isNotEmpty && !descricaoPadrao) ...[
                   Text(
                     descricaoSetor,
@@ -164,32 +176,64 @@ class _ModalidadesIngressoScreenState
                   (opcao) =>
                       _cardModalidade(opcao, vendaDisponivel: vendaDisponivel),
                 ),
-                const SizedBox(height: 4),
-                Center(
-                  child: TextButton.icon(
-                    onPressed: widget.onEntenderTaxa,
-                    icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                    label: const Text(
-                      'Entenda nossa taxa',
-                      style: TextStyle(fontWeight: FontWeight.normal),
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      textStyle: const TextStyle(fontSize: 12),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 12),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _rodapeModalidades() {
+    final corRodape = Theme.of(context).colorScheme.primary;
+    final estilo = TextButton.styleFrom(
+      foregroundColor: corRodape,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+      minimumSize: Size.zero,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
+
+    return SafeArea(
+      top: false,
+      child: Material(
+        color: Colors.white,
+        elevation: 8,
+        child: SizedBox(
+          height: 44,
+          child: Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            const PoliticaCompraScreen(tipo: 'INGRESSO'),
+                      ),
+                    ),
+                    icon: const Icon(Icons.policy_outlined, size: 17),
+                    label: const Text('Política de compra'),
+                    style: estilo,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: widget.onEntenderTaxa,
+                    icon: const Icon(Icons.receipt_long_outlined, size: 17),
+                    label: const Text('Entenda nossa taxa'),
+                    style: estilo,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -271,7 +315,7 @@ class _ModalidadesIngressoScreenState
           children: [
             Text(
               widget.nomeModalidade(lote),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
             _informacoesMeiaEntrada(
               mostrarQuemTemDireito: ehMeiaEntrada,
