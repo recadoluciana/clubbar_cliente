@@ -1823,12 +1823,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final unicoLoteGlobal = lotesGlobais.length == 1
         ? lotesGlobais.first.first.first
         : null;
-    final capacidadeDoEvento = ev?.capacidadeTotal ?? 0;
     final capacidadeExibida = unicoLoteGlobal == null
         ? 0
-        : capacidadeDoEvento > 0
-        ? capacidadeDoEvento
-        : unicoLoteGlobal.qtTotal;
+        : lotesGlobais.first.fold<int>(
+            0,
+            (total, opcoesDoSetor) =>
+                total +
+                (opcoesDoSetor.first.qtCapacidadeSetor ??
+                    opcoesDoSetor.first.qtTotal),
+          );
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
