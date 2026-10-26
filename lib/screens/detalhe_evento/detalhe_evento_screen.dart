@@ -10,7 +10,6 @@ import '../../services/main_navigation_controller.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
-import '../../widgets/clubbar_contact_links.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../core/theme/app_colors.dart';
@@ -1654,82 +1653,129 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   Widget _rodapeEvento() {
-    final detalhe = evento;
     final corRodape = Theme.of(context).colorScheme.primary;
-    final emailEstabelecimento = _primeiroContato(
-      detalhe?.emailEstabelecimento,
-      widget.loja.emailContato,
-    );
-    final whatsappEstabelecimento = _primeiroContato(
-      detalhe?.whatsappEstabelecimento,
-      widget.loja.whatsapp,
-      widget.loja.nrtelloja,
-    );
-
-    return Container(
-      decoration: BoxDecoration(
+    return SafeArea(
+      top: false,
+      child: Material(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 2, 8, 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: TextButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const PoliticaCompraScreen(tipo: 'INGRESSO'),
-                    ),
-                  ),
-                  icon: const Icon(Icons.policy_outlined, size: 18),
-                  label: const Text(
-                    'Política de compra de ingresso',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    foregroundColor: corRodape,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
+        elevation: 8,
+        child: SizedBox(
+          height: 44,
+          child: Center(
+            child: TextButton.icon(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
                 ),
               ),
-              if (detalhe != null)
-                Center(
-                  child: ClubbarContactLinks(
-                    emailEstabelecimento: emailEstabelecimento,
-                    whatsappEstabelecimento: whatsappEstabelecimento,
-                    emailEvento: detalhe.emailEvento,
-                    whatsappEvento: detalhe.whatsappEvento,
-                    mostrarContatoEvento: true,
-                    centralizado: true,
-                    tamanhoFonteLinks: 12,
-                    tituloEmNegrito: false,
-                    cor: corRodape,
-                  ),
+              icon: const Icon(Icons.policy_outlined, size: 18),
+              label: const Text('Política de compra de ingresso'),
+              style: TextButton.styleFrom(
+                foregroundColor: corRodape,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
                 ),
-            ],
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _abrirContato(Uri uri) async {
+    final abriu = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!abriu && mounted) {
+      AppSnackBar.erro(context, 'Não foi possível abrir este contato.');
+    }
+  }
+
+  Widget _faixaSituacaoEContato(EventoDetalhe detalhe) {
+    final email = _primeiroContato(
+      detalhe.emailEvento,
+      detalhe.emailEstabelecimento,
+      widget.loja.emailContato,
+    );
+    final whatsapp = _primeiroContato(
+      detalhe.whatsappEvento,
+      detalhe.whatsappEstabelecimento,
+      _primeiroContato(widget.loja.whatsapp, widget.loja.nrtelloja),
+    );
+    final numeroWhatsApp = whatsapp.replaceAll(RegExp(r'\D'), '');
+    final whatsappComDdi =
+        numeroWhatsApp.length == 10 || numeroWhatsApp.length == 11
+        ? '55$numeroWhatsApp'
+        : numeroWhatsApp;
+    final temContato = email.isNotEmpty || whatsappComDdi.isNotEmpty;
+
+    if (!detalhe.jaIniciado && !temContato) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 2,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          if (detalhe.jaIniciado)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                'Evento já iniciado',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          if (temContato)
+            const Text(
+              'Fale com o organizador',
+              style: TextStyle(fontSize: 11, color: Colors.black87),
+            ),
+          if (email.isNotEmpty)
+            TextButton.icon(
+              onPressed: () =>
+                  _abrirContato(Uri(scheme: 'mailto', path: email)),
+              icon: const Icon(Icons.email_outlined, size: 15),
+              label: const Text('E-mail'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.amber.shade900,
+                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 2),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(fontSize: 11),
+              ),
+            ),
+          if (whatsappComDdi.isNotEmpty)
+            TextButton.icon(
+              onPressed: () =>
+                  _abrirContato(Uri.parse('https://wa.me/$whatsappComDdi')),
+              icon: const Icon(Icons.chat_outlined, size: 15),
+              label: const Text('WhatsApp'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.amber.shade900,
+                padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 2),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(fontSize: 11),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -1935,30 +1981,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   'Classificação etária: ${ev.classificacaoEtaria}',
                             ),
                           ],
-                          if (ev.jaIniciado) ...[
-                            const SizedBox(height: 8),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  'Evento já iniciado',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          _faixaSituacaoEContato(ev),
                           const SizedBox(height: 10),
                           Text(
                             formatarDataHora(ev.dataInicio),
