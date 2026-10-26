@@ -1093,8 +1093,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              Icon(Icons.stadium_outlined, color: Colors.blue.shade700),
-              const SizedBox(width: 10),
+              SizedBox(
+                width: 48,
+                height: 56,
+                child: Center(
+                  child: Icon(
+                    Icons.stadium_outlined,
+                    color: Colors.blue.shade700,
+                    size: 28,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
