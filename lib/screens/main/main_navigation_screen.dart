@@ -70,7 +70,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         child: InkWell(
           onTap: onTap ?? () => _aoTocarNaAba(index),
           child: SizedBox(
-            height: 56,
+            height: 46,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -81,9 +81,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     IconTheme(
                       data: IconThemeData(
                         color: corIcone,
-                        size: selecionado ? 23 : 22,
+                        size: selecionado ? 21 : 20,
                       ),
-                      child: SizedBox(height: 25, child: Center(child: icone)),
+                      child: SizedBox(height: 23, child: Center(child: icone)),
                     ),
 
                     // Espaço bem pequeno entre ícone e texto.
@@ -96,7 +96,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: corTexto,
-                        fontSize: 11,
+                        fontSize: 10,
                         height: 1,
                         fontWeight: selecionado
                             ? FontWeight.w700

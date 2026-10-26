@@ -118,14 +118,14 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
           onTap: widget.onTap ?? _mostrarDetalhes,
           child: SizedBox(
             width: double.infinity,
-            height: 56,
+            height: 46,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                  width: 25,
-                  height: 25,
+                  width: 23,
+                  height: 23,
                   child: Image.asset(
                     'assets/images/corujao.png',
                     fit: BoxFit.contain,
@@ -139,7 +139,7 @@ class _ApiStatusIndicatorState extends State<ApiStatusIndicator> {
                   maxLines: 1,
                   style: TextStyle(
                     color: Colors.black87,
-                    fontSize: 11,
+                    fontSize: 10,
                     height: 1,
                     fontWeight: FontWeight.w500,
                   ),
