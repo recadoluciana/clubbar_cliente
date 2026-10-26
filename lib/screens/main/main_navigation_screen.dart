@@ -121,8 +121,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna == null ||
             telaInterna is PerfilScreen ||
             telaInterna is AtendimentoCoraScreen ||
-            telaInterna is ProdutoCompartilhadoScreen ||
-            telaInterna is DetalheEventoScreen;
+            telaInterna is ProdutoCompartilhadoScreen;
         if (!manterNavegacaoVisivel) {
           return const SizedBox.shrink();
         }

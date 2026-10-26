@@ -1752,9 +1752,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? lotesGlobais.first.first.first
         : null;
     final capacidadeDoEvento = ev?.capacidadeTotal ?? 0;
+    final capacidadeExibida = unicoLoteGlobal == null
+        ? 0
+        : capacidadeDoEvento > 0
+        ? capacidadeDoEvento
+        : unicoLoteGlobal.qtTotal;
     final tituloIngressos = unicoLoteGlobal == null
         ? 'Ingressos'
-        : 'Ingressos · ${unicoLoteGlobal.nome} (${capacidadeDoEvento > 0 ? capacidadeDoEvento : unicoLoteGlobal.qtTotal})';
+        : 'Ingressos · ${unicoLoteGlobal.nome} ($capacidadeExibida ${capacidadeExibida == 1 ? 'ingresso' : 'ingressos'})';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
@@ -2065,7 +2070,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   child: Text(
                                     tituloIngressos,
                                     style: TextStyle(
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -2082,7 +2087,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           ),
                                         )
                                       : const Icon(Icons.refresh, size: 18),
-                                  label: const Text('Atualizar ingressos'),
+                                  label: const Text('Atualizar'),
                                 ),
                               ],
                             ),
