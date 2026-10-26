@@ -1132,22 +1132,27 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           if (exibirNomeSetor && lote.nomeSetor.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(left: 2, bottom: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Setor: ${lote.nomeSetor}',
-                    style: TextStyle(
-                      color: Colors.blue.shade700,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
+              child: Text.rich(
+                TextSpan(
+                  style: TextStyle(color: Colors.blue.shade700),
+                  children: [
+                    TextSpan(
+                      text: 'Setor ${lote.nomeSetor}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
-                  ),
-                  Text(
-                    'Capacidade do setor: ${lote.qtCapacidadeSetor ?? lote.qtTotal} ${(lote.qtCapacidadeSetor ?? lote.qtTotal) == 1 ? 'ingresso' : 'ingressos'}',
-                    style: TextStyle(color: Colors.blue.shade700, fontSize: 12),
-                  ),
-                ],
+                    TextSpan(
+                      text:
+                          ' (${lote.qtCapacidadeSetor ?? lote.qtTotal} ${(lote.qtCapacidadeSetor ?? lote.qtTotal) == 1 ? 'ingresso' : 'ingressos'})',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ...opcoes.map(_cardModalidadeDireta),
