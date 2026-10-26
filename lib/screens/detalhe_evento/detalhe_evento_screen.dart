@@ -1063,21 +1063,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           if (exibirNomeLote) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(2, 0, 2, 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Lote: ${lote.nome}',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  Text(
-                    'Capacidade do lote: ${lote.qtTotal} ${lote.qtTotal == 1 ? 'ingresso' : 'ingressos'}',
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                  ),
-                ],
+              child: Text(
+                lote.nome,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
           ],
@@ -1088,13 +1079,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               exibirNomeSetor: exibirNomeSetor,
             )
           else if (setorSelecionado == null) ...[
-            const Padding(
-              padding: EdgeInsets.only(left: 2, bottom: 6),
-              child: Text(
-                'Selecione um setor para ver as modalidades',
-                style: TextStyle(fontSize: 13, color: Colors.black54),
-              ),
-            ),
             ...setores.map((opcoes) => _cardSelecaoSetor(opcoes, loteGlobalId)),
           ] else ...[
             Align(
@@ -1735,6 +1719,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         }
         return inicioA.compareTo(inicioB);
       });
+    final lotesGlobais = _lotesGlobaisAgrupados;
+    final unicoLoteGlobal = lotesGlobais.length == 1
+        ? lotesGlobais.first.first.first
+        : null;
+    final capacidadeDoEvento = ev?.capacidadeTotal ?? 0;
+    final tituloIngressos = unicoLoteGlobal == null
+        ? 'Ingressos'
+        : 'Ingressos · ${unicoLoteGlobal.nome} (${capacidadeDoEvento > 0 ? capacidadeDoEvento : unicoLoteGlobal.qtTotal})';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
@@ -2041,9 +2033,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             key: _ingressosKey,
                             child: Row(
                               children: [
-                                const Expanded(
+                                Expanded(
                                   child: Text(
-                                    'Ingressos',
+                                    tituloIngressos,
                                     style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
@@ -2067,38 +2059,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 18),
-
-                          if (ev.capacidadeTotal > 0)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.groups_2_outlined,
-                                    size: 18,
-                                    color: Colors.blue.shade700,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Capacidade total do evento: ${ev.capacidadeTotal} ${ev.capacidadeTotal == 1 ? 'pessoa' : 'pessoas'}',
-                                    style: TextStyle(
-                                      color: Colors.blue.shade700,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          const SizedBox(height: 12),
 
                           if (lotes.isEmpty)
                             estadoVazioLotes()
                           else ...[
-                            ..._lotesGlobaisAgrupados.map(
+                            ...lotesGlobais.map(
                               (setores) => cardLoteGlobal(
                                 setores,
-                                exibirNomeLote: true,
+                                exibirNomeLote: lotesGlobais.length > 1,
                                 exibirNomeSetor: true,
                               ),
                             ),
