@@ -1973,7 +1973,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                             const SizedBox(height: 10),
                             SizedBox(
-                              height: 148,
+                              height: 76,
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: atracoesOrdenadas.length,
@@ -1982,56 +1982,47 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 itemBuilder: (context, index) {
                                   final atracao = atracoesOrdenadas[index];
                                   return SizedBox(
-                                    width: 128,
+                                    width: 156,
                                     child: Material(
                                       color: Colors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(12),
                                       child: InkWell(
                                         onTap: () =>
                                             _abrirDetalhesAtracao(atracao),
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(12),
                                         child: Container(
-                                          padding: const EdgeInsets.all(8),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 8,
+                                          ),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(
-                                              16,
+                                              12,
                                             ),
                                             border: Border.all(
                                               color: Colors.blue.shade600,
                                               width: 1.4,
                                             ),
                                           ),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                          child: Row(
                                             children: [
-                                              Text(
-                                                atracao.nome,
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(
-                                                  color: Colors.black87,
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w900,
-                                                  height: 1.15,
-                                                ),
-                                                maxLines: 2,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              const SizedBox(height: 6),
                                               _fotoAtracao(
                                                 atracao,
-                                                tamanho: 56,
+                                                tamanho: 44,
                                               ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                atracao.estilos.join(' • '),
-                                                textAlign: TextAlign.center,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: TextStyle(
-                                                  color: Colors.blue.shade700,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w700,
+                                              const SizedBox(width: 9),
+                                              Expanded(
+                                                child: Text(
+                                                  atracao.nome,
+                                                  style: const TextStyle(
+                                                    color: Colors.black87,
+                                                    fontSize: 13,
+                                                    fontWeight: FontWeight.w900,
+                                                    height: 1.15,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
                                               ),
                                             ],
