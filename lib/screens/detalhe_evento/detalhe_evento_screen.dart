@@ -323,11 +323,27 @@ class _ModalidadesIngressoScreenState
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
+                  child: Text.rich(
+                    TextSpan(
+                      style: const TextStyle(color: Colors.black),
+                      children: [
+                        TextSpan(
+                          text: ValueFormatters.moeda(lote.preco),
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                              ' (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
