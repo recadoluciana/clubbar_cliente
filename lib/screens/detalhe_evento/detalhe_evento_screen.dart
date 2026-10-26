@@ -1230,7 +1230,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           children: [
             Text(
               _nomeModalidade(lote),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
             _informacoesMeiaEntrada(
               mostrarQuemTemDireito: ehMeiaEntrada,
@@ -1293,12 +1293,40 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    '${ValueFormatters.moeda(lote.preco)} (+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  child: Wrap(
+                    spacing: 5,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        ValueFormatters.moeda(lote.preco),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _abrirExplicacaoTaxas,
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.blue.shade700,
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          textStyle: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                        child: const Text('Entenda a taxa'),
+                      ),
+                      Text(
+                        '(+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 _controleQuantidadeModalidade(
