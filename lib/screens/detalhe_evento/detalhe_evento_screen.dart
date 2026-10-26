@@ -324,7 +324,7 @@ class _ModalidadesIngressoScreenState
             if (ehMeiaLegal) ...[
               const SizedBox(height: 6),
               Text(
-                'Cota legal do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'} (${lote.percentualCotaLegal == lote.percentualCotaLegal.roundToDouble() ? lote.percentualCotaLegal.toInt() : lote.percentualCotaLegal}% da capacidade)',
+                'Cota deste setor: ${lote.cotaLegalSetor} ingresso${lote.cotaLegalSetor == 1 ? '' : 's'} (${lote.percentualCotaLegal == lote.percentualCotaLegal.roundToDouble() ? lote.percentualCotaLegal.toInt() : lote.percentualCotaLegal}% da capacidade do setor)',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -958,9 +958,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             mensagem.toLowerCase().contains('cota legal')) {
           AppSnackBar.erro(
             context,
-            'A cota legal de meia-entrada foi atingida. '
-            'Cota do evento: ${lote.cotaLegal} ingresso${lote.cotaLegal == 1 ? '' : 's'}; '
-            'disponíveis agora: ${lote.qtDisponivelCotaLegal}.',
+            'A cota legal de meia-entrada deste setor foi atingida. '
+            'Cota do setor: ${lote.cotaLegalSetor} ingresso${lote.cotaLegalSetor == 1 ? '' : 's'}; '
+            'disponíveis agora: ${lote.qtDisponivelCotaLegalSetor}.',
           );
         } else {
           AppSnackBar.erro(context, mensagem);

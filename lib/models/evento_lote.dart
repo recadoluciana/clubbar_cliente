@@ -42,6 +42,9 @@ class EventoLote {
   final double percentualCotaLegal;
   final int qtVendidaCotaLegal;
   final int qtReservadaCotaLegal;
+  final int cotaLegalSetor;
+  final int qtVendidaCotaLegalSetor;
+  final int qtReservadaCotaLegalSetor;
   final double preco;
   final int qtTotal;
   final int qtVendida;
@@ -77,6 +80,9 @@ class EventoLote {
     this.percentualCotaLegal = 40,
     this.qtVendidaCotaLegal = 0,
     this.qtReservadaCotaLegal = 0,
+    this.cotaLegalSetor = 0,
+    this.qtVendidaCotaLegalSetor = 0,
+    this.qtReservadaCotaLegalSetor = 0,
     required this.preco,
     required this.qtTotal,
     required this.qtVendida,
@@ -104,15 +110,24 @@ class EventoLote {
     return disponivel < 0 ? 0 : disponivel;
   }
 
+  int get qtDisponivelCotaLegalSetor {
+    final disponivel =
+        cotaLegalSetor - qtVendidaCotaLegalSetor - qtReservadaCotaLegalSetor;
+    return disponivel < 0 ? 0 : disponivel;
+  }
+
   int get qtDisponivelParaCompra {
     final limiteModalidade = qtDisponivelModalidade;
     final disponibilidadeDaModalidade = limiteModalidade == null
         ? qtDisponivel
         : (limiteModalidade < qtDisponivel ? limiteModalidade : qtDisponivel);
     if (!aplicaCotaLegal) return disponibilidadeDaModalidade;
-    return qtDisponivelCotaLegal < disponibilidadeDaModalidade
+    final limiteGlobal = qtDisponivelCotaLegal < disponibilidadeDaModalidade
         ? qtDisponivelCotaLegal
         : disponibilidadeDaModalidade;
+    return qtDisponivelCotaLegalSetor < limiteGlobal
+        ? qtDisponivelCotaLegalSetor
+        : limiteGlobal;
   }
 
   bool get temReservasTemporarias => qtReservada > 0;
@@ -176,6 +191,9 @@ class EventoLote {
           (json['percentualcotalegal'] as num?)?.toDouble() ?? 40,
       qtVendidaCotaLegal: _toInt(json['qtvendidacotalegal'] ?? 0),
       qtReservadaCotaLegal: _toInt(json['qtreservadacotalegal'] ?? 0),
+      cotaLegalSetor: _toInt(json['cotalegalsetor'] ?? 0),
+      qtVendidaCotaLegalSetor: _toInt(json['qtvendidacotalegalsetor'] ?? 0),
+      qtReservadaCotaLegalSetor: _toInt(json['qtreservadacotalegalsetor'] ?? 0),
       preco: _toDouble(json['vrprecolote'] ?? 0),
       qtTotal: _toInt(json['qttotallote'] ?? 0),
       qtVendida: _toInt(json['qtvendidalote'] ?? 0),
