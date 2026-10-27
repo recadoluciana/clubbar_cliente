@@ -58,6 +58,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     bool? estaSelecionado,
     VoidCallback? onTap,
     bool exibirTexto = true,
+    bool horizontal = false,
   }) {
     final selecionado = estaSelecionado ?? currentIndex == index;
 
@@ -74,38 +75,71 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconTheme(
-                      data: IconThemeData(
-                        color: corIcone,
-                        size: selecionado ? 21 : 20,
+                horizontal
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconTheme(
+                            data: IconThemeData(
+                              color: corIcone,
+                              size: selecionado ? 21 : 20,
+                            ),
+                            child: SizedBox(
+                              width: 28,
+                              height: 24,
+                              child: Center(child: icone),
+                            ),
+                          ),
+                          if (exibirTexto) ...[
+                            const SizedBox(width: 7),
+                            Text(
+                              texto,
+                              style: TextStyle(
+                                color: corTexto,
+                                fontSize: 13,
+                                fontWeight: selecionado
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconTheme(
+                            data: IconThemeData(
+                              color: corIcone,
+                              size: selecionado ? 21 : 20,
+                            ),
+                            child: SizedBox(
+                              height: 23,
+                              child: Center(child: icone),
+                            ),
+                          ),
+                          if (exibirTexto) ...[
+                            // Espaço bem pequeno entre ícone e texto.
+                            const SizedBox(height: 1),
+                            Text(
+                              texto,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: corTexto,
+                                fontSize: 10,
+                                height: 1,
+                                fontWeight: selecionado
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      child: SizedBox(height: 23, child: Center(child: icone)),
-                    ),
-
-                    if (exibirTexto) ...[
-                      // Espaço bem pequeno entre ícone e texto.
-                      const SizedBox(height: 1),
-                      Text(
-                        texto,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: corTexto,
-                          fontSize: 10,
-                          height: 1,
-                          fontWeight: selecionado
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
               ],
             ),
           ),
@@ -163,7 +197,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     texto: 'Home',
                     estaSelecionado: homeSelecionada,
-                    exibirTexto: !exibirNavegacaoReduzida,
+                    horizontal: exibirNavegacaoReduzida,
                   ),
 
                   if (!exibirNavegacaoReduzida)
@@ -183,7 +217,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     texto: 'Carteira',
                     estaSelecionado: carteiraSelecionada,
-                    exibirTexto: !exibirNavegacaoReduzida,
+                    horizontal: exibirNavegacaoReduzida,
                   ),
 
                   if (!exibirNavegacaoReduzida)
