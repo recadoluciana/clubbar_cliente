@@ -5,6 +5,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/cart_badge_notifier.dart';
+import '../../services/main_navigation_controller.dart';
 import '../../utils/value_formatters.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
@@ -59,8 +60,13 @@ class ItemCarrinhoAgrupado {
 
 class CarrinhoScreen extends StatefulWidget {
   final Loja loja;
+  final bool abertaNaNavegacaoPrincipal;
 
-  const CarrinhoScreen({super.key, required this.loja});
+  const CarrinhoScreen({
+    super.key,
+    required this.loja,
+    this.abertaNaNavegacaoPrincipal = false,
+  });
 
   @override
   State<CarrinhoScreen> createState() => _CarrinhoScreenState();
@@ -944,6 +950,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         iconeTitulo: Icons.shopping_cart_outlined,
         mostrarVoltar: true,
         mostrarSessao: false,
+        onVoltar: widget.abertaNaNavegacaoPrincipal
+            ? MainNavigationController.fecharTelaInterna
+            : null,
       ),
 
       body: carregando

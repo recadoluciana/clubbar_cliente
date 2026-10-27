@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../carrinho/carrinho_screen.dart';
 import '../carteira/carteira_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
@@ -158,6 +159,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna is AtendimentoCoraScreen ||
             telaInterna is ProdutoCompartilhadoScreen ||
             telaInterna is DetalheLojaScreen ||
+            telaInterna is CarrinhoScreen ||
             telaInterna is CarteiraScreen;
         if (!manterNavegacaoVisivel) {
           return const SizedBox.shrink();
@@ -167,11 +169,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         final carteiraDaLoja =
             telaInterna is CarteiraScreen &&
             telaInterna.lojaSelecionadaId != null;
+        final carrinhoDaLoja = telaInterna is CarrinhoScreen;
         final exibirQuantidadeDaLoja =
-            telaInterna is DetalheLojaScreen || carteiraDaLoja;
+            telaInterna is DetalheLojaScreen ||
+            carteiraDaLoja ||
+            carrinhoDaLoja;
         final homeSelecionada =
-            currentIndex == 0 && !coraAtiva && !carteiraDaLoja;
-        final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
+            currentIndex == 0 &&
+            !coraAtiva &&
+            !carteiraDaLoja &&
+            !carrinhoDaLoja;
+        final carrinhoSelecionado =
+            (currentIndex == 1 || carrinhoDaLoja) && !coraAtiva;
         final carteiraSelecionada =
             (currentIndex == 2 || carteiraDaLoja) && !coraAtiva;
 
@@ -214,6 +223,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     texto: 'Carrinho',
                     estaSelecionado: carrinhoSelecionado,
+                    onTap: telaInterna is DetalheLojaScreen
+                        ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                        : null,
                   ),
 
                   _itemBarraNavegacao(
@@ -274,6 +286,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         lojaSelecionadaId: loja.id,
         nomeLojaSelecionada: loja.nome,
       ),
+    );
+  }
+
+  Future<void> _abrirCarrinhoDaLoja(Loja loja) async {
+    final logado = await _estaLogado();
+    if (!mounted) return;
+
+    if (!logado) {
+      AppSnackBar.info(context, 'Faça login para acessar seu carrinho');
+      return;
+    }
+
+    MainNavigationController.abrirTela(
+      CarrinhoScreen(loja: loja, abertaNaNavegacaoPrincipal: true),
     );
   }
 
