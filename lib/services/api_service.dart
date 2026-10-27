@@ -165,6 +165,29 @@ class ApiService {
     }
   }
 
+  /// Obtém o Client ID público do Google em tempo de execução.
+  ///
+  /// Em builds web, variáveis do Railway não viram `--dart-define`; por isso
+  /// esta configuração vem da API, que expõe apenas o identificador público.
+  Future<String?> obterGoogleOAuthClientId() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/auth/social-config'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode != 200) return null;
+
+      final dados = jsonDecode(utf8.decode(response.bodyBytes));
+      if (dados is! Map<String, dynamic>) return null;
+
+      final clientId = dados['google_client_id']?.toString().trim();
+      return clientId == null || clientId.isEmpty ? null : clientId;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<AuthResponse> loginSocial({
     required String provedor,
     required String idToken,

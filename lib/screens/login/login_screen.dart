@@ -210,13 +210,16 @@ class _LoginScreenState extends State<LoginScreen> {
       String? authorizationCode;
 
       if (provedor == 'google') {
-        if (AppConfig.googleOAuthClientId.trim().isEmpty) {
+        final googleOAuthClientId =
+            (await apiService.obterGoogleOAuthClientId())?.trim() ??
+            AppConfig.googleOAuthClientId.trim();
+        if (googleOAuthClientId.isEmpty) {
           throw Exception('O login com Google ainda não está configurado.');
         }
 
         final google = GoogleSignIn(
           scopes: const ['email'],
-          clientId: AppConfig.googleOAuthClientId,
+          clientId: googleOAuthClientId,
         );
         final conta = await google.signIn();
         if (conta == null) return;
@@ -450,15 +453,23 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 20),
                             Row(
                               children: [
-                                Expanded(child: Divider(color: Colors.grey.shade300)),
+                                Expanded(
+                                  child: Divider(color: Colors.grey.shade300),
+                                ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: Text(
                                     'ou entre com',
-                                    style: TextStyle(color: Colors.grey.shade600),
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                    ),
                                   ),
                                 ),
-                                Expanded(child: Divider(color: Colors.grey.shade300)),
+                                Expanded(
+                                  child: Divider(color: Colors.grey.shade300),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 12),
@@ -469,12 +480,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                     onPressed: carregandoSocial || carregando
                                         ? null
                                         : () => fazerLoginSocial('google'),
-                                    icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
+                                    icon: const Icon(
+                                      Icons.g_mobiledata_rounded,
+                                      size: 28,
+                                    ),
                                     label: const Text('Google'),
                                     style: OutlinedButton.styleFrom(
                                       minimumSize: const Size(0, 48),
                                       foregroundColor: Colors.grey.shade800,
-                                      side: BorderSide(color: Colors.grey.shade300),
+                                      side: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(14),
                                       ),
@@ -492,7 +508,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     style: OutlinedButton.styleFrom(
                                       minimumSize: const Size(0, 48),
                                       foregroundColor: Colors.black,
-                                      side: BorderSide(color: Colors.grey.shade300),
+                                      side: BorderSide(
+                                        color: Colors.grey.shade300,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(14),
                                       ),
