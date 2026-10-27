@@ -167,6 +167,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         // Na própria aba "Meu Carrinho", o atalho para o carrinho é redundante.
         // Mantemos apenas os destinos úteis para o cliente continuar navegando.
         final ocultarAtalhoCarrinho = currentIndex == 1;
+        final ocultarAtalhoCarteira = currentIndex == 2;
         final homeSelecionada = currentIndex == 0 && !coraAtiva;
         final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
         final carteiraSelecionada = currentIndex == 2 && !coraAtiva;
@@ -213,15 +214,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       estaSelecionado: carrinhoSelecionado,
                     ),
 
-                  _itemBarraNavegacao(
-                    index: 2,
-                    icone: _iconeCarteiraComBadge(
-                      selecionado: carteiraSelecionada,
+                  if (!ocultarAtalhoCarteira)
+                    _itemBarraNavegacao(
+                      index: 2,
+                      icone: _iconeCarteiraComBadge(
+                        selecionado: carteiraSelecionada,
+                      ),
+                      texto: 'Carteira',
+                      estaSelecionado: carteiraSelecionada,
+                      horizontal: exibirNavegacaoReduzida,
                     ),
-                    texto: 'Carteira',
-                    estaSelecionado: carteiraSelecionada,
-                    horizontal: exibirNavegacaoReduzida,
-                  ),
 
                   if (!exibirNavegacaoReduzida)
                     Expanded(
