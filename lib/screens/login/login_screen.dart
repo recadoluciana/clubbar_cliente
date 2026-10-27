@@ -484,7 +484,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       Icons.g_mobiledata_rounded,
                                       size: 28,
                                     ),
-                                    label: const Text('Google'),
+                                    label: const Text('Conta Google'),
                                     style: OutlinedButton.styleFrom(
                                       minimumSize: const Size(0, 48),
                                       foregroundColor: Colors.grey.shade800,
@@ -504,7 +504,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ? null
                                         : () => fazerLoginSocial('apple'),
                                     icon: const Icon(Icons.apple),
-                                    label: const Text('Apple'),
+                                    label: const Text('Conta Apple'),
                                     style: OutlinedButton.styleFrom(
                                       minimumSize: const Size(0, 48),
                                       foregroundColor: Colors.black,
