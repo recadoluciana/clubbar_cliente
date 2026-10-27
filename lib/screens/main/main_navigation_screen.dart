@@ -163,7 +163,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         }
 
         final coraAtiva = telaInterna is AtendimentoCoraScreen;
-        final exibirNavegacaoReduzida = telaInterna is DetalheLojaScreen;
+        final exibirQuantidadeDaLoja = telaInterna is DetalheLojaScreen;
         final homeSelecionada = currentIndex == 0 && !coraAtiva;
         final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
         final carteiraSelecionada = currentIndex == 2 && !coraAtiva;
@@ -197,18 +197,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     texto: 'Home',
                     estaSelecionado: homeSelecionada,
-                    horizontal: exibirNavegacaoReduzida,
                   ),
 
-                  if (!exibirNavegacaoReduzida)
-                    _itemBarraNavegacao(
-                      index: 1,
-                      icone: _iconeCarrinhoComBadge(
-                        selecionado: carrinhoSelecionado,
-                      ),
-                      texto: 'Carrinho',
-                      estaSelecionado: carrinhoSelecionado,
+                  _itemBarraNavegacao(
+                    index: 1,
+                    icone: _iconeCarrinhoComBadge(
+                      selecionado: carrinhoSelecionado,
+                      usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
                     ),
+                    texto: 'Carrinho',
+                    estaSelecionado: carrinhoSelecionado,
+                  ),
 
                   _itemBarraNavegacao(
                     index: 2,
@@ -217,18 +216,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                     texto: 'Carteira',
                     estaSelecionado: carteiraSelecionada,
-                    horizontal: exibirNavegacaoReduzida,
                   ),
 
-                  if (!exibirNavegacaoReduzida)
-                    Expanded(
-                      child: ApiStatusIndicator(
-                        selecionado: coraAtiva,
-                        onTap: () => MainNavigationController.abrirTela(
-                          const AtendimentoCoraScreen(),
-                        ),
+                  Expanded(
+                    child: ApiStatusIndicator(
+                      selecionado: coraAtiva,
+                      onTap: () => MainNavigationController.abrirTela(
+                        const AtendimentoCoraScreen(),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
@@ -534,9 +531,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     super.dispose();
   }
 
-  Widget _iconeCarrinhoComBadge({required bool selecionado}) {
+  Widget _iconeCarrinhoComBadge({
+    required bool selecionado,
+    bool usarQuantidadeDaLoja = false,
+  }) {
     return ValueListenableBuilder<int>(
-      valueListenable: CartBadgeNotifier.totalItens,
+      valueListenable: usarQuantidadeDaLoja
+          ? CartBadgeNotifier.itensDaLojaSelecionada
+          : CartBadgeNotifier.totalItens,
       builder: (context, totalItensCarrinho, _) {
         final icone = Icon(
           selecionado ? Icons.shopping_cart : Icons.shopping_cart_outlined,

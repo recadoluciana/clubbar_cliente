@@ -9,9 +9,9 @@ import '../../models/loja_horario.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../agenda/agenda_eventos_screen.dart';
-import '../carrinho/carrinho_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
+import '../../services/cart_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import 'conteudo_loja_screen.dart';
@@ -29,14 +29,13 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
   final ApiService _apiService = ApiService();
   final AuthStorage _authStorage = AuthStorage();
   late final Future<List<LojaHorario>> _horariosFuture;
-  int _quantidadeCarrinhoLoja = 0;
-
   Loja get loja => widget.loja;
 
   @override
   void initState() {
     super.initState();
     _horariosFuture = _apiService.buscarHorariosLoja(loja.id);
+    CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
     _carregarQuantidadeCarrinhoLoja();
   }
 
@@ -44,7 +43,7 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
     try {
       final clienteId = await _authStorage.obterClienteId();
       if (clienteId == null || clienteId == 0) {
-        if (mounted) setState(() => _quantidadeCarrinhoLoja = 0);
+        CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
         return;
       }
 
@@ -61,19 +60,12 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
             )
           : 0;
 
-      if (mounted) setState(() => _quantidadeCarrinhoLoja = quantidade);
+      if (mounted) {
+        CartBadgeNotifier.atualizarItensDaLojaSelecionada(quantidade);
+      }
     } catch (_) {
-      if (mounted) setState(() => _quantidadeCarrinhoLoja = 0);
+      if (mounted) CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
     }
-  }
-
-  Future<void> _abrirCarrinhoDaLoja() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: loja)),
-    );
-
-    if (mounted) await _carregarQuantidadeCarrinhoLoja();
   }
 
   Future<void> abrirInstagram(BuildContext context) async {
@@ -390,9 +382,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
         titulo: loja.nome,
         mostrarVoltar: true,
         mostrarSessao: false,
-        mostrarCarrinho: true,
-        quantidadeCarrinho: _quantidadeCarrinhoLoja,
-        onCarrinhoTap: _abrirCarrinhoDaLoja,
+        mostrarCarrinho: false,
       ),
 
       // 🔥 BODY SEM PADDING GLOBAL
