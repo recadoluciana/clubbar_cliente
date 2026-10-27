@@ -184,7 +184,18 @@ class ApiService {
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return AuthResponse.fromJson(jsonDecode(response.body));
+        final corpo = utf8.decode(response.bodyBytes).trim();
+        if (corpo.isEmpty) {
+          throw Exception('A autenticação não retornou os dados da conta.');
+        }
+
+        try {
+          return AuthResponse.fromJson(jsonDecode(corpo));
+        } on FormatException {
+          throw Exception(
+            'Não foi possível validar os dados da conta. Tente entrar novamente.',
+          );
+        }
       }
 
       throw Exception(_extrairMensagemHttp(response));
