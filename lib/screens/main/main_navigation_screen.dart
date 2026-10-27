@@ -164,10 +164,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
         final coraAtiva = telaInterna is AtendimentoCoraScreen;
         final exibirNavegacaoReduzida = telaInterna is DetalheLojaScreen;
-        // Na própria aba "Meu Carrinho", o atalho para o carrinho é redundante.
-        // Mantemos apenas os destinos úteis para o cliente continuar navegando.
-        final ocultarAtalhoCarrinho = currentIndex == 1;
-        final ocultarAtalhoCarteira = currentIndex == 2;
         final homeSelecionada = currentIndex == 0 && !coraAtiva;
         final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
         final carteiraSelecionada = currentIndex == 2 && !coraAtiva;
@@ -204,7 +200,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     horizontal: exibirNavegacaoReduzida,
                   ),
 
-                  if (!exibirNavegacaoReduzida && !ocultarAtalhoCarrinho)
+                  if (!exibirNavegacaoReduzida)
                     _itemBarraNavegacao(
                       index: 1,
                       icone: _iconeCarrinhoComBadge(
@@ -214,16 +210,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       estaSelecionado: carrinhoSelecionado,
                     ),
 
-                  if (!ocultarAtalhoCarteira)
-                    _itemBarraNavegacao(
-                      index: 2,
-                      icone: _iconeCarteiraComBadge(
-                        selecionado: carteiraSelecionada,
-                      ),
-                      texto: 'Carteira',
-                      estaSelecionado: carteiraSelecionada,
-                      horizontal: exibirNavegacaoReduzida,
+                  _itemBarraNavegacao(
+                    index: 2,
+                    icone: _iconeCarteiraComBadge(
+                      selecionado: carteiraSelecionada,
                     ),
+                    texto: 'Carteira',
+                    estaSelecionado: carteiraSelecionada,
+                    horizontal: exibirNavegacaoReduzida,
+                  ),
 
                   if (!exibirNavegacaoReduzida)
                     Expanded(
