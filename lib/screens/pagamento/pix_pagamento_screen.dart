@@ -20,6 +20,9 @@ class PixPagamentoScreen extends StatefulWidget {
   final Map<String, dynamic> pagamento;
   final int? reservaIngressoId;
   final int? clienteId;
+  /// Quando verdadeiro, o QR Code foi criado diretamente pela API do Mercado
+  /// Pago. A confirmação continua sendo feita pelo Clubbar, nunca pelo app.
+  final bool mercadoPago;
   final ApiService? apiService;
 
   const PixPagamentoScreen({
@@ -28,6 +31,7 @@ class PixPagamentoScreen extends StatefulWidget {
     required this.pagamento,
     this.reservaIngressoId,
     this.clienteId,
+    this.mercadoPago = false,
     this.apiService,
   });
 
@@ -62,7 +66,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     super.initState();
     _expiraEm = obterExpiracaoPix(
       widget.pagamento,
-      duracaoMaxima: _compraDeIngresso
+      duracaoMaxima: widget.mercadoPago || _compraDeIngresso
           ? const Duration(minutes: 15)
           : const Duration(minutes: 5),
     );
@@ -154,8 +158,11 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     _consultando = true;
 
     try {
-      final response =
-          widget.reservaIngressoId != null && widget.clienteId != null
+      final response = widget.mercadoPago
+          ? await apiService.consultarCheckoutMercadoPago(
+              preferenceId: pagamentoId,
+            )
+          : widget.reservaIngressoId != null && widget.clienteId != null
           ? await apiService.consultarReserva(
               reservaId: widget.reservaIngressoId!,
               clienteId: widget.clienteId!,

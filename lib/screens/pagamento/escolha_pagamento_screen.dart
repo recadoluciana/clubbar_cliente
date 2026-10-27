@@ -917,6 +917,27 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             percentualTaxaProduto: percentualTaxaProduto,
             entrega: entrega,
           );
+    // PIX de produtos é transparente: exibimos o QR Code dentro do Clubbar e
+    // acompanhamos a confirmação autenticada, sem depender de "Voltar para
+    // Clubbar" na página hospedada do Mercado Pago. Cartão e ingressos
+    // continuam no Checkout Pro, que é o fluxo já homologado para eles.
+    final codigoPix = resposta['pix_copia_cola']?.toString().trim() ?? '';
+    if (metodo.toUpperCase() == 'PIX' &&
+        widget.reservaIngressoId == null &&
+        codigoPix.isNotEmpty) {
+      if (!mounted) return;
+      await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PixPagamentoScreen(
+            loja: widget.loja,
+            pagamento: resposta,
+            mercadoPago: true,
+          ),
+        ),
+      );
+      return;
+    }
     final checkoutUrl = resposta['checkout_url']?.toString() ?? '';
     if (checkoutUrl.isEmpty) {
       throw Exception('Checkout Mercado Pago não retornado.');
