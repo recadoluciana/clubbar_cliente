@@ -88,7 +88,14 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  String traduzirErro(String erro) {
+  String traduzirErro(String erro, {bool preservarMensagem = false}) {
+    final mensagem = erro.replaceFirst('Exception: ', '').trim();
+    if (preservarMensagem) {
+      return mensagem.isEmpty
+          ? 'Não foi possível concluir o login. Tente novamente.'
+          : mensagem;
+    }
+
     final msg = erro.toLowerCase();
 
     if (msg.contains('login com google') ||
@@ -254,7 +261,10 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (erro) {
       if (mounted) {
-        AppSnackBar.erro(context, traduzirErro(erro.toString()));
+        AppSnackBar.erro(
+          context,
+          traduzirErro(erro.toString(), preservarMensagem: true),
+        );
       }
     } finally {
       if (mounted) setState(() => carregandoSocial = false);
