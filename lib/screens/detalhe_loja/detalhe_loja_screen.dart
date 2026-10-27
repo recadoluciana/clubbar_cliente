@@ -12,6 +12,7 @@ import '../agenda/agenda_eventos_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import 'conteudo_loja_screen.dart';
@@ -36,7 +37,9 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
     super.initState();
     _horariosFuture = _apiService.buscarHorariosLoja(loja.id);
     CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
     _carregarQuantidadeCarrinhoLoja();
+    _carregarQuantidadeCarteiraLoja();
   }
 
   Future<void> _carregarQuantidadeCarrinhoLoja() async {
@@ -65,6 +68,34 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
       }
     } catch (_) {
       if (mounted) CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    }
+  }
+
+  Future<void> _carregarQuantidadeCarteiraLoja() async {
+    try {
+      final clienteId = await _authStorage.obterClienteId();
+      if (clienteId == null || clienteId == 0) {
+        CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+        return;
+      }
+
+      final itens = await _apiService.buscarPendentes(
+        clienteId: clienteId,
+        lojaId: loja.id,
+      );
+      final quantidade = itens.fold<int>(
+        0,
+        (total, item) =>
+            total + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
+      );
+
+      if (mounted) {
+        CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(quantidade);
+      }
+    } catch (_) {
+      if (mounted) {
+        CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+      }
     }
   }
 

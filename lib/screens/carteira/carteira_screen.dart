@@ -10,7 +10,14 @@ import '../../widgets/clubbar_app_bar.dart';
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraScreen extends StatefulWidget {
-  const CarteiraScreen({super.key});
+  final int? lojaSelecionadaId;
+  final String? nomeLojaSelecionada;
+
+  const CarteiraScreen({
+    super.key,
+    this.lojaSelecionadaId,
+    this.nomeLojaSelecionada,
+  });
 
   @override
   State<CarteiraScreen> createState() => _CarteiraScreenState();
@@ -54,7 +61,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
       final itens = await apiService.buscarPendentes(
         clienteId: idCliente,
-        lojaId: 0,
+        lojaId: widget.lojaSelecionadaId ?? 0,
       );
       if (!mounted) return;
 
@@ -67,6 +74,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       });
 
       CarteiraBadgeNotifier.atualizar();
+      _atualizarBadgeDaLojaSelecionada(resumo);
     } catch (e) {
       if (!mounted) return;
 
@@ -76,6 +84,9 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         lojasResumo = [];
         carregando = false;
       });
+      if (widget.lojaSelecionadaId != null) {
+        CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+      }
     }
   }
 
@@ -87,7 +98,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
     final itens = await apiService.buscarPendentes(
       clienteId: clienteId!,
-      lojaId: 0,
+      lojaId: widget.lojaSelecionadaId ?? 0,
     );
 
     final resumo = _agruparPorLoja(itens);
@@ -100,6 +111,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     }
 
     CarteiraBadgeNotifier.atualizar();
+    _atualizarBadgeDaLojaSelecionada(resumo);
 
     final lojaAtualizada = resumo.where((l) => l['loja_id'] == lojaId).toList();
 
@@ -124,6 +136,18 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     }
 
     return itensLoja;
+  }
+
+  void _atualizarBadgeDaLojaSelecionada(List<Map<String, dynamic>> resumo) {
+    final lojaId = widget.lojaSelecionadaId;
+    if (lojaId == null) return;
+
+    final loja = resumo.cast<Map<String, dynamic>?>().firstWhere(
+      (item) => item?['loja_id'] == lojaId,
+      orElse: () => null,
+    );
+    final quantidade = int.tryParse('${loja?['total_itens'] ?? 0}') ?? 0;
+    CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(quantidade);
   }
 
   List<Map<String, dynamic>> _agruparPorLoja(List<Map<String, dynamic>> itens) {
@@ -363,10 +387,12 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
             color: Colors.grey.shade400,
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Sua carteira está vazia',
+          Text(
+            widget.nomeLojaSelecionada == null
+                ? 'Sua carteira está vazia'
+                : 'Não há itens disponíveis em ${widget.nomeLojaSelecionada}',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -497,7 +523,9 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         mostrarVoltar: true,
         mostrarLogo: false,
         mostrarSessao: false,
-        onVoltar: MainNavigationController.irParaHome,
+        onVoltar: widget.lojaSelecionadaId == null
+            ? MainNavigationController.irParaHome
+            : MainNavigationController.fecharTelaInterna,
         actions: [
           IconButton(
             tooltip: 'Atualizar carteira',

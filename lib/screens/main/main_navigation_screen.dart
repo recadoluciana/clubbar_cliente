@@ -157,16 +157,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna is PerfilScreen ||
             telaInterna is AtendimentoCoraScreen ||
             telaInterna is ProdutoCompartilhadoScreen ||
-            telaInterna is DetalheLojaScreen;
+            telaInterna is DetalheLojaScreen ||
+            telaInterna is CarteiraScreen;
         if (!manterNavegacaoVisivel) {
           return const SizedBox.shrink();
         }
 
         final coraAtiva = telaInterna is AtendimentoCoraScreen;
-        final exibirQuantidadeDaLoja = telaInterna is DetalheLojaScreen;
-        final homeSelecionada = currentIndex == 0 && !coraAtiva;
+        final carteiraDaLoja =
+            telaInterna is CarteiraScreen &&
+            telaInterna.lojaSelecionadaId != null;
+        final exibirQuantidadeDaLoja =
+            telaInterna is DetalheLojaScreen || carteiraDaLoja;
+        final homeSelecionada =
+            currentIndex == 0 && !coraAtiva && !carteiraDaLoja;
         final carrinhoSelecionado = currentIndex == 1 && !coraAtiva;
-        final carteiraSelecionada = currentIndex == 2 && !coraAtiva;
+        final carteiraSelecionada =
+            (currentIndex == 2 || carteiraDaLoja) && !coraAtiva;
 
         return Container(
           decoration: BoxDecoration(
@@ -213,9 +220,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     index: 2,
                     icone: _iconeCarteiraComBadge(
                       selecionado: carteiraSelecionada,
+                      usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
                     ),
                     texto: 'Carteira',
                     estaSelecionado: carteiraSelecionada,
+                    onTap: telaInterna is DetalheLojaScreen
+                        ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                        : null,
                   ),
 
                   Expanded(
@@ -247,6 +258,23 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
     MainNavigationController.limparTelasInternas();
     MainNavigationController.abaIndex.value = index;
+  }
+
+  Future<void> _abrirCarteiraDaLoja(Loja loja) async {
+    final logado = await _estaLogado();
+    if (!mounted) return;
+
+    if (!logado) {
+      AppSnackBar.info(context, 'Faça login para acessar sua carteira');
+      return;
+    }
+
+    MainNavigationController.abrirTela(
+      CarteiraScreen(
+        lojaSelecionadaId: loja.id,
+        nomeLojaSelecionada: loja.nome,
+      ),
+    );
   }
 
   Widget _buildPage() {
@@ -564,24 +592,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _iconeCarteiraComBadge({required bool selecionado}) {
+  Widget _iconeCarteiraComBadge({
+    required bool selecionado,
+    bool usarQuantidadeDaLoja = false,
+  }) {
     return ValueListenableBuilder<int>(
-      valueListenable: CarteiraBadgeNotifier.refresh,
-      builder: (context, _, _) {
+      valueListenable: usarQuantidadeDaLoja
+          ? CarteiraBadgeNotifier.itensDaLojaSelecionada
+          : CarteiraBadgeNotifier.refresh,
+      builder: (context, quantidadeDaLoja, _) {
         final icone = Icon(
           selecionado
               ? Icons.account_balance_wallet
               : Icons.account_balance_wallet_outlined,
         );
 
-        if (totalItensCarteira <= 0) {
+        final total = usarQuantidadeDaLoja
+            ? quantidadeDaLoja
+            : totalItensCarteira;
+
+        if (total <= 0) {
           return icone;
         }
 
         return Badge(
           backgroundColor: Colors.green,
           label: Text(
-            totalItensCarteira > 99 ? '99+' : '$totalItensCarteira',
+            total > 99 ? '99+' : '$total',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 10,
@@ -638,7 +675,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna is PerfilScreen ||
                 telaInterna is AtendimentoCoraScreen ||
                 telaInterna is ProdutoCompartilhadoScreen ||
-                telaInterna is DetalheLojaScreen;
+                telaInterna is DetalheLojaScreen ||
+                telaInterna is CarteiraScreen;
 
             return Scaffold(
               body: PopScope(
