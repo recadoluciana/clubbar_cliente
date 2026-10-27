@@ -13,10 +13,17 @@ class CarteiraScreen extends StatefulWidget {
   final int? lojaSelecionadaId;
   final String? nomeLojaSelecionada;
 
+  /// Quando a carteira é aberta a partir do detalhe de uma loja, abre a
+  /// lista de itens daquela loja sem passar pelo resumo geral.
+  final bool abrirItensDaLojaDiretamente;
+  final VoidCallback? onVoltarDaLoja;
+
   const CarteiraScreen({
     super.key,
     this.lojaSelecionadaId,
     this.nomeLojaSelecionada,
+    this.abrirItensDaLojaDiretamente = false,
+    this.onVoltarDaLoja,
   });
 
   @override
@@ -36,6 +43,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
   List<Map<String, dynamic>> itensPendentes = [];
   List<Map<String, dynamic>> lojasResumo = [];
+  bool _itensDaLojaAbertos = false;
 
   @override
   void initState() {
@@ -75,6 +83,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
 
       CarteiraBadgeNotifier.atualizar();
       _atualizarBadgeDaLojaSelecionada(resumo);
+      _abrirItensDaLojaSeNecessario(resumo);
     } catch (e) {
       if (!mounted) return;
 
@@ -88,6 +97,69 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
       }
     }
+  }
+
+  void _abrirItensDaLojaSeNecessario(List<Map<String, dynamic>> resumo) {
+    if (!widget.abrirItensDaLojaDiretamente || _itensDaLojaAbertos) return;
+
+    final lojaId = widget.lojaSelecionadaId;
+    if (lojaId == null) return;
+
+    final loja = resumo.cast<Map<String, dynamic>?>().firstWhere(
+      (item) => item?['loja_id'] == lojaId,
+      orElse: () => null,
+    );
+    if (loja == null) return;
+
+    final itens = List<Map<String, dynamic>>.from(loja['itens'] as List);
+    final produtos = itens.where((item) {
+      return (item['idtipoproduto'] ?? '').toString().trim().toUpperCase() !=
+          'I';
+    }).toList();
+    final ingressos = itens.where((item) {
+      return (item['idtipoproduto'] ?? '').toString().trim().toUpperCase() ==
+          'I';
+    }).toList();
+
+    // Havendo os dois tipos, preservamos a tela-resumo para a pessoa escolher
+    // Produtos ou Ingressos. Com um único tipo, entramos diretamente nos itens.
+    if (produtos.isNotEmpty && ingressos.isNotEmpty) return;
+
+    _itensDaLojaAbertos = true;
+    final nomeLoja = (loja['nmloja'] ?? widget.nomeLojaSelecionada ?? 'Loja')
+        .toString();
+    final logoLoja = _buildImageUrl((loja['urllogoloja'] ?? '').toString());
+    final onVoltar =
+        widget.onVoltarDaLoja ?? MainNavigationController.fecharTelaInterna;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      if (ingressos.isNotEmpty) {
+        MainNavigationController.abrirTela(
+          CarteiraIngressosScreen(
+            nomeLoja: nomeLoja,
+            logoLoja: logoLoja,
+            nomeCliente: nomeCliente,
+            itens: ingressos,
+            onAtualizar: () => recarregarItensDaLoja(lojaId, tipo: 'I'),
+            onVoltar: onVoltar,
+          ),
+        );
+        return;
+      }
+
+      MainNavigationController.abrirTela(
+        CarteiraLojaScreen(
+          nomeLoja: nomeLoja,
+          logoLoja: logoLoja,
+          nomeCliente: nomeCliente,
+          itens: produtos,
+          onAtualizar: () => recarregarItensDaLoja(lojaId, tipo: 'P'),
+          onVoltar: onVoltar,
+        ),
+      );
+    });
   }
 
   Future<List<Map<String, dynamic>>> recarregarItensDaLoja(

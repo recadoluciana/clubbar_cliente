@@ -285,6 +285,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       CarteiraScreen(
         lojaSelecionadaId: loja.id,
         nomeLojaSelecionada: loja.nome,
+        abrirItensDaLojaDiretamente: true,
+        onVoltarDaLoja: () =>
+            MainNavigationController.abrirTela(DetalheLojaScreen(loja: loja)),
       ),
     );
   }
