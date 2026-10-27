@@ -59,6 +59,23 @@ class AppConfig {
     defaultValue: 'https://clubbar.com.br',
   );
 
+  /// Client ID Web do OAuth criado no Google Cloud. Nunca contém segredo.
+  static const String googleOAuthClientId = String.fromEnvironment(
+    'GOOGLE_OAUTH_CLIENT_ID',
+    defaultValue: '',
+  );
+
+  /// Service ID e URL de retorno cadastrados em Sign in with Apple.
+  static const String appleServiceId = String.fromEnvironment(
+    'APPLE_SERVICE_ID',
+    defaultValue: '',
+  );
+
+  static const String appleRedirectUri = String.fromEnvironment(
+    'APPLE_REDIRECT_URI',
+    defaultValue: '',
+  );
+
   static String _removerBarraFinal(String valor) {
     var resultado = valor;
     while (resultado.endsWith('/')) {

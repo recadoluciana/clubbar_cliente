@@ -1,6 +1,11 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
+import '../../config/app_config.dart';
+import '../../models/auth_response.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../cadastro/cadastro_screen.dart';
@@ -30,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool carregando = false;
   bool obscureSenha = true;
   bool corujaOlhoFechado = false;
+  bool carregandoSocial = false;
 
   Timer? _timerCoruja;
 
@@ -84,6 +90,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String traduzirErro(String erro) {
     final msg = erro.toLowerCase();
+
+    if (msg.contains('login com google') ||
+        msg.contains('login com apple') ||
+        msg.contains('conta google') ||
+        msg.contains('conta apple') ||
+        msg.contains('cadastro no clubbar') ||
+        msg.contains('conta social')) {
+      return erro.replaceFirst('Exception: ', '');
+    }
 
     if (msg.contains('e-mail digitado não encontrado') ||
         msg.contains('email digitado não encontrado')) {
@@ -147,21 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await apiService.login(email: email, senha: senha);
 
-      await authStorage.salvarLogin(
-        token: response.accessToken,
-        clienteId: response.clienteId ?? 0,
-        nomeCliente: response.nmcliente ?? '',
-      );
-
-      if (!mounted) return;
-
-      AppSnackBar.sucesso(context, 'Login realizado com sucesso!');
-
-      MainNavigationController.irParaHome();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
-        (_) => false,
-      );
+      await _concluirLogin(response);
     } catch (e) {
       if (!mounted) return;
 
@@ -173,6 +174,90 @@ class _LoginScreenState extends State<LoginScreen> {
           carregando = false;
         });
       }
+    }
+  }
+
+  Future<void> _concluirLogin(AuthResponse response) async {
+    await authStorage.salvarLogin(
+      token: response.accessToken,
+      clienteId: response.clienteId ?? 0,
+      nomeCliente: response.nmcliente ?? '',
+    );
+
+    if (!mounted) return;
+
+    AppSnackBar.sucesso(context, 'Login realizado com sucesso!');
+    MainNavigationController.irParaHome();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+      (_) => false,
+    );
+  }
+
+  Future<void> fazerLoginSocial(String provedor) async {
+    if (carregando || carregandoSocial) return;
+
+    setState(() => carregandoSocial = true);
+    try {
+      late final String idToken;
+      String? authorizationCode;
+
+      if (provedor == 'google') {
+        if (AppConfig.googleOAuthClientId.trim().isEmpty) {
+          throw Exception('O login com Google ainda não está configurado.');
+        }
+
+        final google = GoogleSignIn(
+          scopes: const ['email'],
+          clientId: AppConfig.googleOAuthClientId,
+        );
+        final conta = await google.signIn();
+        if (conta == null) return;
+
+        final autenticacao = await conta.authentication;
+        idToken = autenticacao.idToken ?? '';
+        if (idToken.isEmpty) {
+          throw Exception('Não foi possível confirmar sua conta Google.');
+        }
+      } else {
+        if (kIsWeb &&
+            (AppConfig.appleServiceId.trim().isEmpty ||
+                AppConfig.appleRedirectUri.trim().isEmpty)) {
+          throw Exception('O login com Apple ainda não está configurado.');
+        }
+
+        final credencial = await SignInWithApple.getAppleIDCredential(
+          scopes: const [AppleIDAuthorizationScopes.email],
+          webAuthenticationOptions: kIsWeb
+              ? WebAuthenticationOptions(
+                  clientId: AppConfig.appleServiceId,
+                  redirectUri: Uri.parse(AppConfig.appleRedirectUri),
+                )
+              : null,
+        );
+        idToken = credencial.identityToken ?? '';
+        authorizationCode = credencial.authorizationCode;
+        if (idToken.isEmpty) {
+          throw Exception('Não foi possível confirmar sua conta Apple.');
+        }
+      }
+
+      final response = await apiService.loginSocial(
+        provedor: provedor,
+        idToken: idToken,
+        authorizationCode: authorizationCode,
+      );
+      await _concluirLogin(response);
+    } on SignInWithAppleAuthorizationException catch (erro) {
+      if (erro.code != AuthorizationErrorCode.canceled && mounted) {
+        AppSnackBar.erro(context, 'Não foi possível entrar com a Apple.');
+      }
+    } catch (erro) {
+      if (mounted) {
+        AppSnackBar.erro(context, traduzirErro(erro.toString()));
+      }
+    } finally {
+      if (mounted) setState(() => carregandoSocial = false);
     }
   }
 
@@ -351,6 +436,60 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       ),
                               ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(child: Divider(color: Colors.grey.shade300)),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: Text(
+                                    'ou entre com',
+                                    style: TextStyle(color: Colors.grey.shade600),
+                                  ),
+                                ),
+                                Expanded(child: Divider(color: Colors.grey.shade300)),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: carregandoSocial || carregando
+                                        ? null
+                                        : () => fazerLoginSocial('google'),
+                                    icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
+                                    label: const Text('Google'),
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(0, 48),
+                                      foregroundColor: Colors.grey.shade800,
+                                      side: BorderSide(color: Colors.grey.shade300),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: carregandoSocial || carregando
+                                        ? null
+                                        : () => fazerLoginSocial('apple'),
+                                    icon: const Icon(Icons.apple),
+                                    label: const Text('Apple'),
+                                    style: OutlinedButton.styleFrom(
+                                      minimumSize: const Size(0, 48),
+                                      foregroundColor: Colors.black,
+                                      side: BorderSide(color: Colors.grey.shade300),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 18),
                             Row(

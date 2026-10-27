@@ -165,6 +165,34 @@ class ApiService {
     }
   }
 
+  Future<AuthResponse> loginSocial({
+    required String provedor,
+    required String idToken,
+    String? authorizationCode,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login-social'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'provedor': provedor,
+          'id_token': idToken,
+          ...?(authorizationCode == null
+              ? null
+              : <String, dynamic>{'authorization_code': authorizationCode}),
+        }),
+      );
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return AuthResponse.fromJson(jsonDecode(response.body));
+      }
+
+      throw Exception(_extrairMensagemHttp(response));
+    } catch (e) {
+      throw Exception(mensagemErroAmigavel(e));
+    }
+  }
+
   // ===============================
   // LOJAS
   // ===============================
