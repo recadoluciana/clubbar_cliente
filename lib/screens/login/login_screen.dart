@@ -207,6 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => carregandoSocial = true);
     try {
       late final String idToken;
+      String? accessToken;
       String? authorizationCode;
 
       if (provedor == 'google') {
@@ -229,7 +230,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final autenticacao = await conta.authentication;
         idToken = autenticacao.idToken ?? '';
-        if (idToken.isEmpty) {
+        accessToken = autenticacao.accessToken;
+        if (idToken.isEmpty && (accessToken == null || accessToken!.isEmpty)) {
           throw Exception('Não foi possível confirmar sua conta Google.');
         }
       } else {
@@ -257,7 +259,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final response = await apiService.loginSocial(
         provedor: provedor,
-        idToken: idToken,
+        idToken: idToken.isEmpty ? null : idToken,
+        accessToken: accessToken,
         authorizationCode: authorizationCode,
       );
       await _concluirLogin(response);

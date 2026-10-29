@@ -190,7 +190,8 @@ class ApiService {
 
   Future<AuthResponse> loginSocial({
     required String provedor,
-    required String idToken,
+    String? idToken,
+    String? accessToken,
     String? authorizationCode,
   }) async {
     try {
@@ -199,7 +200,10 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'provedor': provedor,
-          'id_token': idToken,
+          ...?(idToken == null ? null : <String, dynamic>{'id_token': idToken}),
+          ...?(accessToken == null
+              ? null
+              : <String, dynamic>{'access_token': accessToken}),
           ...?(authorizationCode == null
               ? null
               : <String, dynamic>{'authorization_code': authorizationCode}),
