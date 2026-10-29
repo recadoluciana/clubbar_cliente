@@ -220,6 +220,9 @@ class _LoginScreenState extends State<LoginScreen> {
         final google = GoogleSignIn(
           scopes: const ['email'],
           clientId: googleOAuthClientId,
+          // O backend valida o idToken; informar explicitamente o client ID
+          // do servidor evita que o fluxo web retorne somente o perfil.
+          serverClientId: googleOAuthClientId,
         );
         final conta = await google.signIn();
         if (conta == null) return;
