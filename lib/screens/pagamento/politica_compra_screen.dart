@@ -98,6 +98,9 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
               const SizedBox(height: 20),
               SelectableText(
                 _politica!['conteudo']?.toString() ?? '',
+                textAlign: widget.tipo == 'PRODUTO'
+                    ? TextAlign.justify
+                    : TextAlign.start,
                 style: const TextStyle(fontSize: 16, height: 1.55),
               ),
             ],
