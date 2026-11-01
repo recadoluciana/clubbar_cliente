@@ -10,6 +10,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_contact_links.dart';
 import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
+import 'mercado_pago_card_screen.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/cep_service.dart';
@@ -61,6 +62,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   double saldoCashback = 0;
   bool falhaConsultaCashback = false;
   String _provedorPagamento = 'ASAAS';
+  String? _mercadoPagoPublicKey;
   bool receberNoEndereco = false;
   Map<String, dynamic>? campanhaDoacao;
   Timer? _timerReserva;
@@ -204,6 +206,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             .toString()
             .toUpperCase();
         if (_provedorPagamento == 'MERCADO_PAGO') {
+          _mercadoPagoPublicKey = dados['mercado_pago_public_key']?.toString();
           // O backend ainda mantém a reserva de cashback ligada ao checkout
           // Asaas; não a oferecemos enquanto a compra usar Mercado Pago.
           usarCashback = false;
@@ -904,6 +907,50 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     required int clienteId,
     Map<String, String>? entrega,
   }) async {
+    if (metodo.toUpperCase() == 'CREDIT_CARD' &&
+        widget.reservaIngressoId == null &&
+        !kIsWeb) {
+      final publicKey = _mercadoPagoPublicKey;
+      if (publicKey == null || publicKey.isEmpty) {
+        throw Exception(
+          'A chave pública do Mercado Pago não está configurada.',
+        );
+      }
+      final perfil = await apiService.buscarMeuPerfil();
+      if (!mounted) return;
+      final tokenizado = await Navigator.push<MercadoPagoCardData>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MercadoPagoCardScreen(
+            publicKey: publicKey,
+            payerEmail: perfil['emailcliente']?.toString() ?? '',
+            payerDocument: perfil['nrcpfcliente']?.toString() ?? '',
+          ),
+        ),
+      );
+      if (tokenizado == null) return;
+      final clienteToken = await authStorage.obterClienteId();
+      if (clienteToken == null || clienteToken == 0) {
+        throw Exception('Cliente não identificado');
+      }
+      final respostaTransparente = await apiService.pagarMercadoPago(
+        clienteId: clienteToken,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        metodo: metodo,
+        percentualTaxaIngresso: percentualTaxaIngresso,
+        percentualTaxaProduto: percentualTaxaProduto,
+        entrega: entrega,
+        cardToken: tokenizado.token,
+        payerEmail: perfil['emailcliente']?.toString(),
+        payerDocument: perfil['nrcpfcliente']?.toString(),
+        paymentMethodId: tokenizado.paymentMethodId,
+        issuerId: tokenizado.issuerId,
+        installments: tokenizado.installments,
+      );
+      await _confirmarMercadoPago(respostaTransparente, clienteToken);
+      return;
+    }
     final resposta = widget.reservaIngressoId != null
         ? await apiService.criarCheckoutReservaMercadoPago(
             reservaId: widget.reservaIngressoId!,
@@ -991,6 +1038,34 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       );
       CarteiraBadgeNotifier.atualizar();
     }
+    if (!mounted) return;
+    MainNavigationController.limparTelasInternas();
+    MainNavigationController.abrirTela(DetalheLojaScreen(loja: widget.loja));
+    Navigator.of(context).popUntil((rota) => rota.isFirst);
+  }
+
+  Future<void> _confirmarMercadoPago(
+    Map<String, dynamic> resposta,
+    int clienteId,
+  ) async {
+    Map<String, dynamic>? confirmacao;
+    for (var tentativa = 0; tentativa < 6; tentativa++) {
+      confirmacao = await apiService.consultarCheckoutMercadoPago(
+        preferenceId: resposta['pagamento_id'].toString(),
+      );
+      if ((confirmacao['status_pagamento'] ?? '').toString().toUpperCase() ==
+          'PAGO')
+        break;
+      await Future<void>.delayed(const Duration(seconds: 2));
+    }
+    if ((confirmacao?['status_pagamento'] ?? '').toString().toUpperCase() !=
+        'PAGO') {
+      throw Exception(_mensagemPagamentoNaoConfirmado);
+    }
+    CartBadgeNotifier.atualizar(
+      await apiService.buscarQuantidadeCarrinho(clienteId: clienteId),
+    );
+    CarteiraBadgeNotifier.atualizar();
     if (!mounted) return;
     MainNavigationController.limparTelasInternas();
     MainNavigationController.abrirTela(DetalheLojaScreen(loja: widget.loja));

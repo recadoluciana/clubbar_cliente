@@ -1847,6 +1847,13 @@ class ApiService {
     required double percentualTaxaIngresso,
     required double percentualTaxaProduto,
     Map<String, String>? entrega,
+    String? cardToken,
+    String? payerEmail,
+    String? payerDocument,
+    String? paymentMethodId,
+    String? issuerId,
+    int? installments,
+    String? deviceId,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pagar-mercado-pago'),
@@ -1858,6 +1865,15 @@ class ApiService {
         'dsmetodopag': metodo,
         'percentual_taxa_ingresso': percentualTaxaIngresso,
         'percentual_taxa_produto': percentualTaxaProduto,
+        ...?(cardToken == null ? null : {'card_token': cardToken}),
+        ...?(payerEmail == null ? null : {'payer_email': payerEmail}),
+        ...?(payerDocument == null ? null : {'payer_document': payerDocument}),
+        ...?(paymentMethodId == null
+            ? null
+            : {'payment_method_id': paymentMethodId}),
+        ...?(issuerId == null ? null : {'issuer_id': issuerId}),
+        ...?(installments == null ? null : {'installments': installments}),
+        ...?(deviceId == null ? null : {'device_id': deviceId}),
         ...?(entrega == null ? null : {'entrega': entrega}),
       }),
     );
