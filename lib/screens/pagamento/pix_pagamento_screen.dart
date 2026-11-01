@@ -20,6 +20,7 @@ class PixPagamentoScreen extends StatefulWidget {
   final Map<String, dynamic> pagamento;
   final int? reservaIngressoId;
   final int? clienteId;
+
   /// Quando verdadeiro, o QR Code foi criado diretamente pela API do Mercado
   /// Pago. A confirmação continua sendo feita pelo Clubbar, nunca pelo app.
   final bool mercadoPago;
@@ -53,6 +54,9 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
   bool get _compraDeIngresso => widget.reservaIngressoId != null;
 
+  bool get _pixDeTeste =>
+      widget.mercadoPago && widget.pagamento['ambiente_teste'] == true;
+
   String get _mensagemPagamentoNaoConcluido => _compraDeIngresso
       ? 'Pagamento do ingresso não concluído.'
       : 'Pagamento não concluído. O carrinho foi mantido.';
@@ -66,7 +70,9 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     super.initState();
     _expiraEm = obterExpiracaoPix(
       widget.pagamento,
-      duracaoMaxima: widget.mercadoPago || _compraDeIngresso
+      duracaoMaxima: widget.mercadoPago
+          ? const Duration(minutes: 30)
+          : _compraDeIngresso
           ? const Duration(minutes: 15)
           : const Duration(minutes: 5),
     );
@@ -144,7 +150,11 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   String get valorTotalFormatado =>
       'R\$ ${valorTotal.toStringAsFixed(2).replaceAll('.', ',')}';
 
-  Future<void> _consultarPagamento({bool validacaoFinal = false}) async {
+  Future<void> _consultarPagamento({
+    bool validacaoFinal = false,
+    bool manual = false,
+  }) async {
+    if (!mounted) return;
     if (pagamentoId.isEmpty || _confirmacaoProcessada) {
       if (validacaoFinal && !_confirmacaoProcessada) {
         _iniciarVerificacaoPendente();
@@ -155,7 +165,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
       if (validacaoFinal) _expiracaoPendente = true;
       return;
     }
-    _consultando = true;
+    setState(() => _consultando = true);
 
     try {
       final response = widget.mercadoPago
@@ -171,6 +181,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
               pagamentoId: pagamentoId,
             );
 
+      if (!mounted) return;
       final statusAtual =
           (response['status_pagamento'] ?? response['status'] ?? '')
               .toString()
@@ -208,15 +219,29 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         if (!mounted) return;
         AppSnackBar.erro(context, _mensagemPagamentoNaoConcluido);
         Navigator.pop(context, false);
-      } else if (validacaoFinal) {
-        _iniciarVerificacaoPendente();
+      } else {
+        if (validacaoFinal) _iniciarVerificacaoPendente();
+        if (manual) {
+          AppSnackBar.info(
+            context,
+            _pixDeTeste
+                ? 'O Pix continua pendente. Este QR Code de teste não permite concluir o pagamento.'
+                : 'O pagamento ainda não foi confirmado. Se você já pagou, aguarde a confirmação sem pagar novamente.',
+          );
+        }
       }
     } catch (_) {
       if (validacaoFinal) _iniciarVerificacaoPendente();
+      if (manual && mounted) {
+        AppSnackBar.erro(
+          context,
+          'Não foi possível consultar o pagamento agora. Tente verificar novamente.',
+        );
+      }
       // Enquanto houver tempo, a proxima consulta tenta novamente.
     } finally {
-      _consultando = false;
-      if (_expiracaoPendente && !_confirmacaoProcessada) {
+      if (mounted) setState(() => _consultando = false);
+      if (mounted && _expiracaoPendente && !_confirmacaoProcessada) {
         _expiracaoPendente = false;
         unawaited(_consultarPagamento(validacaoFinal: true));
       }
@@ -377,7 +402,9 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         children: [
           ClubbarPageHeader(
             titulo: 'Pagamento via Pix',
-            subtitulo: 'Use o QR Code para concluir sua compra',
+            subtitulo: _pixDeTeste
+                ? 'Pix de teste: QR Code gerado para validar a integração'
+                : 'Use o QR Code para concluir sua compra',
             icone: Icons.pix,
             corIcone: Colors.green,
             corTitulo: Colors.blue,
@@ -423,6 +450,21 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
                 const SizedBox(height: 12),
 
+                if (_pixDeTeste) ...[
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade50,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: Colors.amber.shade300),
+                    ),
+                    child: const Text(
+                      'Ambiente de teste do Mercado Pago. Este QR Code valida a criação do Pix, mas não permite concluir ou aprovar o pagamento. Não use seu banco para pagá-lo. A compra só será liberada após uma confirmação válida do Mercado Pago.',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
                 _barraExpiracao(),
 
                 if (_verificandoAposExpiracao) ...[
@@ -431,14 +473,19 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                     'O tempo do QR Code terminou, mas a confirmação do pagamento ainda não foi verificada. Não pague novamente até conferir a compra na carteira.',
                     style: TextStyle(color: Colors.deepOrange),
                   ),
+                ],
+
+                if (widget.mercadoPago || _verificandoAposExpiracao)
                   TextButton.icon(
                     onPressed: _consultando
                         ? null
-                        : () => _consultarPagamento(validacaoFinal: true),
+                        : () => _consultarPagamento(
+                            validacaoFinal: _verificandoAposExpiracao,
+                            manual: true,
+                          ),
                     icon: const Icon(Icons.refresh),
                     label: const Text('Verificar pagamento agora'),
                   ),
-                ],
 
                 const SizedBox(height: 12),
 
