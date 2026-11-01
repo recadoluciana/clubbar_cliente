@@ -45,11 +45,32 @@ async function start() { try {
     initialization: {amount: cfg.amount},
     callbacks: {
       onReady: () => {},
-      onError: () => { document.getElementById('error').textContent = 'Não foi possível carregar o formulário. Tente novamente.'; },
+      onError: (error) => {
+        console.warn('Mercado Pago Brick: falha ao processar o formulário', error && error.type);
+        if (!document.getElementById('error').textContent) document.getElementById('error').textContent = 'Não foi possível validar o cartão. Confira os dados e tente novamente.';
+      },
       onSubmit: (data) => new Promise((resolve, reject) => {
-        if (!data.token || !data.payment_method_id) { reject(); return; }
-        parent.postMessage(JSON.stringify({kind:'clubbar-mp-card', data:data}), parent.location.origin);
-        resolve();
+        const form = data && (data.formData || data);
+        if (!form || !form.token || !form.payment_method_id) {
+          document.getElementById('error').textContent = 'Não foi possível obter os dados tokenizados do cartão. Confira os dados e tente novamente.';
+          reject(new Error('Dados tokenizados incompletos'));
+          return;
+        }
+        document.getElementById('error').textContent = 'Enviando pagamento. Aguarde...';
+        let timer;
+        const acknowledge = (event) => {
+          if (event.source !== parent || event.origin !== parent.location.origin || event.data !== 'clubbar-mp-card-received') return;
+          clearTimeout(timer);
+          window.removeEventListener('message', acknowledge);
+          resolve();
+        };
+        window.addEventListener('message', acknowledge);
+        timer = setTimeout(() => {
+          window.removeEventListener('message', acknowledge);
+          document.getElementById('error').textContent = 'Não foi possível enviar o cartão ao aplicativo. Atualize a página e tente novamente.';
+          reject(new Error('Aplicativo não confirmou o recebimento'));
+        }, 8000);
+        parent.postMessage(JSON.stringify({kind:'clubbar-mp-card', data:form}), parent.location.origin);
       })
     }
   });
@@ -63,20 +84,28 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
     );
     _subscription = html.window.onMessage.listen((event) {
       if (_submitted ||
+          !mounted ||
           event.origin != html.window.location.origin ||
           event.source != _frame.contentWindow ||
-          event.data is! String)
+          event.data is! String) {
         return;
+      }
       try {
         final message = jsonDecode(event.data as String);
         if (message is! Map ||
             message['kind'] != 'clubbar-mp-card' ||
-            message['data'] is! Map)
+            message['data'] is! Map) {
           return;
+        }
         final data = Map<String, dynamic>.from(message['data'] as Map);
-        if (data['token'] is! String || data['payment_method_id'] is! String)
+        if (data['token'] is! String || data['payment_method_id'] is! String) {
           return;
+        }
         _submitted = true;
+        _frame.contentWindow?.postMessage(
+          'clubbar-mp-card-received',
+          html.window.location.origin,
+        );
         Navigator.of(context).pop(data);
       } catch (_) {
         return;

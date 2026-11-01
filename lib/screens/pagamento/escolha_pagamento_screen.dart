@@ -1095,6 +1095,12 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     Map<String, dynamic> resposta,
     int clienteId,
   ) async {
+    final statusInicial = (resposta['status'] ?? '').toString().toUpperCase();
+    if (statusInicial == 'REJECTED' || statusInicial == 'CANCELLED') {
+      throw Exception(
+        'O pagamento não foi aprovado. Confira os dados do cartão ou escolha outra forma de pagamento.',
+      );
+    }
     Map<String, dynamic>? confirmacao;
     for (var tentativa = 0; tentativa < 6; tentativa++) {
       confirmacao = await apiService.consultarCheckoutMercadoPago(
@@ -1103,8 +1109,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if ((confirmacao['status_pagamento'] ?? confirmacao['status'] ?? '')
               .toString()
               .toUpperCase() ==
-          'PAGO')
+          'PAGO') {
         break;
+      }
       await Future<void>.delayed(const Duration(seconds: 2));
     }
     if ((confirmacao?['status_pagamento'] ?? confirmacao?['status'] ?? '')
