@@ -907,6 +907,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     required int clienteId,
     Map<String, String>? entrega,
   }) async {
+    if (widget.reservaIngressoId != null) {
+      throw Exception(
+        'Pagamento transparente de ingressos ainda não está disponível.',
+      );
+    }
+    if (metodo.toUpperCase() == 'CREDIT_CARD' && kIsWeb) {
+      throw Exception(
+        'Pagamento transparente com cartão na web ainda não está disponível.',
+      );
+    }
     if (metodo.toUpperCase() == 'CREDIT_CARD' &&
         widget.reservaIngressoId == null &&
         !kIsWeb) {
@@ -1053,12 +1063,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       confirmacao = await apiService.consultarCheckoutMercadoPago(
         preferenceId: resposta['pagamento_id'].toString(),
       );
-      if ((confirmacao['status_pagamento'] ?? '').toString().toUpperCase() ==
+      if ((confirmacao['status_pagamento'] ?? confirmacao['status'] ?? '')
+              .toString()
+              .toUpperCase() ==
           'PAGO')
         break;
       await Future<void>.delayed(const Duration(seconds: 2));
     }
-    if ((confirmacao?['status_pagamento'] ?? '').toString().toUpperCase() !=
+    if ((confirmacao?['status_pagamento'] ?? confirmacao?['status'] ?? '')
+            .toString()
+            .toUpperCase() !=
         'PAGO') {
       throw Exception(_mensagemPagamentoNaoConfirmado);
     }
