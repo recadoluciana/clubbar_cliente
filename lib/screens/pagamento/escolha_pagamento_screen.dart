@@ -11,6 +11,8 @@ import '../../widgets/clubbar_contact_links.dart';
 import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
 import 'mercado_pago_card_screen.dart';
+import 'mercado_pago_brick_stub.dart'
+    if (dart.library.html) 'mercado_pago_brick_web.dart';
 import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/cep_service.dart';
@@ -913,9 +915,44 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       );
     }
     if (metodo.toUpperCase() == 'CREDIT_CARD' && kIsWeb) {
-      throw Exception(
-        'Pagamento transparente com cartão na web ainda não está disponível.',
+      final publicKey = _mercadoPagoPublicKey;
+      if (publicKey == null || publicKey.isEmpty) {
+        throw Exception(
+          'A chave pública do Mercado Pago não está configurada.',
+        );
+      }
+      if (!mounted) return;
+      final dados = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              MercadoPagoBrickScreen(publicKey: publicKey, amount: totalPagar),
+        ),
       );
+      if (dados == null) return;
+      final payer = dados['payer'] is Map
+          ? Map<String, dynamic>.from(dados['payer'] as Map)
+          : <String, dynamic>{};
+      final identification = payer['identification'] is Map
+          ? Map<String, dynamic>.from(payer['identification'] as Map)
+          : <String, dynamic>{};
+      final resposta = await apiService.pagarMercadoPago(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+        metodo: metodo,
+        percentualTaxaIngresso: percentualTaxaIngresso,
+        percentualTaxaProduto: percentualTaxaProduto,
+        entrega: entrega,
+        cardToken: dados['token']?.toString(),
+        paymentMethodId: dados['payment_method_id']?.toString(),
+        issuerId: dados['issuer_id']?.toString(),
+        installments: int.tryParse('${dados['installments']}'),
+        payerEmail: payer['email']?.toString(),
+        payerDocument: identification['number']?.toString(),
+      );
+      await _confirmarMercadoPago(resposta, clienteId);
+      return;
     }
     if (metodo.toUpperCase() == 'CREDIT_CARD' &&
         widget.reservaIngressoId == null &&
