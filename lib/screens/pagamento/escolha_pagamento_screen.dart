@@ -298,8 +298,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Complete seus dados'),
-        content: const Text(
-          'Para gerar o PIX, o Asaas exige um CPF válido. Atualize seus Dados pessoais e tente novamente.',
+        content: Text(
+          _usaMercadoPago
+              ? 'Para gerar o PIX, o Mercado Pago exige um CPF ou CNPJ válido. Atualize seus Dados pessoais e tente novamente.'
+              : 'Para gerar o PIX, o Asaas exige um CPF válido. Atualize seus Dados pessoais e tente novamente.',
         ),
         actions: [
           TextButton(
