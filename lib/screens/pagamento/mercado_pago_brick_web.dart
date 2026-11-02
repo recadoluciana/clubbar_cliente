@@ -39,6 +39,17 @@ class _MercadoPagoBrickScreenState extends State<MercadoPagoBrickScreen> {
       ..srcdoc =
           '''<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><script src="https://sdk.mercadopago.com/js/v2"></script></head><body><div id="cardPaymentBrick_container"></div><p id="error" role="alert"></p><script>
 const cfg = $config;
+let submitWatchdog;
+document.addEventListener('click', (event) => {
+  const button = event.target.closest && event.target.closest('button');
+  if (!button || !button.textContent.includes('Pagar')) return;
+  clearTimeout(submitWatchdog);
+  console.info('Mercado Pago Brick: pagamento solicitado');
+  submitWatchdog = setTimeout(() => {
+    document.getElementById('error').textContent = 'O Mercado Pago não concluiu a validação. Confira os campos e aguarde antes de tentar novamente.';
+    console.warn('Mercado Pago Brick: envio não chegou ao aplicativo');
+  }, 15000);
+}, true);
 async function start() { try {
   const mp = new MercadoPago(cfg.key, {locale:'pt-BR'});
   window.brick = await mp.bricks().create('cardPayment', 'cardPaymentBrick_container', {
@@ -46,11 +57,15 @@ async function start() { try {
     callbacks: {
       onReady: () => {},
       onError: (error) => {
-        console.warn('Mercado Pago Brick: falha ao processar o formulário', error && error.type);
+        clearTimeout(submitWatchdog);
+        const type = error && typeof error.type === 'string' && /^[a-zA-Z0-9_-]+\$/.test(error.type) ? error.type : 'desconhecido';
+        console.warn('Mercado Pago Brick: falha ao processar o formulário', type);
         if (!document.getElementById('error').textContent) document.getElementById('error').textContent = 'Não foi possível validar o cartão. Confira os dados e tente novamente.';
       },
       onSubmit: (data) => new Promise((resolve, reject) => {
+        clearTimeout(submitWatchdog);
         const form = data && (data.formData || data);
+        console.info('Mercado Pago Brick: dados recebidos', {token: !!(form && form.token), metodo: !!(form && form.payment_method_id)});
         if (!form || !form.token || !form.payment_method_id) {
           document.getElementById('error').textContent = 'Não foi possível obter os dados tokenizados do cartão. Confira os dados e tente novamente.';
           reject(new Error('Dados tokenizados incompletos'));
@@ -83,6 +98,12 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
       (int id) => _frame,
     );
     _subscription = html.window.onMessage.listen((event) {
+      if (event.data is String &&
+          (event.data as String).contains('clubbar-mp-card') &&
+          (event.origin != html.window.location.origin ||
+              event.source != _frame.contentWindow)) {
+        debugPrint('Mercado Pago Brick: mensagem recusada por origem ou janela');
+      }
       if (_submitted ||
           !mounted ||
           event.origin != html.window.location.origin ||
@@ -99,8 +120,10 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
         }
         final data = Map<String, dynamic>.from(message['data'] as Map);
         if (data['token'] is! String || data['payment_method_id'] is! String) {
+          debugPrint('Mercado Pago Brick: mensagem com dados incompletos');
           return;
         }
+        debugPrint('Mercado Pago Brick: dados tokenizados recebidos pelo Client');
         _submitted = true;
         _frame.contentWindow?.postMessage(
           'clubbar-mp-card-received',
@@ -108,6 +131,7 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
         );
         Navigator.of(context).pop(data);
       } catch (_) {
+        debugPrint('Mercado Pago Brick: falha ao processar mensagem do formulário');
         return;
       }
     });
