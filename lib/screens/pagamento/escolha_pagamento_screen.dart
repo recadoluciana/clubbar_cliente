@@ -68,6 +68,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   bool receberNoEndereco = false;
   Map<String, dynamic>? campanhaDoacao;
   Timer? _timerReserva;
+  DateTime? _reservaExpiracaoAtual;
   Duration _tempoReservaRestante = Duration.zero;
   bool _reservaExpirada = false;
 
@@ -82,7 +83,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   Widget _barraTempoReserva() {
-    if (widget.reservaExpiracao == null) return const SizedBox.shrink();
+    if (_reservaExpiracaoAtual == null) return const SizedBox.shrink();
     final urgente = _tempoReservaRestante <= const Duration(minutes: 2);
     final cor = urgente ? Colors.red : Colors.amber.shade800;
     return Container(
@@ -111,6 +112,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   @override
   void initState() {
     super.initState();
+    _reservaExpiracaoAtual = widget.reservaExpiracao;
     if (widget.reservaExpiracao != null) {
       _timerReserva = Timer.periodic(
         const Duration(seconds: 1),
@@ -132,7 +134,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   }
 
   void _atualizarTempoReserva() {
-    final expiracao = widget.reservaExpiracao;
+    final expiracao = _reservaExpiracaoAtual;
     if (expiracao == null || _reservaExpirada) return;
 
     final restante = expiracao.difference(HorarioBrasil.agora());
@@ -909,11 +911,6 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     required int clienteId,
     Map<String, String>? entrega,
   }) async {
-    if (widget.reservaIngressoId != null) {
-      throw Exception(
-        'Pagamento transparente de ingressos ainda não está disponível.',
-      );
-    }
     if (metodo.toUpperCase() == 'CREDIT_CARD' && kIsWeb) {
       final publicKey = _mercadoPagoPublicKey;
       if (publicKey == null || publicKey.isEmpty) {
@@ -936,27 +933,37 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       final identification = payer['identification'] is Map
           ? Map<String, dynamic>.from(payer['identification'] as Map)
           : <String, dynamic>{};
-      final resposta = await apiService.pagarMercadoPago(
-        clienteId: clienteId,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-        metodo: metodo,
-        percentualTaxaIngresso: percentualTaxaIngresso,
-        percentualTaxaProduto: percentualTaxaProduto,
-        entrega: entrega,
-        cardToken: dados['token']?.toString(),
-        paymentMethodId: dados['payment_method_id']?.toString(),
-        issuerId: dados['issuer_id']?.toString(),
-        installments: int.tryParse('${dados['installments']}'),
-        payerEmail: payer['email']?.toString(),
-        payerDocument: identification['number']?.toString(),
-      );
+      final resposta = widget.reservaIngressoId != null
+          ? await apiService.criarCheckoutReservaMercadoPago(
+              reservaId: widget.reservaIngressoId!,
+              clienteId: clienteId,
+              metodo: metodo,
+              cardToken: dados['token']?.toString(),
+              paymentMethodId: dados['payment_method_id']?.toString(),
+              issuerId: dados['issuer_id']?.toString(),
+              installments: int.tryParse('${dados['installments']}') ?? 1,
+              payerEmail: payer['email']?.toString(),
+              payerDocument: identification['number']?.toString(),
+            )
+          : await apiService.pagarMercadoPago(
+              clienteId: clienteId,
+              organizacaoId: widget.loja.organizacaoId,
+              lojaId: widget.loja.id,
+              metodo: metodo,
+              percentualTaxaIngresso: percentualTaxaIngresso,
+              percentualTaxaProduto: percentualTaxaProduto,
+              entrega: entrega,
+              cardToken: dados['token']?.toString(),
+              paymentMethodId: dados['payment_method_id']?.toString(),
+              issuerId: dados['issuer_id']?.toString(),
+              installments: int.tryParse('${dados['installments']}'),
+              payerEmail: payer['email']?.toString(),
+              payerDocument: identification['number']?.toString(),
+            );
       await _confirmarMercadoPago(resposta, clienteId);
       return;
     }
-    if (metodo.toUpperCase() == 'CREDIT_CARD' &&
-        widget.reservaIngressoId == null &&
-        !kIsWeb) {
+    if (metodo.toUpperCase() == 'CREDIT_CARD' && !kIsWeb) {
       final publicKey = _mercadoPagoPublicKey;
       if (publicKey == null || publicKey.isEmpty) {
         throw Exception(
@@ -980,21 +987,33 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (clienteToken == null || clienteToken == 0) {
         throw Exception('Cliente não identificado');
       }
-      final respostaTransparente = await apiService.pagarMercadoPago(
-        clienteId: clienteToken,
-        organizacaoId: widget.loja.organizacaoId,
-        lojaId: widget.loja.id,
-        metodo: metodo,
-        percentualTaxaIngresso: percentualTaxaIngresso,
-        percentualTaxaProduto: percentualTaxaProduto,
-        entrega: entrega,
-        cardToken: tokenizado.token,
-        payerEmail: perfil['emailcliente']?.toString(),
-        payerDocument: perfil['nrcpfcliente']?.toString(),
-        paymentMethodId: tokenizado.paymentMethodId,
-        issuerId: tokenizado.issuerId,
-        installments: tokenizado.installments,
-      );
+      final respostaTransparente = widget.reservaIngressoId != null
+          ? await apiService.criarCheckoutReservaMercadoPago(
+              reservaId: widget.reservaIngressoId!,
+              clienteId: clienteToken,
+              metodo: metodo,
+              cardToken: tokenizado.token,
+              paymentMethodId: tokenizado.paymentMethodId,
+              issuerId: tokenizado.issuerId,
+              installments: tokenizado.installments,
+              payerEmail: perfil['emailcliente']?.toString(),
+              payerDocument: perfil['nrcpfcliente']?.toString(),
+            )
+          : await apiService.pagarMercadoPago(
+              clienteId: clienteToken,
+              organizacaoId: widget.loja.organizacaoId,
+              lojaId: widget.loja.id,
+              metodo: metodo,
+              percentualTaxaIngresso: percentualTaxaIngresso,
+              percentualTaxaProduto: percentualTaxaProduto,
+              entrega: entrega,
+              cardToken: tokenizado.token,
+              payerEmail: perfil['emailcliente']?.toString(),
+              payerDocument: perfil['nrcpfcliente']?.toString(),
+              paymentMethodId: tokenizado.paymentMethodId,
+              issuerId: tokenizado.issuerId,
+              installments: tokenizado.installments,
+            );
       await _confirmarMercadoPago(respostaTransparente, clienteToken);
       return;
     }
@@ -1013,14 +1032,13 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             percentualTaxaProduto: percentualTaxaProduto,
             entrega: entrega,
           );
-    // PIX de produtos é transparente: exibimos o QR Code dentro do Clubbar e
-    // acompanhamos a confirmação autenticada, sem depender de "Voltar para
-    // Clubbar" na página hospedada do Mercado Pago. Cartão e ingressos
-    // continuam no Checkout Pro, que é o fluxo já homologado para eles.
+    final novaExpiracao = HorarioBrasil.deTextoUtc(resposta['data_expiracao']);
+    if (widget.reservaIngressoId != null && novaExpiracao != null && mounted) {
+      setState(() => _reservaExpiracaoAtual = novaExpiracao);
+      _atualizarTempoReserva();
+    }
     final codigoPix = resposta['pix_copia_cola']?.toString().trim() ?? '';
-    if (metodo.toUpperCase() == 'PIX' &&
-        widget.reservaIngressoId == null &&
-        codigoPix.isNotEmpty) {
+    if (metodo.toUpperCase() == 'PIX' && codigoPix.isNotEmpty) {
       if (!mounted) return;
       await Navigator.push<bool>(
         context,
@@ -1029,6 +1047,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             loja: widget.loja,
             pagamento: resposta,
             mercadoPago: true,
+            reservaIngressoId: widget.reservaIngressoId,
+            clienteId: clienteId,
           ),
         ),
       );
@@ -1063,6 +1083,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           : await apiService.consultarCheckoutMercadoPago(
               preferenceId: resposta['pagamento_id'].toString(),
             );
+      if ((confirmacao['status_pagamento'] ?? '').toString().toUpperCase() ==
+          'ESTORNADO') {
+        throw Exception('A reserva expirou e o pagamento foi estornado.');
+      }
       if ((confirmacao['status'] ?? '').toString().toUpperCase() == 'PAGO' ||
           (confirmacao['status_pagamento'] ?? '').toString().toUpperCase() ==
               'PAGO') {
@@ -1116,9 +1140,14 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
     Map<String, dynamic>? confirmacao;
     for (var tentativa = 0; tentativa < 6; tentativa++) {
-      confirmacao = await apiService.consultarCheckoutMercadoPago(
-        preferenceId: resposta['pagamento_id'].toString(),
-      );
+      confirmacao = widget.reservaIngressoId != null
+          ? await apiService.consultarReserva(
+              reservaId: widget.reservaIngressoId!,
+              clienteId: clienteId,
+            )
+          : await apiService.consultarCheckoutMercadoPago(
+              preferenceId: resposta['pagamento_id'].toString(),
+            );
       if ((confirmacao['status_pagamento'] ?? confirmacao['status'] ?? '')
               .toString()
               .toUpperCase() ==

@@ -617,13 +617,29 @@ class ApiService {
     required int reservaId,
     required int clienteId,
     required String metodo,
+    String? cardToken,
+    String? paymentMethodId,
+    String? issuerId,
+    int installments = 1,
+    String? payerEmail,
+    String? payerDocument,
+    String? deviceId,
   }) async {
     final response = await http.post(
       Uri.parse(
         '$baseUrl/reservas-ingressos/$reservaId/mercado-pago?metodo=$metodo',
       ),
       headers: await _headersAutenticado(),
-      body: jsonEncode({'cliente_id': clienteId, 'parcelas': 1}),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'parcelas': installments,
+        'card_token': cardToken,
+        'payment_method_id': paymentMethodId,
+        'issuer_id': issuerId,
+        'payer_email': payerEmail,
+        'payer_document': payerDocument,
+        'device_id': deviceId,
+      }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));

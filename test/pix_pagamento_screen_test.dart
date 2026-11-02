@@ -25,6 +25,19 @@ class _ApiMercadoPago extends ApiService {
   }
 }
 
+class _ApiReservaMercadoPago extends _ApiMercadoPago {
+  int consultasReserva = 0;
+
+  @override
+  Future<Map<String, dynamic>> consultarReserva({
+    required int reservaId,
+    required int clienteId,
+  }) async {
+    consultasReserva++;
+    return {'status_pagamento': 'PENDENTE'};
+  }
+}
+
 Loja _lojaTeste() => Loja(
   id: 1,
   organizacaoId: 1,
@@ -68,6 +81,32 @@ Future<void> _abrirPixMercadoPago(
 }
 
 void main() {
+  testWidgets('Pix de ingresso consulta a reserva', (tester) async {
+    final api = _ApiReservaMercadoPago();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PixPagamentoScreen(
+          loja: _lojaTeste(),
+          mercadoPago: true,
+          reservaIngressoId: 2,
+          clienteId: 3,
+          pagamento: {
+            'pagamento_id': 'reserva-pix',
+            'expiration_date': DateTime.now()
+                .toUtc()
+                .add(const Duration(minutes: 30))
+                .toIso8601String(),
+            'pix_copia_cola': 'codigo-teste',
+          },
+          apiService: api,
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(api.consultasReserva, greaterThan(0));
+    expect(api.consultas, 0);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
   testWidgets('informa a limitação do sandbox e mantém o Pix pendente', (
     tester,
   ) async {

@@ -168,14 +168,15 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     setState(() => _consultando = true);
 
     try {
-      final response = widget.mercadoPago
-          ? await apiService.consultarCheckoutMercadoPago(
-              preferenceId: pagamentoId,
-            )
-          : widget.reservaIngressoId != null && widget.clienteId != null
+      final response =
+          widget.reservaIngressoId != null && widget.clienteId != null
           ? await apiService.consultarReserva(
               reservaId: widget.reservaIngressoId!,
               clienteId: widget.clienteId!,
+            )
+          : widget.mercadoPago
+          ? await apiService.consultarCheckoutMercadoPago(
+              preferenceId: pagamentoId,
             )
           : await apiService.consultarPixPorPagamentoId(
               pagamentoId: pagamentoId,
@@ -205,8 +206,17 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
             ),
           ),
         );
-      } else if ({'EXPIRED', 'EXPIRADO'}.contains(statusAtual)) {
+      } else if ({'EXPIRED', 'EXPIRADO', 'EXPIRADA'}.contains(statusAtual)) {
         _encerrarComoExpirado();
+      } else if (statusAtual == 'ESTORNADO' || statusAtual == 'REFUNDED') {
+        _confirmacaoProcessada = true;
+        _timerStatus?.cancel();
+        _timerExpiracao?.cancel();
+        AppSnackBar.aviso(
+          context,
+          'A reserva expirou e o pagamento foi estornado.',
+        );
+        Navigator.pop(context, false);
       } else if ({
         'SUBSTITUIDO',
         'CANCELADO',
