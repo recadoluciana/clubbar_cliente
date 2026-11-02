@@ -22,42 +22,41 @@ class MeusPedidosScreen extends StatelessWidget {
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'O que você deseja consultar?',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+      body: Column(
+        children: [
+          const ClubbarPageHeader(
+            titulo: 'O que você deseja consultar?',
+            subtitulo: 'Escolha uma categoria para ver suas compras.',
+            mostrarAvatar: false,
+            maxLinhasTitulo: 2,
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+              children: [
+                _OpcaoCompras(
+                  titulo: 'Produtos',
+                  descricao: 'Produtos, status de uso e cancelamentos.',
+                  icone: Icons.local_drink_rounded,
+                  cor: Colors.amber.shade800,
+                  onTap: () => MainNavigationController.abrirTela(
+                    const PedidosPorTipoScreen(tipo: 'P'),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _OpcaoCompras(
+                  titulo: 'Ingressos',
+                  descricao: 'Ingressos, participantes e cancelamentos.',
+                  icone: Icons.confirmation_number_outlined,
+                  cor: Colors.blue,
+                  onTap: () => MainNavigationController.abrirTela(
+                    const PedidosPorTipoScreen(tipo: 'I'),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Escolha uma categoria para ver suas compras.',
-              style: TextStyle(color: Colors.grey.shade700),
-            ),
-            const SizedBox(height: 24),
-            _OpcaoCompras(
-              titulo: 'Produtos',
-              descricao: 'Produtos, status de uso e cancelamentos.',
-              icone: Icons.local_drink_rounded,
-              cor: Colors.amber.shade800,
-              onTap: () => MainNavigationController.abrirTela(
-                const PedidosPorTipoScreen(tipo: 'P'),
-              ),
-            ),
-            const SizedBox(height: 14),
-            _OpcaoCompras(
-              titulo: 'Ingressos',
-              descricao: 'Ingressos, participantes e cancelamentos.',
-              icone: Icons.confirmation_number_outlined,
-              cor: Colors.blue,
-              onTap: () => MainNavigationController.abrirTela(
-                const PedidosPorTipoScreen(tipo: 'I'),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
