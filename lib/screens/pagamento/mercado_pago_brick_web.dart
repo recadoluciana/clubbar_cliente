@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'dart:typed_data';
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
 
@@ -28,9 +29,13 @@ class _MercadoPagoBrickScreenState extends State<MercadoPagoBrickScreen> {
   void initState() {
     super.initState();
     _viewId = 'mp-brick-${DateTime.now().microsecondsSinceEpoch}';
+    final channelBytes = Uint8List(16);
+    html.window.crypto!.getRandomValues(channelBytes);
+    final channel = base64UrlEncode(channelBytes);
     final config = jsonEncode({
       'key': widget.publicKey,
       'amount': widget.amount,
+      'channel': channel,
     }).replaceAll('<', r'\u003c');
     _frame = html.IFrameElement()
       ..style.border = '0'
@@ -85,7 +90,7 @@ async function start() { try {
           document.getElementById('error').textContent = 'Não foi possível enviar o cartão ao aplicativo. Atualize a página e tente novamente.';
           reject(new Error('Aplicativo não confirmou o recebimento'));
         }, 8000);
-        parent.postMessage(JSON.stringify({kind:'clubbar-mp-card', data:form}), parent.location.origin);
+        parent.postMessage(JSON.stringify({kind:'clubbar-mp-card', channel:cfg.channel, data:form}), parent.location.origin);
       })
     }
   });
@@ -100,14 +105,12 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
     _subscription = html.window.onMessage.listen((event) {
       if (event.data is String &&
           (event.data as String).contains('clubbar-mp-card') &&
-          (event.origin != html.window.location.origin ||
-              event.source != _frame.contentWindow)) {
-        debugPrint('Mercado Pago Brick: mensagem recusada por origem ou janela');
+          event.origin != html.window.location.origin) {
+        debugPrint('Mercado Pago Brick: mensagem recusada por origem');
       }
       if (_submitted ||
           !mounted ||
           event.origin != html.window.location.origin ||
-          event.source != _frame.contentWindow ||
           event.data is! String) {
         return;
       }
@@ -115,6 +118,7 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
         final message = jsonDecode(event.data as String);
         if (message is! Map ||
             message['kind'] != 'clubbar-mp-card' ||
+            message['channel'] != channel ||
             message['data'] is! Map) {
           return;
         }
