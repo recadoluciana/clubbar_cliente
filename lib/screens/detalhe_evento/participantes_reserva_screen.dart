@@ -10,6 +10,7 @@ import '../../utils/cpf_utils.dart';
 import '../../utils/horario_brasil.dart';
 import '../../utils/value_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/prazo_expirado_dialog.dart';
 import '../pagamento/escolha_pagamento_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
 
@@ -54,6 +55,7 @@ class _ParticipantesReservaScreenState
   bool salvando = false;
   bool _reservaFinalizada = false;
   bool _reservaCancelada = false;
+  bool _verificandoExpiracao = false;
 
   @override
   void initState() {
@@ -66,7 +68,7 @@ class _ParticipantesReservaScreenState
     }
     expiraEm =
         _expiracaoDaResposta(widget.reserva) ??
-        HorarioBrasil.agora().add(const Duration(minutes: 5));
+        HorarioBrasil.agora().add(const Duration(minutes: 35));
     _tick();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
@@ -85,12 +87,66 @@ class _ParticipantesReservaScreenState
     setState(() => restante = valor.isNegative ? Duration.zero : valor);
     if (valor <= Duration.zero) {
       timer?.cancel();
-      unawaited(_cancelarReservaSeNecessario());
-      AppSnackBar.erro(
-        context,
-        'O tempo para concluir a compra de ingressos expirou.',
+      unawaited(_verificarExpiracao());
+    }
+  }
+
+  Future<void> _verificarExpiracao() async {
+    if (_verificandoExpiracao || _reservaFinalizada) return;
+    if (mounted) setState(() => _verificandoExpiracao = true);
+    try {
+      final reservaId = int.parse('${widget.reserva['reserva_ingresso_id']}');
+      final clienteId = int.parse('${widget.reserva['cliente_id']}');
+      final atual = await api.consultarReserva(
+        reservaId: reservaId,
+        clienteId: clienteId,
       );
-      Navigator.pop(context);
+      if (!mounted) return;
+      final pagamento = (atual['status_pagamento'] ?? '')
+          .toString()
+          .toUpperCase();
+      if (pagamento == 'PAGO') {
+        _reservaFinalizada = true;
+        await Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => PagamentoSucessoScreen(lojaDestino: widget.loja),
+          ),
+        );
+        return;
+      }
+      if (pagamento == 'ESTORNADO' || pagamento == 'REFUNDED') {
+        _reservaCancelada = true;
+        await mostrarPrazoExpirado(context, tipo: PrazoExpiradoTipo.estorno);
+        if (mounted) Navigator.pop(context);
+        return;
+      }
+      final segundos = int.tryParse('${atual['segundos_restantes']}');
+      final situacao = (atual['status'] ?? '').toString().toUpperCase();
+      if (segundos != null &&
+          segundos > 0 &&
+          !{'EXPIRADA', 'CANCELADA'}.contains(situacao)) {
+        expiraEm = HorarioBrasil.agora().add(Duration(seconds: segundos));
+        _tick();
+        timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+        return;
+      }
+      if (segundos == null && !{'EXPIRADA', 'CANCELADA'}.contains(situacao)) {
+        throw Exception('Não foi possível confirmar a validade da reserva.');
+      }
+      _reservaCancelada = true;
+      await mostrarPrazoExpirado(context, tipo: PrazoExpiradoTipo.reserva);
+      if (mounted) Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        AppSnackBar.aviso(
+          context,
+          'Não foi possível verificar a reserva. Confira sua conexão e tente novamente.',
+        );
+        timer = Timer.periodic(const Duration(seconds: 10), (_) => _tick());
+      }
+    } finally {
+      if (mounted) setState(() => _verificandoExpiracao = false);
     }
   }
 
@@ -108,7 +164,7 @@ class _ParticipantesReservaScreenState
       );
     } catch (_) {
       // Se o app for fechado abruptamente, a expiração no servidor libera a
-      // reserva em até cinco minutos. Uma venda já confirmada também não pode
+      // reserva no prazo definido. Uma venda já confirmada também não pode
       // ser cancelada por esta ação.
     }
   }
@@ -123,6 +179,7 @@ class _ParticipantesReservaScreenState
   }
 
   Future<void> continuar() async {
+    if (_verificandoExpiracao || restante <= Duration.zero) return;
     final participantes = <Map<String, dynamic>>[];
     for (var i = 0; i < nomes.length; i++) {
       final nome = nomes[i].text.trim();
@@ -181,7 +238,7 @@ class _ParticipantesReservaScreenState
       }
       final valorTotalComTaxa = _valorTotalComTaxa(reserva);
       timer?.cancel();
-      await Navigator.push(
+      final reservaEncerrada = await Navigator.push<bool>(
         context,
         MaterialPageRoute(
           builder: (_) => EscolhaPagamentoScreen(
@@ -199,6 +256,11 @@ class _ParticipantesReservaScreenState
           ),
         ),
       );
+      if (mounted && reservaEncerrada == false) {
+        _reservaCancelada = true;
+        Navigator.pop(context);
+        return;
+      }
       if (mounted && !_reservaFinalizada) {
         try {
           final atual = await api.consultarReserva(
@@ -513,7 +575,10 @@ class _ParticipantesReservaScreenState
               ),
             const SizedBox(height: 12),
             ElevatedButton.icon(
-              onPressed: salvando ? null : continuar,
+              onPressed:
+                  salvando || _verificandoExpiracao || restante <= Duration.zero
+                  ? null
+                  : continuar,
               icon: Icon(
                 ehCortesia ? Icons.card_giftcard_rounded : Icons.payment,
               ),

@@ -8,6 +8,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_contact_links.dart';
+import '../../widgets/prazo_expirado_dialog.dart';
 import 'politica_compra_screen.dart';
 import 'asaas_checkout_screen.dart';
 import 'mercado_pago_card_screen.dart';
@@ -81,7 +82,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   bool _verificandoReserva = false;
 
   bool get carregandoPagamento =>
-      _metodoPagamentoProcessando != null || _verificandoReserva;
+      _metodoPagamentoProcessando != null ||
+      _verificandoReserva ||
+      (_reservaExpiracaoAtual != null &&
+          _tempoReservaRestante <= Duration.zero);
   bool get _usaMercadoPago => _provedorPagamento == 'MERCADO_PAGO';
   ValueListenable<Duration>? get _tempoReservaParaCheckout =>
       widget.reservaIngressoId != null && _reservaExpiracaoAtual != null
@@ -201,12 +205,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         return;
       }
       if (statusPagamento == 'ESTORNADO') {
-        _reservaExpirada = true;
-        AppSnackBar.aviso(
-          context,
-          'A reserva expirou e o pagamento foi estornado.',
-        );
-        Navigator.pop(context, false);
+        await _encerrarReservaComAviso(PrazoExpiradoTipo.estorno);
         return;
       }
       final segundos = int.tryParse('${reserva['segundos_restantes']}');
@@ -229,12 +228,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (!{'EXPIRADA', 'CANCELADA'}.contains(situacao) && segundos == null) {
         throw Exception('Não foi possível confirmar a validade da reserva.');
       }
-      _reservaExpirada = true;
-      AppSnackBar.aviso(
-        context,
-        'Sua reserva expirou. Inicie uma nova compra de ingresso.',
-      );
-      Navigator.pop(context, false);
+      await _encerrarReservaComAviso(PrazoExpiradoTipo.reserva);
     } catch (_) {
       if (mounted) {
         AppSnackBar.aviso(
@@ -249,6 +243,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     } finally {
       if (mounted) setState(() => _verificandoReserva = false);
     }
+  }
+
+  Future<void> _encerrarReservaComAviso(PrazoExpiradoTipo tipo) async {
+    _reservaExpirada = true;
+    final navigator = Navigator.of(context);
+    final rotaAtual = ModalRoute.of(context);
+    await mostrarPrazoExpirado(context, tipo: tipo);
+    if (!mounted) return;
+    navigator.popUntil((rota) => rota == rotaAtual || rota.isFirst);
+    if (mounted && rotaAtual?.isFirst != true) navigator.pop(false);
   }
 
   Future<void> _carregarCashback() async {
@@ -366,6 +370,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     final reservaExpirada =
         mensagem.toLowerCase().contains('reserva não está disponível') ||
         mensagem.toLowerCase().contains('reserva de ingressos expirou');
+    if (reservaExpirada && widget.reservaIngressoId != null) {
+      await _verificarExpiracaoDaReserva();
+      return;
+    }
     if (reservaExpirada) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -1137,7 +1145,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     final codigoPix = resposta['pix_copia_cola']?.toString().trim() ?? '';
     if (metodo.toUpperCase() == 'PIX' && codigoPix.isNotEmpty) {
       if (!mounted) return;
-      await Navigator.push<bool>(
+      if (widget.reservaIngressoId != null) _timerReserva?.cancel();
+      final reservaEncerrada = await Navigator.push<bool>(
         context,
         MaterialPageRoute(
           builder: (_) => PixPagamentoScreen(
@@ -1149,6 +1158,22 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ),
         ),
       );
+      if (mounted &&
+          widget.reservaIngressoId != null &&
+          reservaEncerrada == true) {
+        _reservaExpirada = true;
+        Navigator.pop(context, false);
+        return;
+      }
+      if (mounted && widget.reservaIngressoId != null && !_reservaExpirada) {
+        _atualizarTempoReserva();
+        if (_tempoReservaRestante > Duration.zero) {
+          _timerReserva = Timer.periodic(
+            const Duration(seconds: 1),
+            (_) => _atualizarTempoReserva(),
+          );
+        }
+      }
       return;
     }
     final checkoutUrl = resposta['checkout_url']?.toString() ?? '';
@@ -1187,7 +1212,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             );
       if ((confirmacao['status_pagamento'] ?? '').toString().toUpperCase() ==
           'ESTORNADO') {
-        throw Exception('A reserva expirou e o pagamento foi estornado.');
+        if (mounted) await _encerrarReservaComAviso(PrazoExpiradoTipo.estorno);
+        return;
       }
       if ((confirmacao['status'] ?? '').toString().toUpperCase() == 'PAGO' ||
           (confirmacao['status_pagamento'] ?? '').toString().toUpperCase() ==
@@ -1321,6 +1347,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               entrega: entrega,
             );
       if (!mounted) return;
+      if (widget.reservaIngressoId != null) _timerReserva?.cancel();
       final resultadoPix = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -1332,8 +1359,21 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           ),
         ),
       );
-      if (resultadoPix == false && mounted) {
-        Navigator.pop(context);
+      if (mounted &&
+          (resultadoPix == false ||
+              (widget.reservaIngressoId != null && resultadoPix == true))) {
+        if (resultadoPix == true) _reservaExpirada = true;
+        Navigator.pop(context, resultadoPix == true ? false : null);
+      } else if (mounted &&
+          widget.reservaIngressoId != null &&
+          !_reservaExpirada) {
+        _atualizarTempoReserva();
+        if (_tempoReservaRestante > Duration.zero) {
+          _timerReserva = Timer.periodic(
+            const Duration(seconds: 1),
+            (_) => _atualizarTempoReserva(),
+          );
+        }
       }
     } catch (e) {
       if (!mounted) return;
@@ -1498,6 +1538,12 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (!mounted) return;
 
       final erro = e.toString().toLowerCase();
+      if (widget.reservaIngressoId != null &&
+          (erro.contains('reserva não está disponível') ||
+              erro.contains('reserva de ingressos expirou'))) {
+        await _verificarExpiracaoDaReserva();
+        return;
+      }
       final mensagem = erro.contains('timeout')
           ? 'A conexão demorou. Antes de tentar pagar novamente, confira se a compra apareceu na carteira.'
           : erro.contains('reserva não está disponível') ||

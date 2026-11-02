@@ -13,6 +13,7 @@ import '../../utils/pix_expiration.dart';
 import '../../utils/horario_brasil.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/prazo_expirado_dialog.dart';
 import 'pagamento_sucesso_screen.dart';
 
 class PixPagamentoScreen extends StatefulWidget {
@@ -60,10 +61,6 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
   String get _mensagemPagamentoNaoConcluido => _compraDeIngresso
       ? 'Pagamento do ingresso não concluído.'
       : 'Pagamento não concluído. O carrinho foi mantido.';
-
-  String get _mensagemPixExpirado => _compraDeIngresso
-      ? 'O QR Code PIX do ingresso expirou. Faça uma nova tentativa de pagamento.'
-      : 'O QR Code PIX expirou. O carrinho foi mantido para uma nova tentativa.';
 
   @override
   void initState() {
@@ -207,16 +204,14 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
           ),
         );
       } else if ({'EXPIRED', 'EXPIRADO', 'EXPIRADA'}.contains(statusAtual)) {
-        _encerrarComoExpirado();
+        await _encerrarComoExpirado();
+      } else if (_compraDeIngresso &&
+          (response['status'] ?? '').toString().toUpperCase() == 'EXPIRADA' &&
+          statusAtual != 'ESTORNADO' &&
+          statusAtual != 'REFUNDED') {
+        await _encerrarComoExpirado(tipo: PrazoExpiradoTipo.reserva);
       } else if (statusAtual == 'ESTORNADO' || statusAtual == 'REFUNDED') {
-        _confirmacaoProcessada = true;
-        _timerStatus?.cancel();
-        _timerExpiracao?.cancel();
-        AppSnackBar.aviso(
-          context,
-          'A reserva expirou e o pagamento foi estornado.',
-        );
-        Navigator.pop(context, false);
+        await _encerrarComoExpirado(tipo: PrazoExpiradoTipo.estorno);
       } else if ({
         'SUBSTITUIDO',
         'CANCELADO',
@@ -270,13 +265,17 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     }
   }
 
-  void _encerrarComoExpirado() {
+  Future<void> _encerrarComoExpirado({
+    PrazoExpiradoTipo tipo = PrazoExpiradoTipo.pix,
+  }) async {
     if (_confirmacaoProcessada || !mounted) return;
     _confirmacaoProcessada = true;
     _timerStatus?.cancel();
     _timerExpiracao?.cancel();
-    AppSnackBar.aviso(context, _mensagemPixExpirado);
-    Navigator.pop(context, false);
+    await mostrarPrazoExpirado(context, tipo: tipo);
+    if (mounted) {
+      Navigator.pop(context, tipo != PrazoExpiradoTipo.pix);
+    }
   }
 
   double get _progressoExpiracao {

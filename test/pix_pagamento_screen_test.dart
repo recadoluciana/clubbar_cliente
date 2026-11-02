@@ -14,6 +14,7 @@ class _ApiIndisponivel extends ApiService {
 class _ApiMercadoPago extends ApiService {
   int consultas = 0;
   bool indisponivel = false;
+  String status = 'PENDENTE';
 
   @override
   Future<Map<String, dynamic>> consultarCheckoutMercadoPago({
@@ -21,12 +22,13 @@ class _ApiMercadoPago extends ApiService {
   }) async {
     consultas++;
     if (indisponivel) throw Exception('Sem conexão');
-    return {'status': 'PENDENTE'};
+    return {'status': status};
   }
 }
 
 class _ApiReservaMercadoPago extends _ApiMercadoPago {
   int consultasReserva = 0;
+  bool reservaExpirada = false;
 
   @override
   Future<Map<String, dynamic>> consultarReserva({
@@ -34,7 +36,10 @@ class _ApiReservaMercadoPago extends _ApiMercadoPago {
     required int clienteId,
   }) async {
     consultasReserva++;
-    return {'status_pagamento': 'PENDENTE'};
+    return {
+      'status_pagamento': 'PENDENTE',
+      'status': reservaExpirada ? 'EXPIRADA' : 'AGUARDANDO_PAGAMENTO',
+    };
   }
 }
 
@@ -81,6 +86,117 @@ Future<void> _abrirPixMercadoPago(
 }
 
 void main() {
+  testWidgets('reserva expirada no Pix retorna resultado terminal', (
+    tester,
+  ) async {
+    final api = _ApiReservaMercadoPago()..reservaExpirada = true;
+    bool? resultado;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () async {
+                resultado = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PixPagamentoScreen(
+                      loja: _lojaTeste(),
+                      mercadoPago: true,
+                      reservaIngressoId: 2,
+                      clienteId: 3,
+                      apiService: api,
+                      pagamento: {
+                        'pagamento_id': 'reserva-pix',
+                        'expiration_date': '2020-01-01T00:00:00Z',
+                        'pix_copia_cola': 'codigo-teste',
+                      },
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Abrir Pix'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Abrir Pix'));
+    await tester.pumpAndSettle();
+    expect(find.text('O tempo para a compra expirou'), findsOneWidget);
+    await tester.tap(find.text('VOLTAR'));
+    await tester.pumpAndSettle();
+    expect(resultado, true);
+  });
+  testWidgets('Pix ainda pendente ao fim do prazo não afirma que expirou', (
+    tester,
+  ) async {
+    final api = _ApiMercadoPago();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PixPagamentoScreen(
+          loja: _lojaTeste(),
+          mercadoPago: true,
+          apiService: api,
+          pagamento: {
+            'pagamento_id': 'pix-teste',
+            'expiration_date': '2020-01-01T00:00:00Z',
+            'pix_copia_cola': 'codigo-teste',
+          },
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('O prazo do Pix expirou'), findsNothing);
+    expect(
+      find.textContaining(
+        'a confirmação do pagamento ainda não foi verificada',
+      ),
+      findsOneWidget,
+    );
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+  testWidgets('Pix expirado mostra aviso e aguarda o cliente voltar', (
+    tester,
+  ) async {
+    final api = _ApiMercadoPago()..status = 'EXPIRED';
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PixPagamentoScreen(
+                    loja: _lojaTeste(),
+                    mercadoPago: true,
+                    apiService: api,
+                    pagamento: {
+                      'pagamento_id': 'pix-teste',
+                      'expiration_date': '2020-01-01T00:00:00Z',
+                      'pix_copia_cola': 'codigo-teste',
+                    },
+                  ),
+                ),
+              ),
+              child: const Text('Abrir Pix'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Abrir Pix'));
+    await tester.pumpAndSettle();
+    expect(find.text('O prazo do Pix expirou'), findsOneWidget);
+    expect(find.byType(PixPagamentoScreen), findsOneWidget);
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.text('O prazo do Pix expirou'), findsOneWidget);
+    await tester.tap(find.text('VOLTAR'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PixPagamentoScreen), findsNothing);
+    expect(find.text('Abrir Pix'), findsOneWidget);
+  });
   testWidgets('Pix de ingresso consulta a reserva', (tester) async {
     final api = _ApiReservaMercadoPago();
     await tester.pumpWidget(
