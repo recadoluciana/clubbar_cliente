@@ -211,6 +211,13 @@ class _LoginScreenState extends State<LoginScreen> {
       String? authorizationCode;
 
       if (provedor == 'google') {
+        if (!kIsWeb &&
+            defaultTargetPlatform == TargetPlatform.iOS &&
+            AppConfig.isDev) {
+          throw Exception(
+            'O login Google no iOS de desenvolvimento ainda não está configurado.',
+          );
+        }
         final googleOAuthClientId =
             (await apiService.obterGoogleOAuthClientId())?.trim() ??
             AppConfig.googleOAuthClientId.trim();
@@ -220,7 +227,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final google = GoogleSignIn(
           scopes: const ['email'],
-          clientId: googleOAuthClientId,
+          // No iOS o identificador específico do app vem do Info.plist;
+          // o ID web identifica o servidor que valida o token.
+          clientId: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+              ? null
+              : googleOAuthClientId,
           // O backend valida o idToken; informar explicitamente o client ID
           // do servidor evita que o fluxo web retorne somente o perfil.
           serverClientId: googleOAuthClientId,
@@ -231,7 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final autenticacao = await conta.authentication;
         idToken = autenticacao.idToken ?? '';
         accessToken = autenticacao.accessToken;
-        if (idToken.isEmpty && (accessToken == null || accessToken!.isEmpty)) {
+        if (idToken.isEmpty && (accessToken == null || accessToken.isEmpty)) {
           throw Exception('Não foi possível confirmar sua conta Google.');
         }
       } else {
