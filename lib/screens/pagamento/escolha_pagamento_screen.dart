@@ -36,6 +36,8 @@ class EscolhaPagamentoScreen extends StatefulWidget {
   final VoidCallback? onVoltar;
   final int? reservaIngressoId;
   final DateTime? reservaExpiracao;
+  final ApiService? apiService;
+  final AuthStorage? authStorage;
 
   const EscolhaPagamentoScreen({
     super.key,
@@ -47,6 +49,8 @@ class EscolhaPagamentoScreen extends StatefulWidget {
     this.onVoltar,
     this.reservaIngressoId,
     this.reservaExpiracao,
+    this.apiService,
+    this.authStorage,
   });
 
   @override
@@ -54,8 +58,8 @@ class EscolhaPagamentoScreen extends StatefulWidget {
 }
 
 class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
-  final ApiService apiService = ApiService();
-  final AuthStorage authStorage = AuthStorage();
+  late final ApiService apiService = widget.apiService ?? ApiService();
+  late final AuthStorage authStorage = widget.authStorage ?? AuthStorage();
 
   String? _metodoPagamentoProcessando;
   bool carregandoCashback = false;
@@ -71,8 +75,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   DateTime? _reservaExpiracaoAtual;
   Duration _tempoReservaRestante = Duration.zero;
   bool _reservaExpirada = false;
+  bool _verificandoReserva = false;
 
-  bool get carregandoPagamento => _metodoPagamentoProcessando != null;
+  bool get carregandoPagamento =>
+      _metodoPagamentoProcessando != null || _verificandoReserva;
   bool get _usaMercadoPago => _provedorPagamento == 'MERCADO_PAGO';
 
   String get _tempoReservaFormatado {
@@ -142,16 +148,77 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     if (mounted) setState(() => _tempoReservaRestante = atualizado);
     if (atualizado > Duration.zero) return;
 
-    _reservaExpirada = true;
     _timerReserva?.cancel();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_verificarExpiracaoDaReserva());
+  }
+
+  Future<void> _verificarExpiracaoDaReserva() async {
+    if (_verificandoReserva || widget.reservaIngressoId == null) return;
+    if (mounted) setState(() => _verificandoReserva = true);
+    try {
+      final clienteId = await authStorage.obterClienteId();
+      if (clienteId == null) throw Exception('Cliente não identificado.');
+      final reserva = await apiService.consultarReserva(
+        reservaId: widget.reservaIngressoId!,
+        clienteId: clienteId,
+      );
       if (!mounted) return;
+      final statusPagamento = (reserva['status_pagamento'] ?? '')
+          .toString()
+          .toUpperCase();
+      if (statusPagamento == 'PAGO') {
+        _voltarParaLojaComPagamentoConfirmado();
+        return;
+      }
+      if (statusPagamento == 'ESTORNADO') {
+        _reservaExpirada = true;
+        AppSnackBar.aviso(
+          context,
+          'A reserva expirou e o pagamento foi estornado.',
+        );
+        Navigator.pop(context, false);
+        return;
+      }
+      final segundos = int.tryParse('${reserva['segundos_restantes']}');
+      final situacao = (reserva['status'] ?? '').toString().toUpperCase();
+      if (segundos != null &&
+          segundos > 0 &&
+          !{'EXPIRADA', 'CANCELADA'}.contains(situacao)) {
+        setState(() {
+          _reservaExpiracaoAtual = HorarioBrasil.agora().add(
+            Duration(seconds: segundos),
+          );
+        });
+        _atualizarTempoReserva();
+        _timerReserva = Timer.periodic(
+          const Duration(seconds: 1),
+          (_) => _atualizarTempoReserva(),
+        );
+        return;
+      }
+      if (!{'EXPIRADA', 'CANCELADA'}.contains(situacao) && segundos == null) {
+        throw Exception('Não foi possível confirmar a validade da reserva.');
+      }
+      _reservaExpirada = true;
       AppSnackBar.aviso(
         context,
         'Sua reserva expirou. Inicie uma nova compra de ingresso.',
       );
       Navigator.pop(context, false);
-    });
+    } catch (_) {
+      if (mounted) {
+        AppSnackBar.aviso(
+          context,
+          'Não foi possível verificar a reserva. Confira sua conexão e tente novamente.',
+        );
+        _timerReserva = Timer.periodic(
+          const Duration(seconds: 10),
+          (_) => _atualizarTempoReserva(),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _verificandoReserva = false);
+    }
   }
 
   Future<void> _carregarCashback() async {
@@ -1032,7 +1099,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             percentualTaxaProduto: percentualTaxaProduto,
             entrega: entrega,
           );
-    final novaExpiracao = HorarioBrasil.deTextoUtc(resposta['data_expiracao']);
+    final segundos = int.tryParse('${resposta['segundos_restantes']}');
+    final novaExpiracao = segundos != null && segundos >= 0
+        ? HorarioBrasil.agora().add(Duration(seconds: segundos))
+        : HorarioBrasil.deTextoUtc(resposta['data_expiracao']);
     if (widget.reservaIngressoId != null && novaExpiracao != null && mounted) {
       setState(() => _reservaExpiracaoAtual = novaExpiracao);
       _atualizarTempoReserva();

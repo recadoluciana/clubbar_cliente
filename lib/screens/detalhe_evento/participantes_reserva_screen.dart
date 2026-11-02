@@ -65,10 +65,18 @@ class _ParticipantesReservaScreenState
       beneficiosParticipantes.add(null);
     }
     expiraEm =
-        HorarioBrasil.deTextoBrasil(widget.reserva['data_expiracao']) ??
+        _expiracaoDaResposta(widget.reserva) ??
         HorarioBrasil.agora().add(const Duration(minutes: 5));
     _tick();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+  }
+
+  DateTime? _expiracaoDaResposta(Map<String, dynamic> reserva) {
+    final segundos = int.tryParse('${reserva['segundos_restantes']}');
+    if (segundos != null && segundos >= 0) {
+      return HorarioBrasil.agora().add(Duration(seconds: segundos));
+    }
+    return HorarioBrasil.deTextoBrasil(reserva['data_expiracao']);
   }
 
   void _tick() {
@@ -155,6 +163,7 @@ class _ParticipantesReservaScreenState
         participantes: participantes,
       );
       if (!mounted) return;
+      expiraEm = _expiracaoDaResposta(reserva) ?? expiraEm;
       if (reserva['gratuito'] == true || reserva['venda_id'] != null) {
         _reservaFinalizada = true;
         timer?.cancel();
@@ -171,6 +180,7 @@ class _ParticipantesReservaScreenState
         return;
       }
       final valorTotalComTaxa = _valorTotalComTaxa(reserva);
+      timer?.cancel();
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -189,6 +199,28 @@ class _ParticipantesReservaScreenState
           ),
         ),
       );
+      if (mounted && !_reservaFinalizada) {
+        try {
+          final atual = await api.consultarReserva(
+            reservaId: int.parse('${widget.reserva['reserva_ingresso_id']}'),
+            clienteId: int.parse('${widget.reserva['cliente_id']}'),
+          );
+          if (!mounted) return;
+          if ((atual['status_pagamento'] ?? '').toString().toUpperCase() ==
+              'PAGO') {
+            _reservaFinalizada = true;
+            return;
+          }
+          expiraEm = _expiracaoDaResposta(atual) ?? expiraEm;
+          _tick();
+          if (mounted && restante > Duration.zero) {
+            timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+          }
+        } catch (_) {
+          // Sem confirmação do servidor, não cancelamos uma reserva que pode
+          // ter sido prorrogada ou paga durante o checkout.
+        }
+      }
     } catch (e) {
       if (mounted) AppSnackBar.erro(context, api.mensagemErroAmigavel(e));
     } finally {
