@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import '../../widgets/reserva_tempo_banner.dart';
 
 class MercadoPagoCardData {
   final String token;
@@ -21,12 +23,14 @@ class MercadoPagoCardScreen extends StatefulWidget {
   final String publicKey;
   final String payerEmail;
   final String payerDocument;
+  final ValueListenable<Duration>? tempoReserva;
 
   const MercadoPagoCardScreen({
     super.key,
     required this.publicKey,
     required this.payerEmail,
     required this.payerDocument,
+    this.tempoReserva,
   });
 
   @override
@@ -87,6 +91,12 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Pagamento com cartão')),
-    body: WebViewWidget(controller: _controller),
+    body: Column(
+      children: [
+        if (widget.tempoReserva != null)
+          ReservaTempoBanner(tempo: widget.tempoReserva!),
+        Expanded(child: WebViewWidget(controller: _controller)),
+      ],
+    ),
   );
 }

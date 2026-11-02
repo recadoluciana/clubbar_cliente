@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/reserva_tempo_banner.dart';
 
 class AsaasCheckoutScreen extends StatefulWidget {
   final String url;
+  final ValueListenable<Duration>? tempoReserva;
 
-  const AsaasCheckoutScreen({super.key, required this.url});
+  const AsaasCheckoutScreen({super.key, required this.url, this.tempoReserva});
 
   @override
   State<AsaasCheckoutScreen> createState() => _AsaasCheckoutScreenState();
@@ -66,10 +69,19 @@ class _AsaasCheckoutScreenState extends State<AsaasCheckoutScreen> {
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
-      body: Stack(
+      body: Column(
         children: [
-          WebViewWidget(controller: _controller),
-          if (_carregando) const Center(child: CircularProgressIndicator()),
+          if (widget.tempoReserva != null)
+            ReservaTempoBanner(tempo: widget.tempoReserva!),
+          Expanded(
+            child: Stack(
+              children: [
+                WebViewWidget(controller: _controller),
+                if (_carregando)
+                  const Center(child: CircularProgressIndicator()),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -6,15 +6,19 @@ import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:ui_web' as ui_web;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
+import '../../widgets/reserva_tempo_banner.dart';
 
 class MercadoPagoBrickScreen extends StatefulWidget {
   const MercadoPagoBrickScreen({
     super.key,
     required this.publicKey,
     required this.amount,
+    this.tempoReserva,
   });
   final String publicKey;
   final double amount;
+  final ValueListenable<Duration>? tempoReserva;
   @override
   State<MercadoPagoBrickScreen> createState() => _MercadoPagoBrickScreenState();
 }
@@ -127,7 +131,9 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
           debugPrint('Mercado Pago Brick: mensagem com dados incompletos');
           return;
         }
-        debugPrint('Mercado Pago Brick: dados tokenizados recebidos pelo Client');
+        debugPrint(
+          'Mercado Pago Brick: dados tokenizados recebidos pelo Client',
+        );
         _submitted = true;
         _frame.contentWindow?.postMessage(
           'clubbar-mp-card-received',
@@ -135,7 +141,9 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
         );
         Navigator.of(context).pop(data);
       } catch (_) {
-        debugPrint('Mercado Pago Brick: falha ao processar mensagem do formulário');
+        debugPrint(
+          'Mercado Pago Brick: falha ao processar mensagem do formulário',
+        );
         return;
       }
     });
@@ -151,11 +159,19 @@ window.addEventListener('pagehide', () => { if (window.brick) window.brick.unmou
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Pagamento com cartão')),
-    body: Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: HtmlElementView(viewType: _viewId),
-      ),
+    body: Column(
+      children: [
+        if (widget.tempoReserva != null)
+          ReservaTempoBanner(tempo: widget.tempoReserva!),
+        Expanded(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: HtmlElementView(viewType: _viewId),
+            ),
+          ),
+        ),
+      ],
     ),
   );
 }

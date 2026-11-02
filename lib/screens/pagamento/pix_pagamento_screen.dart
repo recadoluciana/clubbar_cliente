@@ -311,9 +311,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  _compraDeIngresso
-                      ? 'Tempo para concluir a compra: $_tempoRestanteFormatado'
-                      : 'QR Code expira em $_tempoRestanteFormatado',
+                  'QR Code Pix expira em $_tempoRestanteFormatado',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -460,6 +458,13 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
                 const SizedBox(height: 12),
 
+                const Text(
+                  'Pagamento iniciado',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                const Text('Aguardando pagamento'),
+                const SizedBox(height: 12),
+
                 if (_pixDeTeste) ...[
                   Container(
                     padding: const EdgeInsets.all(14),
@@ -476,6 +481,12 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                 ],
 
                 _barraExpiracao(),
+                const SizedBox(height: 8),
+                Text(
+                  _compraDeIngresso
+                      ? 'Pague o Pix dentro do prazo exibido. Os ingressos serão confirmados após a aprovação do pagamento.'
+                      : 'Pague o Pix dentro do prazo exibido. A compra será confirmada após a aprovação do pagamento.',
+                ),
 
                 if (_verificandoAposExpiracao) ...[
                   const SizedBox(height: 12),

@@ -72,6 +72,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   bool receberNoEndereco = false;
   Map<String, dynamic>? campanhaDoacao;
   Timer? _timerReserva;
+  final ValueNotifier<Duration> _tempoReservaNotifier = ValueNotifier(
+    Duration.zero,
+  );
   DateTime? _reservaExpiracaoAtual;
   Duration _tempoReservaRestante = Duration.zero;
   bool _reservaExpirada = false;
@@ -80,6 +83,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   bool get carregandoPagamento =>
       _metodoPagamentoProcessando != null || _verificandoReserva;
   bool get _usaMercadoPago => _provedorPagamento == 'MERCADO_PAGO';
+  ValueListenable<Duration>? get _tempoReservaParaCheckout =>
+      widget.reservaIngressoId != null && _reservaExpiracaoAtual != null
+      ? _tempoReservaNotifier
+      : null;
 
   String get _tempoReservaFormatado {
     final minutos = _tempoReservaRestante.inMinutes;
@@ -105,9 +112,18 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           Icon(Icons.timer_outlined, color: cor),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              'Tempo para concluir a compra: $_tempoReservaFormatado',
-              style: TextStyle(fontWeight: FontWeight.w800, color: cor),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Tempo para concluir a compra: $_tempoReservaFormatado',
+                  style: TextStyle(fontWeight: FontWeight.w800, color: cor),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Os ingressos ficam reservados durante este prazo. Ao gerar o Pix, o prazo para pagamento será mostrado na próxima tela.',
+                ),
+              ],
             ),
           ),
         ],
@@ -136,6 +152,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   @override
   void dispose() {
     _timerReserva?.cancel();
+    _tempoReservaNotifier.dispose();
     super.dispose();
   }
 
@@ -145,11 +162,24 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
     final restante = expiracao.difference(HorarioBrasil.agora());
     final atualizado = restante.isNegative ? Duration.zero : restante;
+    _tempoReservaNotifier.value = atualizado;
     if (mounted) setState(() => _tempoReservaRestante = atualizado);
     if (atualizado > Duration.zero) return;
 
     _timerReserva?.cancel();
     unawaited(_verificarExpiracaoDaReserva());
+  }
+
+  void _sincronizarPrazoReserva(Map<String, dynamic> resposta) {
+    if (widget.reservaIngressoId == null || !mounted) return;
+    final segundos = int.tryParse('${resposta['segundos_restantes']}');
+    final novaExpiracao = segundos != null && segundos >= 0
+        ? HorarioBrasil.agora().add(Duration(seconds: segundos))
+        : HorarioBrasil.deTextoUtc(resposta['data_expiracao']);
+    if (novaExpiracao != null) {
+      setState(() => _reservaExpiracaoAtual = novaExpiracao);
+      _atualizarTempoReserva();
+    }
   }
 
   Future<void> _verificarExpiracaoDaReserva() async {
@@ -989,8 +1019,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       final dados = await Navigator.push<Map<String, dynamic>>(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              MercadoPagoBrickScreen(publicKey: publicKey, amount: totalPagar),
+          builder: (_) => MercadoPagoBrickScreen(
+            publicKey: publicKey,
+            amount: totalPagar,
+            tempoReserva: _tempoReservaParaCheckout,
+          ),
         ),
       );
       if (dados == null) return;
@@ -1046,6 +1079,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             publicKey: publicKey,
             payerEmail: perfil['emailcliente']?.toString() ?? '',
             payerDocument: perfil['nrcpfcliente']?.toString() ?? '',
+            tempoReserva: _tempoReservaParaCheckout,
           ),
         ),
       );
@@ -1099,14 +1133,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             percentualTaxaProduto: percentualTaxaProduto,
             entrega: entrega,
           );
-    final segundos = int.tryParse('${resposta['segundos_restantes']}');
-    final novaExpiracao = segundos != null && segundos >= 0
-        ? HorarioBrasil.agora().add(Duration(seconds: segundos))
-        : HorarioBrasil.deTextoUtc(resposta['data_expiracao']);
-    if (widget.reservaIngressoId != null && novaExpiracao != null && mounted) {
-      setState(() => _reservaExpiracaoAtual = novaExpiracao);
-      _atualizarTempoReserva();
-    }
+    _sincronizarPrazoReserva(resposta);
     final codigoPix = resposta['pix_copia_cola']?.toString().trim() ?? '';
     if (metodo.toUpperCase() == 'PIX' && codigoPix.isNotEmpty) {
       if (!mounted) return;
@@ -1135,7 +1162,12 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
     final resultado = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => AsaasCheckoutScreen(url: checkoutUrl)),
+      MaterialPageRoute(
+        builder: (_) => AsaasCheckoutScreen(
+          url: checkoutUrl,
+          tempoReserva: _tempoReservaParaCheckout,
+        ),
+      ),
     );
     if (resultado != true || !mounted) {
       if (mounted) {
@@ -1369,6 +1401,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             );
 
       final checkoutUrl = resposta['checkout_url'];
+      _sincronizarPrazoReserva(resposta);
 
       if (checkoutUrl == null || checkoutUrl.toString().isEmpty) {
         throw Exception('Checkout Asaas não retornado.');
@@ -1381,7 +1414,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         final resultado = await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => AsaasCheckoutScreen(url: checkoutUrl.toString()),
+            builder: (_) => AsaasCheckoutScreen(
+              url: checkoutUrl.toString(),
+              tempoReserva: _tempoReservaParaCheckout,
+            ),
           ),
         );
 

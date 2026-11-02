@@ -367,6 +367,12 @@ class _ParticipantesReservaScreenState
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: Text(
+                'Os ingressos ficam reservados durante o tempo indicado. Ao escolher Pix, você verá o prazo para pagamento na tela do QR Code.',
+              ),
+            ),
             Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(

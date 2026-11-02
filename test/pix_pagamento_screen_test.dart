@@ -105,6 +105,9 @@ void main() {
     await tester.pump();
     expect(api.consultasReserva, greaterThan(0));
     expect(api.consultas, 0);
+    expect(find.text('Pagamento iniciado'), findsOneWidget);
+    expect(find.text('Aguardando pagamento'), findsOneWidget);
+    expect(find.textContaining('QR Code Pix expira em'), findsOneWidget);
     await tester.pumpWidget(const SizedBox.shrink());
   });
   testWidgets('informa a limitação do sandbox e mantém o Pix pendente', (
