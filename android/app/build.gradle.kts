@@ -67,7 +67,7 @@ android {
             resValue(
                 "string",
                 "app_name",
-                "Clubbar Client"
+                "Clubbar"
             )
         }
     }
