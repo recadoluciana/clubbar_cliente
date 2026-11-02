@@ -1086,9 +1086,22 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       CarteiraBadgeNotifier.atualizar();
     }
     if (!mounted) return;
+    _voltarParaLojaComPagamentoConfirmado();
+  }
+
+  void _voltarParaLojaComPagamentoConfirmado() {
+    final messenger = ScaffoldMessenger.of(context);
     MainNavigationController.limparTelasInternas();
     MainNavigationController.abrirTela(DetalheLojaScreen(loja: widget.loja));
     Navigator.of(context).popUntil((rota) => rota.isFirst);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (messenger.mounted) {
+        AppSnackBar.sucessoNoMessenger(
+          messenger,
+          'Pagamento realizado com sucesso!',
+        );
+      }
+    });
   }
 
   Future<void> _confirmarMercadoPago(
@@ -1125,9 +1138,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     );
     CarteiraBadgeNotifier.atualizar();
     if (!mounted) return;
-    MainNavigationController.limparTelasInternas();
-    MainNavigationController.abrirTela(DetalheLojaScreen(loja: widget.loja));
-    Navigator.of(context).popUntil((rota) => rota.isFirst);
+    _voltarParaLojaComPagamentoConfirmado();
   }
 
   Future<void> abrirPix() async {
@@ -1344,11 +1355,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           // O checkout já confirma o pagamento. Ao voltar ao app, abrimos a
           // mesma loja para que a pessoa continue navegando de onde comprou.
-          MainNavigationController.limparTelasInternas();
-          MainNavigationController.abrirTela(
-            DetalheLojaScreen(loja: widget.loja),
-          );
-          Navigator.of(context).popUntil((rota) => rota.isFirst);
+          _voltarParaLojaComPagamentoConfirmado();
           return;
         }
       }

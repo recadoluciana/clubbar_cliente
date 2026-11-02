@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 
 class AppSnackBar {
   static void sucesso(BuildContext context, String mensagem) {
-    _mostrar(
-      context,
+    sucessoNoMessenger(ScaffoldMessenger.of(context), mensagem);
+  }
+
+  static void sucessoNoMessenger(
+    ScaffoldMessengerState messenger,
+    String mensagem,
+  ) {
+    _mostrarNoMessenger(
+      messenger,
       mensagem,
       Colors.green.shade700,
       Colors.white,
@@ -83,9 +90,24 @@ class AppSnackBar {
     Color foregroundColor,
     IconData icon,
   ) {
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    _mostrarNoMessenger(
+      ScaffoldMessenger.of(context),
+      mensagem,
+      backgroundColor,
+      foregroundColor,
+      icon,
+    );
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
+  static void _mostrarNoMessenger(
+    ScaffoldMessengerState messenger,
+    String mensagem,
+    Color backgroundColor,
+    Color foregroundColor,
+    IconData icon,
+  ) {
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.fixed,
         elevation: 6,
