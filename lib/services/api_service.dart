@@ -617,13 +617,29 @@ class ApiService {
     required int reservaId,
     required int clienteId,
     required String metodo,
+    String? cardToken,
+    String? paymentMethodId,
+    String? issuerId,
+    int installments = 1,
+    String? payerEmail,
+    String? payerDocument,
+    String? deviceId,
   }) async {
     final response = await http.post(
       Uri.parse(
         '$baseUrl/reservas-ingressos/$reservaId/mercado-pago?metodo=$metodo',
       ),
       headers: await _headersAutenticado(),
-      body: jsonEncode({'cliente_id': clienteId, 'parcelas': 1}),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'parcelas': installments,
+        'card_token': cardToken,
+        'payment_method_id': paymentMethodId,
+        'issuer_id': issuerId,
+        'payer_email': payerEmail,
+        'payer_document': payerDocument,
+        'device_id': deviceId,
+      }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
@@ -1847,6 +1863,13 @@ class ApiService {
     required double percentualTaxaIngresso,
     required double percentualTaxaProduto,
     Map<String, String>? entrega,
+    String? cardToken,
+    String? payerEmail,
+    String? payerDocument,
+    String? paymentMethodId,
+    String? issuerId,
+    int? installments,
+    String? deviceId,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/pagamentos/pagar-mercado-pago'),
@@ -1858,6 +1881,15 @@ class ApiService {
         'dsmetodopag': metodo,
         'percentual_taxa_ingresso': percentualTaxaIngresso,
         'percentual_taxa_produto': percentualTaxaProduto,
+        ...?(cardToken == null ? null : {'card_token': cardToken}),
+        ...?(payerEmail == null ? null : {'payer_email': payerEmail}),
+        ...?(payerDocument == null ? null : {'payer_document': payerDocument}),
+        ...?(paymentMethodId == null
+            ? null
+            : {'payment_method_id': paymentMethodId}),
+        ...?(issuerId == null ? null : {'issuer_id': issuerId}),
+        ...?(installments == null ? null : {'installments': installments}),
+        ...?(deviceId == null ? null : {'device_id': deviceId}),
         ...?(entrega == null ? null : {'entrega': entrega}),
       }),
     );

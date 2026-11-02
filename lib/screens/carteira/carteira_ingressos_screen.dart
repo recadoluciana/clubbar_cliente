@@ -706,6 +706,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         titulo: 'Valor',
                         valor: ValueFormatters.moeda(valor),
                         corIcone: Colors.green.shade700,
+                        pago: valor > 0,
                       ),
 
                       const SizedBox(width: 5),
@@ -998,6 +999,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     required String titulo,
     required String valor,
     Color? corIcone,
+    bool pago = false,
   }) {
     return Expanded(
       child: Container(
@@ -1024,14 +1026,41 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    valor,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 3,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        valor,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      if (pago)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.green.shade200),
+                          ),
+                          child: Text(
+                            'Pago',
+                            style: TextStyle(
+                              color: Colors.green.shade800,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),

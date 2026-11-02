@@ -696,14 +696,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   }
 
   Widget _barraPoliticaCompra() {
+    final cor = Theme.of(context).colorScheme.primary;
     return SafeArea(
       top: false,
       child: Material(
         color: Colors.white,
-        elevation: 10,
+        elevation: 8,
         child: SizedBox(
           height: 44,
-          child: TextButton.icon(
+          child: Center(child: TextButton.icon(
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -711,20 +712,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 ),
               );
             },
-            icon: Icon(
-              Icons.policy_outlined,
-              color: Colors.amber.shade800,
-              size: 20,
+            icon: const Icon(Icons.policy_outlined, size: 18),
+            label: const Text('Política de compra de produto'),
+            style: TextButton.styleFrom(
+              foregroundColor: cor,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            label: Text(
-              'Política de compra de produto',
-              style: TextStyle(
-                color: Colors.amber.shade900,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
+          )),
         ),
       ),
     );
