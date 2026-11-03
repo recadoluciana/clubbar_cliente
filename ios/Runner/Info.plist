@@ -17,7 +17,7 @@
 	<key>CFBundleName</key>
 	<string>$(APP_DISPLAY_NAME)</string>
 	<key>GIDClientID</key>
-	<string>665301748837-rkgoh791o0t66gn30489uuquo6fha8fa.apps.googleusercontent.com</string>
+	<string>$(GOOGLE_IOS_CLIENT_ID)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -25,7 +25,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.665301748837-rkgoh791o0t66gn30489uuquo6fha8fa</string>
+				<string>$(GOOGLE_IOS_URL_SCHEME)</string>
 			</array>
 		</dict>
 	</array>

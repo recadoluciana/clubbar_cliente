@@ -211,13 +211,6 @@ class _LoginScreenState extends State<LoginScreen> {
       String? authorizationCode;
 
       if (provedor == 'google') {
-        if (!kIsWeb &&
-            defaultTargetPlatform == TargetPlatform.iOS &&
-            AppConfig.isDev) {
-          throw Exception(
-            'O login Google no iOS de desenvolvimento ainda não está configurado.',
-          );
-        }
         final googleOAuthClientId =
             (await apiService.obterGoogleOAuthClientId())?.trim() ??
             AppConfig.googleOAuthClientId.trim();
