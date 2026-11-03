@@ -112,9 +112,14 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
         final sessao = snapshot.data;
         if (sessao?.logado == true) {
           if (!mostrarPerfil) return const SizedBox.shrink();
-          final nome = Text(
-            _primeiroNome(sessao?.nome ?? ''),
-            style: const TextStyle(fontWeight: FontWeight.w800),
+          final nome = ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 80),
+            child: Text(
+              _primeiroNome(sessao?.nome ?? ''),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
           );
           void abrirPerfil() {
             MainNavigationController.abrirTela(const PerfilScreen());
@@ -256,14 +261,16 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                       else
                         Icon(iconeTitulo, color: corIconeTitulo, size: 22),
                       const SizedBox(width: 8),
-                      Text(
-                        titulo!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
+                      Flexible(
+                        child: Text(
+                          titulo!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ),
                     ],
