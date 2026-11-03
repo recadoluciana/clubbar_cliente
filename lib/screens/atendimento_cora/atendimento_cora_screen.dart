@@ -395,7 +395,6 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
         imagemTituloAsset: 'assets/images/corujao.png',
         mostrarVoltar: true,
         mostrarLogo: false,
-        mostrarSessao: false,
         onVoltar: MainNavigationController.irParaHome,
       ),
       body: Column(

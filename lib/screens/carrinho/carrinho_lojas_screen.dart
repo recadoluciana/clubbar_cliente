@@ -263,7 +263,6 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
-        mostrarSessao: false,
         onVoltar: MainNavigationController.irParaHome,
         actions: [
           IconButton(

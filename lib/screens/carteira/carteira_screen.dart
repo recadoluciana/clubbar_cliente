@@ -594,7 +594,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
-        mostrarSessao: false,
         onVoltar: widget.lojaSelecionadaId == null
             ? MainNavigationController.irParaHome
             : MainNavigationController.fecharTelaInterna,
