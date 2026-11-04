@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../models/evento.dart';
 import '../../models/loja.dart';
+import '../../models/loja_horario.dart';
 import '../../models/produto.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
@@ -33,6 +34,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final TextEditingController _buscaCtrl = TextEditingController();
 
   Timer? _timer;
+  Timer? _timerHorarios;
+  final Map<int, Future<List<LojaHorario>>> _horariosLojas = {};
+  bool _abrindoLoja = false;
   late final AnimationController _animacaoCortesias;
   late final Animation<double> _opacidadeCortesias;
   int _paginaAtual = 0;
@@ -56,6 +60,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    _timerHorarios = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
     _animacaoCortesias = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -68,6 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Future<void> carregarHome() async {
     setState(() {
+      _horariosLojas.clear();
       carregando = true;
       erro = null;
       erroEventos = null;
@@ -263,10 +271,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void dispose() {
     _timer?.cancel();
+    _timerHorarios?.cancel();
     _animacaoCortesias.dispose();
     _pageController.dispose();
     _buscaCtrl.dispose();
     super.dispose();
+  }
+
+  Widget _statusFuncionamento(Loja loja) {
+    return FutureBuilder<List<LojaHorario>>(
+      future: loja.aberto24x7
+          ? null
+          : _horariosLojas.putIfAbsent(
+              loja.id,
+              () => apiService.buscarHorariosLoja(loja.id),
+            ),
+      builder: (context, snapshot) {
+        final bool? aberto = loja.aberto24x7
+            ? true
+            : snapshot.hasData
+            ? lojaAbertaAgora(snapshot.data!, DateTime.now())
+            : null;
+        final cor = aberto == null
+            ? Colors.grey
+            : aberto
+            ? Colors.green
+            : Colors.red;
+        final texto = aberto == null
+            ? snapshot.connectionState == ConnectionState.waiting
+                  ? 'Consultando horário'
+                  : 'Horário indisponível'
+            : aberto
+            ? 'Aberto agora'
+            : 'Fechado agora';
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: cor.shade50,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            texto,
+            style: TextStyle(
+              color: cor.shade700,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> sair() async {
@@ -434,10 +488,53 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Future<void> _abrirLoja(Loja loja) async {
+    if (_abrindoLoja) return;
+    _abrindoLoja = true;
+    try {
+      bool? aberto = loja.aberto24x7 ? true : null;
+      if (!loja.aberto24x7) {
+        try {
+          final horarios = await _horariosLojas.putIfAbsent(
+            loja.id,
+            () => apiService.buscarHorariosLoja(loja.id),
+          );
+          aberto = lojaAbertaAgora(horarios, DateTime.now());
+        } catch (_) {
+          // Não presumir que a loja está fechada se a consulta falhar.
+        }
+      }
+      if (!mounted) return;
+      if (aberto == false) {
+        final continuar = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Estabelecimento fechado'),
+            content: Text('${loja.nome} está fechado agora. Deseja continuar?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Continuar'),
+              ),
+            ],
+          ),
+        );
+        if (!mounted || continuar != true) return;
+      }
+      MainNavigationController.abrirTela(DetalheLojaScreen(loja: loja));
+    } finally {
+      _abrindoLoja = false;
+    }
+  }
+
   void _abrirLojaParticipante(int lojaId) {
     for (final loja in lojas) {
       if (loja.id == lojaId) {
-        MainNavigationController.abrirTela(DetalheLojaScreen(loja: loja));
+        _abrirLoja(loja);
         return;
       }
     }
@@ -1252,11 +1349,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             elevation: 2,
                             child: InkWell(
                               borderRadius: BorderRadius.circular(20),
-                              onTap: () {
-                                MainNavigationController.abrirTela(
-                                  DetalheLojaScreen(loja: loja),
-                                );
-                              },
+                              onTap: () => _abrirLoja(loja),
                               child: Padding(
                                 padding: const EdgeInsets.all(11),
                                 child: Row(
@@ -1371,6 +1464,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               ],
                                             ),
                                           ],
+                                          const SizedBox(height: 6),
+                                          _statusFuncionamento(loja),
                                         ],
                                       ),
                                     ),
