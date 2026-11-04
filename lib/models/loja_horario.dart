@@ -71,3 +71,47 @@ class LojaHorario {
     }.contains(valor?.toString().trim().toUpperCase());
   }
 }
+
+/// Retorna null quando não há horários suficientes para determinar a situação.
+bool? lojaAbertaAgora(List<LojaHorario> horarios, DateTime agora) {
+  if (!horarios.any((horario) => !horario.fechado)) return null;
+
+  int? minutos(String? hora) {
+    final partes = hora?.split(':');
+    if (partes == null || partes.length < 2) return null;
+    final h = int.tryParse(partes[0]);
+    final m = int.tryParse(partes[1]);
+    if (h == null || m == null || h < 0 || h > 23 || m < 0 || m > 59) {
+      return null;
+    }
+    return h * 60 + m;
+  }
+
+  final minutoAtual = agora.hour * 60 + agora.minute;
+  final diaAnterior = agora.weekday == 1 ? 7 : agora.weekday - 1;
+  var incompleto = false;
+  for (final horario in horarios) {
+    if (horario.fechado ||
+        (horario.diaSemana != agora.weekday &&
+            horario.diaSemana != diaAnterior)) {
+      continue;
+    }
+    final abertura = minutos(horario.horaAbertura);
+    final fechamento = minutos(horario.horaFechamento);
+    if (abertura == null || fechamento == null) {
+      incompleto = true;
+      continue;
+    }
+    if (horario.fechaDiaSeguinte) {
+      if ((horario.diaSemana == agora.weekday && minutoAtual >= abertura) ||
+          (horario.diaSemana == diaAnterior && minutoAtual < fechamento)) {
+        return true;
+      }
+    } else if (horario.diaSemana == agora.weekday &&
+        minutoAtual >= abertura &&
+        minutoAtual < fechamento) {
+      return true;
+    }
+  }
+  return incompleto ? null : false;
+}

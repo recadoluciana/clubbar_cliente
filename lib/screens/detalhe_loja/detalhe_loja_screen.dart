@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -30,16 +32,26 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
   final ApiService _apiService = ApiService();
   final AuthStorage _authStorage = AuthStorage();
   late final Future<List<LojaHorario>> _horariosFuture;
+  Timer? _relogio;
   Loja get loja => widget.loja;
 
   @override
   void initState() {
     super.initState();
     _horariosFuture = _apiService.buscarHorariosLoja(loja.id);
+    _relogio = Timer.periodic(const Duration(minutes: 1), (_) {
+      if (mounted) setState(() {});
+    });
     CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
     CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
     _carregarQuantidadeCarrinhoLoja();
     _carregarQuantidadeCarteiraLoja();
+  }
+
+  @override
+  void dispose() {
+    _relogio?.cancel();
+    super.dispose();
   }
 
   Future<void> _carregarQuantidadeCarrinhoLoja() async {
@@ -404,6 +416,70 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
     );
   }
 
+  Widget _indicadoresLoja() {
+    return FutureBuilder<List<LojaHorario>>(
+      future: _horariosFuture,
+      builder: (context, snapshot) {
+        final bool? aberta = loja.aberto24x7
+            ? true
+            : snapshot.hasData
+            ? lojaAbertaAgora(snapshot.data!, DateTime.now())
+            : null;
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _indicador(
+              aberta == null
+                  ? snapshot.connectionState == ConnectionState.waiting
+                        ? 'Consultando horário'
+                        : 'Horário indisponível'
+                  : aberta
+                  ? 'Aberto agora'
+                  : 'Fechado agora',
+              aberta == null
+                  ? Icons.schedule
+                  : aberta
+                  ? Icons.check_circle_outline
+                  : Icons.access_time,
+              aberta == null
+                  ? Colors.grey
+                  : aberta
+                  ? Colors.green
+                  : Colors.red,
+            ),
+            _indicador(
+              loja.permiteEntrega ? 'Possui delivery' : 'Não possui delivery',
+              Icons.delivery_dining,
+              loja.permiteEntrega ? Colors.blue : Colors.grey,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _indicador(String texto, IconData icone, MaterialColor cor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: cor.shade50,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icone, size: 16, color: cor.shade700),
+          const SizedBox(width: 5),
+          Text(
+            texto,
+            style: TextStyle(color: cor.shade700, fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -428,6 +504,8 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _indicadoresLoja(),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     const Icon(Icons.location_on_outlined),
