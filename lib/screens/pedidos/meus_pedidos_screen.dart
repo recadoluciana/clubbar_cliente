@@ -218,6 +218,35 @@ class _PedidosPorTipoScreenState extends State<PedidosPorTipoScreen> {
 
       final data = await apiService.buscarCompras(clienteId: id);
 
+      final lojasSemLogo = <int>{};
+      for (final compra in data) {
+        final lojaId = int.tryParse('${compra['loja_id'] ?? ''}');
+        if (lojaId != null &&
+            (compra['urllogoloja'] ?? '').toString().trim().isEmpty) {
+          lojasSemLogo.add(lojaId);
+        }
+      }
+      final logos = <int, String>{};
+      await Future.wait(
+        lojasSemLogo.map((lojaId) async {
+          try {
+            final loja = await apiService.buscarDadosLoja(lojaId);
+            logos[lojaId] = loja.imagemUrl;
+          } catch (_) {
+            // A compra continua disponível mesmo se a imagem não puder ser consultada.
+          }
+        }),
+      );
+      for (final compra in data) {
+        final lojaId = int.tryParse('${compra['loja_id'] ?? ''}');
+        if ((compra['urllogoloja'] ?? '').toString().trim().isEmpty &&
+            logos[lojaId]?.isNotEmpty == true) {
+          compra['urllogoloja'] = logos[lojaId];
+        }
+      }
+
+      if (!mounted) return;
+
       setState(() {
         pedidos = data;
         carregando = false;
@@ -868,9 +897,23 @@ class _PedidosPorTipoScreenState extends State<PedidosPorTipoScreen> {
                               color: Colors.amber.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: Icon(
-                              Icons.receipt_long_rounded,
-                              color: Colors.amber.shade800,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Center(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    '#$vendaId',
+                                    style: TextStyle(
+                                      color: Colors.amber.shade800,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                     const SizedBox(width: 10),
@@ -879,7 +922,7 @@ class _PedidosPorTipoScreenState extends State<PedidosPorTipoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            ingressos ? nomeEvento : 'Venda #$vendaId',
+                            ingressos ? nomeEvento : 'Venda',
                             maxLines: ingressos ? 2 : 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
