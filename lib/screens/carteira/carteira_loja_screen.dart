@@ -688,7 +688,12 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     Flexible(
                       child: Text(
                         entrega
-                            ? 'Pague na entrega e apresente o QR Code ao motoboy.'
+                            ? (item['situacaovenda'] ?? '')
+                                          .toString()
+                                          .toUpperCase() ==
+                                      'PAGA'
+                                  ? 'Pagamento realizado. Apresente o QR Code ao motoboy.'
+                                  : 'Apresente o QR Code ao motoboy na entrega.'
                             : 'Apresente o QR Code para o atendente',
                         textAlign: TextAlign.center,
                         style: TextStyle(
