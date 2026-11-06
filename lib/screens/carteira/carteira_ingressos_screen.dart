@@ -1,5 +1,5 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../services/carteira_badge_notifier.dart';
@@ -111,6 +111,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         'Recebido de: ${widget.nomeCliente}\n\n'
         'Apresente o QR Code na entrada junto com seu documento de identificação.';
     try {
+      final caixa = context.findRenderObject() as RenderBox?;
+      final origem = caixa != null && caixa.hasSize
+          ? caixa.localToGlobal(Offset.zero) & caixa.size
+          : null;
       await Share.shareXFiles(
         [
           await ShareImageFile.prepare(
@@ -118,25 +122,20 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
             fileName: 'ingresso_clubbar_$itvendaId.png',
           ),
         ],
-        text: texto,
+        // Alguns aplicativos no iOS não recebem corretamente imagem e texto
+        // juntos. O ingresso já contém todos os dados na própria imagem.
+        text: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+            ? null
+            : texto,
         subject: 'Ingresso Clubbar',
+        sharePositionOrigin: origem,
       );
     } catch (_) {
-      await _copiarMensagemDoIngresso(texto);
-    }
-  }
-
-  Future<void> _copiarMensagemDoIngresso(String texto) async {
-    try {
-      await Clipboard.setData(ClipboardData(text: texto));
       if (!mounted) return;
-      AppSnackBar.info(
+      AppSnackBar.erro(
         context,
-        'A mensagem do ingresso foi copiada. Cole-a no WhatsApp, e-mail ou onde preferir.',
+        'Não foi possível compartilhar a imagem do ingresso com o QR Code. Tente novamente.',
       );
-    } catch (_) {
-      if (!mounted) return;
-      AppSnackBar.erro(context, 'Não foi possível compartilhar o ingresso.');
     }
   }
 
