@@ -492,6 +492,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_abrindoLoja) return;
     _abrindoLoja = true;
     try {
+      if (!loja.permiteEntrega) {
+        MainNavigationController.abrirTela(DetalheLojaScreen(loja: loja));
+        return;
+      }
       bool? aberto = loja.aberto24x7 ? true : null;
       if (!loja.aberto24x7) {
         try {
