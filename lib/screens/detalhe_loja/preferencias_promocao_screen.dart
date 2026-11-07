@@ -77,7 +77,14 @@ class _PreferenciasPromocaoScreenState
         body: jsonEncode({'push': _push, 'whatsapp': _whatsapp}),
       );
       if (response.statusCode != 200) {
-        throw Exception('Não foi possível salvar suas preferências.');
+        var mensagem = 'Não foi possível salvar suas preferências.';
+        try {
+          final dados = jsonDecode(response.body);
+          if (dados is Map && dados['detail'] is String) {
+            mensagem = dados['detail'] as String;
+          }
+        } catch (_) {}
+        throw Exception(mensagem);
       }
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
