@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'notificacoes_promocionais.dart';
 
 class AuthStorage {
   static const _secureStorage = FlutterSecureStorage();
@@ -23,6 +26,9 @@ class AuthStorage {
     }
     await prefs.setInt(_keyClienteId, clienteId);
     await prefs.setString(_keyNomeCliente, nomeCliente);
+    unawaited(
+      NotificacoesPromocionais.instance.ativar(token).catchError((_) {}),
+    );
   }
 
   Future<String?> obterToken() async {
@@ -60,6 +66,15 @@ class AuthStorage {
 
   Future<void> limparToken() async {
     final prefs = await SharedPreferences.getInstance();
+
+    final token = await obterToken();
+    if (token != null && token.isNotEmpty) {
+      try {
+        await NotificacoesPromocionais.instance.encerrar(token);
+      } catch (_) {
+        // O logout continua disponível mesmo quando a rede está indisponível.
+      }
+    }
 
     await prefs.remove(_keyToken);
     if (!kIsWeb) {

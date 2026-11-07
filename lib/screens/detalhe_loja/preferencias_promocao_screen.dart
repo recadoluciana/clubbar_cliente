@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../services/notificacoes_promocionais.dart';
 import '../../services/http_with_timeout.dart' as http;
 import '../../widgets/clubbar_app_bar.dart';
 
@@ -71,6 +73,18 @@ class _PreferenciasPromocaoScreenState
   Future<void> _salvar() async {
     setState(() => _carregando = true);
     try {
+      if (_push && !kIsWeb) {
+        final token = await AuthStorage().obterToken();
+        if (token == null || token.isEmpty) {
+          throw Exception(
+            'Entre na sua conta para escolher suas preferências.',
+          );
+        }
+        await NotificacoesPromocionais.instance.ativar(
+          token,
+          solicitarPermissao: true,
+        );
+      }
       final response = await http.put(
         _url,
         headers: await _headers(),
@@ -89,7 +103,9 @@ class _PreferenciasPromocaoScreenState
       if (!mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       Navigator.pop(context);
-      messenger.showSnackBar(const SnackBar(content: Text('Preferências salvas.')));
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Preferências salvas.')),
+      );
     } catch (e) {
       if (!mounted) return;
       setState(() => _carregando = false);
@@ -120,7 +136,7 @@ class _PreferenciasPromocaoScreenState
               ),
               const SizedBox(height: 12),
               const Text(
-              'Escolha como deseja receber promoções deste estabelecimento. Você pode mudar de ideia quando quiser. O envio de promoções ainda está em preparação.',
+                'Escolha como deseja receber promoções deste estabelecimento. Você pode mudar de ideia quando quiser. O envio de promoções ainda está em preparação.',
               ),
               SwitchListTile(
                 title: const Text('Notificações no aplicativo'),
