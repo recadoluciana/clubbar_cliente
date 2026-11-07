@@ -1533,20 +1533,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      TextButton(
-                        onPressed: _abrirExplicacaoTaxas,
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors.blue.shade700,
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          textStyle: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                        child: const Text('Entenda a taxa'),
-                      ),
                       Text(
                         '(+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
                         style: const TextStyle(
@@ -1877,6 +1863,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
+  ButtonStyle _estiloLinksEvento() => TextButton.styleFrom(
+    foregroundColor: Theme.of(context).colorScheme.primary,
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    minimumSize: Size.zero,
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+  );
+
   Future<void> _abrirContato(Uri uri) async {
     final abriu = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!abriu && mounted) {
@@ -2115,60 +2109,73 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ),
                           const SizedBox(height: 6),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               if (lotes.isNotEmpty)
-                                FilledButton.icon(
-                                  onPressed: _irParaIngressos,
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 10,
+                                Flexible(
+                                  child: SizedBox(
+                                    width: 160,
+                                    height: 40,
+                                    child: FilledButton.icon(
+                                      onPressed: _irParaIngressos,
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
+                                        ),
+                                        minimumSize: const Size(0, 40),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.confirmation_number_outlined,
+                                        size: 18,
+                                      ),
+                                      label: const Text(
+                                        'Comprar ingresso',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
                                     ),
-                                    minimumSize: const Size(0, 40),
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
-                                  icon: const Icon(
-                                    Icons.confirmation_number_outlined,
-                                    size: 18,
-                                  ),
-                                  label: const Text(
-                                    'Comprar ingresso',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w800,
+                                ),
+                              if (lotes.isEmpty) const Spacer(),
+                              Flexible(
+                                child: SizedBox(
+                                  width: 160,
+                                  height: 40,
+                                  child: FilledButton.icon(
+                                    onPressed: () {
+                                      MainNavigationController.abrirTela(
+                                        ProdutosLojaScreen(loja: widget.loja),
+                                      );
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: Colors.amber,
+                                      foregroundColor: Colors.black,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      minimumSize: const Size(0, 40),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                     ),
-                                  ),
-                                ),
-                              const Spacer(),
-                              FilledButton.icon(
-                                onPressed: () {
-                                  MainNavigationController.abrirTela(
-                                    ProdutosLojaScreen(loja: widget.loja),
-                                  );
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.amber,
-                                  foregroundColor: Colors.black,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 10,
-                                  ),
-                                  minimumSize: const Size(0, 40),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                icon: const Icon(
-                                  Icons.shopping_bag_outlined,
-                                  size: 18,
-                                ),
-                                label: const Text(
-                                  'Comprar produto',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
+                                    icon: const Icon(
+                                      Icons.shopping_bag_outlined,
+                                      size: 18,
+                                    ),
+                                    label: const Text(
+                                      'Comprar produto',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -2377,26 +2384,38 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
-                          const SizedBox(height: 12),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton.icon(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const PoliticaCompraScreen(
-                                    tipo: 'INGRESSO',
+                          const SizedBox(height: 4),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const PoliticaCompraScreen(
+                                      tipo: 'INGRESSO',
+                                    ),
                                   ),
                                 ),
+                                icon: const Icon(
+                                  Icons.policy_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  'Política de compra de ingresso',
+                                ),
+                                style: _estiloLinksEvento(),
                               ),
-                              icon: const Icon(Icons.policy_outlined, size: 18),
-                              label: const Text(
-                                'Política de compra de ingresso',
+                              TextButton.icon(
+                                onPressed: _abrirExplicacaoTaxas,
+                                icon: const Icon(Icons.info_outline, size: 18),
+                                label: const Text('Entenda a taxa'),
+                                style: _estiloLinksEvento(),
                               ),
-                            ),
+                            ],
                           ),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 8),
                             const Text(
                               'Descrição',
                               style: TextStyle(
