@@ -203,6 +203,23 @@ class AtracaoEventoDetalhe {
     this.estilos = const [],
   });
 
+  AtracaoEventoDetalhe comBanner(String banner) => AtracaoEventoDetalhe(
+    id: id,
+    nome: nome,
+    estilo: estilo,
+    descricao: descricao,
+    bannerUrl: banner,
+    foto2: foto2,
+    foto3: foto3,
+    instagram: instagram,
+    telefoneContato: telefoneContato,
+    videoInstagram: videoInstagram,
+    videoYoutube: videoYoutube,
+    inicio: inicio,
+    fim: fim,
+    estilos: estilos,
+  );
+
   factory AtracaoEventoDetalhe.fromJson(Map<String, dynamic> json) {
     final estilos = (json['estilos'] as List? ?? const [])
         .whereType<Map>()

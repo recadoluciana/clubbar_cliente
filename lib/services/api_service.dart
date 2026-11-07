@@ -1341,16 +1341,7 @@ class ApiService {
           if (bannerAtracao.startsWith('http://')) {
             bannerAtracao = bannerAtracao.replaceFirst('http://', 'https://');
           }
-          return AtracaoEventoDetalhe(
-            id: atracao.id,
-            nome: atracao.nome,
-            estilo: atracao.estilo,
-            descricao: atracao.descricao,
-            bannerUrl: bannerAtracao,
-            inicio: atracao.inicio,
-            fim: atracao.fim,
-            estilos: atracao.estilos,
-          );
+          return atracao.comBanner(bannerAtracao);
         }).toList();
 
         return EventoDetalhe(
