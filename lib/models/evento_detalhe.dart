@@ -176,6 +176,12 @@ class AtracaoEventoDetalhe {
   final String estilo;
   final String descricao;
   final String bannerUrl;
+  final String foto2,
+      foto3,
+      instagram,
+      telefoneContato,
+      videoInstagram,
+      videoYoutube;
   final String inicio;
   final String fim;
   final List<String> estilos;
@@ -186,6 +192,12 @@ class AtracaoEventoDetalhe {
     required this.estilo,
     required this.descricao,
     required this.bannerUrl,
+    this.foto2 = '',
+    this.foto3 = '',
+    this.instagram = '',
+    this.telefoneContato = '',
+    this.videoInstagram = '',
+    this.videoYoutube = '',
     required this.inicio,
     required this.fim,
     this.estilos = const [],
@@ -204,6 +216,12 @@ class AtracaoEventoDetalhe {
       estilo: estilos.isNotEmpty ? estilos.join(', ') : estiloLegado,
       descricao: (json['dsatracao'] ?? '').toString(),
       bannerUrl: (json['urlbanneratracao'] ?? '').toString(),
+      foto2: (json['urlfoto2atracao'] ?? '').toString(),
+      foto3: (json['urlfoto3atracao'] ?? '').toString(),
+      instagram: (json['instagram'] ?? '').toString(),
+      telefoneContato: (json['telefone_contato'] ?? '').toString(),
+      videoInstagram: (json['video_instagram'] ?? '').toString(),
+      videoYoutube: (json['video_youtube'] ?? '').toString(),
       inicio: (json['dtinicioatracao'] ?? '').toString(),
       fim: (json['dtfimatracao'] ?? '').toString(),
       estilos: estilos.isNotEmpty

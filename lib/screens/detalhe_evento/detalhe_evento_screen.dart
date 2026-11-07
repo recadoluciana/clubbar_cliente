@@ -793,6 +793,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   void _abrirDetalhesAtracao(AtracaoEventoDetalhe atracao) {
+    final fotos = [atracao.bannerUrl, atracao.foto2, atracao.foto3]
+        .map((url) => url.trim())
+        .where((url) => url.isNotEmpty)
+        .map(
+          (url) => url.startsWith('http')
+              ? url
+              : '${AppConfig.apiBaseUrl}${url.startsWith('/') ? '' : '/'}$url',
+        )
+        .toList();
+    final perfil = atracao.instagram.trim();
+    final instagramUrl = perfil.startsWith('https://')
+        ? perfil
+        : 'https://www.instagram.com/${perfil.replaceFirst(RegExp(r'^@'), '')}/';
+    final telefone = atracao.telefoneContato.replaceAll(RegExp(r'[^0-9+]'), '');
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -822,20 +836,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   ),
                 ),
               ),
-              if (atracao.bannerUrl.trim().isNotEmpty) ...[
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: AspectRatio(
-                    aspectRatio: 16 / 9,
-                    child: Image.network(
-                      atracao.bannerUrl,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.blue.shade50,
-                        child: Icon(
-                          Icons.music_note_rounded,
-                          size: 54,
-                          color: Colors.blue.shade700,
+              if (fotos.isNotEmpty) ...[
+                SizedBox(
+                  height: 220,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: fotos.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 10),
+                    itemBuilder: (_, index) => ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.network(
+                        fotos[index],
+                        width: 300,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox(
+                          width: 300,
+                          child: Icon(Icons.broken_image_outlined),
                         ),
                       ),
                     ),
@@ -871,11 +887,53 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   ),
                 ),
               ],
+              if (perfil.isNotEmpty ||
+                  telefone.isNotEmpty ||
+                  atracao.videoInstagram.trim().isNotEmpty ||
+                  atracao.videoYoutube.trim().isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text(
+                  'Contato e vídeos',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                ),
+                if (perfil.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => _abrirLinkAtracao(instagramUrl),
+                    icon: const Icon(Icons.alternate_email),
+                    label: const Text('Instagram da atração'),
+                  ),
+                if (telefone.isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => _abrirLinkAtracao('tel:$telefone'),
+                    icon: const Icon(Icons.phone),
+                    label: Text('Contratar show: ${atracao.telefoneContato}'),
+                  ),
+                if (atracao.videoInstagram.trim().isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => _abrirLinkAtracao(atracao.videoInstagram),
+                    icon: const Icon(Icons.play_circle_outline),
+                    label: const Text('Assistir no Instagram'),
+                  ),
+                if (atracao.videoYoutube.trim().isNotEmpty)
+                  TextButton.icon(
+                    onPressed: () => _abrirLinkAtracao(atracao.videoYoutube),
+                    icon: const Icon(Icons.play_circle_outline),
+                    label: const Text('Assistir no YouTube'),
+                  ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _abrirLinkAtracao(String valor) async {
+    final uri = Uri.tryParse(valor.trim());
+    if (uri == null ||
+        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) AppSnackBar.erro(context, 'Não foi possível abrir o link.');
+    }
   }
 
   Future<int?> _obterClienteIdLogado() async {
