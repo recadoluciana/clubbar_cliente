@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../models/evento_detalhe.dart';
@@ -573,7 +575,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Future<void> compartilharEvento() async {
+  Future<void> compartilharEvento(BuildContext botaoContext) async {
     final ev = evento;
     if (ev == null) return;
 
@@ -595,7 +597,92 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Compre seu ingresso e o que vai consumir
   ''';
 
-    await Share.share(texto);
+    final convite = texto.trim();
+    if (kIsWeb) {
+      await showDialog<void>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Compartilhar evento'),
+          content: const Text('Escolha como deseja enviar o convite.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            TextButton.icon(
+              onPressed: () async {
+                try {
+                  await Clipboard.setData(ClipboardData(text: convite));
+                  if (!dialogContext.mounted || !mounted) return;
+                  Navigator.pop(dialogContext);
+                  AppSnackBar.sucesso(
+                    context,
+                    'Convite copiado. Agora é só colar onde desejar.',
+                  );
+                } catch (_) {
+                  if (mounted) {
+                    AppSnackBar.erro(
+                      context,
+                      'Não foi possível copiar o convite.',
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.copy),
+              label: const Text('Copiar convite'),
+            ),
+            FilledButton.icon(
+              onPressed: () async {
+                final uri = Uri.https('wa.me', '/', {'text': convite});
+                try {
+                  final abriu = await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                  if (!dialogContext.mounted || !mounted) return;
+                  if (abriu) {
+                    Navigator.pop(dialogContext);
+                  } else {
+                    AppSnackBar.erro(
+                      context,
+                      'Não foi possível abrir o WhatsApp. Você pode copiar o convite.',
+                    );
+                  }
+                } catch (_) {
+                  if (mounted) {
+                    AppSnackBar.erro(
+                      context,
+                      'Não foi possível abrir o WhatsApp. Você pode copiar o convite.',
+                    );
+                  }
+                }
+              },
+              icon: const Icon(Icons.send),
+              label: const Text('WhatsApp'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    try {
+      final caixa = botaoContext.findRenderObject();
+      final origem = caixa is RenderBox && caixa.hasSize
+          ? caixa.localToGlobal(Offset.zero) & caixa.size
+          : null;
+      await Share.share(
+        convite,
+        subject: ev.titulo,
+        sharePositionOrigin: origem,
+      );
+    } catch (_) {
+      if (mounted) {
+        AppSnackBar.erro(
+          context,
+          'Não foi possível compartilhar o evento. Tente novamente.',
+        );
+      }
+    }
   }
 
   Future<void> carregarDados() async {
@@ -1988,20 +2075,23 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           Transform.translate(
                             offset: const Offset(0, -22),
                             child: Center(
-                              child: ElevatedButton.icon(
-                                onPressed: compartilharEvento,
-                                icon: const Icon(Icons.ios_share, size: 18),
-                                label: const Text('COMPARTILHAR'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.blue,
-                                  elevation: 4,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                    vertical: 10,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(22),
+                              child: Builder(
+                                builder: (botaoContext) => ElevatedButton.icon(
+                                  onPressed: () =>
+                                      compartilharEvento(botaoContext),
+                                  icon: const Icon(Icons.ios_share, size: 18),
+                                  label: const Text('COMPARTILHAR'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.blue,
+                                    elevation: 4,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 10,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(22),
+                                    ),
                                   ),
                                 ),
                               ),
