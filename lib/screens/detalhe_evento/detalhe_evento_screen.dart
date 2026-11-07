@@ -591,7 +591,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Garanta seu ingresso e o que vai consumir acessando o app Clubbar.
 
   👉 Acesse:
-  ${AppConfig.appWebUrl}/compartilhar/evento/${widget.eventoId}
+  ${AppConfig.appWebUrl}/compartilhar/evento/${widget.eventoId}${kIsWeb ? '?v=2' : ''}
   ''';
 
     final convite = texto.trim();
