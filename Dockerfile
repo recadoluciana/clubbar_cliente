@@ -25,7 +25,9 @@ RUN flutter build web --release \
 # Etapa 2: servidor Nginx
 FROM nginx:alpine
 
+ARG API_BASE_URL=https://api.clubbar.com.br
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+RUN sed -i "s|__API_BASE_URL__|${API_BASE_URL%/}|g" /etc/nginx/conf.d/default.conf
 COPY --from=build /app/build/web /usr/share/nginx/html
 
 EXPOSE 8080

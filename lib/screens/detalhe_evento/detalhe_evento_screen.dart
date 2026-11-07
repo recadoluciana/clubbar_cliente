@@ -588,13 +588,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   📍 ${ev.local}
   🏙️ ${ev.nomeCidade}${ev.sgEstado.trim().isEmpty ? '' : ' - ${ev.sgEstado}'}
 
-  🍻 Garanta seu ingresso pelo Clubbar
+  Garanta seu ingresso e o que vai consumir acessando o app Clubbar.
 
   👉 Acesse:
-  ${AppConfig.appWebUrl}/?evento_id=${widget.eventoId}&loja_id=${widget.loja.id}
-
-  🦉 Clubbar
-  Compre seu ingresso e o que vai consumir
+  ${AppConfig.appWebUrl}/compartilhar/evento/${widget.eventoId}
   ''';
 
     final convite = texto.trim();
