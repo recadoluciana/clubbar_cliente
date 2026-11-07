@@ -1877,44 +1877,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Widget _rodapeEvento() {
-    final corRodape = Theme.of(context).colorScheme.primary;
-    return SafeArea(
-      top: false,
-      child: Material(
-        color: Colors.white,
-        elevation: 8,
-        child: SizedBox(
-          height: 44,
-          child: Center(
-            child: TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
-                ),
-              ),
-              icon: const Icon(Icons.policy_outlined, size: 18),
-              label: const Text('Política de compra de ingresso'),
-              style: TextButton.styleFrom(
-                foregroundColor: corRodape,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Future<void> _abrirContato(Uri uri) async {
     final abriu = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!abriu && mounted) {
@@ -2076,7 +2038,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
       ),
-      bottomNavigationBar: ev == null ? null : _rodapeEvento(),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null
@@ -2416,6 +2377,23 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ],
+                          const SizedBox(height: 12),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const PoliticaCompraScreen(
+                                    tipo: 'INGRESSO',
+                                  ),
+                                ),
+                              ),
+                              icon: const Icon(Icons.policy_outlined, size: 18),
+                              label: const Text(
+                                'Política de compra de ingresso',
+                              ),
+                            ),
+                          ),
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
                             const SizedBox(height: 20),
