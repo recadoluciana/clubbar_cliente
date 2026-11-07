@@ -18,6 +18,7 @@ import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import 'conteudo_loja_screen.dart';
+import 'preferencias_promocao_screen.dart';
 
 class DetalheLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -558,6 +559,16 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                 const SizedBox(height: 8),
 
                 _horarioAtendimento(context),
+
+                TextButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => PreferenciasPromocaoScreen(loja: loja),
+                    ),
+                  ),
+                  icon: const Icon(Icons.notifications_outlined),
+                  label: const Text('Preferências de promoções'),
+                ),
 
                 const SizedBox(height: 15),
 
