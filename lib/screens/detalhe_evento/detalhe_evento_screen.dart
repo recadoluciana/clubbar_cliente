@@ -38,11 +38,11 @@ int _limitePorTransacao(EventoLote lote) =>
     _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
 
 String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
-    ? 'Limite de 1 ingresso por transação'
+    ? 'Limite de 1 ingresso gratuito por CPF neste evento'
     : 'Limite de 5 ingressos por transação';
 
 String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
-    ? 'Cortesia limitada a 1 ingresso por transação.'
+    ? 'Cortesia limitada a 1 ingresso por CPF neste evento.'
     : _mensagemLimiteIngressosPorTransacao;
 
 class DetalheEventoScreen extends StatefulWidget {

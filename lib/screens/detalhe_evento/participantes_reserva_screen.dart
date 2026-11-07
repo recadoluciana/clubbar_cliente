@@ -110,7 +110,8 @@ class _ParticipantesReservaScreenState
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => PagamentoSucessoScreen(lojaDestino: widget.loja),
+            builder: (_) =>
+                _telaSucesso(_valorTotalComTaxa(widget.reserva) <= 0),
           ),
         );
         return;
@@ -227,10 +228,9 @@ class _ParticipantesReservaScreenState
         await Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => PagamentoSucessoScreen(
-              sucesso: true,
-              cashbackGerado: 0,
-              lojaDestino: widget.loja,
+            builder: (_) => _telaSucesso(
+              reserva['gratuito'] == true ||
+                  _valorTotalComTaxa(widget.reserva) <= 0,
             ),
           ),
         );
@@ -306,6 +306,15 @@ class _ParticipantesReservaScreenState
       ],
     );
   }
+
+  Widget _telaSucesso(bool gratuito) => PagamentoSucessoScreen(
+    lojaDestino: widget.loja,
+    tituloAppBar: gratuito ? 'Resgate' : 'Pagamento',
+    tituloSucesso: gratuito ? 'Resgate realizado com sucesso' : null,
+    descricaoSucesso: gratuito
+        ? 'Seu ingresso está disponível na Carteira.'
+        : null,
+  );
 
   double _valorTotalComTaxa(Map<String, dynamic> reserva) {
     final valorUnitario = double.tryParse('${reserva['valor_unitario']}') ?? 0;

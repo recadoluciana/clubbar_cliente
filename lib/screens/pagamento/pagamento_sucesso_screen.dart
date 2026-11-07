@@ -15,6 +15,7 @@ class PagamentoSucessoScreen extends StatefulWidget {
   final double cashbackGerado;
   final String? tituloSucesso;
   final String? descricaoSucesso;
+  final String tituloAppBar;
   final Loja? lojaDestino;
 
   const PagamentoSucessoScreen({
@@ -23,6 +24,7 @@ class PagamentoSucessoScreen extends StatefulWidget {
     this.cashbackGerado = 0,
     this.tituloSucesso,
     this.descricaoSucesso,
+    this.tituloAppBar = 'Pagamento',
     this.lojaDestino,
   });
 
@@ -78,8 +80,8 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
 
-      appBar: const ClubbarAppBar(
-        titulo: 'Pagamento',
+      appBar: ClubbarAppBar(
+        titulo: widget.tituloAppBar,
         mostrarVoltar: false,
         mostrarSessao: false,
       ),
