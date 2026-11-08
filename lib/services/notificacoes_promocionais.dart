@@ -52,6 +52,13 @@ class NotificacoesPromocionais {
         : firebaseAndroidProduction;
     if (Firebase.apps.isEmpty) await Firebase.initializeApp(options: options);
     _messaging = FirebaseMessaging.instance;
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      await _messaging!.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
     _messaging!.onTokenRefresh.listen((token) {
       final sessao = _sessao;
       final geracao = _geracao;
@@ -148,6 +155,32 @@ class NotificacoesPromocionais {
     _sessao = null;
     if (_messaging == null) return;
     await _serializar(() => _removerDispositivo(sessao));
+  }
+
+  Future<void> testar(String sessao) async {
+    await ativar(sessao, solicitarPermissao: true);
+    final token = await _messaging?.getToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('Não foi possível registrar este aparelho.');
+    }
+    final response = await http.post(
+      Uri.parse(
+        '${ApiService.baseUrl}/clientes/me/dispositivos-promocao/teste',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $sessao',
+      },
+      body: jsonEncode({
+        'token': token,
+        'plataforma': defaultTargetPlatform == TargetPlatform.iOS
+            ? 'ios'
+            : 'android',
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Não foi possível enviar a notificação de teste agora.');
+    }
   }
 
   Future<void> _removerDispositivo(String sessao) async {

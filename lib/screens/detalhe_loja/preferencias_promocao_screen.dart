@@ -53,11 +53,24 @@ class _PreferenciasPromocaoScreenState
       if (response.statusCode != 200) {
         throw Exception('Não foi possível carregar suas preferências.');
       }
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final Object? data;
+      try {
+        data = jsonDecode(response.body);
+      } catch (_) {
+        throw Exception(
+          'As preferências de ofertas ainda não estão disponíveis. Tente novamente mais tarde.',
+        );
+      }
+      if (data is! Map<String, dynamic>) {
+        throw Exception(
+          'As preferências de ofertas ainda não estão disponíveis. Tente novamente mais tarde.',
+        );
+      }
+      final preferencias = data;
       if (!mounted) return;
       setState(() {
-        _push = data['push'] == true;
-        _whatsapp = data['whatsapp'] == true;
+        _push = preferencias['push'] == true;
+        _whatsapp = preferencias['whatsapp'] == true;
         _carregando = false;
         _erro = null;
       });
@@ -115,6 +128,34 @@ class _PreferenciasPromocaoScreenState
     }
   }
 
+  Future<void> _testar() async {
+    setState(() => _carregando = true);
+    try {
+      final token = await AuthStorage().obterToken();
+      if (token == null || token.isEmpty) {
+        throw Exception('Entre na sua conta para testar.');
+      }
+      await NotificacoesPromocionais.instance.testar(token);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Teste enviado. Verifique as notificações do aparelho.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _carregando = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: const ClubbarAppBar(
@@ -136,7 +177,7 @@ class _PreferenciasPromocaoScreenState
               ),
               const SizedBox(height: 12),
               const Text(
-                'Escolha como deseja receber promoções deste estabelecimento. Você pode mudar de ideia quando quiser. O envio de promoções ainda está em preparação.',
+                'Escolha como deseja receber promoções deste estabelecimento. Você pode mudar de ideia quando quiser.',
               ),
               SwitchListTile(
                 title: const Text('Notificações no aplicativo'),
@@ -145,7 +186,7 @@ class _PreferenciasPromocaoScreenState
               ),
               SwitchListTile(
                 title: const Text('WhatsApp'),
-                subtitle: const Text('No número cadastrado no seu perfil'),
+                subtitle: const Text('No número cadastrado no seu perfil. Envio em preparação.'),
                 value: _whatsapp,
                 onChanged: (v) => setState(() => _whatsapp = v),
               ),
@@ -154,6 +195,11 @@ class _PreferenciasPromocaoScreenState
                 onPressed: _salvar,
                 child: const Text('Salvar preferências'),
               ),
+              if (!kIsWeb)
+                TextButton(
+                  onPressed: _testar,
+                  child: const Text('Testar notificação neste aparelho'),
+                ),
             ],
           ),
   );
