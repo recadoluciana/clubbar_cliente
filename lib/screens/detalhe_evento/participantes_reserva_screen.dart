@@ -284,7 +284,32 @@ class _ParticipantesReservaScreenState
         }
       }
     } catch (e) {
-      if (mounted) AppSnackBar.erro(context, api.mensagemErroAmigavel(e));
+      if (mounted) {
+        final mensagem = api.mensagemErroAmigavel(e);
+        if (mensagem.contains(
+          'Este CPF já resgatou uma cortesia deste evento.',
+        )) {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => PopScope(
+              canPop: false,
+              child: AlertDialog(
+                title: const Text('Cortesia já resgatada'),
+                content: Text(mensagem),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('Entendi'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else {
+          AppSnackBar.erro(context, mensagem);
+        }
+      }
     } finally {
       if (mounted) setState(() => salvando = false);
     }
