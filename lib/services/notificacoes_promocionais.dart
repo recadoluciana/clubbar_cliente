@@ -149,7 +149,9 @@ class NotificacoesPromocionais {
     }
     String? apns;
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      for (var tentativa = 0; tentativa < 5; tentativa++) {
+      // O APNs pode terminar o registro depois da permissão do sistema,
+      // especialmente na primeira instalação via TestFlight.
+      for (var tentativa = 0; tentativa < 15; tentativa++) {
         if (geracao != _geracao) return;
         apns = await _messaging!.getAPNSToken();
         if (apns != null) break;
@@ -159,7 +161,7 @@ class NotificacoesPromocionais {
     if (defaultTargetPlatform == TargetPlatform.iOS && apns == null) {
       if (solicitarPermissao) {
         throw Exception(
-          'Não foi possível ativar as notificações agora. Tente novamente.',
+          'O iPhone não liberou o token APNs. Verifique a permissão de notificações e tente novamente.',
         );
       }
       return;
