@@ -21,6 +21,7 @@ class _PreferenciasPromocaoScreenState
     extends State<PreferenciasPromocaoScreen> {
   bool _push = false;
   bool _email = false;
+  bool _novidades = false;
   bool _carregando = true;
   String? _erro;
 
@@ -68,6 +69,7 @@ class _PreferenciasPromocaoScreenState
       setState(() {
         _push = preferencias['push'] == true;
         _email = preferencias['email'] == true;
+        _novidades = preferencias['novidades'] == true;
         _carregando = false;
         _erro = null;
       });
@@ -98,7 +100,7 @@ class _PreferenciasPromocaoScreenState
       final response = await http.put(
         _url,
         headers: await _headers(),
-        body: jsonEncode({'push': _push, 'email': _email}),
+        body: jsonEncode({'push': _push, 'email': _email, 'novidades': _novidades}),
       );
       if (response.statusCode != 200) {
         var mensagem = 'Não foi possível salvar suas preferências.';
@@ -182,10 +184,16 @@ class _PreferenciasPromocaoScreenState
                 onChanged: (v) => setState(() => _push = v),
               ),
               SwitchListTile(
-                title: const Text('E-mail'),
-                subtitle: const Text('Promoções e novidades.'),
+                title: const Text('E-mails de promoções'),
+                subtitle: const Text('Ofertas dos estabelecimentos.'),
                 value: _email,
                 onChanged: (v) => setState(() => _email = v),
+              ),
+              SwitchListTile(
+                title: const Text('E-mails de novidades'),
+                subtitle: const Text('Novidades e comunicados do Clubbar.'),
+                value: _novidades,
+                onChanged: (v) => setState(() => _novidades = v),
               ),
               const SizedBox(height: 12),
               FilledButton(
