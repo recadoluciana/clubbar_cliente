@@ -13,6 +13,7 @@ import '../../widgets/clubbar_page_header.dart';
 import '../../cashback/cashback_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import 'informacoes_aplicativo_screen.dart';
+import '../detalhe_loja/preferencias_promocao_screen.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -287,6 +288,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     );
                   },
                   iconColor: Colors.green,
+                ),
+
+                const SizedBox(height: 10),
+
+                _itemAcao(
+                  icon: Icons.notifications_active_rounded,
+                  titulo: 'Preferências de notificação/e-mail',
+                  onTap: () {
+                    MainNavigationController.abrirTela(
+                      const PreferenciasPromocaoScreen(),
+                    );
+                  },
+                  iconColor: Colors.amber.shade800,
                 ),
 
                 const SizedBox(height: 10),
