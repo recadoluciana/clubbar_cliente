@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -15,6 +16,9 @@ class NotificacoesPromocionais {
   NotificacoesPromocionais._();
 
   FirebaseMessaging? _messaging;
+  final FlutterLocalNotificationsPlugin _notificacaoLocal =
+      FlutterLocalNotificationsPlugin();
+  bool _notificacaoLocalInicializada = false;
   String? _sessao;
   int _geracao = 0;
   Future<bool>? _inicializacao;
@@ -52,6 +56,8 @@ class NotificacoesPromocionais {
         : firebaseAndroidProduction;
     if (Firebase.apps.isEmpty) await Firebase.initializeApp(options: options);
     _messaging = FirebaseMessaging.instance;
+    await _inicializarNotificacaoLocal();
+    FirebaseMessaging.onMessage.listen(_exibirMensagemEmPrimeiroPlano);
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       await _messaging!.setForegroundNotificationPresentationOptions(
         alert: true,
@@ -73,6 +79,50 @@ class NotificacoesPromocionais {
       }
     });
     return true;
+  }
+
+  Future<void> _inicializarNotificacaoLocal() async {
+    if (_notificacaoLocalInicializada) return;
+    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const ios = DarwinInitializationSettings();
+    await _notificacaoLocal.initialize(
+      const InitializationSettings(android: android, iOS: ios),
+    );
+    final androidPlugin = _notificacaoLocal
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    await androidPlugin?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'promocoes',
+        'Promoções',
+        description: 'Ofertas e promoções dos estabelecimentos favoritos.',
+        importance: Importance.high,
+      ),
+    );
+    _notificacaoLocalInicializada = true;
+  }
+
+  Future<void> _exibirMensagemEmPrimeiroPlano(RemoteMessage mensagem) async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+    final notificacao = mensagem.notification;
+    if (notificacao == null) return;
+    await _notificacaoLocal.show(
+      mensagem.hashCode,
+      notificacao.title ?? 'Nova promoção',
+      notificacao.body ?? '',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'promocoes',
+          'Promoções',
+          channelDescription:
+              'Ofertas e promoções dos estabelecimentos favoritos.',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+    );
   }
 
   Future<void> ativar(String sessao, {bool solicitarPermissao = false}) async {
