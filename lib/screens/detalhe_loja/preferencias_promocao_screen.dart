@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/notificacoes_promocionais.dart';
+import '../../services/main_navigation_controller.dart';
 import '../../services/http_with_timeout.dart' as http;
 import '../../widgets/clubbar_app_bar.dart';
 
@@ -100,7 +101,11 @@ class _PreferenciasPromocaoScreenState
       final response = await http.put(
         _url,
         headers: await _headers(),
-        body: jsonEncode({'push': _push, 'email': _email, 'novidades': _novidades}),
+        body: jsonEncode({
+          'push': _push,
+          'email': _email,
+          'novidades': _novidades,
+        }),
       );
       if (response.statusCode != 200) {
         var mensagem = 'Não foi possível salvar suas preferências.';
@@ -113,11 +118,7 @@ class _PreferenciasPromocaoScreenState
         throw Exception(mensagem);
       }
       if (!mounted) return;
-      final messenger = ScaffoldMessenger.of(context);
-      Navigator.pop(context);
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Preferências salvas.')),
-      );
+      MainNavigationController.fecharTelaInterna();
     } catch (e) {
       if (!mounted) return;
       setState(() => _carregando = false);
