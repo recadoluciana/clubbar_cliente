@@ -22,7 +22,7 @@ class PreferenciasPromocaoScreen extends StatefulWidget {
 class _PreferenciasPromocaoScreenState
     extends State<PreferenciasPromocaoScreen> {
   bool _push = false;
-  bool _whatsapp = false;
+  bool _email = false;
   bool _carregando = true;
   String? _erro;
 
@@ -70,7 +70,7 @@ class _PreferenciasPromocaoScreenState
       if (!mounted) return;
       setState(() {
         _push = preferencias['push'] == true;
-        _whatsapp = preferencias['whatsapp'] == true;
+        _email = preferencias['email'] == true;
         _carregando = false;
         _erro = null;
       });
@@ -101,7 +101,7 @@ class _PreferenciasPromocaoScreenState
       final response = await http.put(
         _url,
         headers: await _headers(),
-        body: jsonEncode({'push': _push, 'whatsapp': _whatsapp}),
+        body: jsonEncode({'push': _push, 'email': _email}),
       );
       if (response.statusCode != 200) {
         var mensagem = 'Não foi possível salvar suas preferências.';
@@ -185,10 +185,12 @@ class _PreferenciasPromocaoScreenState
                 onChanged: (v) => setState(() => _push = v),
               ),
               SwitchListTile(
-                title: const Text('WhatsApp'),
-                subtitle: const Text('No número cadastrado no seu perfil. Envio em preparação.'),
-                value: _whatsapp,
-                onChanged: (v) => setState(() => _whatsapp = v),
+                title: const Text('E-mail'),
+                subtitle: const Text(
+                  'No número cadastrado no seu perfil. Envio em preparação.',
+                ),
+                value: _email,
+                onChanged: (v) => setState(() => _email = v),
               ),
               const SizedBox(height: 12),
               FilledButton(
