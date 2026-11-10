@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/notificacoes_promocionais.dart';
@@ -11,8 +10,7 @@ import '../../services/http_with_timeout.dart' as http;
 import '../../widgets/clubbar_app_bar.dart';
 
 class PreferenciasPromocaoScreen extends StatefulWidget {
-  const PreferenciasPromocaoScreen({super.key, required this.loja});
-  final Loja loja;
+  const PreferenciasPromocaoScreen({super.key});
 
   @override
   State<PreferenciasPromocaoScreen> createState() =>
@@ -43,9 +41,8 @@ class _PreferenciasPromocaoScreenState
     };
   }
 
-  Uri get _url => Uri.parse(
-    '${ApiService.baseUrl}/clientes/me/promocoes/${widget.loja.id}',
-  );
+  Uri get _url =>
+      Uri.parse('${ApiService.baseUrl}/clientes/me/preferencias-notificacao');
 
   Future<void> _carregar() async {
     try {
@@ -172,12 +169,12 @@ class _PreferenciasPromocaoScreenState
             padding: const EdgeInsets.all(20),
             children: [
               Text(
-                'Promoções de ${widget.loja.nome}',
+                'Preferências de notificações',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 12),
               const Text(
-                'Escolha como deseja receber promoções deste estabelecimento. Você pode mudar de ideia quando quiser.',
+                'Escolha como deseja receber promoções e novidades do Clubbar. Você pode desmarcar quando quiser.',
               ),
               SwitchListTile(
                 title: const Text('Notificações no aplicativo'),
@@ -186,9 +183,7 @@ class _PreferenciasPromocaoScreenState
               ),
               SwitchListTile(
                 title: const Text('E-mail'),
-                subtitle: const Text(
-                  'No número cadastrado no seu perfil. Envio em preparação.',
-                ),
+                subtitle: const Text('Promoções e novidades.'),
                 value: _email,
                 onChanged: (v) => setState(() => _email = v),
               ),
