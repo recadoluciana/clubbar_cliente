@@ -22,6 +22,7 @@ import '../dados_pessoais/dados_pessoais_screen.dart';
 import '../carteira/carteira_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
+import '../../utils/cpf_utils.dart';
 import '../../utils/horario_brasil.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 
@@ -448,14 +449,23 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         cep.length == 8;
   }
 
+  bool _temCpfValido(Map<String, dynamic> perfil) {
+    return CpfUtils.validar(perfil['nrcpfcliente']?.toString());
+  }
+
   Future<bool> _garantirEnderecoParaCartao() async {
     final perfil = await apiService.buscarMeuPerfil();
-    if (_temEnderecoCobrancaCompleto(perfil)) return true;
+    if (_temEnderecoCobrancaCompleto(perfil) && _temCpfValido(perfil)) {
+      return true;
+    }
     if (!mounted) return false;
 
     final formKey = GlobalKey<FormState>();
     final cepCtrl = TextEditingController(
       text: (perfil['cepcliente'] ?? '').toString(),
+    );
+    final cpfCtrl = TextEditingController(
+      text: CpfUtils.formatar(perfil['nrcpfcliente']?.toString()),
     );
     final enderecoCtrl = TextEditingController(
       text: (perfil['endcliente'] ?? '').toString(),
@@ -553,9 +563,29 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        'Você informa uma vez e o endereço fica salvo para as próximas compras com cartão.',
+                        'Informe seu CPF e endereço. Esses dados ficam salvos para as próximas compras com cartão.',
                       ),
                       const SizedBox(height: 18),
+                      TextFormField(
+                        controller: cpfCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: campo('CPF', icone: Icons.badge_outlined),
+                        onChanged: (value) {
+                          final formatado = CpfUtils.formatar(value);
+                          if (formatado != value) {
+                            cpfCtrl.value = TextEditingValue(
+                              text: formatado,
+                              selection: TextSelection.collapsed(
+                                offset: formatado.length,
+                              ),
+                            );
+                          }
+                        },
+                        validator: (value) => CpfUtils.validar(value)
+                            ? null
+                            : 'Informe um CPF válido',
+                      ),
+                      const SizedBox(height: 12),
                       TextFormField(
                         controller: cepCtrl,
                         keyboardType: TextInputType.number,
@@ -686,7 +716,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                                       }
                                       setSheetState(() => salvando = true);
                                       try {
-                                        await apiService.salvarEnderecoCobranca(
+                                        await apiService.atualizarMeuPerfil(
+                                          nome: (perfil['nmcliente'] ?? '')
+                                              .toString(),
+                                          telefone:
+                                              (perfil['nrtelcliente'] ?? '')
+                                                  .toString(),
+                                          cpf: CpfUtils.somenteNumeros(
+                                            cpfCtrl.text,
+                                          ),
                                           endereco: enderecoCtrl.text,
                                           numero: numeroCtrl.text,
                                           complemento: complementoCtrl.text,
