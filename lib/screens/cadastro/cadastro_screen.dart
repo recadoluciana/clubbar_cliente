@@ -36,6 +36,8 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
   bool _carregando = false;
   bool _obscureSenha = true;
   bool _obscureConfirmarSenha = true;
+  // CPF e endereço são solicitados somente no primeiro pagamento.
+  final bool _mostrarDadosPagamentoNoCadastro = false;
   bool _consultandoCep = false;
   String? _ultimoCepConsultado;
   List<Map<String, dynamic>> _estados = [];
@@ -76,47 +78,6 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
   bool _validarEmail(String email) {
     final regex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]{2,}$');
     return regex.hasMatch(email.trim());
-  }
-
-  bool _validarCPF(String cpf) {
-    cpf = _somenteNumeros(cpf);
-
-    if (cpf.length != 11) return false;
-    if (RegExp(r'^(\d)\1{10}$').hasMatch(cpf)) return false;
-
-    int calcularDigito(String base, int pesoInicial) {
-      int soma = 0;
-      int peso = pesoInicial;
-
-      for (int i = 0; i < base.length; i++) {
-        soma += int.parse(base[i]) * peso;
-        peso--;
-      }
-
-      int resto = soma % 11;
-      return resto < 2 ? 0 : 11 - resto;
-    }
-
-    final base9 = cpf.substring(0, 9);
-    final dig1 = calcularDigito(base9, 10);
-
-    final base10 = cpf.substring(0, 9) + dig1.toString();
-    final dig2 = calcularDigito(base10, 11);
-
-    return cpf == '$base9$dig1$dig2';
-  }
-
-  String _formatarCPF(String valor) {
-    final numeros = _somenteNumeros(valor);
-
-    if (numeros.length <= 3) return numeros;
-    if (numeros.length <= 6) {
-      return '${numeros.substring(0, 3)}.${numeros.substring(3)}';
-    }
-    if (numeros.length <= 9) {
-      return '${numeros.substring(0, 3)}.${numeros.substring(3, 6)}.${numeros.substring(6)}';
-    }
-    return '${numeros.substring(0, 3)}.${numeros.substring(3, 6)}.${numeros.substring(6, 9)}-${numeros.substring(9, numeros.length > 11 ? 11 : numeros.length)}';
   }
 
   String _formatarTelefone(String valor) {
@@ -495,30 +456,6 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.blue.shade200),
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.verified_user_outlined,
-                            color: Colors.blue.shade700,
-                          ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Text(
-                              'O CPF é necessário para pagamentos. O endereço é opcional agora e será solicitado apenas na primeira compra com cartão.',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 18),
                     TextFormField(
                       controller: _nomeCtrl,
                       textCapitalization: TextCapitalization.words,
@@ -607,308 +544,281 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
                     ),
                     const SizedBox(height: 14),
 
-                    TextFormField(
-                      controller: _cpfCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: _decoracao(
-                        label: 'CPF',
-                        icon: Icons.badge_outlined,
-                      ),
-                      onChanged: (value) {
-                        final formatado = _formatarCPF(value);
-
-                        if (formatado != value) {
-                          _cpfCtrl.value = TextEditingValue(
-                            text: formatado,
-                            selection: TextSelection.collapsed(
-                              offset: formatado.length,
-                            ),
-                          );
-                        }
-                      },
-                      validator: (value) {
-                        final v = value?.trim() ?? '';
-
-                        if (v.isEmpty) return 'Informe seu CPF';
-                        if (!_validarCPF(v)) return 'CPF inválido';
-
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    Card(
-                      elevation: 0,
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                        side: BorderSide(color: Colors.grey.shade300),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width: 42,
-                                  height: 42,
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
-                                    borderRadius: BorderRadius.circular(12),
+                    if (_mostrarDadosPagamentoNoCadastro) ...[
+                      Card(
+                        elevation: 0,
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 42,
+                                    height: 42,
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Icons.location_on_outlined,
+                                      color: Colors.blue.shade700,
+                                    ),
                                   ),
-                                  child: Icon(
-                                    Icons.location_on_outlined,
-                                    color: Colors.blue.shade700,
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Seu endereço (opcional)',
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        'Não é necessário para Pix. Será solicitado no primeiro pagamento com cartão.',
-                                        style: TextStyle(
-                                          color: Colors.black54,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            TextFormField(
-                              controller: _cepCtrl,
-                              keyboardType: TextInputType.number,
-                              decoration:
-                                  _decoracao(
-                                    label: 'CEP',
-                                    icon: Icons.pin_drop_outlined,
-                                  ).copyWith(
-                                    suffixIcon: _consultandoCep
-                                        ? const Padding(
-                                            padding: EdgeInsets.all(14),
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : IconButton(
-                                            tooltip: 'Buscar CEP',
-                                            onPressed: _buscarCep,
-                                            icon: const Icon(
-                                              Icons.search_rounded,
-                                            ),
+                                  const SizedBox(width: 12),
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Seu endereço (opcional)',
+                                          style: TextStyle(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                  ),
-                              onChanged: (value) {
-                                final formatado = _formatarCEP(value);
-                                if (formatado != value) {
-                                  _cepCtrl.value = TextEditingValue(
-                                    text: formatado,
-                                    selection: TextSelection.collapsed(
-                                      offset: formatado.length,
-                                    ),
-                                  );
-                                }
-                                final numeros = _somenteNumeros(formatado);
-                                if (numeros.length == 8) _buscarCep();
-                              },
-                              onFieldSubmitted: (_) => _buscarCep(),
-                              validator: (value) {
-                                final cep = _somenteNumeros(value ?? '');
-                                return cep.isEmpty || cep.length == 8
-                                    ? null
-                                    : 'Informe um CEP válido';
-                              },
-                            ),
-                            const SizedBox(height: 14),
-                            TextFormField(
-                              controller: _enderecoCtrl,
-                              textCapitalization: TextCapitalization.words,
-                              decoration: _decoracao(
-                                label: 'Endereço',
-                                icon: Icons.route_outlined,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _numeroCtrl,
-                                    keyboardType: TextInputType.streetAddress,
-                                    decoration: _decoracao(
-                                      label: 'Número',
-                                      icon: Icons.numbers_rounded,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: TextFormField(
-                                    controller: _complementoCtrl,
-                                    textCapitalization:
-                                        TextCapitalization.words,
-                                    decoration: _decoracao(
-                                      label: 'Complemento',
-                                      icon: Icons.apartment_rounded,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 14),
-                            TextFormField(
-                              controller: _bairroCtrl,
-                              textCapitalization: TextCapitalization.words,
-                              decoration: _decoracao(
-                                label: 'Bairro',
-                                icon: Icons.location_city_outlined,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: DropdownButtonFormField<int>(
-                                    initialValue: _estadoIdSelecionado,
-                                    isExpanded: true,
-                                    decoration: _decoracao(
-                                      label: 'UF',
-                                      icon: Icons.map_outlined,
-                                    ),
-                                    hint: const Text('Selecione'),
-                                    items: _estados
-                                        .map(
-                                          (estado) => DropdownMenuItem<int>(
-                                            value: estado['estado_id'] as int,
-                                            child: Text(
-                                              '${estado['sgestado']} · ${estado['nmestado']}',
-                                            ),
+                                        ),
+                                        SizedBox(height: 2),
+                                        Text(
+                                          'Não é necessário para Pix. Será solicitado no primeiro pagamento com cartão.',
+                                          style: TextStyle(
+                                            color: Colors.black54,
+                                            fontSize: 12,
                                           ),
-                                        )
-                                        .toList(),
-                                    onChanged: _selecionarEstado,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  flex: 2,
-                                  child: Autocomplete<Map<String, dynamic>>(
-                                    key: ValueKey(
-                                      '$_estadoIdSelecionado-$_cidadeIdSelecionada',
-                                    ),
-                                    initialValue: TextEditingValue(
-                                      text: _cidadeCtrl.text,
-                                    ),
-                                    displayStringForOption: (cidade) =>
-                                        (cidade['nmcidade'] ?? '').toString(),
-                                    optionsBuilder: (texto) {
-                                      if (_estadoIdSelecionado == null ||
-                                          _carregandoCidades) {
-                                        return const Iterable<
-                                          Map<String, dynamic>
-                                        >.empty();
-                                      }
-                                      final consulta = texto.text
-                                          .trim()
-                                          .toLowerCase();
-                                      if (consulta.isEmpty) {
-                                        return const Iterable<
-                                          Map<String, dynamic>
-                                        >.empty();
-                                      }
-                                      return _cidades
-                                          .where(
-                                            (cidade) =>
-                                                (cidade['nmcidade'] ?? '')
-                                                    .toString()
-                                                    .toLowerCase()
-                                                    .startsWith(consulta),
-                                          )
-                                          .take(20);
-                                    },
-                                    onSelected: (cidade) {
-                                      setState(() {
-                                        _cidadeIdSelecionada =
-                                            cidade['cidade_id'] as int?;
-                                        _cidadeCtrl.text =
-                                            (cidade['nmcidade'] ?? '')
-                                                .toString();
-                                      });
-                                    },
-                                    fieldViewBuilder:
-                                        (
-                                          context,
-                                          controller,
-                                          focusNode,
-                                          onFieldSubmitted,
-                                        ) => TextFormField(
-                                          controller: controller,
-                                          focusNode: focusNode,
-                                          enabled:
-                                              _estadoIdSelecionado != null &&
-                                              !_carregandoCidades,
-                                          textCapitalization:
-                                              TextCapitalization.words,
-                                          decoration:
-                                              _decoracao(
-                                                label: 'Cidade',
-                                                icon:
-                                                    Icons.location_on_outlined,
-                                              ).copyWith(
-                                                hintText:
-                                                    _estadoIdSelecionado == null
-                                                    ? 'Selecione a UF primeiro'
-                                                    : _carregandoCidades
-                                                    ? 'Carregando cidades...'
-                                                    : 'Digite as primeiras letras',
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _cepCtrl,
+                                keyboardType: TextInputType.number,
+                                decoration:
+                                    _decoracao(
+                                      label: 'CEP',
+                                      icon: Icons.pin_drop_outlined,
+                                    ).copyWith(
+                                      suffixIcon: _consultandoCep
+                                          ? const Padding(
+                                              padding: EdgeInsets.all(14),
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
                                               ),
-                                          onChanged: (valor) {
-                                            _cidadeCtrl.text = valor;
-                                            _cidadeIdSelecionada = null;
-                                          },
-                                          onFieldSubmitted: (_) =>
-                                              onFieldSubmitted(),
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            OutlinedButton.icon(
-                              onPressed: _buscarCepPorEndereco,
-                              icon: const Icon(Icons.travel_explore_rounded),
-                              label: const Text('Não sei meu CEP'),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Informe UF, cidade e endereço para procurarmos o CEP. Se houver mais de um, você escolhe o correto.',
-                              style: TextStyle(
-                                color: Colors.black54,
-                                fontSize: 12,
+                                            )
+                                          : IconButton(
+                                              tooltip: 'Buscar CEP',
+                                              onPressed: _buscarCep,
+                                              icon: const Icon(
+                                                Icons.search_rounded,
+                                              ),
+                                            ),
+                                    ),
+                                onChanged: (value) {
+                                  final formatado = _formatarCEP(value);
+                                  if (formatado != value) {
+                                    _cepCtrl.value = TextEditingValue(
+                                      text: formatado,
+                                      selection: TextSelection.collapsed(
+                                        offset: formatado.length,
+                                      ),
+                                    );
+                                  }
+                                  final numeros = _somenteNumeros(formatado);
+                                  if (numeros.length == 8) _buscarCep();
+                                },
+                                onFieldSubmitted: (_) => _buscarCep(),
+                                validator: (value) {
+                                  final cep = _somenteNumeros(value ?? '');
+                                  return cep.isEmpty || cep.length == 8
+                                      ? null
+                                      : 'Informe um CEP válido';
+                                },
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 14),
+                              TextFormField(
+                                controller: _enderecoCtrl,
+                                textCapitalization: TextCapitalization.words,
+                                decoration: _decoracao(
+                                  label: 'Endereço',
+                                  icon: Icons.route_outlined,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _numeroCtrl,
+                                      keyboardType: TextInputType.streetAddress,
+                                      decoration: _decoracao(
+                                        label: 'Número',
+                                        icon: Icons.numbers_rounded,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _complementoCtrl,
+                                      textCapitalization:
+                                          TextCapitalization.words,
+                                      decoration: _decoracao(
+                                        label: 'Complemento',
+                                        icon: Icons.apartment_rounded,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              TextFormField(
+                                controller: _bairroCtrl,
+                                textCapitalization: TextCapitalization.words,
+                                decoration: _decoracao(
+                                  label: 'Bairro',
+                                  icon: Icons.location_city_outlined,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: DropdownButtonFormField<int>(
+                                      initialValue: _estadoIdSelecionado,
+                                      isExpanded: true,
+                                      decoration: _decoracao(
+                                        label: 'UF',
+                                        icon: Icons.map_outlined,
+                                      ),
+                                      hint: const Text('Selecione'),
+                                      items: _estados
+                                          .map(
+                                            (estado) => DropdownMenuItem<int>(
+                                              value: estado['estado_id'] as int,
+                                              child: Text(
+                                                '${estado['sgestado']} · ${estado['nmestado']}',
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: _selecionarEstado,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    flex: 2,
+                                    child: Autocomplete<Map<String, dynamic>>(
+                                      key: ValueKey(
+                                        '$_estadoIdSelecionado-$_cidadeIdSelecionada',
+                                      ),
+                                      initialValue: TextEditingValue(
+                                        text: _cidadeCtrl.text,
+                                      ),
+                                      displayStringForOption: (cidade) =>
+                                          (cidade['nmcidade'] ?? '').toString(),
+                                      optionsBuilder: (texto) {
+                                        if (_estadoIdSelecionado == null ||
+                                            _carregandoCidades) {
+                                          return const Iterable<
+                                            Map<String, dynamic>
+                                          >.empty();
+                                        }
+                                        final consulta = texto.text
+                                            .trim()
+                                            .toLowerCase();
+                                        if (consulta.isEmpty) {
+                                          return const Iterable<
+                                            Map<String, dynamic>
+                                          >.empty();
+                                        }
+                                        return _cidades
+                                            .where(
+                                              (cidade) =>
+                                                  (cidade['nmcidade'] ?? '')
+                                                      .toString()
+                                                      .toLowerCase()
+                                                      .startsWith(consulta),
+                                            )
+                                            .take(20);
+                                      },
+                                      onSelected: (cidade) {
+                                        setState(() {
+                                          _cidadeIdSelecionada =
+                                              cidade['cidade_id'] as int?;
+                                          _cidadeCtrl.text =
+                                              (cidade['nmcidade'] ?? '')
+                                                  .toString();
+                                        });
+                                      },
+                                      fieldViewBuilder:
+                                          (
+                                            context,
+                                            controller,
+                                            focusNode,
+                                            onFieldSubmitted,
+                                          ) => TextFormField(
+                                            controller: controller,
+                                            focusNode: focusNode,
+                                            enabled:
+                                                _estadoIdSelecionado != null &&
+                                                !_carregandoCidades,
+                                            textCapitalization:
+                                                TextCapitalization.words,
+                                            decoration:
+                                                _decoracao(
+                                                  label: 'Cidade',
+                                                  icon: Icons
+                                                      .location_on_outlined,
+                                                ).copyWith(
+                                                  hintText:
+                                                      _estadoIdSelecionado ==
+                                                          null
+                                                      ? 'Selecione a UF primeiro'
+                                                      : _carregandoCidades
+                                                      ? 'Carregando cidades...'
+                                                      : 'Digite as primeiras letras',
+                                                ),
+                                            onChanged: (valor) {
+                                              _cidadeCtrl.text = valor;
+                                              _cidadeIdSelecionada = null;
+                                            },
+                                            onFieldSubmitted: (_) =>
+                                                onFieldSubmitted(),
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              OutlinedButton.icon(
+                                onPressed: _buscarCepPorEndereco,
+                                icon: const Icon(Icons.travel_explore_rounded),
+                                label: const Text('Não sei meu CEP'),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Informe UF, cidade e endereço para procurarmos o CEP. Se houver mais de um, você escolhe o correto.',
+                                style: TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 14),
 
                     TextFormField(
