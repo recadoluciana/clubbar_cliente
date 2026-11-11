@@ -435,10 +435,14 @@ class _ModalidadesIngressoScreenState
                         }
                       },
                 icon: const Icon(Icons.local_activity_outlined),
-                label: Text(ehCortesia ? 'Resgatar' : 'Comprar ingresso'),
+                label: Text(
+                  ehCortesia ? 'Resgatar ingresso' : 'Comprar ingresso',
+                ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.amareloCerveja,
-                  foregroundColor: Colors.black,
+                  backgroundColor: ehCortesia
+                      ? const Color(0xFF5B9BD5)
+                      : AppColors.amareloCerveja,
+                  foregroundColor: ehCortesia ? Colors.white : Colors.black,
                   disabledBackgroundColor: Colors.grey.shade300,
                   disabledForegroundColor: Colors.grey.shade600,
                 ),
@@ -1582,10 +1586,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         quantidadeSelecionada: quantidade,
                       ),
                 icon: const Icon(Icons.local_activity_outlined),
-                label: Text(ehCortesia ? 'Resgatar' : 'Comprar ingresso'),
+                label: Text(
+                  ehCortesia ? 'Resgatar ingresso' : 'Comprar ingresso',
+                ),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.amareloCerveja,
-                  foregroundColor: Colors.black,
+                  backgroundColor: ehCortesia
+                      ? const Color(0xFF5B9BD5)
+                      : AppColors.amareloCerveja,
+                  foregroundColor: ehCortesia ? Colors.white : Colors.black,
                   disabledBackgroundColor: Colors.grey.shade300,
                   disabledForegroundColor: Colors.grey.shade600,
                 ),
@@ -2147,7 +2155,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               Flexible(
                                 child: SizedBox(
                                   width: 160,
-                                  height: 40,
+                                  height: 48,
                                   child: FilledButton.icon(
                                     onPressed: () {
                                       MainNavigationController.abrirTela(
@@ -2161,7 +2169,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         horizontal: 12,
                                         vertical: 10,
                                       ),
-                                      minimumSize: const Size(0, 40),
+                                      minimumSize: const Size(0, 48),
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
@@ -2169,12 +2177,24 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                       Icons.shopping_bag_outlined,
                                       size: 18,
                                     ),
-                                    label: const Text(
-                                      'Comprar produto',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                                    label: const Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Cardápio',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Comprar produto',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
