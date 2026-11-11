@@ -7,7 +7,11 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    let resultado = super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    // Garante o registro nativo no APNs para que o Firebase Messaging receba
+    // o token antes de solicitar o token FCM.
+    application.registerForRemoteNotifications()
+    return resultado
   }
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
