@@ -704,32 +704,24 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         elevation: 8,
         child: SizedBox(
           height: 44,
-          child: Center(
-            child: TextButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const PoliticaCompraScreen(tipo: 'PRODUTO'),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.policy_outlined, size: 18),
-              label: const Text('Política de compra de produto'),
-              style: TextButton.styleFrom(
-                foregroundColor: cor,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+          child: Center(child: TextButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const PoliticaCompraScreen(tipo: 'PRODUTO'),
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
+              );
+            },
+            icon: const Icon(Icons.policy_outlined, size: 18),
+            label: const Text('Política de compra de produto'),
+            style: TextButton.styleFrom(
+              foregroundColor: cor,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-          ),
+          )),
         ),
       ),
     );
@@ -1117,7 +1109,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   quantidadesSelecionadas[_chaveItemCardapio(produto)] ?? 1,
               campanhaId: int.tryParse('${campanhaPercentual!['campanha_id']}'),
             ),
-      icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
+      icon: const Icon(Icons.percent_rounded, size: 17),
       label: const Text('Adicionar promoção ao carrinho'),
       style: _estiloBotaoProduto(
         fundo: const Color(0xFFE57373),
@@ -1141,8 +1133,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ),
           const SizedBox(height: 6),
         ],
-        if (!temPromocaoPercentual)
-          SizedBox(width: double.infinity, height: 38, child: botaoComprar),
+        SizedBox(width: double.infinity, height: 38, child: botaoComprar),
         if (ehCortesia) ...[
           const SizedBox(height: 6),
           SizedBox(width: double.infinity, height: 38, child: botaoCortesia),
