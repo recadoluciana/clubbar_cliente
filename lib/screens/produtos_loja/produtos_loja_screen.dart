@@ -428,8 +428,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     }
 
     // Se não está pesquisando, usa a categoria selecionada normalmente
-    if (_categoriaOfertasSelecionada)
+    if (_categoriaOfertasSelecionada) {
       return produtos.where(_temOfertaDisponivel).toList();
+    }
     if (categoriaSelecionadaId == null) return produtos;
 
     return produtos
@@ -483,9 +484,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
-  Widget _chipCategoria(Categoria categoria) {
-    final selecionada =
-        !_categoriaOfertasSelecionada && categoriaSelecionadaId == categoria.id;
+  Widget _chipCategoria(Categoria categoria, {bool ofertas = false}) {
+    final selecionada = ofertas
+        ? _categoriaOfertasSelecionada
+        : !_categoriaOfertasSelecionada &&
+              categoriaSelecionadaId == categoria.id;
 
     return Padding(
       padding: const EdgeInsets.only(right: 7),
@@ -493,8 +496,14 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         borderRadius: BorderRadius.circular(13),
         onTap: () {
           setState(() {
-            categoriaSelecionadaId = categoria.id;
-            _categoriaOfertasSelecionada = false;
+            if (ofertas) {
+              _categoriaOfertasSelecionada = true;
+              _buscaController.clear();
+              termoBusca = '';
+            } else {
+              categoriaSelecionadaId = categoria.id;
+              _categoriaOfertasSelecionada = false;
+            }
           });
         },
         child: AnimatedContainer(
@@ -522,11 +531,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  CategoriaIconUtils.porCategoria(
-                    categoria.nome,
-                    categoria.icone,
-                  ),
-                  color: CategoriaIconUtils.corPorNome(categoria.nome),
+                  ofertas
+                      ? Icons.card_giftcard
+                      : CategoriaIconUtils.porCategoria(
+                          categoria.nome,
+                          categoria.icone,
+                        ),
+                  color: ofertas
+                      ? Colors.deepOrange
+                      : CategoriaIconUtils.corPorNome(categoria.nome),
                   size: 18,
                 ),
                 const SizedBox(height: 3),
@@ -703,24 +716,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         scrollDirection: Axis.horizontal,
                         children: [
                           if (produtos.any(_temOfertaDisponivel))
-                            Padding(
-                              padding: const EdgeInsets.only(right: 7),
-                              child: ActionChip(
-                                avatar: const Icon(
-                                  Icons.card_giftcard,
-                                  size: 18,
-                                  color: Colors.deepOrange,
-                                ),
-                                label: const Text('Promoções e cortesias'),
-                                backgroundColor: _categoriaOfertasSelecionada
-                                    ? Colors.amber
-                                    : Colors.orange.shade50,
-                                onPressed: () => setState(() {
-                                  _categoriaOfertasSelecionada = true;
-                                  _buscaController.clear();
-                                  termoBusca = '';
-                                }),
-                              ),
+                            _chipCategoria(
+                              Categoria(id: 0, nome: 'Promoções/Cortesias'),
+                              ofertas: true,
                             ),
                           ...categorias.map(_chipCategoria),
                         ],
