@@ -40,6 +40,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   List<Categoria> categorias = [];
   List<Produto> produtos = [];
   int? categoriaSelecionadaId;
+  bool _categoriaOfertasSelecionada = false;
+  bool _selecaoInicialDefinida = false;
   int? clienteId;
 
   int quantidadeCarrinho = 0;
@@ -54,6 +56,31 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
   int _chaveItemCardapio(Produto produto) =>
       produto.cardapioItemId ?? produto.produtoId;
+
+  bool _temOfertaDisponivel(Produto produto) {
+    final percentual =
+        double.tryParse(
+          '${_promocoesPercentuaisPorProduto[produto.produtoId]?['percentual_desconto']}',
+        ) ??
+        0;
+    final pacote = _pacotesPorProduto[produto.produtoId];
+    final quantidade = int.tryParse('${pacote?['qtitenspacote']}') ?? 0;
+    final valor = double.tryParse('${pacote?['vrpacote']}') ?? 0;
+    final cortesia = _cortesiasPorProduto[produto.produtoId];
+    final cortesiaAtiva =
+        cortesia != null &&
+        cortesia['disponivel_para_cliente'] != false &&
+        (cortesia['restantes'] == null ||
+            (int.tryParse('${cortesia['restantes']}') ?? 0) > 0);
+    final preco = produto.descontoativo
+        ? produto.vrprecofinal
+        : produto.vrprecoprod;
+    return (produto.descontoativo && preco > 0) ||
+        (percentual > 0 && percentual < 100) ||
+        (quantidade >= 2 && valor > 0) ||
+        cortesiaAtiva ||
+        (preco <= 0 && produto.cortesiaDisponivel == true);
+  }
 
   @override
   void initState() {
@@ -111,6 +138,14 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       categorias = categorias
           .where((categoria) => categoriasComProdutos.contains(categoria.id))
           .toList();
+
+      final possuiOfertas = produtos.any(_temOfertaDisponivel);
+      if (!_selecaoInicialDefinida) {
+        _categoriaOfertasSelecionada = possuiOfertas;
+        _selecaoInicialDefinida = true;
+      } else if (!possuiOfertas) {
+        _categoriaOfertasSelecionada = false;
+      }
 
       categoriaSelecionadaId =
           categorias.any((categoria) => categoria.id == categoriaSelecionadaId)
@@ -393,6 +428,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     }
 
     // Se não está pesquisando, usa a categoria selecionada normalmente
+    if (_categoriaOfertasSelecionada)
+      return produtos.where(_temOfertaDisponivel).toList();
     if (categoriaSelecionadaId == null) return produtos;
 
     return produtos
@@ -447,7 +484,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   }
 
   Widget _chipCategoria(Categoria categoria) {
-    final selecionada = categoriaSelecionadaId == categoria.id;
+    final selecionada =
+        !_categoriaOfertasSelecionada && categoriaSelecionadaId == categoria.id;
 
     return Padding(
       padding: const EdgeInsets.only(right: 7),
@@ -456,6 +494,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         onTap: () {
           setState(() {
             categoriaSelecionadaId = categoria.id;
+            _categoriaOfertasSelecionada = false;
           });
         },
         child: AnimatedContainer(
@@ -662,7 +701,29 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                       height: 64,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
-                        children: categorias.map(_chipCategoria).toList(),
+                        children: [
+                          if (produtos.any(_temOfertaDisponivel))
+                            Padding(
+                              padding: const EdgeInsets.only(right: 7),
+                              child: ActionChip(
+                                avatar: const Icon(
+                                  Icons.card_giftcard,
+                                  size: 18,
+                                  color: Colors.deepOrange,
+                                ),
+                                label: const Text('Promoções e cortesias'),
+                                backgroundColor: _categoriaOfertasSelecionada
+                                    ? Colors.amber
+                                    : Colors.orange.shade50,
+                                onPressed: () => setState(() {
+                                  _categoriaOfertasSelecionada = true;
+                                  _buscaController.clear();
+                                  termoBusca = '';
+                                }),
+                              ),
+                            ),
+                          ...categorias.map(_chipCategoria),
+                        ],
                       ),
                     ),
                   ),
@@ -704,24 +765,32 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         elevation: 8,
         child: SizedBox(
           height: 44,
-          child: Center(child: TextButton.icon(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PoliticaCompraScreen(tipo: 'PRODUTO'),
+          child: Center(
+            child: TextButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const PoliticaCompraScreen(tipo: 'PRODUTO'),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.policy_outlined, size: 18),
+              label: const Text('Política de compra de produto'),
+              style: TextButton.styleFrom(
+                foregroundColor: cor,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
                 ),
-              );
-            },
-            icon: const Icon(Icons.policy_outlined, size: 18),
-            label: const Text('Política de compra de produto'),
-            style: TextButton.styleFrom(
-              foregroundColor: cor,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                ),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
-          )),
+          ),
         ),
       ),
     );
