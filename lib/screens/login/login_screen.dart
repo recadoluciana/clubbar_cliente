@@ -490,13 +490,36 @@ class _LoginScreenState extends State<LoginScreen> {
                                     onPressed: carregandoSocial || carregando
                                         ? null
                                         : () => fazerLoginSocial('google'),
-                                    icon: const Icon(
-                                      Icons.g_mobiledata_rounded,
-                                      size: 28,
+                                    icon: ShaderMask(
+                                      blendMode: BlendMode.srcIn,
+                                      shaderCallback: (bounds) =>
+                                          const SweepGradient(
+                                            colors: [
+                                              Color(0xFF4285F4),
+                                              Color(0xFF34A853),
+                                              Color(0xFFFBBC05),
+                                              Color(0xFFEA4335),
+                                              Color(0xFF4285F4),
+                                            ],
+                                          ).createShader(bounds),
+                                      child: const Text(
+                                        'G',
+                                        style: TextStyle(
+                                          fontSize: 25,
+                                          fontWeight: FontWeight.w900,
+                                          height: 1,
+                                        ),
+                                      ),
                                     ),
-                                    label: const Text('Conta Google'),
+                                    label: const Text(
+                                      'Conta Google',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                     style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size(0, 48),
+                                      minimumSize: const Size(0, 52),
+                                      backgroundColor: Colors.white,
                                       foregroundColor: Colors.grey.shade800,
                                       side: BorderSide(
                                         color: Colors.grey.shade300,
@@ -513,10 +536,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                     onPressed: carregandoSocial || carregando
                                         ? null
                                         : () => fazerLoginSocial('apple'),
-                                    icon: const Icon(Icons.apple),
-                                    label: const Text('Conta Apple'),
+                                    icon: const Icon(
+                                      Icons.apple,
+                                      size: 27,
+                                      color: Colors.black,
+                                    ),
+                                    label: const Text(
+                                      'Conta Apple',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                     style: OutlinedButton.styleFrom(
-                                      minimumSize: const Size(0, 48),
+                                      minimumSize: const Size(0, 52),
+                                      backgroundColor: Colors.white,
                                       foregroundColor: Colors.black,
                                       side: BorderSide(
                                         color: Colors.grey.shade300,
