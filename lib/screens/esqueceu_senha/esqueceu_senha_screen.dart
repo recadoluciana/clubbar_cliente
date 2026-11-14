@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/clubbar_app_bar.dart';
 import 'redefinir_senha_screen.dart';
 
 class EsqueceuSenhaScreen extends StatefulWidget {
@@ -110,6 +111,7 @@ class _EsqueceuSenhaScreenState extends State<EsqueceuSenhaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
+      appBar: const ClubbarAppBar(mostrarVoltar: true, mostrarSessao: false),
       body: SafeArea(
         child: Column(
           children: [
@@ -117,7 +119,6 @@ class _EsqueceuSenhaScreenState extends State<EsqueceuSenhaScreen> {
               titulo: 'Recuperar senha',
               subtitulo: 'Receba um código de segurança no seu e-mail',
               icone: Icons.lock_reset_rounded,
-              onVoltar: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
               child: Form(
