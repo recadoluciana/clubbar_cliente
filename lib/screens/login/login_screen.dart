@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/app_config.dart';
 import '../../models/auth_response.dart';
@@ -16,6 +15,7 @@ import '../../services/main_navigation_controller.dart';
 import '../main/main_navigation_screen.dart';
 import '../../utils/app_snackbar.dart';
 import 'termos_uso_screen.dart';
+import '../pagamento/politica_compra_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool mostrarVoltar;
@@ -653,20 +653,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         TextButton(
-                          onPressed: () async {
-                            final abriu = await launchUrl(
-                              Uri.parse(
-                                'https://clubbar.com.br/politica-de-privacidade.html',
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const PoliticaCompraScreen(
+                                tipo: 'PRIVACIDADE',
                               ),
-                              mode: LaunchMode.externalApplication,
-                            );
-                            if (!abriu && context.mounted) {
-                              AppSnackBar.erro(
-                                context,
-                                'Não foi possível abrir a Política de Privacidade.',
-                              );
-                            }
-                          },
+                            ),
+                          ),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: Size.zero,

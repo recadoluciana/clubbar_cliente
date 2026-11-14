@@ -37,6 +37,15 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
         ),
       );
       if (resposta.statusCode != 200) {
+        if (widget.tipo == 'PRIVACIDADE' && resposta.statusCode == 404) {
+          if (mounted) {
+            setState(
+              () =>
+                  _erro = 'A Política de Privacidade ainda não foi publicada.',
+            );
+          }
+          return;
+        }
         throw Exception('Não foi possível carregar a política de compra.');
       }
       if (!mounted) return;
@@ -48,7 +57,9 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => _erro = 'Não foi possível carregar a política de compra agora.',
+          () => _erro = widget.tipo == 'PRIVACIDADE'
+              ? 'Não foi possível carregar a Política de Privacidade agora.'
+              : 'Não foi possível carregar a política de compra agora.',
         );
       }
     }
@@ -57,7 +68,9 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: ClubbarAppBar(
-      titulo: 'Política Clubbar',
+      titulo: widget.tipo == 'PRIVACIDADE'
+          ? 'Política de Privacidade'
+          : 'Política Clubbar',
       mostrarVoltar: true,
       mostrarSessao: false,
       mostrarLogo: false,
