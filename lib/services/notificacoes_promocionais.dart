@@ -25,6 +25,7 @@ class NotificacoesPromocionais {
   int _geracao = 0;
   Future<bool>? _inicializacao;
   Future<void> _operacoes = Future<void>.value();
+  final Set<String> _cliquesPendentes = {};
 
   Future<void> _serializar(Future<void> Function() tarefa) {
     final resultado = _operacoes.then((_) => tarefa());
@@ -61,6 +62,8 @@ class NotificacoesPromocionais {
     await _messaging!.setAutoInitEnabled(true);
     await _inicializarNotificacaoLocal();
     FirebaseMessaging.onMessage.listen(_exibirMensagemEmPrimeiroPlano);
+    FirebaseMessaging.onMessageOpenedApp.listen(_aoAbrirNotificacao);
+    unawaited(_processarNotificacaoInicial());
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       await _messaging!.setForegroundNotificationPresentationOptions(
         alert: true,
@@ -90,7 +93,17 @@ class NotificacoesPromocionais {
     const ios = DarwinInitializationSettings();
     await _notificacaoLocal.initialize(
       const InitializationSettings(android: android, iOS: ios),
+      onDidReceiveNotificationResponse: (resposta) {
+        final id = resposta.payload;
+        if (id != null) _registrarClique(id);
+      },
     );
+    final lancamento = await _notificacaoLocal
+        .getNotificationAppLaunchDetails();
+    if (lancamento?.didNotificationLaunchApp == true) {
+      final id = lancamento?.notificationResponse?.payload;
+      if (id != null) _registrarClique(id);
+    }
     final androidPlugin = _notificacaoLocal
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -125,7 +138,50 @@ class NotificacoesPromocionais {
           icon: '@mipmap/ic_launcher',
         ),
       ),
+      payload: mensagem.data['campanha_envio_id']?.toString(),
     );
+  }
+
+  void _aoAbrirNotificacao(RemoteMessage mensagem) {
+    final id = mensagem.data['campanha_envio_id']?.toString();
+    if (id != null) _registrarClique(id);
+  }
+
+  Future<void> _processarNotificacaoInicial() async {
+    try {
+      final inicial = await _messaging!.getInitialMessage().timeout(
+        const Duration(seconds: 10),
+      );
+      if (inicial != null) _aoAbrirNotificacao(inicial);
+    } catch (_) {
+      // A inicialização do app não depende do histórico de abertura.
+    }
+  }
+
+  void _registrarClique(String id) {
+    if (int.tryParse(id) == null) return;
+    _cliquesPendentes.add(id);
+    unawaited(_enviarCliques());
+  }
+
+  Future<void> _enviarCliques() async {
+    final sessao = _sessao;
+    if (sessao == null) return;
+    for (final id in _cliquesPendentes.toList()) {
+      try {
+        final resposta = await http.put(
+          Uri.parse(
+            '${ApiService.baseUrl}/clientes/me/dispositivos-promocao/notificacoes/$id/clique',
+          ),
+          headers: {'Authorization': 'Bearer $sessao'},
+        );
+        if (resposta.statusCode == 200 || resposta.statusCode == 404) {
+          _cliquesPendentes.remove(id);
+        }
+      } catch (_) {
+        // Uma nova ativação tentará registrar o clique novamente.
+      }
+    }
   }
 
   Future<void> ativar(String sessao, {bool solicitarPermissao = false}) async {
@@ -138,6 +194,7 @@ class NotificacoesPromocionais {
     }
     if (geracao != _geracao) return;
     _sessao = sessao;
+    unawaited(_enviarCliques());
     final estado = solicitarPermissao
         ? await _messaging!.requestPermission()
         : await _messaging!.getNotificationSettings();

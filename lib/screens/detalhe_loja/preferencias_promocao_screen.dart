@@ -1,10 +1,7 @@
-import 'dart:async';
 import 'dart:convert';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
@@ -12,6 +9,7 @@ import '../../services/notificacoes_promocionais.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../services/http_with_timeout.dart' as http;
 import '../../widgets/clubbar_app_bar.dart';
+import 'notificacoes_screen.dart';
 
 class PreferenciasPromocaoScreen extends StatefulWidget {
   const PreferenciasPromocaoScreen({super.key});
@@ -131,121 +129,18 @@ class _PreferenciasPromocaoScreenState
     }
   }
 
-  Future<void> _copiarTokenApns() async {
-    setState(() => _carregando = true);
-    try {
-      final sessao = await AuthStorage().obterToken();
-      if (sessao == null || sessao.isEmpty) {
-        throw Exception('Entre na sua conta para realizar o diagnóstico.');
-      }
-      final token = await NotificacoesPromocionais.instance
-          .obterTokenApnsParaDiagnostico(sessao);
-      await Clipboard.setData(ClipboardData(text: token));
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Token APNs copiado para o diagnóstico.')),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
-    } finally {
-      if (mounted) setState(() => _carregando = false);
-    }
-  }
-
-  Future<void> _testar() async {
-    setState(() => _carregando = true);
-    final diagnosticarIos =
-        !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
-    final recebida = Completer<void>();
-    StreamSubscription<RemoteMessage>? mensagens;
-    if (diagnosticarIos) {
-      mensagens = FirebaseMessaging.onMessage.listen((mensagem) {
-        if (mensagem.notification?.title == 'Teste Clubbar' &&
-            !recebida.isCompleted) {
-          recebida.complete();
-        }
-      });
-    }
-    try {
-      final token = await AuthStorage().obterToken();
-      if (token == null || token.isEmpty) {
-        throw Exception('Entre na sua conta para testar.');
-      }
-      await NotificacoesPromocionais.instance.testar(token);
-      if (diagnosticarIos) {
-        final configuracoes = await FirebaseMessaging.instance
-            .getNotificationSettings();
-        var chegou = false;
-        try {
-          await recebida.future.timeout(const Duration(seconds: 20));
-          chegou = true;
-        } on TimeoutException catch (_) {}
-        if (!mounted) return;
-        await showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Diagnóstico do teste'),
-            content: SelectableText(
-              'Firebase: aceitou o envio.\n'
-              'Permissão: ${configuracoes.authorizationStatus.name}.\n'
-              'Alertas: ${configuracoes.alert.name}.\n\n'
-              '${chegou ? 'O aplicativo recebeu a notificação enquanto estava aberto. Se o aviso não apareceu, verifique a apresentação no iPhone.' : 'O aplicativo não observou a notificação em 20 segundos. Isso não confirma falha definitiva de entrega: ela pode chegar depois ou com o app em segundo plano.'}\n\n'
-              'Faça o teste mantendo esta tela aberta.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Fechar'),
-              ),
-            ],
-          ),
-        );
-        return;
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Teste enviado. Verifique as notificações do aparelho.',
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        final mensagem = e.toString().replaceFirst('Exception: ', '');
-        if (mensagem.contains('token APNs')) {
-          await showDialog<void>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Diagnóstico de notificações'),
-              content: SelectableText(mensagem),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Fechar'),
-                ),
-              ],
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(mensagem)));
-        }
-      }
-    } finally {
-      await mensagens?.cancel();
-      if (mounted) setState(() => _carregando = false);
-    }
-  }
-
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: const ClubbarAppBar(
+    appBar: ClubbarAppBar(
+      actions: [
+        IconButton(
+          tooltip: 'Minhas notificações',
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const NotificacoesScreen())),
+        ),
+      ],
       titulo: 'Notificações/e-mails',
       mostrarVoltar: true,
       mostrarSessao: false,
@@ -288,16 +183,6 @@ class _PreferenciasPromocaoScreenState
                 onPressed: _salvar,
                 child: const Text('Salvar preferências'),
               ),
-              if (!kIsWeb)
-                TextButton(
-                  onPressed: _testar,
-                  child: const Text('Testar notificação neste aparelho'),
-                ),
-              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
-                TextButton(
-                  onPressed: _copiarTokenApns,
-                  child: const Text('Copiar token APNs para diagnóstico'),
-                ),
             ],
           ),
   );
