@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -130,12 +132,54 @@ class _PreferenciasPromocaoScreenState
 
   Future<void> _testar() async {
     setState(() => _carregando = true);
+    final diagnosticarIos =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+    final recebida = Completer<void>();
+    StreamSubscription<RemoteMessage>? mensagens;
+    if (diagnosticarIos) {
+      mensagens = FirebaseMessaging.onMessage.listen((mensagem) {
+        if (mensagem.notification?.title == 'Teste Clubbar' &&
+            !recebida.isCompleted) {
+          recebida.complete();
+        }
+      });
+    }
     try {
       final token = await AuthStorage().obterToken();
       if (token == null || token.isEmpty) {
         throw Exception('Entre na sua conta para testar.');
       }
       await NotificacoesPromocionais.instance.testar(token);
+      if (diagnosticarIos) {
+        final configuracoes = await FirebaseMessaging.instance
+            .getNotificationSettings();
+        var chegou = false;
+        try {
+          await recebida.future.timeout(const Duration(seconds: 20));
+          chegou = true;
+        } on TimeoutException catch (_) {}
+        if (!mounted) return;
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Diagnóstico do teste'),
+            content: SelectableText(
+              'Firebase: aceitou o envio.\n'
+              'Permissão: ${configuracoes.authorizationStatus.name}.\n'
+              'Alertas: ${configuracoes.alert.name}.\n\n'
+              '${chegou ? 'O aplicativo recebeu a notificação enquanto estava aberto. Se o aviso não apareceu, verifique a apresentação no iPhone.' : 'O aplicativo não observou a notificação em 20 segundos. Isso não confirma falha definitiva de entrega: ela pode chegar depois ou com o app em segundo plano.'}\n\n'
+              'Faça o teste mantendo esta tela aberta.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Fechar'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -169,6 +213,7 @@ class _PreferenciasPromocaoScreenState
         }
       }
     } finally {
+      await mensagens?.cancel();
       if (mounted) setState(() => _carregando = false);
     }
   }
