@@ -253,6 +253,18 @@ class NotificacoesPromocionais {
     }
   }
 
+  Future<String> obterTokenApnsParaDiagnostico(String sessao) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) {
+      throw Exception('O diagnóstico APNs está disponível apenas no iPhone.');
+    }
+    await ativar(sessao, solicitarPermissao: true);
+    final token = await _messaging?.getAPNSToken();
+    if (token == null || token.isEmpty) {
+      throw Exception('O iPhone ainda não disponibilizou o token APNs.');
+    }
+    return token;
+  }
+
   Future<void> _removerDispositivo(String sessao) async {
     final token = await _messaging!.getToken();
     if (token == null || token.isEmpty) return;

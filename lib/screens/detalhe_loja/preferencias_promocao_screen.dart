@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
@@ -127,6 +128,30 @@ class _PreferenciasPromocaoScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
       );
+    }
+  }
+
+  Future<void> _copiarTokenApns() async {
+    setState(() => _carregando = true);
+    try {
+      final sessao = await AuthStorage().obterToken();
+      if (sessao == null || sessao.isEmpty) {
+        throw Exception('Entre na sua conta para realizar o diagnóstico.');
+      }
+      final token = await NotificacoesPromocionais.instance
+          .obterTokenApnsParaDiagnostico(sessao);
+      await Clipboard.setData(ClipboardData(text: token));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Token APNs copiado para o diagnóstico.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _carregando = false);
     }
   }
 
@@ -267,6 +292,11 @@ class _PreferenciasPromocaoScreenState
                 TextButton(
                   onPressed: _testar,
                   child: const Text('Testar notificação neste aparelho'),
+                ),
+              if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS)
+                TextButton(
+                  onPressed: _copiarTokenApns,
+                  child: const Text('Copiar token APNs para diagnóstico'),
                 ),
             ],
           ),
