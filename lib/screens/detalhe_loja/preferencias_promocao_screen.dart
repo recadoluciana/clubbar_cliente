@@ -246,7 +246,7 @@ class _PreferenciasPromocaoScreenState
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: const ClubbarAppBar(
-      titulo: 'Promoções',
+      titulo: 'Notificações/e-mails',
       mostrarVoltar: true,
       mostrarSessao: false,
       mostrarCarrinho: false,
