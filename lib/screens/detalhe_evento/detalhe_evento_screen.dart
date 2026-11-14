@@ -2141,11 +2141,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         Icons.confirmation_number_outlined,
                                         size: 18,
                                       ),
-                                      label: const Text(
-                                        'Comprar ingresso',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w800,
+                                      label: const FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          'Comprar ingresso',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
+                                          ),
                                         ),
                                       ),
                                     ),
