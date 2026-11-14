@@ -60,10 +60,10 @@ class NotificacoesPromocionais {
     if (Firebase.apps.isEmpty) await Firebase.initializeApp(options: options);
     _messaging = FirebaseMessaging.instance;
     await _messaging!.setAutoInitEnabled(true);
-    await _inicializarNotificacaoLocal();
     FirebaseMessaging.onMessage.listen(_exibirMensagemEmPrimeiroPlano);
     FirebaseMessaging.onMessageOpenedApp.listen(_aoAbrirNotificacao);
     unawaited(_processarNotificacaoInicial());
+    await _inicializarNotificacaoLocal();
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       await _messaging!.setForegroundNotificationPresentationOptions(
         alert: true,
