@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../config/app_config.dart';
 import '../../models/auth_response.dart';
@@ -613,13 +614,53 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 18),
-                    Text(
-                      'Ao continuar você concorda com os termos de uso do app.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 12,
-                      ),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          'Consulte a ',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            final abriu = await launchUrl(
+                              Uri.parse(
+                                'https://clubbar.com.br/politica-de-privacidade.html',
+                              ),
+                              mode: LaunchMode.externalApplication,
+                            );
+                            if (!abriu && context.mounted) {
+                              AppSnackBar.erro(
+                                context,
+                                'Não foi possível abrir a Política de Privacidade.',
+                              );
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Política de Privacidade',
+                            style: TextStyle(
+                              fontSize: 13,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          ' do Clubbar.',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
