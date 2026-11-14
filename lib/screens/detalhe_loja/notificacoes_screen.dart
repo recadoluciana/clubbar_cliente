@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
@@ -70,12 +71,16 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
           itemCount: itens.length,
           itemBuilder: (context, index) {
             final item = itens[index] as Map;
+            final data = DateTime.tryParse('${item['criado_em'] ?? ''}');
+            final dataFormatada = data == null
+                ? 'Não disponível'
+                : DateFormat('dd/MM/yyyy HH:mm').format(data);
             return Card(
               child: ListTile(
                 leading: const Icon(Icons.notifications_outlined),
                 title: Text('${item['titulo']}'),
                 subtitle: Text(
-                  '${item['estabelecimento']}\n${item['mensagem']}',
+                  '${item['estabelecimento']}\n${item['mensagem']}\nData de envio: $dataFormatada',
                 ),
                 isThreeLine: true,
               ),
