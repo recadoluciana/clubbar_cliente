@@ -147,9 +147,26 @@ class _PreferenciasPromocaoScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-        );
+        final mensagem = e.toString().replaceFirst('Exception: ', '');
+        if (mensagem.contains('token APNs')) {
+          await showDialog<void>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Diagnóstico de notificações'),
+              content: SelectableText(mensagem),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Fechar'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(mensagem)));
+        }
       }
     } finally {
       if (mounted) setState(() => _carregando = false);

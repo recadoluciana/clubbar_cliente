@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../firebase_options_producao.dart';
@@ -12,6 +13,7 @@ import 'api_service.dart';
 import 'http_with_timeout.dart' as http;
 
 class NotificacoesPromocionais {
+  static const _diagnosticoAPNs = MethodChannel('clubbar/apns_diagnostico');
   static final NotificacoesPromocionais instance = NotificacoesPromocionais._();
   NotificacoesPromocionais._();
 
@@ -150,6 +152,13 @@ class NotificacoesPromocionais {
     }
     String? apns;
     if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (solicitarPermissao) {
+        try {
+          await _diagnosticoAPNs.invokeMethod<void>('registrar');
+        } on PlatformException catch (_) {
+          // O teste continua mesmo se o canal nativo não estiver disponível.
+        } on MissingPluginException catch (_) {}
+      }
       // O APNs pode terminar o registro depois da permissão do sistema,
       // especialmente na primeira instalação via TestFlight.
       for (var tentativa = 0; tentativa < 15; tentativa++) {
@@ -161,8 +170,16 @@ class NotificacoesPromocionais {
     }
     if (defaultTargetPlatform == TargetPlatform.iOS && apns == null) {
       if (solicitarPermissao) {
+        String? detalhe;
+        try {
+          detalhe = await _diagnosticoAPNs.invokeMethod<String>('estado');
+        } on PlatformException catch (_) {
+          detalhe = 'Diagnóstico nativo indisponível.';
+        } on MissingPluginException catch (_) {
+          detalhe = 'Diagnóstico nativo indisponível.';
+        }
         throw Exception(
-          'O iPhone não liberou o token APNs. Verifique a permissão de notificações e tente novamente.',
+          'O iPhone não disponibilizou o token APNs. ${detalhe ?? 'Sem detalhes adicionais.'}',
         );
       }
       return;
