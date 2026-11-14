@@ -15,6 +15,7 @@ import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import '../main/main_navigation_screen.dart';
 import '../../utils/app_snackbar.dart';
+import 'termos_uso_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool mostrarVoltar;
@@ -619,7 +620,33 @@ class _LoginScreenState extends State<LoginScreen> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
-                          'Consulte a ',
+                          'Consulte os ',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 13,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const TermosUsoScreen(),
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Termos de Uso',
+                            style: TextStyle(
+                              fontSize: 13,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          ' e a ',
                           style: TextStyle(
                             color: Colors.grey.shade700,
                             fontSize: 13,
