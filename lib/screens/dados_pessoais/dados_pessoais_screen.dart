@@ -489,7 +489,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
                                           ),
                                           SizedBox(height: 2),
                                           Text(
-                                            'Opcional. Você também poderá informá-lo no primeiro pagamento com cartão.',
+                                            'Opcional. Informe seu endereço caso queira receber pedidos por entrega.',
                                             style: TextStyle(
                                               color: Colors.black54,
                                               fontSize: 12,
