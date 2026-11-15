@@ -1163,7 +1163,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               issuerId: tokenizado.issuerId,
               installments: tokenizado.installments,
               payerEmail: perfil['emailcliente']?.toString(),
-              payerDocument: perfil['nrcpfcliente']?.toString(),
+              payerDocument: tokenizado.payerDocument,
             )
           : await apiService.pagarMercadoPago(
               clienteId: clienteToken,
@@ -1175,7 +1175,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               entrega: entrega,
               cardToken: tokenizado.token,
               payerEmail: perfil['emailcliente']?.toString(),
-              payerDocument: perfil['nrcpfcliente']?.toString(),
+              payerDocument: tokenizado.payerDocument,
               paymentMethodId: tokenizado.paymentMethodId,
               issuerId: tokenizado.issuerId,
               installments: tokenizado.installments,
