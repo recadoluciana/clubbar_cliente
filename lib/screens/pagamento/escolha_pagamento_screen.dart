@@ -408,6 +408,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       return;
     }
 
+    await _solicitarCpfParaPix();
+  }
+
+  Future<void> _solicitarCpfParaPix({bool mostrarEndereco = false}) async {
     final atualizar = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -438,7 +442,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     if (atualizar == true && mounted) {
       await Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => const DadosPessoaisScreen(abertaComoRota: true),
+          builder: (_) => DadosPessoaisScreen(
+            abertaComoRota: true,
+            mostrarEndereco: mostrarEndereco,
+          ),
         ),
       );
     }
@@ -1078,6 +1085,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
           builder: (_) => MercadoPagoBrickScreen(
             publicKey: publicKey,
             amount: totalPagar,
+            permiteParcelamento: widget.reservaIngressoId != null,
             tempoReserva: _tempoReservaParaCheckout,
           ),
         ),
@@ -1135,6 +1143,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             publicKey: publicKey,
             payerEmail: perfil['emailcliente']?.toString() ?? '',
             payerDocument: perfil['nrcpfcliente']?.toString() ?? '',
+            permiteParcelamento: widget.reservaIngressoId != null,
             tempoReserva: _tempoReservaParaCheckout,
           ),
         ),
@@ -1359,6 +1368,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     }
     setState(() => _metodoPagamentoProcessando = 'PIX');
     try {
+      final perfil = await apiService.buscarMeuPerfil();
+      if (!mounted) return;
+      if (!_temCpfValido(perfil)) {
+        await _solicitarCpfParaPix(
+          mostrarEndereco:
+              entregaSelecionada && !_temEnderecoCobrancaCompleto(perfil),
+        );
+        return;
+      }
       // A escolha do parceiro pode ter acabado de ser alterada. Atualizamos
       // antes de criar a cobrança para nunca abrir o checkout anterior por
       // causa da consulta assíncrona iniciada no carregamento da tela.

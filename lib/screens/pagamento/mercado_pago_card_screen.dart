@@ -23,6 +23,7 @@ class MercadoPagoCardScreen extends StatefulWidget {
   final String publicKey;
   final String payerEmail;
   final String payerDocument;
+  final bool permiteParcelamento;
   final ValueListenable<Duration>? tempoReserva;
 
   const MercadoPagoCardScreen({
@@ -30,6 +31,7 @@ class MercadoPagoCardScreen extends StatefulWidget {
     required this.publicKey,
     required this.payerEmail,
     required this.payerDocument,
+    this.permiteParcelamento = false,
     this.tempoReserva,
   });
 
@@ -78,15 +80,15 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
 <script src="https://sdk.mercadopago.com/js/v2"></script>
 <style>body{font-family:Arial;margin:18px;color:#202124}label{display:block;margin-top:12px;font-size:13px}input,select{box-sizing:border-box;width:100%;padding:13px;border:1px solid #bbb;border-radius:8px;margin-top:5px;font-size:16px}button{width:100%;padding:14px;margin-top:20px;border:0;border-radius:8px;background:#1769e0;color:white;font-size:16px}#erro{color:#b3261e;margin-top:12px}</style></head>
 <body><h2>Cartão de crédito</h2><form id="form">
-<label>Número do cartão<input id="cardNumber" data-checkout="cardNumber" inputmode="numeric" required></label>
-<label>Validade<input id="expirationDate" data-checkout="expirationDate" placeholder="MM/AA" required></label>
-<label>Código de segurança<input id="securityCode" data-checkout="securityCode" inputmode="numeric" required></label>
+<label>Número do cartão<input id="cardNumber" data-checkout="cardNumber" inputmode="numeric" autocomplete="cc-number" maxlength="23" required></label>
+<label>Validade<input id="expirationDate" data-checkout="expirationDate" placeholder="MM/AA" inputmode="numeric" autocomplete="cc-exp" maxlength="5" required></label>
+<label>Código de segurança<input id="securityCode" data-checkout="securityCode" inputmode="numeric" autocomplete="cc-csc" maxlength="4" required></label>
 <label>Nome no cartão<input id="cardholderName" data-checkout="cardholderName" required></label>
-<label>Parcelas<select id="installments" data-checkout="installments"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="6">6x</option><option value="12">12x</option></select></label>
+${widget.permiteParcelamento ? '<label>Parcelas<select id="installments" data-checkout="installments"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="6">6x</option><option value="12">12x</option></select></label>' : '<input type="hidden" id="installments" value="1">'}
 <input type="hidden" id="cardholderEmail" data-checkout="cardholderEmail" value="${widget.payerEmail}">
 <input type="hidden" id="identificationNumber" data-checkout="identificationNumber" value="${widget.payerDocument}">
 <button type="submit">Pagar com cartão</button><div id="erro"></div></form>
-<script>const mp=new MercadoPago('${widget.publicKey}',{locale:'pt-BR'});const form=document.getElementById('form');form.addEventListener('submit',async e=>{e.preventDefault();document.querySelector('button').disabled=true;try{const r=await mp.createCardToken({cardNumber:cardNumber.value,cardholderName:cardholderName.value,cardExpirationMonth:expirationDate.value.split('/')[0],cardExpirationYear:'20'+expirationDate.value.split('/')[1],securityCode:securityCode.value,identificationType:'CPF',identificationNumber:identificationNumber.value});const pm=await mp.getPaymentMethods({bin:cardNumber.value.replace(/\\D/g,'').slice(0,6)});ClubbarCard.postMessage(JSON.stringify({token:r.id,payment_method_id:pm.results[0].id,issuer_id:pm.results[0].issuer&&pm.results[0].issuer.id,installments:installments.value}));}catch(x){document.getElementById('erro').textContent=x.message||'Confira os dados do cartão.';document.querySelector('button').disabled=false;}});</script></body></html>''';
+<script>const mp=new MercadoPago('${widget.publicKey}',{locale:'pt-BR'});const form=document.getElementById('form');cardNumber.addEventListener('input',()=>{cardNumber.value=cardNumber.value.replace(/\\D/g,'').slice(0,19).replace(/(.{4})/g,'\$1 ').trim()});expirationDate.addEventListener('input',()=>{const v=expirationDate.value.replace(/\\D/g,'').slice(0,4);expirationDate.value=v.length>2?v.slice(0,2)+'/'+v.slice(2):v});securityCode.addEventListener('input',()=>{securityCode.value=securityCode.value.replace(/\\D/g,'').slice(0,4)});form.addEventListener('submit',async e=>{e.preventDefault();document.querySelector('button').disabled=true;try{const numero=cardNumber.value.replace(/\\D/g,'');const validade=expirationDate.value.split('/');if(numero.length<13||validade.length!==2||validade[1].length!==2||Number(validade[0])<1||Number(validade[0])>12){throw new Error('Confira o número e a validade do cartão (MM/AA).')}const r=await mp.createCardToken({cardNumber:numero,cardholderName:cardholderName.value.trim(),cardExpirationMonth:validade[0],cardExpirationYear:'20'+validade[1],securityCode:securityCode.value,identificationType:'CPF',identificationNumber:identificationNumber.value.replace(/\\D/g,'')});const pm=await mp.getPaymentMethods({bin:numero.slice(0,6)});if(!r.id||!pm.results||!pm.results.length)throw new Error('Não foi possível identificar o cartão. Confira os dados e tente novamente.');ClubbarCard.postMessage(JSON.stringify({token:r.id,payment_method_id:pm.results[0].id,issuer_id:pm.results[0].issuer&&pm.results[0].issuer.id,installments:installments.value}));}catch(x){document.getElementById('erro').textContent='Não foi possível validar o cartão. Confira o número, validade, código de segurança e CPF e tente novamente.';document.querySelector('button').disabled=false;}});</script></body></html>''';
 
   @override
   Widget build(BuildContext context) => Scaffold(

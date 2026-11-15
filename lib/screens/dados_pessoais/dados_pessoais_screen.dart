@@ -8,8 +8,13 @@ import '../../services/main_navigation_controller.dart';
 
 class DadosPessoaisScreen extends StatefulWidget {
   final bool abertaComoRota;
+  final bool mostrarEndereco;
 
-  const DadosPessoaisScreen({super.key, this.abertaComoRota = false});
+  const DadosPessoaisScreen({
+    super.key,
+    this.abertaComoRota = false,
+    this.mostrarEndereco = true,
+  });
 
   @override
   State<DadosPessoaisScreen> createState() => _DadosPessoaisScreenState();
@@ -448,218 +453,227 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
 
                         const SizedBox(height: 22),
 
-                        Card(
-                          elevation: 0,
-                          color: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            side: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 42,
-                                      height: 42,
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.shade50,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(
-                                        Icons.location_on_outlined,
-                                        color: Colors.blue.shade700,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    const Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Endereço',
-                                            style: TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                        if (widget.mostrarEndereco)
+                          Card(
+                            elevation: 0,
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                              side: BorderSide(color: Colors.grey.shade300),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 42,
+                                        height: 42,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade50,
+                                          borderRadius: BorderRadius.circular(
+                                            12,
                                           ),
-                                          SizedBox(height: 2),
-                                          Text(
-                                            'Opcional. Informe seu endereço caso queira receber pedidos por entrega.',
-                                            style: TextStyle(
-                                              color: Colors.black54,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ],
+                                        ),
+                                        child: Icon(
+                                          Icons.location_on_outlined,
+                                          color: Colors.blue.shade700,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _cepCtrl,
-                                  keyboardType: TextInputType.number,
-                                  decoration:
-                                      _decoracao(
-                                        label: 'CEP',
-                                        icon: Icons.markunread_mailbox_outlined,
-                                      ).copyWith(
-                                        suffixIcon: consultandoCep
-                                            ? const Padding(
-                                                padding: EdgeInsets.all(14),
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                              )
-                                            : IconButton(
-                                                tooltip: 'Buscar CEP',
-                                                onPressed: _buscarCep,
-                                                icon: const Icon(
-                                                  Icons.search_rounded,
-                                                ),
+                                      const SizedBox(width: 12),
+                                      const Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Endereço',
+                                              style: TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold,
                                               ),
-                                      ),
-                                  onChanged: (value) {
-                                    final formatado = _formatarCEP(value);
-                                    final numeros = _somenteNumeros(value);
-                                    if (numeros != _ultimoCepConsultado) {
-                                      _ultimoCepConsultado = null;
-                                      _enderecoCtrl.clear();
-                                      _bairroCtrl.clear();
-                                      _cidadeCtrl.clear();
-                                      _ufCtrl.clear();
-                                    }
-                                    if (formatado != value) {
-                                      _cepCtrl.value = TextEditingValue(
-                                        text: formatado,
-                                        selection: TextSelection.collapsed(
-                                          offset: formatado.length,
-                                        ),
-                                      );
-                                    }
-                                    if (numeros.length == 8) _buscarCep();
-                                  },
-                                  onFieldSubmitted: (_) => _buscarCep(),
-                                  validator: (value) {
-                                    final numeros = _somenteNumeros(
-                                      value ?? '',
-                                    );
-                                    if (numeros.isNotEmpty &&
-                                        numeros.length != 8) {
-                                      return 'CEP inválido';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 12),
-                                TextFormField(
-                                  controller: _enderecoCtrl,
-                                  readOnly: true,
-                                  textCapitalization: TextCapitalization.words,
-                                  decoration:
-                                      _decoracao(
-                                        label: 'Logradouro',
-                                        icon: Icons.signpost_outlined,
-                                        bloqueado: true,
-                                      ).copyWith(
-                                        helperText:
-                                            'Preenchido automaticamente pelo CEP',
-                                      ),
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      flex: 2,
-                                      child: TextFormField(
-                                        controller: _numeroCtrl,
-                                        keyboardType:
-                                            TextInputType.streetAddress,
-                                        decoration: _decoracao(
-                                          label: 'Número',
-                                          icon: Icons.numbers,
+                                            ),
+                                            SizedBox(height: 2),
+                                            Text(
+                                              'Opcional. Informe seu endereço caso queira receber pedidos por entrega.',
+                                              style: TextStyle(
+                                                color: Colors.black54,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      flex: 3,
-                                      child: TextFormField(
-                                        controller: _complementoCtrl,
-                                        textCapitalization:
-                                            TextCapitalization.sentences,
-                                        decoration: _decoracao(
-                                          label: 'Complemento',
-                                          icon: Icons.apartment_outlined,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                TextFormField(
-                                  controller: _bairroCtrl,
-                                  readOnly: true,
-                                  textCapitalization: TextCapitalization.words,
-                                  decoration: _decoracao(
-                                    label: 'Bairro',
-                                    icon: Icons.location_city_outlined,
-                                    bloqueado: true,
+                                    ],
                                   ),
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: 94,
-                                      child: TextFormField(
-                                        controller: _ufCtrl,
-                                        readOnly: true,
-                                        textCapitalization:
-                                            TextCapitalization.characters,
-                                        maxLength: 2,
-                                        decoration: _decoracao(
-                                          label: 'UF',
-                                          icon: Icons.map_outlined,
+                                  const SizedBox(height: 16),
+                                  TextFormField(
+                                    controller: _cepCtrl,
+                                    keyboardType: TextInputType.number,
+                                    decoration:
+                                        _decoracao(
+                                          label: 'CEP',
+                                          icon:
+                                              Icons.markunread_mailbox_outlined,
+                                        ).copyWith(
+                                          suffixIcon: consultandoCep
+                                              ? const Padding(
+                                                  padding: EdgeInsets.all(14),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                )
+                                              : IconButton(
+                                                  tooltip: 'Buscar CEP',
+                                                  onPressed: _buscarCep,
+                                                  icon: const Icon(
+                                                    Icons.search_rounded,
+                                                  ),
+                                                ),
+                                        ),
+                                    onChanged: (value) {
+                                      final formatado = _formatarCEP(value);
+                                      final numeros = _somenteNumeros(value);
+                                      if (numeros != _ultimoCepConsultado) {
+                                        _ultimoCepConsultado = null;
+                                        _enderecoCtrl.clear();
+                                        _bairroCtrl.clear();
+                                        _cidadeCtrl.clear();
+                                        _ufCtrl.clear();
+                                      }
+                                      if (formatado != value) {
+                                        _cepCtrl.value = TextEditingValue(
+                                          text: formatado,
+                                          selection: TextSelection.collapsed(
+                                            offset: formatado.length,
+                                          ),
+                                        );
+                                      }
+                                      if (numeros.length == 8) _buscarCep();
+                                    },
+                                    onFieldSubmitted: (_) => _buscarCep(),
+                                    validator: (value) {
+                                      final numeros = _somenteNumeros(
+                                        value ?? '',
+                                      );
+                                      if (numeros.isNotEmpty &&
+                                          numeros.length != 8) {
+                                        return 'CEP inválido';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _enderecoCtrl,
+                                    readOnly: true,
+                                    textCapitalization:
+                                        TextCapitalization.words,
+                                    decoration:
+                                        _decoracao(
+                                          label: 'Logradouro',
+                                          icon: Icons.signpost_outlined,
                                           bloqueado: true,
-                                        ).copyWith(counterText: ''),
-                                        validator: (value) {
-                                          final uf = value?.trim() ?? '';
-                                          if (uf.isNotEmpty && uf.length != 2) {
-                                            return 'UF inválida';
-                                          }
-                                          return null;
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: TextFormField(
-                                        controller: _cidadeCtrl,
-                                        readOnly: true,
-                                        textCapitalization:
-                                            TextCapitalization.words,
-                                        decoration: _decoracao(
-                                          label: 'Cidade',
-                                          icon: Icons.domain_outlined,
-                                          bloqueado: true,
+                                        ).copyWith(
+                                          helperText:
+                                              'Preenchido automaticamente pelo CEP',
+                                        ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: TextFormField(
+                                          controller: _numeroCtrl,
+                                          keyboardType:
+                                              TextInputType.streetAddress,
+                                          decoration: _decoracao(
+                                            label: 'Número',
+                                            icon: Icons.numbers,
+                                          ),
                                         ),
                                       ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        flex: 3,
+                                        child: TextFormField(
+                                          controller: _complementoCtrl,
+                                          textCapitalization:
+                                              TextCapitalization.sentences,
+                                          decoration: _decoracao(
+                                            label: 'Complemento',
+                                            icon: Icons.apartment_outlined,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextFormField(
+                                    controller: _bairroCtrl,
+                                    readOnly: true,
+                                    textCapitalization:
+                                        TextCapitalization.words,
+                                    decoration: _decoracao(
+                                      label: 'Bairro',
+                                      icon: Icons.location_city_outlined,
+                                      bloqueado: true,
                                     ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: 94,
+                                        child: TextFormField(
+                                          controller: _ufCtrl,
+                                          readOnly: true,
+                                          textCapitalization:
+                                              TextCapitalization.characters,
+                                          maxLength: 2,
+                                          decoration: _decoracao(
+                                            label: 'UF',
+                                            icon: Icons.map_outlined,
+                                            bloqueado: true,
+                                          ).copyWith(counterText: ''),
+                                          validator: (value) {
+                                            final uf = value?.trim() ?? '';
+                                            if (uf.isNotEmpty &&
+                                                uf.length != 2) {
+                                              return 'UF inválida';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: _cidadeCtrl,
+                                          readOnly: true,
+                                          textCapitalization:
+                                              TextCapitalization.words,
+                                          decoration: _decoracao(
+                                            label: 'Cidade',
+                                            icon: Icons.domain_outlined,
+                                            bloqueado: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
 
                         const SizedBox(height: 24),
 

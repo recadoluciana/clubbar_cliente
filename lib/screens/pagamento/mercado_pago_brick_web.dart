@@ -14,10 +14,12 @@ class MercadoPagoBrickScreen extends StatefulWidget {
     super.key,
     required this.publicKey,
     required this.amount,
+    this.permiteParcelamento = false,
     this.tempoReserva,
   });
   final String publicKey;
   final double amount;
+  final bool permiteParcelamento;
   final ValueListenable<Duration>? tempoReserva;
   @override
   State<MercadoPagoBrickScreen> createState() => _MercadoPagoBrickScreenState();
@@ -39,6 +41,7 @@ class _MercadoPagoBrickScreenState extends State<MercadoPagoBrickScreen> {
     final config = jsonEncode({
       'key': widget.publicKey,
       'amount': widget.amount,
+      'permiteParcelamento': widget.permiteParcelamento,
       'channel': channel,
     }).replaceAll('<', r'\u003c');
     _frame = html.IFrameElement()
@@ -63,6 +66,7 @@ async function start() { try {
   const mp = new MercadoPago(cfg.key, {locale:'pt-BR'});
   window.brick = await mp.bricks().create('cardPayment', 'cardPaymentBrick_container', {
     initialization: {amount: cfg.amount},
+    customization: {paymentMethods: {minInstallments: 1, maxInstallments: cfg.permiteParcelamento ? 12 : 1}},
     callbacks: {
       onReady: () => {},
       onError: (error) => {

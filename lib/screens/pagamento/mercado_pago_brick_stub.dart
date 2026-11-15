@@ -6,10 +6,12 @@ class MercadoPagoBrickScreen extends StatelessWidget {
     super.key,
     required this.publicKey,
     required this.amount,
+    this.permiteParcelamento = false,
     this.tempoReserva,
   });
   final String publicKey;
   final double amount;
+  final bool permiteParcelamento;
   final ValueListenable<Duration>? tempoReserva;
   @override
   Widget build(BuildContext context) => const Scaffold(
