@@ -154,12 +154,17 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
       setState(() => _error = 'Informe o nome e o CPF do titular do cartão.');
       return;
     }
-    if (_method == null) {
+    final method = _method;
+    if (method == null) {
       setState(
         () => _error = 'Não foi possível identificar a bandeira do cartão. Confira o número e tente novamente.',
       );
       return;
     }
+    // A tokenização bem-sucedida limpa os campos PCI e dispara onBinChanged,
+    // que reseta os metadados da tela. Preserve a seleção desta submissão.
+    final issuerId = _plan?.issuer.id;
+    final installments = _installments;
     setState(() {
       _loading = true;
       _error = null;
@@ -182,9 +187,9 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
           context,
           MercadoPagoCardData(
             token: data.token,
-            paymentMethodId: _method!.id,
-            issuerId: _plan?.issuer.id,
-            installments: _installments,
+            paymentMethodId: method.id,
+            issuerId: issuerId,
+            installments: installments,
             payerDocument: cpf,
           ),
         );
@@ -196,8 +201,7 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
     } catch (_) {
       if (mounted) {
         setState(
-          () => _error =
-              'Não foi possível conectar ao Mercado Pago. Tente novamente.',
+          () => _error = 'Não foi possível concluir a validação do cartão. Tente novamente.',
         );
       }
     } finally {

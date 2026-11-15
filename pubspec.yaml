@@ -3,7 +3,7 @@ description: "Aplicativo Clubbar para compra de produtos e ingressos."
 
 publish_to: 'none'
 
-version: 2.0.18+94
+version: 2.0.19+95
 
 environment:
   sdk: ^3.14.0
