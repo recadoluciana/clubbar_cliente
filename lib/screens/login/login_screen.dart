@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -243,6 +245,13 @@ class _LoginScreenState extends State<LoginScreen> {
           throw Exception('Não foi possível confirmar sua conta Google.');
         }
       } else {
+        final android = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+        final random = Random.secure();
+        String gerarAleatorio() => base64UrlEncode(
+              List<int>.generate(32, (_) => random.nextInt(256)),
+            ).replaceAll('=', '');
+        final state = android ? gerarAleatorio() : null;
+        final nonce = android ? gerarAleatorio() : null;
         if (kIsWeb &&
             (AppConfig.appleServiceId.trim().isEmpty ||
                 AppConfig.appleRedirectUri.trim().isEmpty)) {
@@ -251,7 +260,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
         final credencial = await SignInWithApple.getAppleIDCredential(
           scopes: const [AppleIDAuthorizationScopes.email],
-          webAuthenticationOptions: kIsWeb
+          state: state,
+          nonce: nonce,
+          webAuthenticationOptions: android
+              ? WebAuthenticationOptions(
+                  clientId: 'br.com.clubbar.login.web',
+                  redirectUri: Uri.parse('https://api.clubbar.com.br/auth/apple/android/callback'),
+                )
+              : kIsWeb
               ? WebAuthenticationOptions(
                   clientId: AppConfig.appleServiceId,
                   redirectUri: Uri.parse(AppConfig.appleRedirectUri),
@@ -259,6 +275,19 @@ class _LoginScreenState extends State<LoginScreen> {
               : null,
         );
         idToken = credencial.identityToken ?? '';
+        if (android) {
+          if (credencial.state != state || idToken.isEmpty) {
+            throw Exception('Não foi possível confirmar o login Apple. Tente novamente.');
+          }
+          final partes = idToken.split('.');
+          if (partes.length != 3) {
+            throw Exception('Resposta Apple inválida.');
+          }
+          final payload = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(partes[1]))));
+          if (payload is! Map || payload['nonce'] != nonce) {
+            throw Exception('Não foi possível confirmar o login Apple. Tente novamente.');
+          }
+        }
         authorizationCode = credencial.authorizationCode;
         if (idToken.isEmpty) {
           throw Exception('Não foi possível confirmar sua conta Apple.');
