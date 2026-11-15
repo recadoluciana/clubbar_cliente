@@ -68,13 +68,13 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
       if (sdk.isInitialized) {
         sdk.setNewConfiguration(
           publicKey: widget.publicKey,
-          countryCode: 'BR',
+          countryCode: Country.brazil.code,
           locale: 'pt-BR',
         );
       } else {
         sdk.initialize(
           publicKey: widget.publicKey,
-          countryCode: 'BR',
+          countryCode: Country.brazil.code,
           locale: 'pt-BR',
         );
       }
@@ -101,7 +101,7 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
       _method = null;
       _plan = null;
       _installments = 1;
-      _metadataLoading = bin != null;
+      _metadataLoading = bin != null && _configurationError == null;
     });
     if (bin == null || _configurationError != null) return;
     try {
@@ -156,8 +156,7 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
     }
     if (_method == null) {
       setState(
-        () => _error =
-            'Não foi possível identificar a bandeira do cartão. Confira o número e tente novamente.',
+        () => _error = 'Não foi possível identificar a bandeira do cartão. Confira o número e tente novamente.',
       );
       return;
     }
@@ -191,8 +190,7 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
         );
       } else {
         setState(
-          () => _error =
-              'Não foi possível validar o cartão. Confira os dados e tente novamente.',
+          () => _error = 'Não foi possível validar o cartão. Confira os dados e tente novamente.',
         );
       }
     } catch (_) {
@@ -227,29 +225,30 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
                 const SizedBox(height: 16),
                 CardNumberField(
                   controller: _number,
+                  label: 'Número do cartão',
                   onBinChanged: _loadCard,
                   enabled: !_loading,
                   decoration: const InputDecoration(
-                    labelText: 'Número do cartão',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
                 ExpirationDateField(
                   controller: _expiration,
+                  label: 'Validade',
+                  hintText: 'MM/AA',
                   enabled: !_loading,
                   decoration: const InputDecoration(
-                    labelText: 'Validade',
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
                 SecurityCodeField(
                   controller: _security,
+                  label: 'Código de segurança',
                   enabled: !_loading,
                   expectedLength: _method?.securityCodeLength,
                   decoration: const InputDecoration(
-                    labelText: 'Código de segurança',
                     border: OutlineInputBorder(),
                   ),
                 ),
