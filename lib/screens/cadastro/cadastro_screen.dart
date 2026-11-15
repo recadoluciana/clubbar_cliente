@@ -327,7 +327,7 @@ class _CadastroClienteScreenState extends State<CadastroClienteScreen> {
     if (enderecoInformado && !enderecoCompleto) {
       AppSnackBar.aviso(
         context,
-        'Preencha o endereço completo ou deixe os campos em branco. Ele será necessário apenas para cartão.',
+        'Preencha o endereço completo ou deixe os campos em branco. Ele será necessário para receber pedidos por entrega.',
       );
       return;
     }
