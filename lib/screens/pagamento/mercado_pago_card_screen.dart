@@ -1,8 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter/services.dart';
+import 'package:mercadopago_sdk_flutter/mercadopago_sdk_flutter.dart';
+
 import '../../widgets/reserva_tempo_banner.dart';
 
 class MercadoPagoCardData {
@@ -11,7 +11,6 @@ class MercadoPagoCardData {
   final String? issuerId;
   final int installments;
   final String payerDocument;
-
   const MercadoPagoCardData({
     required this.token,
     required this.paymentMethodId,
@@ -25,6 +24,7 @@ class MercadoPagoCardScreen extends StatefulWidget {
   final String publicKey;
   final String payerEmail;
   final String payerDocument;
+  final double amount;
   final bool permiteParcelamento;
   final ValueListenable<Duration>? tempoReserva;
 
@@ -33,6 +33,7 @@ class MercadoPagoCardScreen extends StatefulWidget {
     required this.publicKey,
     required this.payerEmail,
     required this.payerDocument,
+    required this.amount,
     this.permiteParcelamento = false,
     this.tempoReserva,
   });
@@ -42,66 +43,292 @@ class MercadoPagoCardScreen extends StatefulWidget {
 }
 
 class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
-  late final WebViewController _controller;
-  bool _enviando = false;
+  final _number = PciFieldState();
+  final _expiration = PciFieldState();
+  final _security = PciFieldState();
+  final _name = TextEditingController();
+  late final TextEditingController _document;
+  String? _bin;
+  PaymentMethod? _method;
+  Installment? _plan;
+  int _installments = 1;
+  bool _loading = false;
+  bool _metadataLoading = false;
+  String? _error;
+  String? _configurationError;
 
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel(
-        'ClubbarCard',
-        onMessageReceived: (message) {
-          if (_enviando) return;
-          final data = jsonDecode(message.message) as Map<String, dynamic>;
-          if (data['error'] != null) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(data['error'].toString())));
-            return;
-          }
-          _enviando = true;
-          Navigator.pop(
-            context,
-            MercadoPagoCardData(
-              token: data['token'].toString(),
-              paymentMethodId: data['payment_method_id'].toString(),
-              issuerId: data['issuer_id']?.toString(),
-              installments: int.tryParse(data['installments'].toString()) ?? 1,
-              payerDocument: data['payer_document'].toString(),
-            ),
-          );
-        },
-      )
-      ..loadHtmlString(_html);
+    _document = TextEditingController(
+      text: widget.payerDocument.replaceAll(RegExp(r'[^0-9]'), ''),
+    );
+    try {
+      final sdk = MercadoPagoSDK.shared;
+      if (sdk.isInitialized) {
+        sdk.setNewConfiguration(
+          publicKey: widget.publicKey,
+          countryCode: 'BR',
+          locale: 'pt-BR',
+        );
+      } else {
+        sdk.initialize(
+          publicKey: widget.publicKey,
+          countryCode: 'BR',
+          locale: 'pt-BR',
+        );
+      }
+    } catch (_) {
+      _configurationError =
+          'Não foi possível iniciar o pagamento com cartão. Tente novamente.';
+    }
   }
 
-  String get _html =>
-      '''<!doctype html>
-<html><head><meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="https://sdk.mercadopago.com/js/v2"></script>
-<style>html,body{margin:0;padding:0;overflow-x:hidden}body{font-family:Arial;padding:18px;box-sizing:border-box;color:#202124}label{display:block;margin-top:12px;font-size:13px}input,select{box-sizing:border-box;width:100%;padding:13px;border:1px solid #bbb;border-radius:8px;margin-top:5px;font-size:16px}button{width:100%;padding:14px;margin-top:20px;border:0;border-radius:8px;background:#1769e0;color:white;font-size:16px}#erro{color:#b3261e;margin-top:12px}</style></head>
-<body><h2>Cartão de crédito</h2><form id="form">
-<label>Número do cartão<input id="cardNumber" data-checkout="cardNumber" inputmode="numeric" autocomplete="cc-number" maxlength="23" required></label>
-<label>Validade<input id="expirationDate" data-checkout="expirationDate" placeholder="MM/AA" inputmode="numeric" autocomplete="cc-exp" maxlength="5" required></label>
-<label>Código de segurança<input id="securityCode" data-checkout="securityCode" inputmode="numeric" autocomplete="cc-csc" maxlength="4" required></label>
-<label>Nome no cartão<input id="cardholderName" data-checkout="cardholderName" required></label>
-<label>CPF do titular do cartão<input id="identificationNumber" data-checkout="identificationNumber" inputmode="numeric" maxlength="14" value="${widget.payerDocument.replaceAll(RegExp(r'[^0-9]'), '')}" required></label>
-${widget.permiteParcelamento ? '<label>Parcelas<select id="installments" data-checkout="installments"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="6">6x</option><option value="12">12x</option></select></label>' : '<input type="hidden" id="installments" value="1">'}
-<input type="hidden" id="cardholderEmail" data-checkout="cardholderEmail" value="${widget.payerEmail}">
-<button type="submit">Pagar com cartão</button><div id="erro"></div></form>
-<script>const mp=new MercadoPago('${widget.publicKey}',{locale:'pt-BR'});const form=document.getElementById('form');document.querySelectorAll('input,select').forEach(el=>el.addEventListener('focus',()=>setTimeout(()=>el.scrollIntoView({block:'nearest',inline:'nearest'}),350)));cardNumber.addEventListener('input',()=>{cardNumber.value=cardNumber.value.replace(/\\D/g,'').slice(0,19).replace(/(.{4})/g,'\$1 ').trim()});expirationDate.addEventListener('input',()=>{const v=expirationDate.value.replace(/\\D/g,'').slice(0,4);expirationDate.value=v.length>2?v.slice(0,2)+'/'+v.slice(2):v});identificationNumber.addEventListener('input',()=>{let v=identificationNumber.value.replace(/\\D/g,'').slice(0,11);v=v.replace(/^(\\d{3})(\\d)/,'\$1.\$2').replace(/^(\\d{3})\\.(\\d{3})(\\d)/,'\$1.\$2.\$3').replace(/(\\d{3})(\\d{1,2})\$/,'\$1-\$2');identificationNumber.value=v});identificationNumber.dispatchEvent(new Event('input'));securityCode.addEventListener('input',()=>{securityCode.value=securityCode.value.replace(/\\D/g,'').slice(0,4)});form.addEventListener('submit',async e=>{e.preventDefault();document.querySelector('button').disabled=true;let etapa='dados';try{const numero=cardNumber.value.replace(/\\D/g,'');const validade=expirationDate.value.split('/');if(numero.length<13||validade.length!==2||validade[1].length!==2||Number(validade[0])<1||Number(validade[0])>12){throw new Error('Confira o número e a validade do cartão (MM/AA).')}etapa='tokenizacao';if(typeof mp.createCardToken!=='function'){throw new TypeError('tokenization_unavailable')}const r=await mp.createCardToken({cardNumber:numero,cardholderName:cardholderName.value.trim(),cardExpirationMonth:validade[0],cardExpirationYear:'20'+validade[1],securityCode:securityCode.value,identificationType:'CPF',identificationNumber:identificationNumber.value.replace(/\\D/g,'')});etapa='bandeira';const pm=await mp.getPaymentMethods({bin:numero.slice(0,6)});if(!r.id||!pm.results||!pm.results.length)throw new Error('Não foi possível identificar o cartão. Confira os dados e tente novamente.');ClubbarCard.postMessage(JSON.stringify({token:r.id,payment_method_id:pm.results[0].id,issuer_id:pm.results[0].issuer&&pm.results[0].issuer.id,installments:installments.value,payer_document:identificationNumber.value.replace(/\\D/g,'')}));}catch(x){const tipos=['TypeError','NetworkError','AbortError','TimeoutError'];const tipo=tipos.includes(x?.name)?x.name:'outro';const status=Number.isInteger(x?.status)&&x.status>=100&&x.status<=599?String(x.status):'indisponível';const causas=Array.isArray(x?.cause)?x.cause:[];const codigos=['invalid_card_number','invalid_expiration_month','invalid_expiration_year','invalid_security_code','invalid_identification_number'];const codigo=causas.map(c=>String(c?.code??'')).find(c=>codigos.includes(c)||/^[0-9]{3,4}\$/.test(c))||'indisponível';const diagnostico=' Código: '+codigo+'; tipo: '+tipo+'; HTTP: '+status+'; método: '+(typeof mp.createCardToken==='function'?'disponível':'indisponível')+'.';document.getElementById('erro').textContent=etapa==='dados'?'Confira o número e a validade do cartão (MM/AA).':etapa==='tokenizacao'?'Não foi possível validar o cartão no Mercado Pago (etapa: tokenização).'+diagnostico:'Não foi possível identificar a bandeira do cartão no Mercado Pago. Tente novamente.';document.querySelector('button').disabled=false;}});</script></body></html>''';
+  @override
+  void dispose() {
+    _number.dispose();
+    _expiration.dispose();
+    _security.dispose();
+    _name.dispose();
+    _document.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCard(String? bin) async {
+    _bin = bin;
+    _security.clear();
+    setState(() {
+      _method = null;
+      _plan = null;
+      _installments = 1;
+      _metadataLoading = bin != null;
+    });
+    if (bin == null || _configurationError != null) return;
+    try {
+      final methods = await MercadoPagoSDK.shared.coreMethods.getPaymentMethods(
+        bin: bin,
+      );
+      if (!mounted || _bin != bin) return;
+      if (methods case Success(:final data)) {
+        final cards = data
+            .where((m) => m.paymentTypeId == 'credit_card')
+            .toList();
+        if (cards.isNotEmpty) _method = cards.first;
+      }
+      if (_method != null && widget.permiteParcelamento) {
+        final plans = await MercadoPagoSDK.shared.coreMethods.getInstallments(
+          bin: bin,
+          amount: widget.amount,
+        );
+        if (!mounted || _bin != bin) return;
+        if (plans case Success(:final data)) {
+          final matches = data.where(
+            (p) =>
+                p.paymentMethodId == _method!.id &&
+                p.paymentTypeId == 'credit_card',
+          );
+          if (matches.isNotEmpty) {
+            _plan = matches.first;
+            if (_plan!.payerCosts.isNotEmpty &&
+                !_plan!.payerCosts.any((cost) => cost.installments == 1)) {
+              _installments = _plan!.payerCosts.first.installments;
+            }
+          }
+        }
+      }
+    } catch (_) {
+      // A subsequent submission explains that the card could not be identified.
+    } finally {
+      if (mounted && _bin == bin) {
+        setState(() {
+          _metadataLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _submit() async {
+    if (_loading || _metadataLoading) return;
+    final cpf = _document.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (_name.text.trim().isEmpty || cpf.length != 11) {
+      setState(() => _error = 'Informe o nome e o CPF do titular do cartão.');
+      return;
+    }
+    if (_method == null) {
+      setState(
+        () => _error =
+            'Não foi possível identificar a bandeira do cartão. Confira o número e tente novamente.',
+      );
+      return;
+    }
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final result = await MercadoPagoSDK.shared.coreMethods
+          .createTokenForNewCard(
+            cardNumber: _number,
+            expirationDate: _expiration,
+            securityCode: _security,
+            identification: BuyerIdentification(
+              name: _name.text.trim(),
+              type: 'CPF',
+              number: cpf,
+            ),
+          );
+      if (!mounted) return;
+      if (result case Success(:final data)) {
+        Navigator.pop(
+          context,
+          MercadoPagoCardData(
+            token: data.token,
+            paymentMethodId: _method!.id,
+            issuerId: _plan?.issuer.id,
+            installments: _installments,
+            payerDocument: cpf,
+          ),
+        );
+      } else {
+        setState(
+          () => _error =
+              'Não foi possível validar o cartão. Confira os dados e tente novamente.',
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error =
+              'Não foi possível conectar ao Mercado Pago. Tente novamente.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Pagamento com cartão')),
-    body: Column(
-      children: [
-        if (widget.tempoReserva != null)
-          ReservaTempoBanner(tempo: widget.tempoReserva!),
-        Expanded(child: WebViewWidget(controller: _controller)),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final costs = _plan?.payerCosts ?? const <PayerCost>[];
+    return Scaffold(
+      appBar: AppBar(title: const Text('Pagamento com cartão')),
+      body: Column(
+        children: [
+          if (widget.tempoReserva != null)
+            ReservaTempoBanner(tempo: widget.tempoReserva!),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Text(
+                  'Cartão de crédito',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                CardNumberField(
+                  controller: _number,
+                  onBinChanged: _loadCard,
+                  enabled: !_loading,
+                  decoration: const InputDecoration(
+                    labelText: 'Número do cartão',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ExpirationDateField(
+                  controller: _expiration,
+                  enabled: !_loading,
+                  decoration: const InputDecoration(
+                    labelText: 'Validade',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SecurityCodeField(
+                  controller: _security,
+                  enabled: !_loading,
+                  expectedLength: _method?.securityCodeLength,
+                  decoration: const InputDecoration(
+                    labelText: 'Código de segurança',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _name,
+                  enabled: !_loading,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome no cartão',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _document,
+                  enabled: !_loading,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
+                  ],
+                  decoration: const InputDecoration(
+                    labelText: 'CPF do titular do cartão',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                if (widget.permiteParcelamento && costs.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<int>(
+                    initialValue: _installments,
+                    decoration: const InputDecoration(
+                      labelText: 'Parcelas',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: costs
+                        .map(
+                          (c) => DropdownMenuItem(
+                            value: c.installments,
+                            child: Text(
+                              '${c.installments}x de R\$ ${c.installmentAmount.toStringAsFixed(2).replaceAll('.', ',')}',
+                            ),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: _loading
+                        ? null
+                        : (v) => setState(() => _installments = v ?? 1),
+                  ),
+                ],
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed:
+                      _loading ||
+                          _metadataLoading ||
+                          _configurationError != null
+                      ? null
+                      : _submit,
+                  child: Text(
+                    _loading
+                        ? 'Validando cartão...'
+                        : _metadataLoading
+                        ? 'Identificando cartão...'
+                        : 'Pagar com cartão',
+                  ),
+                ),
+                if (_configurationError != null || _error != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Text(
+                      _configurationError ?? _error!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

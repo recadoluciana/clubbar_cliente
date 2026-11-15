@@ -1143,6 +1143,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             publicKey: publicKey,
             payerEmail: perfil['emailcliente']?.toString() ?? '',
             payerDocument: perfil['nrcpfcliente']?.toString() ?? '',
+            amount: totalPagar,
             permiteParcelamento: widget.reservaIngressoId != null,
             tempoReserva: _tempoReservaParaCheckout,
           ),

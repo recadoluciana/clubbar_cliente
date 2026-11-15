@@ -1,5 +1,8 @@
 import java.util.Properties
 import java.io.FileInputStream
+import com.android.build.api.dsl.ApplicationExtension
+import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -23,19 +26,19 @@ if (releaseRequested && signingFields.any { keystoreProperties.getProperty(it).i
     error("Assinatura de produção ausente: configure android/key.properties antes de gerar o AAB/APK release.")
 }
 
-android {
+extensions.configure<ApplicationExtension> {
     namespace = "br.com.clubbar.cliente"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    buildFeatures {
+        resValues = true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -90,31 +93,11 @@ android {
         }
     }
 
-    applicationVariants.all {
-        val flavor = flavorName
-        val build = buildType.name
-        val apkName = "clubbar-$flavor-$build.apk"
+}
 
-        outputs.all {
-            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output.outputFileName = apkName
-        }
-
-        assembleProvider.configure {
-            doLast {
-                val sourceApk = layout.buildDirectory
-                    .file("outputs/apk/$flavor/$build/$apkName")
-                    .get()
-                    .asFile
-                val flutterOutputDir = layout.buildDirectory
-                    .dir("outputs/flutter-apk")
-                    .get()
-                    .asFile
-
-                flutterOutputDir.mkdirs()
-                sourceApk.copyTo(flutterOutputDir.resolve(apkName), overwrite = true)
-            }
-        }
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 

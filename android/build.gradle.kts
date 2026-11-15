@@ -2,6 +2,12 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url = uri("https://artifacts.mercadolibre.com/repository/android-releases")
+            content {
+                includeGroup("com.mercadolibre.android.device")
+            }
+        }
     }
 }
 
