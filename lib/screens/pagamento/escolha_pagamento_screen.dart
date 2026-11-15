@@ -24,6 +24,7 @@ import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/cpf_utils.dart';
 import '../../utils/horario_brasil.dart';
+import '../../core/theme/app_colors.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 
 class EscolhaPagamentoScreen extends StatefulWidget {
@@ -413,24 +414,33 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         title: const Text('Complete seus dados'),
         content: Text(
           _usaMercadoPago
-              ? 'Para gerar o PIX, o Mercado Pago exige um CPF ou CNPJ válido. Atualize seus Dados pessoais e tente novamente.'
-              : 'Para gerar o PIX, o Asaas exige um CPF válido. Atualize seus Dados pessoais e tente novamente.',
+              ? 'Para gerar o PIX, informe um CPF válido nos seus dados pessoais e tente novamente.'
+              : 'Para gerar o PIX, o Asaas exige um CPF válido. Atualize seus dados pessoais e tente novamente.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Agora não'),
           ),
           FilledButton.icon(
             onPressed: () => Navigator.pop(dialogContext, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.amareloCerveja,
+              foregroundColor: Colors.black,
+            ),
             icon: const Icon(Icons.badge_rounded),
             label: const Text('Atualizar dados'),
           ),
         ],
       ),
     );
-    if (atualizar == true) {
-      MainNavigationController.abrirTela(const DadosPessoaisScreen());
+    if (atualizar == true && mounted) {
+      await Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => const DadosPessoaisScreen(abertaComoRota: true),
+        ),
+      );
     }
   }
 

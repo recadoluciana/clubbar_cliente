@@ -7,7 +7,9 @@ import '../../widgets/clubbar_page_header.dart';
 import '../../services/main_navigation_controller.dart';
 
 class DadosPessoaisScreen extends StatefulWidget {
-  const DadosPessoaisScreen({super.key});
+  final bool abertaComoRota;
+
+  const DadosPessoaisScreen({super.key, this.abertaComoRota = false});
 
   @override
   State<DadosPessoaisScreen> createState() => _DadosPessoaisScreenState();
@@ -219,7 +221,11 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
       if (!mounted) return;
 
       AppSnackBar.sucesso(context, 'Dados atualizados com sucesso.');
-      MainNavigationController.fecharTelaInterna();
+      if (widget.abertaComoRota) {
+        Navigator.of(context).pop();
+      } else {
+        MainNavigationController.fecharTelaInterna();
+      }
     } catch (e) {
       if (!mounted) return;
       AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
@@ -286,11 +292,14 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
-      appBar: const ClubbarAppBar(
+      appBar: ClubbarAppBar(
         titulo: 'Dados pessoais',
         iconeTitulo: Icons.badge_rounded,
         corIconeTitulo: Colors.blue,
         mostrarVoltar: true,
+        onVoltar: widget.abertaComoRota
+            ? () => Navigator.of(context).pop()
+            : null,
         mostrarSessao: false,
       ),
 
