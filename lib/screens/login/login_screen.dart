@@ -214,8 +214,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (provedor == 'google') {
         final googleOAuthClientId =
-            (await apiService.obterGoogleOAuthClientId())?.trim() ??
-            AppConfig.googleOAuthClientId.trim();
+            !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+                ? '495413135257-5seomcf9qirheq60iojbf4k5k16bnb9s.apps.googleusercontent.com'
+                : (await apiService.obterGoogleOAuthClientId())?.trim() ??
+                    AppConfig.googleOAuthClientId.trim();
         if (googleOAuthClientId.isEmpty) {
           throw Exception('O login com Google ainda não está configurado.');
         }
@@ -224,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
           scopes: const ['email'],
           // No iOS o identificador específico do app vem do Info.plist;
           // o ID web identifica o servidor que valida o token.
-          clientId: !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS
+          clientId: !kIsWeb
               ? null
               : googleOAuthClientId,
           // O backend valida o idToken; informar explicitamente o client ID
