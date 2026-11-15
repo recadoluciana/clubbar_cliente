@@ -338,7 +338,7 @@ class ApiService {
         Uri.parse(
           '$baseUrl/entregas/pendentes?cliente_id=$clienteId&loja_id=$lojaId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await _headersAutenticado(),
       );
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
