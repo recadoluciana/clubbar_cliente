@@ -472,7 +472,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '#${item['itvenda_id'] ?? ''} - ${(item['nmproduto'] ?? '').toString()}',
+                            (item['nmproduto'] ?? '').toString(),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -519,11 +519,15 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 44,
-                              child: TextButton(
+                              height: 38,
+                              child: TextButton.icon(
                                 onPressed: () =>
                                     _confirmarCompartilhamento(item),
-                                child: const Text(
+                                icon: const Icon(
+                                  Icons.card_giftcard_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text(
                                   'Presentear',
                                   style: TextStyle(fontSize: 12),
                                 ),
@@ -537,14 +541,23 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          SizedBox(
-                            width: 72,
-                            height: 44,
-                            child: Tooltip(
-                              message: 'Exibir QR Code',
-                              child: ElevatedButton(
+                          Expanded(
+                            child: SizedBox(
+                              height: 38,
+                              child: ElevatedButton.icon(
                                 onPressed: () =>
                                     _abrirQrOuRetirada(context, item),
+                                icon: const Icon(
+                                  Icons.qr_code_2_rounded,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  'Exibir QR Code',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.amber,
                                   foregroundColor: Colors.black,
@@ -554,22 +567,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15),
-                                  ),
-                                ),
-                                child: const FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.qr_code_2_rounded, size: 19),
-                                      Text(
-                                        'Exibir',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
                                   ),
                                 ),
                               ),
