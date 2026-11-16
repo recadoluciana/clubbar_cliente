@@ -576,6 +576,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
     final setor = (item['nmsetor'] ?? '').toString().trim();
     final modalidade = (item['nmpreco'] ?? '').toString().trim();
+    final tipoPreco = (item['tipopreco'] ?? '').toString().trim().toUpperCase();
     final detalhesModalidade = tipoIngresso
         .split(RegExp(r'\s*[•·]\s*'))
         .map((parte) => parte.trim())
@@ -587,6 +588,14 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final modalidadeExibida = detalhesModalidade.isNotEmpty
         ? detalhesModalidade
         : modalidade;
+    final ehCortesia = tipoPreco.isNotEmpty
+        ? tipoPreco == 'CORTESIA'
+        : modalidade.toUpperCase() == 'CORTESIA' ||
+              (modalidade.isEmpty &&
+                  modalidadeExibida.toUpperCase() == 'CORTESIA');
+    final corIngresso = ehCortesia
+        ? Colors.green.shade700
+        : Colors.blue.shade700;
     final enderecoEvento =
         (item['endereco_evento_completo'] ??
                 item['dsendlocevento'] ??
@@ -601,7 +610,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         color: Colors.white,
         elevation: 2,
         shadowColor: Colors.black.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: corIngresso, width: 1.5),
+        ),
         clipBehavior: Clip.antiAlias,
         child: Column(
           children: [
@@ -662,7 +674,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.blue.shade700,
+                              color: corIngresso,
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),

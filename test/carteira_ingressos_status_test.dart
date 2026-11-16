@@ -3,6 +3,69 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('borda e modalidade seguem o tipo de ingresso', (tester) async {
+    tester.view.physicalSize = const Size(800, 2000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CarteiraIngressosScreen(
+          nomeLoja: 'Loja',
+          logoLoja: '',
+          nomeCliente: 'Cliente',
+          onAtualizar: null,
+          onVoltar: () {},
+          itens: [
+            {
+              'nmproduto': 'Ingresso cortesia',
+              'nmpreco': 'Cortesia',
+              'tipopreco': 'CORTESIA',
+              'qtitvenda': 1,
+            },
+            {
+              'nmproduto': 'Ingresso meia',
+              'nmpreco': 'Meia-entrada',
+              'tipopreco': 'MEIA',
+              'qtitvenda': 1,
+            },
+            {
+              'nmproduto': 'Ingresso legado',
+              'tipo_ingresso': 'Cortesia',
+              'qtitvenda': 1,
+            },
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    Color corBorda(String nome) {
+      final materiais = tester.widgetList<Material>(
+        find.ancestor(of: find.text(nome), matching: find.byType(Material)),
+      );
+      final cartao = materiais.firstWhere(
+        (m) =>
+            m.shape is RoundedRectangleBorder &&
+            (m.shape as RoundedRectangleBorder).side.width == 1.5,
+      );
+      return (cartao.shape as RoundedRectangleBorder).side.color;
+    }
+
+    expect(corBorda('Ingresso cortesia'), Colors.green.shade700);
+    expect(corBorda('Ingresso meia'), Colors.blue.shade700);
+    expect(corBorda('Ingresso legado'), Colors.green.shade700);
+    expect(
+      tester
+          .widgetList<Text>(find.text('Cortesia'))
+          .every((t) => t.style?.color == Colors.green.shade700),
+      isTrue,
+    );
+    expect(
+      tester.widget<Text>(find.text('Meia-entrada')).style?.color,
+      Colors.blue.shade700,
+    );
+  });
+
   testWidgets('nome tem espaço e ação fica na linha do CPF', (tester) async {
     tester.view.physicalSize = const Size(390, 1000);
     tester.view.devicePixelRatio = 1;
