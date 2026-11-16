@@ -9,7 +9,6 @@ import '../../services/api_service.dart';
 import '../../utils/cpf_utils.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
-import '../../utils/value_formatters.dart';
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
 
@@ -573,12 +572,21 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         .toString()
         .trim();
 
-    final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
-    final lote = (item['lote'] ?? '').toString().trim();
     final setor = (item['nmsetor'] ?? '').toString().trim();
     final modalidade = (item['nmpreco'] ?? '').toString().trim();
+    final detalhesModalidade = tipoIngresso
+        .split(RegExp(r'\s*[•·]\s*'))
+        .map((parte) => parte.trim())
+        .where(
+          (parte) =>
+              parte.isNotEmpty && parte.toLowerCase() != setor.toLowerCase(),
+        )
+        .join(' • ');
+    final modalidadeExibida = detalhesModalidade.isNotEmpty
+        ? detalhesModalidade
+        : modalidade;
     final enderecoEvento =
         (item['endereco_evento_completo'] ??
                 item['dsendlocevento'] ??
@@ -586,8 +594,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 '')
             .toString()
             .trim();
-
-    final valor = double.tryParse('${item['vrunititvenda'] ?? ''}');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -649,41 +655,16 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             height: 1.15,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          dataEvento.isEmpty
-                              ? 'Data evento não informada'
-                              : 'Data evento: $dataEvento',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        if (lote.isNotEmpty ||
-                            setor.isNotEmpty ||
-                            modalidade.isNotEmpty ||
-                            tipoIngresso.isNotEmpty) ...[
+                        if (modalidadeExibida.isNotEmpty) ...[
                           const SizedBox(height: 4),
-                          _linhaDetalhesIngresso(
-                            lote: lote,
-                            setor: setor,
-                            modalidade: modalidade,
-                            alternativa: tipoIngresso,
-                          ),
-                        ],
-                        if (enderecoEvento.isNotEmpty) ...[
-                          const SizedBox(height: 5),
                           Text(
-                            enderecoEvento,
-                            maxLines: 1,
+                            modalidadeExibida,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.grey.shade700,
+                              color: Colors.blue.shade700,
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
@@ -699,33 +680,26 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Valor e data da compra
+                  // Local e data do evento
                   Row(
                     children: [
                       _informacaoIngresso(
-                        icone: Icons.payments_outlined,
-                        titulo: 'Valor',
-                        valor: valor == null
+                        icone: Icons.place_outlined,
+                        titulo: 'Local',
+                        valor: enderecoEvento.isEmpty
                             ? 'Não informado'
-                            : ValueFormatters.moeda(valor),
+                            : enderecoEvento,
                         corIcone: Colors.green.shade700,
-                        selo: valor == null
-                            ? null
-                            : valor == 0
-                            ? 'Cortesia'
-                            : valor > 0
-                            ? 'Pago'
-                            : null,
                       ),
 
                       const SizedBox(width: 5),
 
                       _informacaoIngresso(
-                        icone: Icons.shopping_bag_outlined,
-                        titulo: 'Data e hora da compra',
-                        valor: dataCompra.isEmpty
+                        icone: Icons.event_outlined,
+                        titulo: 'Data e hora do evento',
+                        valor: dataEvento.isEmpty
                             ? 'Não informada'
-                            : dataCompra,
+                            : dataEvento,
                         corIcone: Colors.blue.shade700,
                       ),
                     ],
@@ -1008,7 +982,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     required String titulo,
     required String valor,
     Color? corIcone,
-    String? selo,
   }) {
     return Expanded(
       child: Container(
@@ -1042,33 +1015,13 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     children: [
                       Text(
                         valor,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      if (selo != null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 7,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.green.shade50,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.green.shade200),
-                          ),
-                          child: Text(
-                            selo,
-                            style: TextStyle(
-                              color: Colors.green.shade800,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ],
@@ -1077,58 +1030,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _linhaDetalhesIngresso({
-    required String lote,
-    required String setor,
-    required String modalidade,
-    required String alternativa,
-  }) {
-    final estiloBase = TextStyle(
-      color: Colors.blue.shade700,
-      fontSize: 12,
-      fontWeight: FontWeight.w700,
-    );
-    final partes = <InlineSpan>[];
-
-    void adicionar(String texto, {Color? cor}) {
-      if (texto.isEmpty) {
-        return;
-      }
-      if (partes.isNotEmpty) {
-        partes.add(TextSpan(text: ' . ', style: estiloBase));
-      }
-      partes.add(
-        TextSpan(
-          text: texto,
-          style: estiloBase.copyWith(color: cor),
-        ),
-      );
-    }
-
-    if (lote.toUpperCase() != 'CORTESIA') adicionar(lote);
-    adicionar(setor);
-    adicionar(
-      modalidade,
-      cor: modalidade.toUpperCase() == 'CORTESIA'
-          ? const Color(0xFF18763B)
-          : null,
-    );
-    if (partes.isEmpty) {
-      final detalhes = alternativa.split(RegExp(r'\s+[.·]\s+'));
-      for (final detalhe in detalhes) {
-        if (detalhe.trim().toUpperCase() != 'CORTESIA') {
-          adicionar(detalhe.trim());
-        }
-      }
-    }
-
-    return Text.rich(
-      TextSpan(children: partes),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 
