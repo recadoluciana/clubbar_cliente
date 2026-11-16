@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
-import '../../utils/value_formatters.dart';
 import '../../utils/date_formatters.dart';
+
 import 'package:share_plus/share_plus.dart';
+
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
+
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraLojaScreen extends StatefulWidget {
@@ -387,35 +390,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     }
   }
 
-  Widget _chip(String texto) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(texto, style: const TextStyle(fontSize: 12)),
-    );
-  }
-
-  Widget _chipCortesia() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE1F5E8),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Text(
-        'Cortesia',
-        style: TextStyle(
-          color: Color(0xFF18763B),
-          fontSize: 12,
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-    );
-  }
-
   Widget _chipValidade(String validade) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -462,8 +436,6 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
-    final dataCompra = (item['dtcriacao_fmt'] ?? '').toString();
-    final ehCortesia = (double.tryParse('${item['vrunititvenda']}') ?? 0) <= 0;
     final entrega = _isDelivery(item);
     final situacaoEntrega = (item['situacaoentrega'] ?? '')
         .toString()
@@ -517,18 +489,12 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              if (dataCompra.isNotEmpty)
-                                _chip('Data da compra: $dataCompra'),
-                              _chip(
-                                'Valor: ${ValueFormatters.moeda(double.tryParse('${item['vrunititvenda']}') ?? 0)}',
-                              ),
-                              if (ehCortesia) _chipCortesia(),
                               if (validade.isNotEmpty) _chipValidade(validade),
                               if (entrega) _chipStatusEntrega(item),
                             ],
                           ),
 
-                          if (obs.trim().isNotEmpty) ...[
+                          if (entrega && obs.trim().isNotEmpty) ...[
                             const SizedBox(height: 10),
                             Text(
                               'Observação: $obs',
@@ -674,37 +640,36 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     ),
                   ),
 
-                const SizedBox(height: 8),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline_rounded,
-                      size: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 5),
-                    Flexible(
-                      child: Text(
-                        entrega
-                            ? (item['situacaovenda'] ?? '')
-                                          .toString()
-                                          .toUpperCase() ==
-                                      'PAGA'
-                                  ? 'Pagamento realizado. Apresente o QR Code ao motoboy.'
-                                  : 'Apresente o QR Code ao motoboy na entrega.'
-                            : 'Apresente o QR Code para o atendente',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                if (entrega) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 14,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          (item['situacaovenda'] ?? '')
+                                      .toString()
+                                      .toUpperCase() ==
+                                  'PAGA'
+                              ? 'Pagamento realizado. Apresente o QR Code ao motoboy.'
+                              : 'Apresente o QR Code ao motoboy na entrega.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -837,6 +802,19 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                 children: [
+                  if (itensTela.any((item) => !_isDelivery(item))) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        'Apresente o QR Code para o atendente',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                   if (itensTela.isEmpty)
                     _estadoVazio()
                   else
