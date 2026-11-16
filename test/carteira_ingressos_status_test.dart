@@ -28,6 +28,12 @@ void main() {
       ),
     );
     await tester.pump();
+    expect(
+      find.text(
+        '1 ingresso disponível\nApresente o QR Code na portaria do evento',
+      ),
+      findsOneWidget,
+    );
     final nome = find.text('Ana Beatriz de Oliveira Silva');
     final cpf = find.text('CPF: 123.456.789-09');
     final acao = find.widgetWithText(OutlinedButton, 'Alterar participante');

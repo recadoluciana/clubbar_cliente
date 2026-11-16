@@ -902,18 +902,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: Text(
-                        'Apresente o QR Code na portaria do evento',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
                   ],
                 ],
               ),
@@ -1071,7 +1059,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         children: [
           ClubbarPageHeader(
             titulo: widget.nomeLoja,
-            subtitulo: subtituloAux,
+            subtitulo: itensTela.isEmpty
+                ? subtituloAux
+                : '$subtituloAux\nApresente o QR Code na portaria do evento',
+            maxLinhasSubtitulo: 3,
             icone: Icons.storefront_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
             tamanhoAvatar: 58,
