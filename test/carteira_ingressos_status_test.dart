@@ -76,9 +76,27 @@ void main() {
       tester.widget<Text>(find.text('Meia-entrada')).style?.color,
       Colors.blue.shade700,
     );
+    final presentear = tester
+        .widgetList<OutlinedButton>(
+          find.widgetWithText(OutlinedButton, 'Presentear'),
+        )
+        .toList();
+    final qr = tester
+        .widgetList<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'Exibir QR Code'),
+        )
+        .toList();
+    for (var i = 0; i < 3; i++) {
+      final cor = i == 1 ? Colors.blue.shade700 : Colors.green.shade700;
+      expect(presentear[i].style?.foregroundColor?.resolve({}), cor);
+      expect(presentear[i].style?.side?.resolve({})?.color, cor);
+      expect(qr[i].style?.backgroundColor?.resolve({}), cor);
+    }
   });
 
-  testWidgets('nome tem espaço e ação fica na linha do CPF', (tester) async {
+  testWidgets('ação do participante fica à direita e presentear à esquerda', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -111,17 +129,15 @@ void main() {
     );
     final nome = find.text('Ana Beatriz de Oliveira Silva');
     final cpf = find.text('CPF: 123.456.789-09');
-    final acao = find.widgetWithText(OutlinedButton, 'Alterar participante');
+    final acao = find.widgetWithText(OutlinedButton, 'Alterar');
     expect(nome, findsOneWidget);
     expect(cpf, findsOneWidget);
     expect(acao, findsOneWidget);
+    expect(tester.getRect(acao).left, greaterThan(tester.getRect(nome).right));
+    expect(tester.getSize(acao).width, tester.getSize(acao).height);
     expect(
-      tester.getRect(nome).bottom,
-      lessThanOrEqualTo(tester.getRect(acao).top),
-    );
-    expect(
-      (tester.getCenter(cpf).dy - tester.getCenter(acao).dy).abs(),
-      lessThan(3),
+      tester.getTopLeft(find.text('Presentear')).dx,
+      lessThan(tester.getTopLeft(find.text('Exibir QR Code')).dx),
     );
     expect(tester.takeException(), isNull);
   });

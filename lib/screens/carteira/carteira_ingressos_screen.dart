@@ -738,7 +738,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       ),
                     ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.person_rounded,
@@ -774,57 +774,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ),
 
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      cpfParticipante.isEmpty
-                                          ? 'CPF não informado'
-                                          : 'CPF: $cpfParticipante',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.grey.shade700,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerRight,
-                                      child: OutlinedButton.icon(
-                                        onPressed: () =>
-                                            _abrirDialogAlterarParticipante(
-                                              item,
-                                            ),
-                                        icon: const Icon(
-                                          Icons.edit_outlined,
-                                          size: 16,
-                                        ),
-                                        label: const Text(
-                                          'Alterar participante',
-                                        ),
-                                        style: OutlinedButton.styleFrom(
-                                          minimumSize: Size.zero,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 6,
-                                          ),
-                                          backgroundColor: Colors.amber
-                                              .withValues(alpha: 0.18),
-                                          foregroundColor: Colors.black87,
-                                          side: BorderSide.none,
-                                          textStyle: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                cpfParticipante.isEmpty
+                                    ? 'CPF não informado'
+                                    : 'CPF: $cpfParticipante',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
 
                               if (nomeAnterior.isNotEmpty &&
@@ -856,6 +816,40 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Tooltip(
+                          message: 'Alterar participante',
+                          child: SizedBox(
+                            width: 58,
+                            height: 58,
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  _abrirDialogAlterarParticipante(item),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                backgroundColor: corIngresso.withValues(
+                                  alpha: 0.1,
+                                ),
+                                foregroundColor: corIngresso,
+                                side: BorderSide(color: corIngresso),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.edit_outlined, size: 18),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Alterar',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -864,6 +858,27 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   ...[
                     Row(
                       children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 42,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _compartilharIngresso(item),
+                              icon: const Icon(
+                                Icons.card_giftcard_rounded,
+                                size: 18,
+                              ),
+                              label: const Text('Presentear'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: corIngresso,
+                                side: BorderSide(color: corIngresso),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: SizedBox(
                             height: 42,
@@ -882,34 +897,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
+                                backgroundColor: corIngresso,
+                                foregroundColor: Colors.white,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: SizedBox(
-                            height: 42,
-                            child: OutlinedButton.icon(
-                              onPressed: () => _compartilharIngresso(item),
-                              icon: const Icon(
-                                Icons.card_giftcard_rounded,
-                                size: 18,
-                              ),
-                              label: const Text('Presentear'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF7A5A00),
-                                side: const BorderSide(
-                                  color: Color(0xFFE0C36A),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
