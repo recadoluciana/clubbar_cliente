@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../services/carteira_badge_notifier.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/api_service.dart';
@@ -11,6 +12,7 @@ import '../../widgets/clubbar_page_header.dart';
 import '../../utils/value_formatters.dart';
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
+
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraIngressosScreen extends StatefulWidget {
@@ -585,7 +587,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
             .toString()
             .trim();
 
-    final valor = double.tryParse('${item['vrunititvenda'] ?? 0}') ?? 0;
+    final valor = double.tryParse('${item['vrunititvenda'] ?? ''}');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -703,9 +705,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       _informacaoIngresso(
                         icone: Icons.payments_outlined,
                         titulo: 'Valor',
-                        valor: ValueFormatters.moeda(valor),
+                        valor: valor == null
+                            ? 'Não informado'
+                            : ValueFormatters.moeda(valor),
                         corIcone: Colors.green.shade700,
-                        pago: valor > 0,
+                        selo: valor == null
+                            ? null
+                            : valor == 0
+                            ? 'Cortesia'
+                            : valor > 0
+                            ? 'Pago'
+                            : null,
                       ),
 
                       const SizedBox(width: 5),
@@ -998,7 +1008,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     required String titulo,
     required String valor,
     Color? corIcone,
-    bool pago = false,
+    String? selo,
   }) {
     return Expanded(
       child: Container(
@@ -1039,7 +1049,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      if (pago)
+                      if (selo != null)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 7,
@@ -1051,7 +1061,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             border: Border.all(color: Colors.green.shade200),
                           ),
                           child: Text(
-                            'Pago',
+                            selo,
                             style: TextStyle(
                               color: Colors.green.shade800,
                               fontSize: 10,
@@ -1098,7 +1108,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       );
     }
 
-    adicionar(lote);
+    if (lote.toUpperCase() != 'CORTESIA') adicionar(lote);
     adicionar(setor);
     adicionar(
       modalidade,
@@ -1107,7 +1117,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
           : null,
     );
     if (partes.isEmpty) {
-      adicionar(alternativa);
+      final detalhes = alternativa.split(RegExp(r'\s+[.·]\s+'));
+      for (final detalhe in detalhes) {
+        if (detalhe.trim().toUpperCase() != 'CORTESIA') {
+          adicionar(detalhe.trim());
+        }
+      }
     }
 
     return Text.rich(
