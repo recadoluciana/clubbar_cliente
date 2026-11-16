@@ -3,6 +3,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('nome tem espaço e ação fica na linha do CPF', (tester) async {
+    tester.view.physicalSize = const Size(390, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CarteiraIngressosScreen(
+          nomeLoja: 'Loja',
+          logoLoja: '',
+          nomeCliente: 'Cliente',
+          onAtualizar: null,
+          onVoltar: () {},
+          itens: [
+            {
+              'nmproduto': 'Evento',
+              'nmparticipante': 'Ana Beatriz de Oliveira Silva',
+              'cpfparticipante': '12345678909',
+              'qtitvenda': 1,
+            },
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    final nome = find.text('Ana Beatriz de Oliveira Silva');
+    final cpf = find.text('CPF: 123.456.789-09');
+    final acao = find.widgetWithText(OutlinedButton, 'Alterar participante');
+    expect(nome, findsOneWidget);
+    expect(cpf, findsOneWidget);
+    expect(acao, findsOneWidget);
+    expect(
+      tester.getRect(nome).bottom,
+      lessThanOrEqualTo(tester.getRect(acao).top),
+    );
+    expect(
+      (tester.getCenter(cpf).dy - tester.getCenter(acao).dy).abs(),
+      lessThan(3),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'ingresso mostra modalidade, local e data do evento sem dados da compra',
     (tester) async {

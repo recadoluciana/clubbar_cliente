@@ -721,21 +721,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.person_rounded,
-                            color: Colors.blue,
-                            size: 22,
-                          ),
+                        const Icon(
+                          Icons.person_rounded,
+                          color: Colors.blue,
+                          size: 18,
                         ),
-
-                        const SizedBox(width: 2),
+                        const SizedBox(width: 6),
 
                         Expanded(
                           child: Column(
@@ -764,17 +755,59 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ),
 
-                              if (cpfParticipante.isNotEmpty) ...[
-                                const SizedBox(height: 3),
-                                Text(
-                                  'CPF: $cpfParticipante',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      cpfParticipante.isEmpty
+                                          ? 'CPF não informado'
+                                          : 'CPF: $cpfParticipante',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                  Flexible(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerRight,
+                                      child: OutlinedButton.icon(
+                                        onPressed: () =>
+                                            _abrirDialogAlterarParticipante(
+                                              item,
+                                            ),
+                                        icon: const Icon(
+                                          Icons.edit_outlined,
+                                          size: 16,
+                                        ),
+                                        label: const Text(
+                                          'Alterar participante',
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          minimumSize: Size.zero,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          backgroundColor: Colors.amber
+                                              .withValues(alpha: 0.18),
+                                          foregroundColor: Colors.black87,
+                                          side: BorderSide.none,
+                                          textStyle: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
 
                               if (nomeAnterior.isNotEmpty &&
                                   nomeNovo.isNotEmpty) ...[
@@ -803,29 +836,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ],
                             ],
-                          ),
-                        ),
-
-                        OutlinedButton.icon(
-                          onPressed: () =>
-                              _abrirDialogAlterarParticipante(item),
-                          icon: const Icon(Icons.edit_outlined, size: 18),
-                          label: const Text('Alterar participante'),
-                          style: OutlinedButton.styleFrom(
-                            minimumSize: Size.zero,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 9,
-                            ),
-                            backgroundColor: Colors.amber.withValues(
-                              alpha: 0.18,
-                            ),
-                            foregroundColor: Colors.black87,
-                            side: BorderSide.none,
-                            textStyle: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
                           ),
                         ),
                       ],
