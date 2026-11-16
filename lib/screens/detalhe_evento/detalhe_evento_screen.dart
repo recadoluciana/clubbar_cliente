@@ -2440,28 +2440,36 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
                             const SizedBox(height: 8),
-                            const Text(
-                              'Descrição',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(22),
+                                border: Border.all(color: Colors.grey.shade300),
                               ),
-                              child: Text(
-                                ev.descricao,
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  color: Colors.grey.shade800,
-                                  height: 1.5,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  const Text(
+                                    'Descrição',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    ev.descricao,
+                                    textAlign: TextAlign.justify,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.grey.shade800,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
