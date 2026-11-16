@@ -3,6 +3,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('diálogo do QR usa a cor da modalidade', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CarteiraIngressosScreen(
+          nomeLoja: 'Loja',
+          logoLoja: '',
+          nomeCliente: 'Cliente',
+          onAtualizar: null,
+          onVoltar: () {},
+          itens: [
+            {
+              'nmproduto': 'Cortesia',
+              'tipopreco': 'CORTESIA',
+              'qrtokenitvenda': 'um',
+              'qtitvenda': 1,
+            },
+            {
+              'nmproduto': 'Inteira',
+              'tipopreco': 'INTEIRA',
+              'qrtokenitvenda': 'dois',
+              'qtitvenda': 1,
+            },
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.text('Exibir QR Code').at(i));
+      await tester.pumpAndSettle();
+      final dialog = tester.widget<Dialog>(find.byType(Dialog));
+      final cor = i == 0 ? Colors.green.shade700 : Colors.blue.shade700;
+      expect((dialog.shape as RoundedRectangleBorder).side.color, cor);
+      final botao = tester.widget<ElevatedButton>(
+        find.widgetWithText(ElevatedButton, 'Voltar'),
+      );
+      expect(botao.style?.backgroundColor?.resolve({}), cor);
+      await tester.tap(find.text('Voltar'));
+      await tester.pumpAndSettle();
+    }
+  });
+
   testWidgets('borda e modalidade seguem o tipo de ingresso', (tester) async {
     tester.view.physicalSize = const Size(800, 2000);
     tester.view.devicePixelRatio = 1;
@@ -129,7 +175,7 @@ void main() {
     );
     final nome = find.text('Ana Beatriz de Oliveira Silva');
     final cpf = find.text('CPF: 123.456.789-09');
-      final acao = find.widgetWithText(OutlinedButton, 'Transferir');
+    final acao = find.widgetWithText(OutlinedButton, 'Transferir');
     expect(nome, findsOneWidget);
     expect(cpf, findsOneWidget);
     expect(acao, findsOneWidget);

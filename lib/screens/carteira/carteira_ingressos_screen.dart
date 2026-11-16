@@ -345,6 +345,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   ) async {
     final token = (item['qrtokenitvenda'] ?? '').toString().trim();
     final qrData = 'CLUBBAR-INGRESSO:$token';
+    final corIngresso = _corIngresso(item);
     final nomeEvento = _primeiroTexto(item, const [
       'nmevento',
       'nmproduto',
@@ -390,7 +391,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Colors.amber, width: 2),
+            side: BorderSide(color: corIngresso, width: 2),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -496,8 +497,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           child: ElevatedButton(
                             onPressed: () => Navigator.pop(dialogContext),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              foregroundColor: Colors.black,
+                              backgroundColor: corIngresso,
+                              foregroundColor: Colors.white,
                             ),
                             child: const Text('Voltar'),
                           ),
@@ -539,6 +540,22 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return padrao;
   }
 
+  Color _corIngresso(Map<String, dynamic> item) {
+    final tipoPreco = (item['tipopreco'] ?? '').toString().trim().toUpperCase();
+    final modalidade = (item['nmpreco'] ?? '').toString().trim().toUpperCase();
+    final setor = (item['nmsetor'] ?? '').toString().trim().toLowerCase();
+    final detalhes = (item['tipo_ingresso'] ?? '')
+        .toString()
+        .split(RegExp(r'\s*[•·]\s*'))
+        .map((parte) => parte.trim())
+        .where((parte) => parte.toLowerCase() != setor);
+    final ehCortesia =
+        tipoPreco == 'CORTESIA' ||
+        modalidade == 'CORTESIA' ||
+        detalhes.any((parte) => parte.toUpperCase() == 'CORTESIA');
+    return ehCortesia ? Colors.green.shade700 : Colors.blue.shade700;
+  }
+
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final nomeIngresso = (item['nmevento'] ?? item['nmproduto'] ?? 'Ingresso')
         .toString()
@@ -575,7 +592,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
     final setor = (item['nmsetor'] ?? '').toString().trim();
     final modalidade = (item['nmpreco'] ?? '').toString().trim();
-    final tipoPreco = (item['tipopreco'] ?? '').toString().trim().toUpperCase();
     final detalhesModalidade = tipoIngresso
         .split(RegExp(r'\s*[•·]\s*'))
         .map((parte) => parte.trim())
@@ -587,15 +603,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final modalidadeExibida = detalhesModalidade.isNotEmpty
         ? detalhesModalidade
         : modalidade;
-    final ehCortesia =
-        tipoPreco == 'CORTESIA' ||
-        modalidade.toUpperCase() == 'CORTESIA' ||
-        modalidadeExibida
-            .split(RegExp(r'\s*[•·]\s*'))
-            .any((parte) => parte.trim().toUpperCase() == 'CORTESIA');
-    final corIngresso = ehCortesia
-        ? Colors.green.shade700
-        : Colors.blue.shade700;
+    final corIngresso = _corIngresso(item);
     final enderecoEvento =
         (item['endereco_evento_completo'] ??
                 item['dsendlocevento'] ??
