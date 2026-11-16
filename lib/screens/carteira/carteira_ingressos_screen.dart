@@ -592,11 +592,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final modalidadeExibida = detalhesModalidade.isNotEmpty
         ? detalhesModalidade
         : modalidade;
-    final ehCortesia = tipoPreco.isNotEmpty
-        ? tipoPreco == 'CORTESIA'
-        : modalidade.toUpperCase() == 'CORTESIA' ||
-              (modalidade.isEmpty &&
-                  modalidadeExibida.toUpperCase() == 'CORTESIA');
+    final ehCortesia =
+        tipoPreco == 'CORTESIA' ||
+        modalidade.toUpperCase() == 'CORTESIA' ||
+        modalidadeExibida
+            .split(RegExp(r'\s*[•·]\s*'))
+            .any((parte) => parte.trim().toUpperCase() == 'CORTESIA');
     final corIngresso = ehCortesia
         ? Colors.green.shade700
         : Colors.blue.shade700;
@@ -739,9 +740,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.person_rounded,
-                          color: Colors.blue,
+                          color: corIngresso,
                           size: 18,
                         ),
                         const SizedBox(width: 6),

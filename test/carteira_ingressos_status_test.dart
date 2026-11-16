@@ -31,7 +31,10 @@ void main() {
             },
             {
               'nmproduto': 'Ingresso legado',
-              'tipo_ingresso': 'Cortesia',
+              'nmpreco': 'Inteira',
+              'tipopreco': 'INTEIRA',
+              'tipo_ingresso': 'Pista • Cortesia',
+              'nmsetor': 'Pista',
               'qtitvenda': 1,
             },
           ],
@@ -54,6 +57,15 @@ void main() {
     expect(corBorda('Ingresso cortesia'), Colors.green.shade700);
     expect(corBorda('Ingresso meia'), Colors.blue.shade700);
     expect(corBorda('Ingresso legado'), Colors.green.shade700);
+    final iconesParticipante = tester
+        .widgetList<Icon>(find.byIcon(Icons.person_rounded))
+        .map((icon) => icon.color)
+        .toList();
+    expect(iconesParticipante, [
+      Colors.green.shade700,
+      Colors.blue.shade700,
+      Colors.green.shade700,
+    ]);
     expect(
       tester
           .widgetList<Text>(find.text('Cortesia'))
