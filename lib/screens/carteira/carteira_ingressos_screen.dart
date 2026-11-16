@@ -405,7 +405,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   Container(
                     height: 56,
                     width: double.infinity,
-                    color: Colors.black,
+                    color: corIngresso,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
@@ -463,9 +463,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: corIngresso.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.blue.shade200),
+                            border: Border.all(
+                              color: corIngresso.withValues(alpha: 0.35),
+                            ),
                           ),
                           child: Column(
                             children: [

@@ -40,6 +40,35 @@ void main() {
       final dialog = tester.widget<Dialog>(find.byType(Dialog));
       final cor = i == 0 ? Colors.green.shade700 : Colors.blue.shade700;
       expect((dialog.shape as RoundedRectangleBorder).side.color, cor);
+      final cabecalho = tester.widgetList<Container>(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.byType(Container),
+        ),
+      );
+      expect(
+        cabecalho.any(
+          (container) => container.color == cor,
+        ),
+        isTrue,
+      );
+      final participante = tester
+          .widgetList<Container>(
+            find.ancestor(
+              of: find.text('Participante: Não informado'),
+              matching: find.byType(Container),
+            ),
+          )
+          .firstWhere(
+            (container) =>
+                (container.decoration as BoxDecoration?)?.border != null,
+          );
+      final decoracao = participante.decoration as BoxDecoration;
+      expect(decoracao.color, cor.withValues(alpha: 0.08));
+      expect(
+        (decoracao.border as Border).top.color,
+        cor.withValues(alpha: 0.35),
+      );
       final botao = tester.widget<ElevatedButton>(
         find.widgetWithText(ElevatedButton, 'Voltar'),
       );
