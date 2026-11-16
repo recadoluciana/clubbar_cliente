@@ -393,10 +393,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
   Widget _textoValidade(String validade) {
     return Text(
       'Válido até $validade',
-      style: const TextStyle(
-        color: Color(0xFFC62828),
-        fontSize: 11,
-      ),
+      style: const TextStyle(color: Color(0xFFC62828), fontSize: 11),
     );
   }
 
@@ -429,6 +426,12 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
     final entrega = _isDelivery(item);
+    final valor = double.tryParse(
+      (item['vrunititvenda'] ?? '').toString().trim().replaceAll(',', '.'),
+    );
+    final corProduto = valor == 0
+        ? Colors.green.shade700
+        : Colors.blue.shade700;
     final situacaoEntrega = (item['situacaoentrega'] ?? '')
         .toString()
         .toUpperCase();
@@ -440,26 +443,29 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         : '';
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: EdgeInsets.only(bottom: entrega ? 14 : 10),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: BorderSide(color: corProduto, width: 1.5),
+        ),
         elevation: 2,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
           onTap: () => _abrirQrOuRetirada(context, item),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(entrega ? 16 : 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _imagemItem(item),
+                    _imagemItem(item, tamanho: entrega ? 58 : 48),
 
-                    const SizedBox(width: 14),
+                    const SizedBox(width: 10),
 
                     Expanded(
                       child: Column(
@@ -503,7 +509,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   ],
                 ),
 
-                SizedBox(height: entrega ? 16 : 10),
+                SizedBox(height: entrega ? 16 : 5),
 
                 if (!entrega)
                   Center(
@@ -513,7 +519,32 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 38,
+                              height: 34,
+                              child: OutlinedButton.icon(
+                                onPressed: () =>
+                                    _confirmarCompartilhamento(item),
+                                icon: const Icon(
+                                  Icons.card_giftcard_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text(
+                                  'Presentear',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: corProduto,
+                                  side: BorderSide(color: corProduto),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: SizedBox(
+                              height: 34,
                               child: ElevatedButton.icon(
                                 onPressed: () =>
                                     _abrirQrOuRetirada(context, item),
@@ -529,41 +560,14 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                                   ),
                                 ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.amber,
-                                  foregroundColor: Colors.black,
+                                  backgroundColor: corProduto,
+                                  foregroundColor: Colors.white,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: SizedBox(
-                              height: 38,
-                              child: OutlinedButton.icon(
-                                onPressed: () =>
-                                    _confirmarCompartilhamento(item),
-                                icon: const Icon(
-                                  Icons.card_giftcard_rounded,
-                                  size: 16,
-                                ),
-                                label: const Text(
-                                  'Presentear',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: const Color(0xFF7A5A00),
-                                  side: const BorderSide(
-                                    color: Color(0xFFE0C36A),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
                                   ),
                                 ),
                               ),
@@ -685,29 +689,29 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
   }
 
-  Widget _imagemItem(Map<String, dynamic> item) {
+  Widget _imagemItem(Map<String, dynamic> item, {double tamanho = 58}) {
     final url = _buildImageUrl((item['urlfotoproduto'] ?? '').toString());
 
     if (url.isEmpty) {
-      return _placeholderItem(item);
+      return _placeholderItem(item, tamanho: tamanho);
     }
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: Image.network(
         url,
-        width: 58,
-        height: 58,
+        width: tamanho,
+        height: tamanho,
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => _placeholderItem(item),
+        errorBuilder: (_, _, _) => _placeholderItem(item, tamanho: tamanho),
       ),
     );
   }
 
-  Widget _placeholderItem(Map<String, dynamic> item) {
+  Widget _placeholderItem(Map<String, dynamic> item, {double tamanho = 58}) {
     return Container(
-      width: 58,
-      height: 58,
+      width: tamanho,
+      height: tamanho,
       decoration: BoxDecoration(
         color: Colors.amber.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(18),

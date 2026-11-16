@@ -52,6 +52,40 @@ void main() {
     expect(find.text('Válido até 08/02/2027'), findsOneWidget);
     expect(find.text('Exibir QR Code'), findsNWidgets(2));
     expect(find.text('Presentear'), findsNWidgets(2));
+    for (var i = 0; i < 2; i++) {
+      final cor = i == 0 ? Colors.blue.shade700 : Colors.green.shade700;
+      final titulo = find.text(i == 0 ? '#1 - Produto A' : '#2 - Produto B');
+      final card = tester
+          .widgetList<Material>(
+            find.ancestor(of: titulo, matching: find.byType(Material)),
+          )
+          .firstWhere(
+            (material) =>
+                material.shape is RoundedRectangleBorder &&
+                (material.shape as RoundedRectangleBorder).side.width == 1.5,
+          );
+      expect((card.shape as RoundedRectangleBorder).side.color, cor);
+      final presentear = find
+          .widgetWithText(OutlinedButton, 'Presentear')
+          .at(i);
+      final qr = find.widgetWithText(ElevatedButton, 'Exibir QR Code').at(i);
+      expect(
+        tester
+            .widget<OutlinedButton>(presentear)
+            .style
+            ?.foregroundColor
+            ?.resolve({}),
+        cor,
+      );
+      expect(
+        tester.widget<ElevatedButton>(qr).style?.backgroundColor?.resolve({}),
+        cor,
+      );
+      expect(
+        tester.getTopLeft(presentear).dx,
+        lessThan(tester.getTopLeft(qr).dx),
+      );
+    }
     expect(find.textContaining('Data da compra:'), findsNothing);
     expect(find.textContaining('Valor:'), findsNothing);
     expect(find.text('Cortesia'), findsNothing);
