@@ -1,8 +1,87 @@
 import 'package:clubbar_cliente/screens/carteira/carteira_loja_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 void main() {
+  testWidgets('agrupa produtos e usa o QR da unidade escolhida', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(450, 1100);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final itens = [
+      {
+        'itvenda_id': 1,
+        'produto_id': 5,
+        'nmproduto': 'Cerveja',
+        'qtitvenda': 1,
+        'vrunititvenda': 3,
+        'qrtokenitvenda': 'primeiro',
+        'dtexpiraitvenda_fmt': '20/12/2026',
+      },
+      {
+        'itvenda_id': 2,
+        'produto_id': 5,
+        'nmproduto': 'Cerveja',
+        'qtitvenda': 1,
+        'vrunititvenda': 3,
+        'qrtokenitvenda': 'segundo',
+        'dtexpiraitvenda_fmt': '10/12/2026',
+      },
+      {
+        'itvenda_id': 3,
+        'produto_id': 5,
+        'nmproduto': 'Cerveja',
+        'qtitvenda': 1,
+        'vrunititvenda': 0,
+        'qrtokenitvenda': 'cortesia',
+        'dtexpiraitvenda_fmt': '30/12/2026',
+      },
+    ];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CarteiraLojaScreen(
+          nomeLoja: 'Loja',
+          logoLoja: '',
+          nomeCliente: 'Cliente',
+          itens: itens,
+          onAtualizar: () async => [itens.first],
+          onVoltar: () {},
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Cerveja'), findsOneWidget);
+    expect(find.text('3 unidades disponíveis'), findsOneWidget);
+    expect(find.text('1 cortesia'), findsOneWidget);
+    expect(find.text('Próxima validade: 10/12/2026'), findsOneWidget);
+    await tester.tap(find.text('Presentear'));
+    await tester.pumpAndSettle();
+    expect(find.text('Escolha uma unidade para presentear'), findsOneWidget);
+    await tester.tap(find.text('Unidade 2'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enviar como presente'), findsOneWidget);
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Exibir QR Code'));
+    await tester.pumpAndSettle();
+    expect(find.text('Unidade 1'), findsOneWidget);
+    expect(find.text('Unidade 2'), findsOneWidget);
+    expect(find.text('Unidade 3'), findsOneWidget);
+    expect(find.text('Válido até 30/12/2026 • Cortesia'), findsOneWidget);
+    await tester.tap(find.text('Unidade 1'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<QrImageView>(find.byType(QrImageView)).key,
+      const ValueKey('CLUBBAR-PRODUTO:segundo'),
+    );
+    await tester.tap(find.text('Voltar'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 unidade disponível'), findsOneWidget);
+  });
+
   testWidgets('exibe orientação uma vez e preserva validade e entrega', (
     tester,
   ) async {
@@ -86,7 +165,7 @@ void main() {
     }
     expect(find.textContaining('Data da compra:'), findsNothing);
     expect(find.textContaining('Valor:'), findsNothing);
-    expect(find.text('Cortesia'), findsNothing);
+    expect(find.text('Cortesia'), findsOneWidget);
     expect(find.text('Saiu para entrega'), findsOneWidget);
     expect(find.text('Exibir QR Code de entrega'), findsOneWidget);
     expect(

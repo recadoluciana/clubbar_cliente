@@ -57,6 +57,116 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     return (item['tipo_operacao'] ?? '').toString().toUpperCase() == 'DELIVERY';
   }
 
+  bool _ehCortesia(Map<String, dynamic> item) =>
+      double.tryParse(
+        (item['vrunititvenda'] ?? '').toString().trim().replaceAll(',', '.'),
+      ) ==
+      0;
+
+  DateTime? _dataValidade(Map<String, dynamic> item) {
+    final formatada = (item['dtexpiraitvenda_fmt'] ?? '').toString().trim();
+    final partes = RegExp(r'^(\d{2})/(\d{2})/(\d{4})$').firstMatch(formatada);
+    if (partes != null) {
+      return DateTime(
+        int.parse(partes[3]!),
+        int.parse(partes[2]!),
+        int.parse(partes[1]!),
+      );
+    }
+    return DateTime.tryParse((item['dtexpiraitvenda'] ?? '').toString());
+  }
+
+  List<List<Map<String, dynamic>>> _agruparProdutos() {
+    final grupos = <List<Map<String, dynamic>>>[];
+    final indices = <String, int>{};
+    for (final item in itensTela) {
+      final id = (item['produto_id'] ?? '').toString().trim();
+      if (_isDelivery(item) || id.isEmpty || id == '0') {
+        grupos.add([item]);
+        continue;
+      }
+      final chave = id;
+      final indice = indices[chave];
+      if (indice == null) {
+        indices[chave] = grupos.length;
+        grupos.add([item]);
+      } else {
+        grupos[indice].add(item);
+      }
+    }
+    for (final grupo in grupos) {
+      grupo.sort((a, b) {
+        final primeira = _dataValidade(a);
+        final segunda = _dataValidade(b);
+        if (primeira == null) return segunda == null ? 0 : 1;
+        if (segunda == null) return -1;
+        return primeira.compareTo(segunda);
+      });
+    }
+    return grupos;
+  }
+
+  Future<void> _escolherUnidade(
+    List<Map<String, dynamic>> itens, {
+    required bool presentear,
+  }) async {
+    Map<String, dynamic>? selecionado;
+    if (itens.length == 1) {
+      selecionado = itens.first;
+    } else {
+      selecionado = await showDialog<Map<String, dynamic>>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(
+            presentear
+                ? 'Escolha uma unidade para presentear'
+                : 'Escolha uma unidade',
+          ),
+          content: SizedBox(
+            width: 380,
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: itens.length,
+              separatorBuilder: (_, _) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final item = itens[index];
+                final validade = (item['dtexpiraitvenda_fmt'] ?? '')
+                    .toString()
+                    .trim();
+                final quantidade =
+                    int.tryParse('${item['qtitvenda'] ?? 1}') ?? 1;
+                return ListTile(
+                  title: Text(
+                    quantidade > 1
+                        ? 'Item ${index + 1} • $quantidade unidades'
+                        : 'Unidade ${index + 1}',
+                  ),
+                  subtitle: Text(
+                    '${validade.isEmpty ? 'Validade não informada' : 'Válido até $validade'}${_ehCortesia(item) ? ' • Cortesia' : ''}',
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.pop(dialogContext, item),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (!mounted || selecionado == null) return;
+    if (presentear) {
+      await _confirmarCompartilhamento(selecionado);
+    } else {
+      await _abrirQrOuRetirada(context, selecionado);
+    }
+  }
+
   String _statusEntrega(Map<String, dynamic> item) {
     switch ((item['situacaoentrega'] ?? '').toString().toUpperCase()) {
       case 'AGUARDANDO_ACEITE':
@@ -99,7 +209,8 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
   String _montarDadosQr(Map<String, dynamic> item) {
     final token =
-        (_isDelivery(item) ? item['qrcodeentrega'] : item['qrtokenitvenda'])
+        ((_isDelivery(item) ? item['qrcodeentrega'] : item['qrtokenitvenda']) ??
+                '')
             .toString()
             .trim();
 
@@ -340,6 +451,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(16),
                       child: QrImageView(
+                        key: ValueKey(qrData),
                         data: qrData,
                         size: 200,
                         backgroundColor: Colors.white,
@@ -390,10 +502,22 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     }
   }
 
-  Widget _textoValidade(String validade) {
+  Widget _textoValidade(
+    String validade,
+    DateTime? data, {
+    bool maisProxima = false,
+  }) {
+    final hoje = DateUtils.dateOnly(
+      DateTime.now().toUtc().subtract(const Duration(hours: 3)),
+    );
+    final proxima =
+        data != null && DateUtils.dateOnly(data).difference(hoje).inDays <= 7;
     return Text(
-      'Válido até $validade',
-      style: const TextStyle(color: Color(0xFFC62828), fontSize: 11),
+      maisProxima ? 'Próxima validade: $validade' : 'Válido até $validade',
+      style: TextStyle(
+        color: proxima ? const Color(0xFFC62828) : Colors.grey.shade700,
+        fontSize: 11,
+      ),
     );
   }
 
@@ -422,14 +546,24 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     );
   }
 
-  Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
+  Widget _itemCard(BuildContext context, List<Map<String, dynamic>> itens) {
+    final item = itens.first;
     final obs = (item['dsobsitvenda'] ?? '').toString();
     final validade = (item['dtexpiraitvenda_fmt'] ?? '').toString();
     final entrega = _isDelivery(item);
-    final valor = double.tryParse(
-      (item['vrunititvenda'] ?? '').toString().trim().replaceAll(',', '.'),
+    final quantidade = itens.fold<int>(
+      0,
+      (total, unidade) =>
+          total + (int.tryParse('${unidade['qtitvenda'] ?? 1}') ?? 1),
     );
-    final corProduto = valor == 0
+    final cortesias = itens
+        .where(_ehCortesia)
+        .fold<int>(
+          0,
+          (total, unidade) =>
+              total + (int.tryParse('${unidade['qtitvenda'] ?? 1}') ?? 1),
+        );
+    final corProduto = cortesias == quantidade
         ? Colors.green.shade700
         : Colors.blue.shade700;
     final situacaoEntrega = (item['situacaoentrega'] ?? '')
@@ -454,7 +588,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           borderRadius: BorderRadius.circular(22),
-          onTap: () => _abrirQrOuRetirada(context, item),
+          onTap: () => entrega
+              ? _abrirQrOuRetirada(context, item)
+              : _escolherUnidade(itens, presentear: false),
           child: Padding(
             padding: EdgeInsets.all(entrega ? 16 : 10),
             child: Column(
@@ -483,11 +619,38 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
 
                           const SizedBox(height: 3),
 
+                          if (!entrega)
+                            Text(
+                              quantidade == 1
+                                  ? '1 unidade disponível'
+                                  : '$quantidade unidades disponíveis',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          if (!entrega && cortesias > 0)
+                            Text(
+                              cortesias == quantidade
+                                  ? 'Cortesia'
+                                  : '$cortesias ${cortesias == 1 ? 'cortesia' : 'cortesias'}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              if (validade.isNotEmpty) _textoValidade(validade),
+                              if (validade.isNotEmpty)
+                                _textoValidade(
+                                  validade,
+                                  _dataValidade(item),
+                                  maisProxima: itens.length > 1,
+                                ),
                               if (entrega) _chipStatusEntrega(item),
                             ],
                           ),
@@ -522,7 +685,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                               height: 38,
                               child: TextButton.icon(
                                 onPressed: () =>
-                                    _confirmarCompartilhamento(item),
+                                    _escolherUnidade(itens, presentear: true),
                                 icon: const Icon(
                                   Icons.card_giftcard_rounded,
                                   size: 16,
@@ -546,7 +709,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                               height: 38,
                               child: ElevatedButton.icon(
                                 onPressed: () =>
-                                    _abrirQrOuRetirada(context, item),
+                                    _escolherUnidade(itens, presentear: false),
                                 icon: const Icon(
                                   Icons.qr_code_2_rounded,
                                   size: 18,
@@ -828,7 +991,9 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   if (itensTela.isEmpty)
                     _estadoVazio()
                   else
-                    ...itensTela.map((item) => _itemCard(context, item)),
+                    ..._agruparProdutos().map(
+                      (itens) => _itemCard(context, itens),
+                    ),
                 ],
               ),
             ),
