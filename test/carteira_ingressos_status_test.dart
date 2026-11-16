@@ -129,7 +129,7 @@ void main() {
     );
     final nome = find.text('Ana Beatriz de Oliveira Silva');
     final cpf = find.text('CPF: 123.456.789-09');
-    final acao = find.widgetWithText(OutlinedButton, 'Alterar');
+      final acao = find.widgetWithText(OutlinedButton, 'Transferir');
     expect(nome, findsOneWidget);
     expect(cpf, findsOneWidget);
     expect(acao, findsOneWidget);

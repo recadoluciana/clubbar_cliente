@@ -179,13 +179,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
     if (!mounted) return;
 
-    final nomeController = TextEditingController(
-      text: (item['nmparticipante'] ?? '').toString(),
-    );
-
-    final cpfController = TextEditingController(
-      text: _formatarCpf((item['cpfparticipante'] ?? '').toString()),
-    );
+    final nomeController = TextEditingController();
+    final cpfController = TextEditingController();
 
     final tipoPreco = (item['tipopreco'] ?? '').toString().toUpperCase();
     final ehMeiaEntrada = tipoPreco.startsWith('MEIA');
@@ -818,7 +813,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         ),
                         const SizedBox(width: 8),
                         Tooltip(
-                          message: 'Alterar participante',
+                          message: 'Transferir ingresso',
                           child: SizedBox(
                             width: 58,
                             height: 58,
@@ -842,7 +837,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                   Icon(Icons.edit_outlined, size: 18),
                                   SizedBox(height: 2),
                                   Text(
-                                    'Alterar',
+                                    'Transferir',
                                     style: TextStyle(fontSize: 10),
                                   ),
                                 ],
