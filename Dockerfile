@@ -1,5 +1,16 @@
 # Etapa 1: build do Flutter Web
-FROM ghcr.io/cirruslabs/flutter:stable AS build
+FROM ubuntu:24.04 AS build
+
+# A imagem Cirrus "stable" pode ficar atrás do SDK exigido pelo aplicativo.
+# Instale a versão oficial validada também nos builds Android/iOS.
+ARG FLUTTER_VERSION=3.50.0
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl git unzip xz-utils zip libglu1-mesa \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 --branch ${FLUTTER_VERSION} \
+    https://github.com/flutter/flutter.git /opt/flutter
+ENV PATH="/opt/flutter/bin:${PATH}"
+RUN flutter config --no-analytics && flutter precache --web && flutter --version
 
 WORKDIR /app
 
