@@ -511,60 +511,75 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: entrega ? 16 : 10),
 
                 if (!entrega)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 42,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _abrirQrOuRetirada(context, item),
-                            icon: const Icon(Icons.qr_code_2_rounded, size: 21),
-                            label: const Text(
-                              'Exibir QR Code',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              foregroundColor: Colors.black,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: SizedBox(
-                          height: 42,
-                          child: OutlinedButton.icon(
-                            onPressed: () => _confirmarCompartilhamento(item),
-                            icon: const Icon(
-                              Icons.card_giftcard_rounded,
-                              size: 18,
-                            ),
-                            label: const Text('Presentear'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF7A5A00),
-                              side: const BorderSide(color: Color(0xFFE0C36A)),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 330),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 38,
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    _abrirQrOuRetirada(context, item),
+                                icon: const Icon(
+                                  Icons.qr_code_2_rounded,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  'Exibir QR Code',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.amber,
+                                  foregroundColor: Colors.black,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: SizedBox(
+                              height: 38,
+                              child: OutlinedButton.icon(
+                                onPressed: () =>
+                                    _confirmarCompartilhamento(item),
+                                icon: const Icon(
+                                  Icons.card_giftcard_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text(
+                                  'Presentear',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: const Color(0xFF7A5A00),
+                                  side: const BorderSide(
+                                    color: Color(0xFFE0C36A),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   )
                 else
                   SizedBox(
