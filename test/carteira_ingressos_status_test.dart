@@ -151,8 +151,12 @@ void main() {
       expect(find.text('Meia-entrada • Estudante'), findsOneWidget);
       expect(find.text('Local'), findsOneWidget);
       expect(find.text('Rua do evento, 123'), findsOneWidget);
-      expect(find.text('Data e hora do evento'), findsOneWidget);
-      expect(find.text('13/12/2026 13:00'), findsOneWidget);
+      expect(find.text('Horário'), findsOneWidget);
+      expect(find.text('13/12/2026\n13:00'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Horário')).dx,
+        lessThan(tester.getTopLeft(find.text('Local')).dx),
+      );
       for (final texto in [
         'Lote 1',
         'Pista',

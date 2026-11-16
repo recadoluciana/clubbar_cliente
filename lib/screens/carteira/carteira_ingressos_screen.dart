@@ -573,6 +573,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         .trim();
 
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
+    final horarioEvento = dataEvento.replaceFirstMapped(
+      RegExp(r'^(\d{2}/\d{2}/\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)$'),
+      (match) => '${match[1]}\n${match[2]}',
+    );
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
     final setor = (item['nmsetor'] ?? '').toString().trim();
     final modalidade = (item['nmpreco'] ?? '').toString().trim();
@@ -692,9 +696,21 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Local e data do evento
+                  // Horário e local do evento
                   Row(
                     children: [
+                      _informacaoIngresso(
+                        icone: Icons.event_outlined,
+                        titulo: 'Horário',
+                        valor: horarioEvento.isEmpty
+                            ? 'Não informada'
+                            : horarioEvento,
+                        corIcone: Colors.blue.shade700,
+                        flex: 2,
+                      ),
+
+                      const SizedBox(width: 5),
+
                       _informacaoIngresso(
                         icone: Icons.place_outlined,
                         titulo: 'Local',
@@ -702,17 +718,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ? 'Não informado'
                             : enderecoEvento,
                         corIcone: Colors.green.shade700,
-                      ),
-
-                      const SizedBox(width: 5),
-
-                      _informacaoIngresso(
-                        icone: Icons.event_outlined,
-                        titulo: 'Data e hora do evento',
-                        valor: dataEvento.isEmpty
-                            ? 'Não informada'
-                            : dataEvento,
-                        corIcone: Colors.blue.shade700,
+                        flex: 3,
                       ),
                     ],
                   ),
@@ -759,7 +765,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 nomeParticipante.isEmpty
                                     ? 'Participante não informado'
                                     : nomeParticipante,
-                                maxLines: 2,
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -767,7 +773,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ),
 
-                              const SizedBox(height: 3),
                               Row(
                                 children: [
                                   Expanded(
@@ -992,8 +997,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     required String titulo,
     required String valor,
     Color? corIcone,
+    int flex = 1,
   }) {
     return Expanded(
+      flex: flex,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         decoration: BoxDecoration(
