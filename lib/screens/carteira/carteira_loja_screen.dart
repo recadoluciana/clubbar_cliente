@@ -519,21 +519,16 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                         children: [
                           Expanded(
                             child: SizedBox(
-                              height: 34,
-                              child: OutlinedButton.icon(
+                              height: 44,
+                              child: TextButton(
                                 onPressed: () =>
                                     _confirmarCompartilhamento(item),
-                                icon: const Icon(
-                                  Icons.card_giftcard_rounded,
-                                  size: 16,
-                                ),
-                                label: const Text(
+                                child: const Text(
                                   'Presentear',
                                   style: TextStyle(fontSize: 12),
                                 ),
-                                style: OutlinedButton.styleFrom(
+                                style: TextButton.styleFrom(
                                   foregroundColor: corProduto,
-                                  side: BorderSide(color: corProduto),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                   ),
@@ -542,32 +537,39 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: SizedBox(
-                              height: 34,
-                              child: ElevatedButton.icon(
+                          SizedBox(
+                            width: 72,
+                            height: 44,
+                            child: Tooltip(
+                              message: 'Exibir QR Code',
+                              child: ElevatedButton(
                                 onPressed: () =>
                                     _abrirQrOuRetirada(context, item),
-                                icon: const Icon(
-                                  Icons.qr_code_2_rounded,
-                                  size: 18,
-                                ),
-                                label: const Text(
-                                  'Exibir QR Code',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: corProduto,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.amber,
+                                  foregroundColor: Colors.black,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
                                   ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15),
+                                  ),
+                                ),
+                                child: const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.qr_code_2_rounded, size: 19),
+                                      Text(
+                                        'Exibir',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
