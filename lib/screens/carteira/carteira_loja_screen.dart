@@ -390,20 +390,12 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     }
   }
 
-  Widget _chipValidade(String validade) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFEBEE),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        'Válido até $validade',
-        style: const TextStyle(
-          color: Color(0xFFC62828),
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
+  Widget _textoValidade(String validade) {
+    return Text(
+      'Válido até $validade',
+      style: const TextStyle(
+        color: Color(0xFFC62828),
+        fontSize: 11,
       ),
     );
   }
@@ -483,13 +475,13 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 3),
 
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
                             children: [
-                              if (validade.isNotEmpty) _chipValidade(validade),
+                              if (validade.isNotEmpty) _textoValidade(validade),
                               if (entrega) _chipStatusEntrega(item),
                             ],
                           ),
