@@ -157,7 +157,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna == null ||
             telaInterna is PerfilScreen ||
             telaInterna is AtendimentoCoraScreen ||
-            telaInterna is ProdutoCompartilhadoScreen ||
             telaInterna is DetalheLojaScreen ||
             telaInterna is DetalheEventoScreen ||
             telaInterna is CarrinhoScreen ||
@@ -704,7 +703,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna == null ||
                 telaInterna is PerfilScreen ||
                 telaInterna is AtendimentoCoraScreen ||
-                telaInterna is ProdutoCompartilhadoScreen ||
                 telaInterna is DetalheLojaScreen ||
                 telaInterna is DetalheEventoScreen ||
                 telaInterna is CarteiraScreen;
