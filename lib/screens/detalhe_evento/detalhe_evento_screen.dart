@@ -12,7 +12,9 @@ import '../../services/main_navigation_controller.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
+
 import 'package:share_plus/share_plus.dart';
+
 import '../../config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../utils/value_formatters.dart';
@@ -1093,8 +1095,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           if (mounted) {
             await direcionarParaLogin(
               context,
-              mensagem:
-                  'Sua sessão terminou. Entre novamente para comprar seu ingresso.',
+              mensagem: 'Sua sessão terminou. Entre novamente para comprar seu ingresso.',
             );
           }
           return;
@@ -1463,7 +1464,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           children: [
             Text(
               _nomeModalidade(lote),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: ehCortesia ? Colors.green.shade800 : Colors.black87,
+              ),
             ),
             _informacoesMeiaEntrada(
               mostrarQuemTemDireito: ehMeiaEntrada,
@@ -2035,7 +2040,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Evento - ${widget.loja.nome}',
+        titulo: ev?.titulo ?? 'Evento',
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
@@ -2090,26 +2095,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ),
-                          Transform.translate(
-                            offset: const Offset(0, -22),
-                            child: Center(
-                              child: Builder(
-                                builder: (botaoContext) => ElevatedButton.icon(
-                                  onPressed: () =>
-                                      compartilharEvento(botaoContext),
-                                  icon: const Icon(Icons.ios_share, size: 18),
-                                  label: const Text('COMPARTILHAR'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: Colors.blue,
-                                    elevation: 4,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 18,
-                                      vertical: 10,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(22),
-                                    ),
+                          const SizedBox(height: 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Builder(
+                              builder: (botaoContext) => ElevatedButton.icon(
+                                onPressed: () =>
+                                    compartilharEvento(botaoContext),
+                                icon: const Icon(Icons.ios_share, size: 18),
+                                label: const Text('Compartilhar'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.blue,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 18,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(22),
                                   ),
                                 ),
                               ),
@@ -2122,8 +2126,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               if (lotes.isNotEmpty)
                                 Flexible(
                                   child: SizedBox(
-                                    width: 160,
-                                    height: 40,
+                                    width: double.infinity,
+                                    height: 44,
                                     child: FilledButton.icon(
                                       onPressed: _irParaIngressos,
                                       style: FilledButton.styleFrom(
@@ -2133,7 +2137,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           horizontal: 12,
                                           vertical: 10,
                                         ),
-                                        minimumSize: const Size(0, 40),
+                                        minimumSize: const Size(0, 44),
                                         tapTargetSize:
                                             MaterialTapTargetSize.shrinkWrap,
                                       ),
@@ -2156,10 +2160,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   ),
                                 ),
                               if (lotes.isEmpty) const Spacer(),
+                              if (lotes.isNotEmpty) const SizedBox(width: 10),
                               Flexible(
                                 child: SizedBox(
-                                  width: 160,
-                                  height: 48,
+                                  width: double.infinity,
+                                  height: 44,
                                   child: FilledButton.icon(
                                     onPressed: () {
                                       MainNavigationController.abrirTela(
@@ -2173,7 +2178,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         horizontal: 12,
                                         vertical: 10,
                                       ),
-                                      minimumSize: const Size(0, 48),
+                                      minimumSize: const Size(0, 44),
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
@@ -2181,24 +2186,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                       Icons.shopping_bag_outlined,
                                       size: 18,
                                     ),
-                                    label: const Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          'Cardápio',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w700,
-                                          ),
+                                    label: const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        'Cardápio',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w800,
                                         ),
-                                        Text(
-                                          'Comprar produto',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -2213,8 +2209,87 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
+                          if (ev.nomeLoja.trim().isNotEmpty) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              ev.nomeLoja,
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 10),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Icon(
+                                      Icons.event_outlined,
+                                      size: 20,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            formatarDataHora(ev.dataInicio),
+                                            style: TextStyle(
+                                              color: Colors.blue.shade700,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                          if (ev.dataFim.trim().isNotEmpty)
+                                            Text(
+                                              'até ${formatarDataHora(ev.dataFim)}',
+                                              style: TextStyle(
+                                                color: Colors.blue.shade700,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (ev.local.trim().isNotEmpty &&
+                                    ev.local.trim().toLowerCase() !=
+                                        ev.nomeLoja.trim().toLowerCase()) ...[
+                                  Text(
+                                    ev.local,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                ],
+                                _informacaoDoEvento(
+                                  icone: Icons.location_on_outlined,
+                                  texto: ev.enderecoFormatado,
+                                ),
+                              ],
+                            ),
+                          ),
                           if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
                             _informacaoDoEvento(
                               icone: Icons.verified_user_outlined,
                               texto:
@@ -2222,47 +2297,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ],
                           _faixaSituacaoEContato(ev),
-                          const SizedBox(height: 10),
-                          Text(
-                            formatarDataHora(ev.dataInicio),
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              height: 1.2,
-                            ),
-                          ),
-                          if (ev.dataFim.trim().isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                'até ${formatarDataHora(ev.dataFim)}',
-                                style: TextStyle(
-                                  color: Colors.blue.shade700,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          const SizedBox(height: 8),
-                          if (ev.local.trim().isNotEmpty &&
-                              ev.local.trim().toLowerCase() !=
-                                  ev.nomeLoja.trim().toLowerCase()) ...[
-                            Text(
-                              ev.local,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                          ],
-                          _informacaoDoEvento(
-                            icone: Icons.location_on_outlined,
-                            texto: ev.enderecoFormatado,
-                          ),
                           if (atracoesOrdenadas.isNotEmpty) ...[
                             const SizedBox(height: 14),
                             Text(
@@ -2303,8 +2337,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                               12,
                                             ),
                                             border: Border.all(
-                                              color: Colors.blue.shade600,
-                                              width: 1.4,
+                                              color: Colors.grey.shade300,
+                                              width: 1,
                                             ),
                                           ),
                                           child: Row(
