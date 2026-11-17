@@ -15,8 +15,6 @@ import '../../services/cart_badge_notifier.dart';
 import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
-import '../produtos_loja/produtos_loja_screen.dart';
-import '../agenda/agenda_eventos_screen.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../../utils/url_cleaner.dart';
@@ -162,8 +160,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna is ProdutoCompartilhadoScreen ||
             telaInterna is DetalheLojaScreen ||
             telaInterna is DetalheEventoScreen ||
-            telaInterna is ProdutosLojaScreen ||
-            telaInterna is AgendaEventosScreen ||
             telaInterna is CarrinhoScreen ||
             telaInterna is CarteiraScreen;
         if (!manterNavegacaoVisivel) {
@@ -711,8 +707,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna is ProdutoCompartilhadoScreen ||
                 telaInterna is DetalheLojaScreen ||
                 telaInterna is DetalheEventoScreen ||
-                telaInterna is ProdutosLojaScreen ||
-                telaInterna is AgendaEventosScreen ||
                 telaInterna is CarteiraScreen;
 
             return Scaffold(
