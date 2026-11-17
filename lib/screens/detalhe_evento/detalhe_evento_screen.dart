@@ -2095,25 +2095,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Builder(
-                              builder: (botaoContext) => ElevatedButton.icon(
-                                onPressed: () =>
-                                    compartilharEvento(botaoContext),
-                                icon: const Icon(Icons.ios_share, size: 18),
-                                label: const Text('Compartilhar'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: Colors.blue,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 18,
-                                    vertical: 10,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(22),
+                          Transform.translate(
+                            offset: const Offset(0, -22),
+                            child: Center(
+                              child: Builder(
+                                builder: (botaoContext) => ElevatedButton.icon(
+                                  onPressed: () =>
+                                      compartilharEvento(botaoContext),
+                                  icon: const Icon(Icons.ios_share, size: 18),
+                                  label: const Text('Compartilhar'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.blue,
+                                    elevation: 4,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 10,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(22),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -2188,12 +2189,24 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                     ),
                                     label: const FittedBox(
                                       fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        'Cardápio',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w800,
-                                        ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Cardápio',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Comprar produto',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
