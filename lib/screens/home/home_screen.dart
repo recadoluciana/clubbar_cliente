@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
@@ -312,6 +313,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           child: Text(
             texto,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: cor.shade700,
               fontSize: 11,
@@ -1358,9 +1361,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   children: [
                                     _imagemSegura(
                                       url: loja.imagemUrl,
-                                      width: 84,
-                                      height: 84,
-                                      borderRadius: 42,
+                                      width: 64,
+                                      height: 64,
+                                      borderRadius: 32,
                                       fallbackIcon: Icons.storefront,
                                     ),
                                     const SizedBox(width: 11),
@@ -1436,18 +1439,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                               ),
                                             ],
                                           ),
-                                          if (loja.nrtelloja
-                                              .trim()
-                                              .isNotEmpty) ...[
-                                            const SizedBox(height: 3),
-                                            Row(
-                                              children: [
+                                          const SizedBox(height: 3),
+                                          Row(
+                                            children: [
+                                              if (loja.nrtelloja
+                                                  .trim()
+                                                  .isNotEmpty) ...[
                                                 const Icon(
                                                   Icons.phone_outlined,
                                                   size: 14,
                                                 ),
                                                 const SizedBox(width: 5),
-                                                Expanded(
+                                                Flexible(
                                                   child: Text(
                                                     _telefoneFormatado(
                                                       loja.nrtelloja,
@@ -1462,11 +1465,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                                     ),
                                                   ),
                                                 ),
+                                                const SizedBox(width: 8),
                                               ],
-                                            ),
-                                          ],
-                                          const SizedBox(height: 6),
-                                          _statusFuncionamento(loja),
+                                              Flexible(
+                                                child: _statusFuncionamento(
+                                                  loja,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     ),
