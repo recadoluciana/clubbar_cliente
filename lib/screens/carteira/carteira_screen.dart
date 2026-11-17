@@ -7,6 +7,8 @@ import '../../services/carteira_badge_notifier.dart';
 import 'carteira_loja_screen.dart';
 import 'carteira_ingressos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../perfil/perfil_screen.dart';
+
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraScreen extends StatefulWidget {
@@ -504,6 +506,31 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
         children: [
+          if (nomeCliente.trim().isNotEmpty &&
+              nomeCliente != 'não identificado') ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () =>
+                    MainNavigationController.abrirTela(const PerfilScreen()),
+                icon: const Icon(Icons.person_outline_rounded, size: 18),
+                label: Text(
+                  'Carteira de ${nomeCliente.trim()}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey.shade700,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
+                  alignment: Alignment.centerLeft,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           if (erro != null)
             _erroWidget()
           else if (lojasResumo.isEmpty)
@@ -594,6 +621,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
+        mostrarSessao: false,
+        tituloAlinhadoEsquerda: true,
         onVoltar: widget.lojaSelecionadaId == null
             ? MainNavigationController.irParaHome
             : MainNavigationController.fecharTelaInterna,

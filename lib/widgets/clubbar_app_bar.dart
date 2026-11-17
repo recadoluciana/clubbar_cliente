@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../screens/login/login_screen.dart';
 import '../screens/perfil/perfil_screen.dart';
 import '../services/auth_storage.dart';
@@ -26,6 +27,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool mostrarLogo;
   final bool mostrarCorujaAoLadoDoTitulo;
   final bool mostrarLogoPequenaEsquerdaComTitulo;
+  final bool tituloAlinhadoEsquerda;
 
   const ClubbarAppBar({
     super.key,
@@ -49,6 +51,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.mostrarLogo = true,
     this.mostrarCorujaAoLadoDoTitulo = false,
     this.mostrarLogoPequenaEsquerdaComTitulo = false,
+    this.tituloAlinhadoEsquerda = false,
   });
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -191,14 +194,14 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
       centerTitle: temTitulo
-          ? true
+          ? !tituloAlinhadoEsquerda
           : mostrarLogo
           ? !logoAlinhadaEsquerda
           : false,
       toolbarHeight: 58,
       leadingWidth: exibirLogoPequenaEsquerda ? 118 : null,
       titleSpacing: temTitulo
-          ? NavigationToolbar.kMiddleSpacing
+          ? (tituloAlinhadoEsquerda ? 8 : NavigationToolbar.kMiddleSpacing)
           : logoAlinhadaEsquerda
           ? 16
           : 10,
