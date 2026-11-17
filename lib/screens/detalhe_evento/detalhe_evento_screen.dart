@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -605,63 +605,83 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       await showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: const Text('Compartilhar evento'),
+          title: Row(
+            children: [
+              const Expanded(child: Text('Compartilhar evento')),
+              IconButton(
+                tooltip: 'Fechar',
+                onPressed: () => Navigator.pop(dialogContext),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ],
+          ),
           content: const Text('Escolha como deseja enviar o convite.'),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancelar'),
-            ),
-            TextButton.icon(
-              onPressed: () async {
-                try {
-                  await Clipboard.setData(ClipboardData(text: convite));
-                  if (!dialogContext.mounted || !mounted) return;
-                  Navigator.pop(dialogContext);
-                  AppSnackBar.sucesso(
-                    context,
-                    'Convite copiado. Agora é só colar onde desejar.',
-                  );
-                } catch (_) {
-                  if (mounted) {
-                    AppSnackBar.erro(
-                      context,
-                      'Não foi possível copiar o convite.',
-                    );
-                  }
-                }
-              },
-              icon: const Icon(Icons.copy),
-              label: const Text('Copiar convite'),
-            ),
-            FilledButton.icon(
-              onPressed: () async {
-                final uri = Uri.https('wa.me', '/', {'text': convite});
-                try {
-                  final abriu = await launchUrl(
-                    uri,
-                    mode: LaunchMode.externalApplication,
-                  );
-                  if (!dialogContext.mounted || !mounted) return;
-                  if (abriu) {
-                    Navigator.pop(dialogContext);
-                  } else {
-                    AppSnackBar.erro(
-                      context,
-                      'Não foi possível abrir o WhatsApp. Você pode copiar o convite.',
-                    );
-                  }
-                } catch (_) {
-                  if (mounted) {
-                    AppSnackBar.erro(
-                      context,
-                      'Não foi possível abrir o WhatsApp. Você pode copiar o convite.',
-                    );
-                  }
-                }
-              },
-              icon: const Icon(Icons.send),
-              label: const Text('WhatsApp'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () async {
+                      try {
+                        await Clipboard.setData(ClipboardData(text: convite));
+                        if (!dialogContext.mounted || !mounted) return;
+                        Navigator.pop(dialogContext);
+                        AppSnackBar.sucesso(
+                          context,
+                          'Convite copiado. Agora é só colar onde desejar.',
+                        );
+                      } catch (_) {
+                        if (mounted) {
+                          AppSnackBar.erro(
+                            context,
+                            'Não foi possível copiar o convite.',
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.copy),
+                    label: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Copiar convite', maxLines: 1),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () async {
+                      final uri = Uri.https('wa.me', '/', {'text': convite});
+                      try {
+                        final abriu = await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                        if (!dialogContext.mounted || !mounted) return;
+                        if (abriu) {
+                          Navigator.pop(dialogContext);
+                        } else {
+                          AppSnackBar.erro(
+                            context,
+                            'Não foi possível abrir o WhatsApp. Você pode copiar o convite.',
+                          );
+                        }
+                      } catch (_) {
+                        if (mounted) {
+                          AppSnackBar.erro(
+                            context,
+                            'Não foi possível abrir o WhatsApp. Você pode copiar o convite.',
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.send),
+                    label: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Compartilhar WhatsApp', maxLines: 1),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

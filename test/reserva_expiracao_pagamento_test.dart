@@ -3,7 +3,7 @@ import 'package:clubbar_cliente/screens/pagamento/escolha_pagamento_screen.dart'
 import 'package:clubbar_cliente/services/api_service.dart';
 import 'package:clubbar_cliente/services/auth_storage.dart';
 import 'package:clubbar_cliente/utils/horario_brasil.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _Auth extends AuthStorage {

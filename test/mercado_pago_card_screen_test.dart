@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:clubbar_cliente/screens/pagamento/mercado_pago_card_screen.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -114,7 +114,7 @@ void main() {
           await tester.enterText(
             find.descendant(
               of: find.byType(CardNumberField),
-              matching: find.byType(TextField),
+              matching: find.byType(EditableText),
             ),
             '4111111111111111',
           );
@@ -122,14 +122,14 @@ void main() {
           await tester.enterText(
             find.descendant(
               of: find.byType(ExpirationDateField),
-              matching: find.byType(TextField),
+              matching: find.byType(EditableText),
             ),
             '1235',
           );
           await tester.enterText(
             find.descendant(
               of: find.byType(SecurityCodeField),
-              matching: find.byType(TextField),
+              matching: find.byType(EditableText),
             ),
             '123',
           );

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+
 import 'core/theme/app_colors.dart';
 import 'screens/splash/splash_screen.dart';
 
@@ -10,6 +11,7 @@ class ClubbarApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Clubbar',
+      builder: (context, child) => MaterialUiCompatibilityBridge(child: child!),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.amareloCerveja),
         appBarTheme: const AppBarTheme(

@@ -1,5 +1,5 @@
 import 'package:clubbar_cliente/screens/carteira/carteira_loja_screen.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 

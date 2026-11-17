@@ -1,4 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+// O SDK PCI ainda recebe os tipos Material do Flutter em sua API pública.
+// ignore: deprecated_member_use
+import 'package:flutter/material.dart' as material_legado;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mercadopago_sdk_flutter/mercadopago_sdk_flutter.dart';
@@ -209,6 +212,13 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
     }
   }
 
+  Widget _campoPci(Widget campo) => MaterialUiCompatibilityBridge(
+    child: material_legado.Material(
+      type: material_legado.MaterialType.transparency,
+      child: campo,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final costs = _plan?.payerCosts ?? const <PayerCost>[];
@@ -227,33 +237,39 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
-                CardNumberField(
-                  controller: _number,
-                  label: 'Número do cartão',
-                  onBinChanged: _loadCard,
-                  enabled: !_loading,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                _campoPci(
+                  CardNumberField(
+                    controller: _number,
+                    label: 'Número do cartão',
+                    onBinChanged: _loadCard,
+                    enabled: !_loading,
+                    decoration: const material_legado.InputDecoration(
+                      border: material_legado.OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                ExpirationDateField(
-                  controller: _expiration,
-                  label: 'Validade',
-                  hintText: 'MM/AA',
-                  enabled: !_loading,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                _campoPci(
+                  ExpirationDateField(
+                    controller: _expiration,
+                    label: 'Validade',
+                    hintText: 'MM/AA',
+                    enabled: !_loading,
+                    decoration: const material_legado.InputDecoration(
+                      border: material_legado.OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                SecurityCodeField(
-                  controller: _security,
-                  label: 'Código de segurança',
-                  enabled: !_loading,
-                  expectedLength: _method?.securityCodeLength,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                _campoPci(
+                  SecurityCodeField(
+                    controller: _security,
+                    label: 'Código de segurança',
+                    enabled: !_loading,
+                    expectedLength: _method?.securityCodeLength,
+                    decoration: const material_legado.InputDecoration(
+                      border: material_legado.OutlineInputBorder(),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
