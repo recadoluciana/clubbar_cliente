@@ -967,7 +967,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                             ),
                                           ),
                                   ),
-                                  _controleQuantidadeProduto(produto),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      _controleQuantidadeProduto(produto),
+                                      const SizedBox(height: 5),
+                                      _botaoAdicionarProduto(produto),
+                                    ],
+                                  ),
                                 ],
                               ),
 
@@ -1042,32 +1050,33 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.grey.shade200),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(7),
-                    child: _acoesDoProduto(
-                      produto: produto,
-                      campanhaPacote: campanhaPacote,
-                      campanhaPercentual: campanhaPercentual,
-                      quantidadePacote: quantidadePacote,
-                      valorPacote: valorPacote,
-                      temPacote: temPacote,
-                      temPromocaoPercentual: temPromocaoPercentual,
-                      ehCortesia: ehCortesia,
-                      cortesiaDisponivel: cortesiaDisponivel,
-                      resgatandoCortesia: resgatandoCortesia,
-                      campanhaCortesia: campanhaCortesia,
+              if (temPacote || temPromocaoPercentual || ehCortesia)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(7),
+                      child: _acoesDoProduto(
+                        produto: produto,
+                        campanhaPacote: campanhaPacote,
+                        campanhaPercentual: campanhaPercentual,
+                        quantidadePacote: quantidadePacote,
+                        valorPacote: valorPacote,
+                        temPacote: temPacote,
+                        temPromocaoPercentual: temPromocaoPercentual,
+                        ehCortesia: ehCortesia,
+                        cortesiaDisponivel: cortesiaDisponivel,
+                        resgatandoCortesia: resgatandoCortesia,
+                        campanhaCortesia: campanhaCortesia,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
@@ -1092,6 +1101,30 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
+  Widget _botaoAdicionarProduto(Produto produto) {
+    final chave = _chaveItemCardapio(produto);
+    final podeComprar =
+        vendasHabilitadas && !produtosEmAlteracao.contains(chave);
+    return SizedBox(
+      height: 34,
+      child: ElevatedButton.icon(
+        onPressed: !podeComprar
+            ? null
+            : () => adicionarProdutoAoCarrinho(
+                produto,
+                quantidade: quantidadesSelecionadas[chave] ?? 1,
+              ),
+        icon: const Icon(Icons.add_shopping_cart_rounded, size: 16),
+        label: const Text('Adicionar'),
+        style: _estiloBotaoProduto(
+          fundo: const Color(0xFFFFD166),
+          texto: Colors.black,
+          tamanhoFonte: 11,
+        ),
+      ),
+    );
+  }
+
   Widget _acoesDoProduto({
     required Produto produto,
     required Map<String, dynamic>? campanhaPacote,
@@ -1109,24 +1142,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       _chaveItemCardapio(produto),
     );
     final podeComprar = vendasHabilitadas && !emAlteracao;
-
-    final botaoComprar = ElevatedButton.icon(
-      onPressed: !podeComprar
-          ? null
-          : () => adicionarProdutoAoCarrinho(
-              produto,
-              quantidade:
-                  quantidadesSelecionadas[_chaveItemCardapio(produto)] ?? 1,
-            ),
-      icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
-      label: const Text('Adicionar produto ao carrinho'),
-      style: _estiloBotaoProduto(
-        // Amarelo suave: mantém esta ação distinta sem competir com o produto.
-        fundo: const Color(0xFFFFD166),
-        texto: Colors.black,
-        tamanhoFonte: 11,
-      ),
-    );
 
     final botaoCortesia = ElevatedButton.icon(
       onPressed: !vendasHabilitadas || resgatandoCortesia || !cortesiaDisponivel
@@ -1200,9 +1215,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ),
           const SizedBox(height: 6),
         ],
-        SizedBox(width: double.infinity, height: 38, child: botaoComprar),
         if (ehCortesia) ...[
-          const SizedBox(height: 6),
           SizedBox(width: double.infinity, height: 38, child: botaoCortesia),
         ],
       ],
