@@ -8,6 +8,7 @@ import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/explicacao_taxas_ingresso.dart';
 import '../../widgets/clubbar_contact_links.dart';
 import '../../widgets/prazo_expirado_dialog.dart';
 import 'politica_compra_screen.dart';
@@ -1101,15 +1102,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                 'Taxa de conveniência${minimoAplicado ? ' (mínimo aplicado)' : ' ($percentualTexto%)'}: ${_moeda(conveniencia)}',
               ),
               const SizedBox(height: 8),
-              Text('Parcela de processamento (2%): ${_moeda(processamento)}'),
+              Text('Taxa de processamento (2%): ${_moeda(processamento)}'),
               const SizedBox(height: 12),
               Text(
                 'Total a pagar: ${_moeda(total)}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'A parcela de processamento ajuda a cobrir os custos do pagamento; o Clubbar absorve a diferença quando o custo é maior.',
+              TextButton(
+                onPressed: () => mostrarExplicacaoTaxas(context),
+                child: const Text('Entenda as taxas'),
               ),
             ],
           ),
