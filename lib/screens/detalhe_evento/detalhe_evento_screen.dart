@@ -18,6 +18,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../config/app_config.dart';
 import '../../core/theme/app_colors.dart';
 import '../../utils/value_formatters.dart';
+import '../../utils/taxa_ingresso.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
 import '../../utils/horario_brasil.dart';
@@ -302,12 +303,11 @@ class _ModalidadesIngressoScreenState
     final podeAumentar =
         quantidade < _limitePorTransacao(lote) &&
         quantidade < disponivelModalidade;
-    final taxaPercentual = lote.preco * widget.taxaPercentual / 100;
-    final taxaUnitaria = lote.preco <= 0
-        ? 0.0
-        : (taxaPercentual > widget.taxaMinima
-              ? taxaPercentual
-              : widget.taxaMinima);
+    final taxaUnitaria = calcularTaxaIngresso(
+      lote.preco,
+      widget.taxaPercentual,
+      widget.taxaMinima,
+    );
     final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
     return Card(
@@ -408,7 +408,7 @@ class _ModalidadesIngressoScreenState
             Row(
               children: [
                 const Text(
-                  'Total a pagar',
+                  'Subtotal',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
@@ -421,6 +421,14 @@ class _ModalidadesIngressoScreenState
                 ),
               ],
             ),
+            if (lote.preco > 0)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'A taxa de processamento, quando aplicável, será informada ao escolher o pagamento.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -1467,12 +1475,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final disponivel = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivel > 0;
     final cortesiaEsgotada = ehCortesia && !modalidadeDisponivel;
-    final taxaPercentual = lote.preco * widget.loja.vrtaxaing / 100;
-    final taxa = lote.preco <= 0
-        ? 0.0
-        : (taxaPercentual > widget.loja.vrtaxaminimaingresso
-              ? taxaPercentual
-              : widget.loja.vrtaxaminimaingresso);
+    final taxa = calcularTaxaIngresso(
+      lote.preco,
+      widget.loja.vrtaxaing,
+      widget.loja.vrtaxaminimaingresso,
+    );
     final total = (lote.preco + taxa) * quantidade;
 
     return Card(
@@ -1584,7 +1591,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             Row(
               children: [
                 const Text(
-                  'Total a pagar',
+                  'Subtotal',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const Spacer(),
@@ -1597,6 +1604,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ),
               ],
             ),
+            if (lote.preco > 0)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'A taxa de processamento, quando aplicável, será informada ao escolher o pagamento.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -1815,7 +1830,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Taxa de serviço',
+                'Taxa de conveniência',
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
               ),
               Text(
@@ -1844,7 +1859,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
               ),
               Text(
-                'Está ligada à forma de pagamento escolhida e é destinada às instituições que autorizam e processam a transação.',
+                'Nos ingressos pagos pelo Mercado Pago, cobramos 2% do valor dos ingressos por processamento, com arredondamento por ingresso. Essa parcela ajuda a cobrir o custo do pagamento. Se o custo for maior, o Clubbar absorve a diferença.',
                 style: TextStyle(
                   color: Colors.grey.shade700,
                   fontSize: 14,
@@ -1866,7 +1881,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'As taxas podem variar conforme o meio de pagamento, a operadora e as condições de parcelamento. Quando houver custo de parcelamento, ele será informado antes da confirmação e você poderá escolher a opção que preferir.',
+                'A taxa de conveniência segue a configuração do estabelecimento. Os valores de conveniência, processamento e total são informados antes da confirmação. No Mercado Pago, o cartão para ingressos está disponível à vista.',
                 style: TextStyle(
                   color: Colors.grey.shade800,
                   fontSize: 14,

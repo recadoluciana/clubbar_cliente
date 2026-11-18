@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'http_with_timeout.dart' as http;
 
 import 'auth_storage.dart';
@@ -12,6 +13,7 @@ import '../models/produto.dart';
 import '../models/carteira_item.dart';
 import '../models/evento_detalhe.dart';
 import '../models/evento_lote.dart';
+
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class ApiService {
@@ -420,9 +422,8 @@ class ApiService {
 
   Future<List<Produto>> buscarProdutosMaisVendidos({int limite = 10}) async {
     try {
-      final uri = Uri.parse(
-        '$baseUrl/produtos/mais-vendidos',
-      ).replace(queryParameters: {'limite': limite.toString()});
+      final uri = Uri.parse('$baseUrl/produtos/mais-vendidos')
+          .replace(queryParameters: {'limite': limite.toString()});
       final response = await http.get(
         uri,
         headers: {'Content-Type': 'application/json'},
@@ -613,6 +614,24 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<Map<String, dynamic>> cotarReservaMercadoPago({
+    required int reservaId,
+    required int clienteId,
+    required String metodo,
+  }) async {
+    final response = await http.post(
+      Uri.parse(
+        '$baseUrl/reservas-ingressos/$reservaId/cotacao-mercado-pago?metodo=$metodo',
+      ),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({'cliente_id': clienteId}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> criarCheckoutReservaMercadoPago({
     required int reservaId,
     required int clienteId,
@@ -624,6 +643,7 @@ class ApiService {
     String? payerEmail,
     String? payerDocument,
     String? deviceId,
+    double? valorTotalConfirmado,
   }) async {
     final response = await http.post(
       Uri.parse(
@@ -639,6 +659,7 @@ class ApiService {
         'payer_email': payerEmail,
         'payer_document': payerDocument,
         'device_id': deviceId,
+        'valor_total_confirmado': valorTotalConfirmado,
       }),
     );
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -701,16 +722,15 @@ class ApiService {
   }) async {
     try {
       final uri =
-          Uri.parse(
-            '$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um',
-          ).replace(
-            queryParameters: {
-              'observacao': observacao,
-              if (cardapioItemId != null)
-                'cardapioitem_id': cardapioItemId.toString(),
-              if (campanhaId != null) 'campanha_id': campanhaId.toString(),
-            },
-          );
+          Uri.parse('$baseUrl/carrinho/$carrinhoId/produto/$produtoId/um')
+              .replace(
+                queryParameters: {
+                  'observacao': observacao,
+                  if (cardapioItemId != null)
+                    'cardapioitem_id': cardapioItemId.toString(),
+                  if (campanhaId != null) 'campanha_id': campanhaId.toString(),
+                },
+              );
 
       final response = await http.delete(
         uri,
@@ -1739,9 +1759,8 @@ class ApiService {
     if (reservaIngressoId != null) {
       parametros['reserva_ingresso_id'] = '$reservaIngressoId';
     }
-    final uri = Uri.parse(
-      '$baseUrl/campanhas-doacao/vigente',
-    ).replace(queryParameters: parametros);
+    final uri = Uri.parse('$baseUrl/campanhas-doacao/vigente')
+        .replace(queryParameters: parametros);
     final response = await http.get(uri, headers: await _headersAutenticado());
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));

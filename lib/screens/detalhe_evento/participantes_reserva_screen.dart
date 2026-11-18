@@ -523,7 +523,7 @@ class _ParticipantesReservaScreenState
                       children: [
                         const Expanded(
                           child: Text(
-                            'Valor a pagar',
+                            'Subtotal',
                             style: TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),
@@ -536,6 +536,14 @@ class _ParticipantesReservaScreenState
                         ),
                       ],
                     ),
+                    if (!ehCortesia)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 6),
+                        child: Text(
+                          'A taxa de processamento, quando aplicável, será informada ao escolher o pagamento.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
                   ],
                 ),
               ),
