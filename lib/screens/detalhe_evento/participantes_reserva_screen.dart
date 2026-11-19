@@ -250,6 +250,8 @@ class _ParticipantesReservaScreenState
         return;
       }
       final valorTotalComTaxa = _valorTotalComTaxa(reserva);
+      final ingressos = _itensFinanceiros(reserva, 'valor_unitario');
+      final taxas = _itensFinanceiros(reserva, 'valor_taxa_unitaria');
       timer?.cancel();
       final reservaEncerrada = await Navigator.push<bool>(
         context,
@@ -257,12 +259,8 @@ class _ParticipantesReservaScreenState
           builder: (_) => EscolhaPagamentoScreen(
             loja: widget.loja,
             totalProdutos: 0,
-            totalIngressos:
-                double.tryParse('${reserva['valor_unitario']}')! *
-                int.parse('${reserva['quantidade']}'),
-            taxaConveniencia:
-                double.tryParse('${reserva['valor_taxa_unitaria']}')! *
-                int.parse('${reserva['quantidade']}'),
+            totalIngressos: ingressos,
+            taxaConveniencia: taxas,
             totalPagar: valorTotalComTaxa,
             reservaIngressoId: int.parse('${reserva['reserva_ingresso_id']}'),
             reservaExpiracao: expiraEm,
@@ -355,6 +353,9 @@ class _ParticipantesReservaScreenState
   );
 
   double _valorTotalComTaxa(Map<String, dynamic> reserva) {
+    if (reserva['itens'] is List || reserva['compra_evento_id'] != null) {
+      return double.tryParse('${reserva['valor_total']}') ?? 0;
+    }
     final valorUnitario = double.tryParse('${reserva['valor_unitario']}') ?? 0;
     final taxaUnitaria =
         double.tryParse('${reserva['valor_taxa_unitaria']}') ?? 0;
@@ -364,6 +365,21 @@ class _ParticipantesReservaScreenState
     return totalCalculado > 0
         ? totalCalculado
         : (double.tryParse('${reserva['valor_total']}') ?? 0);
+  }
+
+  double _itensFinanceiros(Map<String, dynamic> reserva, String campo) {
+    final itens = reserva['itens'];
+    if (itens is List) {
+      return itens.fold<double>(0, (total, item) {
+        if (item is! Map) return total;
+        final unitario = double.tryParse('${item[campo] ?? 0}') ?? 0;
+        final quantidade = int.tryParse('${item['quantidade'] ?? 1}') ?? 1;
+        return total + unitario * quantidade;
+      });
+    }
+    final unitario = double.tryParse('${reserva[campo] ?? 0}') ?? 0;
+    final quantidade = int.tryParse('${reserva['quantidade'] ?? 1}') ?? 1;
+    return unitario * quantidade;
   }
 
   Widget _resumoCompacto(String titulo, String valor) {
