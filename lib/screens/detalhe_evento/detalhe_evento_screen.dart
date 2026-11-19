@@ -2232,8 +2232,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   const Text(
                                     'Atrações',
                                     style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
                                     ),
                                   ),
                                   const SizedBox(height: 10),
