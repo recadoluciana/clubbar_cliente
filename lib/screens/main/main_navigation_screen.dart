@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -16,6 +17,7 @@ import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
 import '../produtos_loja/produto_compartilhado_screen.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
+import '../agenda/agenda_eventos_screen.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../../utils/url_cleaner.dart';
 import '../../utils/app_snackbar.dart';
@@ -158,6 +160,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna is PerfilScreen ||
             telaInterna is AtendimentoCoraScreen ||
             telaInterna is DetalheLojaScreen ||
+            telaInterna is AgendaEventosScreen ||
             telaInterna is DetalheEventoScreen ||
             telaInterna is CarrinhoScreen ||
             telaInterna is CarteiraScreen;
@@ -172,6 +175,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         final carrinhoDaLoja = telaInterna is CarrinhoScreen;
         final exibirQuantidadeDaLoja =
             telaInterna is DetalheLojaScreen ||
+            telaInterna is AgendaEventosScreen ||
             carteiraDaLoja ||
             carrinhoDaLoja;
         final homeSelecionada =
@@ -225,6 +229,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     estaSelecionado: carrinhoSelecionado,
                     onTap: telaInterna is DetalheLojaScreen
                         ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                        : telaInterna is AgendaEventosScreen
+                        ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
                         : null,
                   ),
 
@@ -237,6 +243,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     texto: 'Carteira',
                     estaSelecionado: carteiraSelecionada,
                     onTap: telaInterna is DetalheLojaScreen
+                        ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                        : telaInterna is AgendaEventosScreen
                         ? () => _abrirCarteiraDaLoja(telaInterna.loja)
                         : null,
                   ),
@@ -501,8 +509,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         MainNavigationController.abrirTela(
           PagamentoSucessoScreen(
             tituloSucesso: 'Pagamento realizado com sucesso',
-            descricaoSucesso:
-                'Seu produto já está disponível na Carteira.\nO QR Code também será enviado por e-mail.',
+            descricaoSucesso: 'Seu produto já está disponível na Carteira.\nO QR Code também será enviado por e-mail.',
             lojaDestino: lojaDestino,
           ),
         );
@@ -704,6 +711,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna is PerfilScreen ||
                 telaInterna is AtendimentoCoraScreen ||
                 telaInterna is DetalheLojaScreen ||
+                telaInterna is AgendaEventosScreen ||
                 telaInterna is DetalheEventoScreen ||
                 telaInterna is CarteiraScreen;
 

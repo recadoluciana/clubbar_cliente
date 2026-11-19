@@ -3,8 +3,10 @@ import 'package:material_ui/material_ui.dart';
 import '../../models/evento.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
+import '../../services/auth_storage.dart';
+import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
 import '../detalhe_evento/detalhe_evento_screen.dart';
-import '../pagamento/politica_compra_screen.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
@@ -31,6 +33,51 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
   void initState() {
     super.initState();
     carregarEventos();
+    CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    _carregarQuantidadesDaLoja();
+    CarteiraBadgeNotifier.refresh.addListener(_carregarQuantidadesDaLoja);
+  }
+
+  @override
+  void dispose() {
+    CarteiraBadgeNotifier.refresh.removeListener(_carregarQuantidadesDaLoja);
+    super.dispose();
+  }
+
+  Future<void> _carregarQuantidadesDaLoja() async {
+    final clienteId = await AuthStorage().obterClienteId();
+    if (clienteId == null || clienteId == 0 || !mounted) return;
+    try {
+      final carrinho = await apiService.buscarCarrinho(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+      );
+      final itens = carrinho['itens'];
+      final total = itens is List
+          ? itens.fold<int>(
+              0,
+              (soma, item) => soma + (int.tryParse('${item['qt']}') ?? 1),
+            )
+          : 0;
+      if (mounted) CartBadgeNotifier.atualizarItensDaLojaSelecionada(total);
+    } catch (_) {
+      if (mounted) CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    }
+    try {
+      final itens = await apiService.buscarPendentes(
+        clienteId: clienteId,
+        lojaId: widget.loja.id,
+      );
+      final total = itens.fold<int>(
+        0,
+        (soma, item) => soma + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
+      );
+      if (mounted) CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(total);
+    } catch (_) {
+      if (mounted) CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    }
   }
 
   Future<void> carregarEventos() async {
@@ -362,44 +409,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
     );
   }
 
-  Widget _rodapePoliticaIngresso() {
-    final cor = Theme.of(context).colorScheme.primary;
-    return SafeArea(
-      top: false,
-      child: Material(
-        color: Colors.white,
-        elevation: 8,
-        child: SizedBox(
-          height: 44,
-          child: Center(
-            child: TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const PoliticaCompraScreen(tipo: 'INGRESSO'),
-                ),
-              ),
-              icon: const Icon(Icons.policy_outlined, size: 18),
-              label: const Text('Política de compra de ingresso'),
-              style: TextButton.styleFrom(
-                foregroundColor: cor,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final eventosFiltrados = eventos.where(_correspondePesquisa).toList();
@@ -427,7 +436,6 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
           MainNavigationController.fecharTelaInterna();
         },
       ),
-      bottomNavigationBar: _rodapePoliticaIngresso(),
       body: Column(
         children: [
           Padding(
