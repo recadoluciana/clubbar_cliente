@@ -1,10 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import 'carrinho_screen.dart';
+import '../perfil/perfil_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
+
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarrinhoLojasScreen extends StatefulWidget {
@@ -23,6 +26,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
   bool carregando = true;
   String? erro;
   int? clienteId;
+  String nomeCliente = '';
 
   List<Map<String, dynamic>> lojasCarrinho = [];
 
@@ -46,6 +50,7 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
       }
 
       clienteId = id;
+      nomeCliente = await authStorage.obterNmcliente() ?? '';
 
       final data = await apiService.buscarLojasComCarrinho(clienteId: id);
 
@@ -263,6 +268,8 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
+        mostrarSessao: false,
+        tituloAlinhadoEsquerda: true,
         onVoltar: MainNavigationController.irParaHome,
         actions: [
           IconButton(
@@ -281,6 +288,34 @@ class _CarrinhoLojasScreenState extends State<CarrinhoLojasScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                 children: [
+                  if (nomeCliente.trim().isNotEmpty) ...[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: () => MainNavigationController.abrirTela(
+                          const PerfilScreen(),
+                        ),
+                        icon: const Icon(
+                          Icons.person_outline_rounded,
+                          size: 18,
+                        ),
+                        label: Text(
+                          'Carrinho de ${nomeCliente.trim()}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.grey.shade700,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
+                          alignment: Alignment.centerLeft,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   if (erro != null)
                     _erroWidget()
                   else if (lojasCarrinho.isEmpty)

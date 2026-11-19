@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../models/evento_lote.dart';
 import '../../models/loja.dart';
@@ -436,39 +436,11 @@ class _ParticipantesReservaScreenState
           titulo: widget.loja.nome,
           mostrarVoltar: true,
           mostrarSessao: false,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.timer_outlined,
-                    color: Colors.amber,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$minutos:$segundos',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
         backgroundColor: const Color(0xFFF5F5F5),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            const Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Os ingressos ficam reservados durante o tempo indicado. Ao escolher Pix, você verá o prazo para pagamento na tela do QR Code.',
-              ),
-            ),
             Container(
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
@@ -506,6 +478,25 @@ class _ParticipantesReservaScreenState
                             ],
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.timer_outlined,
+                              color: Colors.red,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$minutos:$segundos',
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -513,9 +504,9 @@ class _ParticipantesReservaScreenState
                       spacing: 12,
                       runSpacing: 2,
                       children: [
-                        _resumoCompacto('Modalidade', widget.modalidade),
-                        _resumoCompacto('Setor', widget.nomeSetor),
                         _resumoCompacto('Lote', widget.nomeLote),
+                        _resumoCompacto('Setor', widget.nomeSetor),
+                        _resumoCompacto('Modalidade', widget.modalidade),
                       ],
                     ),
                     const Divider(height: 20),
@@ -523,7 +514,7 @@ class _ParticipantesReservaScreenState
                       children: [
                         const Expanded(
                           child: Text(
-                            'Valor a pagar',
+                            'Subtotal',
                             style: TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),

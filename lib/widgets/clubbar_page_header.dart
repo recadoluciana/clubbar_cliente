@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class ClubbarPageHeader extends StatelessWidget {
   final String titulo;
   final String subtitulo;
+  final Widget? subtituloWidget;
 
   // Conteúdo do lado esquerdo
   final String? textoAvatar;
@@ -34,6 +35,7 @@ class ClubbarPageHeader extends StatelessWidget {
     super.key,
     required this.titulo,
     required this.subtitulo,
+    this.subtituloWidget,
     this.textoAvatar,
     this.icone,
     this.imagemAvatarUrl,
@@ -218,19 +220,21 @@ class ClubbarPageHeader extends StatelessWidget {
                             color: corTitulo,
                           ),
                         ),
-                      if (subtituloLimpo.isNotEmpty) ...[
+                      if (subtituloWidget != null ||
+                          subtituloLimpo.isNotEmpty) ...[
                         const SizedBox(height: 3),
-                        Text(
-                          subtituloLimpo,
-                          maxLines: maxLinhasSubtitulo,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade700,
-                            fontWeight: pesoSubtitulo,
-                            height: 1.25,
-                          ),
-                        ),
+                        subtituloWidget ??
+                            Text(
+                              subtituloLimpo,
+                              maxLines: maxLinhasSubtitulo,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade700,
+                                fontWeight: pesoSubtitulo,
+                                height: 1.25,
+                              ),
+                            ),
                       ],
                     ],
                   ),

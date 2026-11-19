@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:clubbar_cliente/screens/main/main_navigation_screen.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

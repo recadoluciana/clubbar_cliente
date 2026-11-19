@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import '../../models/loja.dart';
@@ -11,6 +11,7 @@ import '../../screens/produtos_loja/produtos_loja_screen.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
+
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class ProdutoCompartilhadoScreen extends StatefulWidget {
@@ -26,6 +27,96 @@ class ProdutoCompartilhadoScreen extends StatefulWidget {
   @override
   State<ProdutoCompartilhadoScreen> createState() =>
       _ProdutoCompartilhadoScreenState();
+}
+
+class VisualizacaoFotoProduto extends StatefulWidget {
+  final String url;
+
+  const VisualizacaoFotoProduto({super.key, required this.url});
+
+  @override
+  State<VisualizacaoFotoProduto> createState() =>
+      _VisualizacaoFotoProdutoState();
+}
+
+class _VisualizacaoFotoProdutoState extends State<VisualizacaoFotoProduto> {
+  final _transformacao = TransformationController();
+
+  @override
+  void dispose() {
+    _transformacao.dispose();
+    super.dispose();
+  }
+
+  void _alterarZoom(double fator) {
+    final escala = (_transformacao.value.getMaxScaleOnAxis() * fator).clamp(
+      1.0,
+      4.0,
+    );
+    _transformacao.value = Matrix4.diagonal3Values(escala, escala, 1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.black,
+      insetPadding: const EdgeInsets.all(12),
+      child: SizedBox(
+        width: double.infinity,
+        height: MediaQuery.sizeOf(context).height * .75,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: InteractiveViewer(
+                transformationController: _transformacao,
+                minScale: 1,
+                maxScale: 4,
+                child: Center(
+                  child: Image.network(
+                    widget.url,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) => const Icon(
+                      Icons.image_not_supported_outlined,
+                      color: Colors.white,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: IconButton.filled(
+                tooltip: 'Fechar foto',
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close_rounded),
+              ),
+            ),
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: Row(
+                children: [
+                  IconButton.filled(
+                    tooltip: 'Diminuir foto',
+                    onPressed: () => _alterarZoom(1 / 1.5),
+                    icon: const Icon(Icons.remove),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    tooltip: 'Aumentar foto',
+                    onPressed: () => _alterarZoom(1.5),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _ProdutoCompartilhadoScreenState
@@ -307,23 +398,31 @@ class _ProdutoCompartilhadoScreenState
                     child: Stack(
                       children: [
                         Center(
-                          child: ClipRRect(
+                          child: InkWell(
+                            onTap: () => showDialog<void>(
+                              context: context,
+                              builder: (_) =>
+                                  VisualizacaoFotoProduto(url: imagemUrl),
+                            ),
                             borderRadius: BorderRadius.circular(20),
-                            child: SizedBox(
-                              height: 164,
-                              width: 164,
-                              child: Image.network(
-                                imagemUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: Colors.grey.shade300,
-                                    child: const Icon(
-                                      Icons.image_not_supported_outlined,
-                                      size: 42,
-                                    ),
-                                  );
-                                },
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: SizedBox(
+                                height: 164,
+                                width: 164,
+                                child: Image.network(
+                                  imagemUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey.shade300,
+                                      child: const Icon(
+                                        Icons.image_not_supported_outlined,
+                                        size: 42,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),
@@ -455,8 +554,8 @@ class _ProdutoCompartilhadoScreenState
                       ),
                       const SizedBox(width: 8),
                       SizedBox(
-                        width: 66,
-                        height: 40,
+                        width: 42,
+                        height: 36,
                         child: TextField(
                           controller: _quantidadeCtrl,
                           textAlign: TextAlign.center,
@@ -480,9 +579,9 @@ class _ProdutoCompartilhadoScreenState
                             ),
                             filled: true,
                             fillColor: Colors.grey.shade50,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
                           ),
                           style: const TextStyle(
                             fontSize: 17,

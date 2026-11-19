@@ -1,8 +1,83 @@
 import 'package:clubbar_cliente/screens/carteira/carteira_ingressos_screen.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets('diálogo do QR usa a cor da modalidade', (tester) async {
+    tester.view.physicalSize = const Size(800, 1600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CarteiraIngressosScreen(
+          nomeLoja: 'Loja',
+          logoLoja: '',
+          nomeCliente: 'Cliente',
+          onAtualizar: null,
+          onVoltar: () {},
+          itens: [
+            {
+              'nmproduto': 'Cortesia',
+              'tipopreco': 'CORTESIA',
+              'qrtokenitvenda': 'um',
+              'qtitvenda': 1,
+            },
+            {
+              'nmproduto': 'Inteira',
+              'tipopreco': 'INTEIRA',
+              'qrtokenitvenda': 'dois',
+              'qtitvenda': 1,
+            },
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    for (var i = 0; i < 2; i++) {
+      await tester.tap(find.text('Exibir QR Code').at(i));
+      await tester.pumpAndSettle();
+      final dialog = tester.widget<Dialog>(find.byType(Dialog));
+      final cor = i == 0 ? Colors.green.shade700 : Colors.blue.shade700;
+      expect((dialog.shape as RoundedRectangleBorder).side.color, cor);
+      final cabecalho = tester.widgetList<Container>(
+        find.descendant(
+          of: find.byType(Dialog),
+          matching: find.byType(Container),
+        ),
+      );
+      expect(
+        cabecalho.any(
+          (container) => container.color == cor,
+        ),
+        isTrue,
+      );
+      final participante = tester
+          .widgetList<Container>(
+            find.ancestor(
+              of: find.text('Participante: Não informado'),
+              matching: find.byType(Container),
+            ),
+          )
+          .firstWhere(
+            (container) =>
+                (container.decoration as BoxDecoration?)?.border != null,
+          );
+      final decoracao = participante.decoration as BoxDecoration;
+      expect(decoracao.color, cor.withValues(alpha: 0.08));
+      expect(
+        (decoracao.border as Border).top.color,
+        cor.withValues(alpha: 0.35),
+      );
+      final botao = tester.widget<ElevatedButton>(
+        find.widgetWithText(ElevatedButton, 'Voltar'),
+      );
+      expect(botao.style?.backgroundColor?.resolve({}), cor);
+      await tester.tap(find.text('Voltar'));
+      await tester.pumpAndSettle();
+    }
+  });
+
   testWidgets('borda e modalidade seguem o tipo de ingresso', (tester) async {
     tester.view.physicalSize = const Size(800, 2000);
     tester.view.devicePixelRatio = 1;
@@ -31,7 +106,10 @@ void main() {
             },
             {
               'nmproduto': 'Ingresso legado',
-              'tipo_ingresso': 'Cortesia',
+              'nmpreco': 'Inteira',
+              'tipopreco': 'INTEIRA',
+              'tipo_ingresso': 'Pista • Cortesia',
+              'nmsetor': 'Pista',
               'qtitvenda': 1,
             },
           ],
@@ -54,6 +132,15 @@ void main() {
     expect(corBorda('Ingresso cortesia'), Colors.green.shade700);
     expect(corBorda('Ingresso meia'), Colors.blue.shade700);
     expect(corBorda('Ingresso legado'), Colors.green.shade700);
+    final iconesParticipante = tester
+        .widgetList<Icon>(find.byIcon(Icons.person_rounded))
+        .map((icon) => icon.color)
+        .toList();
+    expect(iconesParticipante, [
+      Colors.green.shade700,
+      Colors.blue.shade700,
+      Colors.green.shade700,
+    ]);
     expect(
       tester
           .widgetList<Text>(find.text('Cortesia'))
@@ -64,9 +151,27 @@ void main() {
       tester.widget<Text>(find.text('Meia-entrada')).style?.color,
       Colors.blue.shade700,
     );
+    final presentear = tester
+        .widgetList<OutlinedButton>(
+          find.widgetWithText(OutlinedButton, 'Presentear'),
+        )
+        .toList();
+    final qr = tester
+        .widgetList<ElevatedButton>(
+          find.widgetWithText(ElevatedButton, 'Exibir QR Code'),
+        )
+        .toList();
+    for (var i = 0; i < 3; i++) {
+      final cor = i == 1 ? Colors.blue.shade700 : Colors.green.shade700;
+      expect(presentear[i].style?.foregroundColor?.resolve({}), cor);
+      expect(presentear[i].style?.side?.resolve({})?.color, cor);
+      expect(qr[i].style?.backgroundColor?.resolve({}), cor);
+    }
   });
 
-  testWidgets('nome tem espaço e ação fica na linha do CPF', (tester) async {
+  testWidgets('ação do participante fica à direita e presentear à esquerda', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -99,17 +204,15 @@ void main() {
     );
     final nome = find.text('Ana Beatriz de Oliveira Silva');
     final cpf = find.text('CPF: 123.456.789-09');
-    final acao = find.widgetWithText(OutlinedButton, 'Alterar participante');
+    final acao = find.widgetWithText(OutlinedButton, 'Transferir');
     expect(nome, findsOneWidget);
     expect(cpf, findsOneWidget);
     expect(acao, findsOneWidget);
+    expect(tester.getRect(acao).left, greaterThan(tester.getRect(nome).right));
+    expect(tester.getSize(acao).width, tester.getSize(acao).height);
     expect(
-      tester.getRect(nome).bottom,
-      lessThanOrEqualTo(tester.getRect(acao).top),
-    );
-    expect(
-      (tester.getCenter(cpf).dy - tester.getCenter(acao).dy).abs(),
-      lessThan(3),
+      tester.getTopLeft(find.text('Presentear')).dx,
+      lessThan(tester.getTopLeft(find.text('Exibir QR Code')).dx),
     );
     expect(tester.takeException(), isNull);
   });
@@ -151,8 +254,12 @@ void main() {
       expect(find.text('Meia-entrada • Estudante'), findsOneWidget);
       expect(find.text('Local'), findsOneWidget);
       expect(find.text('Rua do evento, 123'), findsOneWidget);
-      expect(find.text('Data e hora do evento'), findsOneWidget);
-      expect(find.text('13/12/2026 13:00'), findsOneWidget);
+      expect(find.text('Horário'), findsOneWidget);
+      expect(find.text('13/12/2026\n13:00'), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text('Horário')).dx,
+        lessThan(tester.getTopLeft(find.text('Local')).dx),
+      );
       for (final texto in [
         'Lote 1',
         'Pista',

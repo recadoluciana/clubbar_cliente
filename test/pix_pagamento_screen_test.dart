@@ -1,7 +1,7 @@
 import 'package:clubbar_cliente/models/loja.dart';
 import 'package:clubbar_cliente/screens/pagamento/pix_pagamento_screen.dart';
 import 'package:clubbar_cliente/services/api_service.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _ApiIndisponivel extends ApiService {

@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/foundation.dart';
+
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../../widgets/explicacao_taxas_ingresso.dart';
 import '../../widgets/clubbar_contact_links.dart';
 import '../../widgets/prazo_expirado_dialog.dart';
 import 'politica_compra_screen.dart';
@@ -1066,11 +1068,78 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     return endereco;
   }
 
+  Future<double?> _confirmarValorIngressoMercadoPago(
+    String metodo,
+    int clienteId,
+  ) async {
+    final cotacao = await apiService.cotarReservaMercadoPago(
+      reservaId: widget.reservaIngressoId!,
+      clienteId: clienteId,
+      metodo: metodo,
+    );
+    final ingressos = (cotacao['ingressos'] as num).toDouble();
+    final conveniencia = (cotacao['conveniencia'] as num).toDouble();
+    final percentual = (cotacao['percentual_conveniencia'] as num).toDouble();
+    final minimoAplicado = cotacao['minimo_aplicado'] == true;
+    final percentualTexto = percentual
+        .toStringAsFixed(percentual == percentual.truncateToDouble() ? 0 : 2)
+        .replaceAll('.', ',');
+    final processamento = (cotacao['processamento'] as num).toDouble();
+    final total = (cotacao['total'] as num).toDouble();
+    if (!mounted) return null;
+    final aceitou = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirme o valor'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Ingressos: ${_moeda(ingressos)}'),
+              const SizedBox(height: 8),
+              Text(
+                'Taxa de conveniência${minimoAplicado ? ' (mínimo aplicado)' : ' ($percentualTexto%)'}: ${_moeda(conveniencia)}',
+              ),
+              const SizedBox(height: 8),
+              Text('Taxa de processamento (2%): ${_moeda(processamento)}'),
+              const SizedBox(height: 12),
+              Text(
+                'Total a pagar: ${_moeda(total)}',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextButton(
+                onPressed: () => mostrarExplicacaoTaxas(context),
+                child: const Text('Entenda as taxas'),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continuar'),
+          ),
+        ],
+      ),
+    );
+    return aceitou == true ? total : null;
+  }
+
   Future<void> _abrirCheckoutMercadoPago({
     required String metodo,
     required int clienteId,
     Map<String, String>? entrega,
   }) async {
+    final valorConfirmado = widget.reservaIngressoId != null
+        ? await _confirmarValorIngressoMercadoPago(metodo, clienteId)
+        : null;
+    if (widget.reservaIngressoId != null && valorConfirmado == null) return;
+    final valorCheckout = valorConfirmado ?? totalPagar;
     if (metodo.toUpperCase() == 'CREDIT_CARD' && kIsWeb) {
       final publicKey = _mercadoPagoPublicKey;
       if (publicKey == null || publicKey.isEmpty) {
@@ -1084,8 +1153,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         MaterialPageRoute(
           builder: (_) => MercadoPagoBrickScreen(
             publicKey: publicKey,
-            amount: totalPagar,
-            permiteParcelamento: widget.reservaIngressoId != null,
+            amount: valorCheckout,
+            permiteParcelamento: false,
             tempoReserva: _tempoReservaParaCheckout,
           ),
         ),
@@ -1102,6 +1171,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               reservaId: widget.reservaIngressoId!,
               clienteId: clienteId,
               metodo: metodo,
+              valorTotalConfirmado: valorConfirmado,
               cardToken: dados['token']?.toString(),
               paymentMethodId: dados['payment_method_id']?.toString(),
               issuerId: dados['issuer_id']?.toString(),
@@ -1143,8 +1213,8 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             publicKey: publicKey,
             payerEmail: perfil['emailcliente']?.toString() ?? '',
             payerDocument: perfil['nrcpfcliente']?.toString() ?? '',
-            amount: totalPagar,
-            permiteParcelamento: widget.reservaIngressoId != null,
+            amount: valorCheckout,
+            permiteParcelamento: false,
             tempoReserva: _tempoReservaParaCheckout,
           ),
         ),
@@ -1159,6 +1229,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               reservaId: widget.reservaIngressoId!,
               clienteId: clienteToken,
               metodo: metodo,
+              valorTotalConfirmado: valorConfirmado,
               cardToken: tokenizado.token,
               paymentMethodId: tokenizado.paymentMethodId,
               issuerId: tokenizado.issuerId,
@@ -1189,6 +1260,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             reservaId: widget.reservaIngressoId!,
             clienteId: clienteId,
             metodo: metodo,
+            valorTotalConfirmado: valorConfirmado,
           )
         : await apiService.pagarMercadoPago(
             clienteId: clienteId,
@@ -1870,13 +1942,22 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                     valor: widget.totalIngressos,
                   ),
                   const SizedBox(height: 10),
-                  _linhaResumo(
-                    'Taxa de conveniência (${percentualTaxaIngresso.toStringAsFixed(0)}%)',
-                    taxaIngressoCliente,
-                  ),
+                  _linhaResumo('Taxa de conveniência', taxaIngressoCliente),
                 ],
                 const Divider(height: 28),
-                _linhaResumo('Total a pagar', totalPagar, destaque: true),
+                _linhaResumo(
+                  compraDeProdutos ? 'Total a pagar' : 'Subtotal',
+                  totalPagar,
+                  destaque: true,
+                ),
+                if (!compraDeProdutos && _usaMercadoPago)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'A taxa de processamento e o total serão mostrados após a escolha do pagamento.',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -2025,8 +2106,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               whatsappEstabelecimento: widget.loja.whatsapp,
               centralizado: true,
               cor: Theme.of(context).colorScheme.primary,
-              titulo:
-                  'Precisa de ajuda com seu pedido? Fale com o estabelecimento.',
+              titulo: 'Precisa de ajuda com seu pedido? Fale com o estabelecimento.',
             ),
         ],
       ),

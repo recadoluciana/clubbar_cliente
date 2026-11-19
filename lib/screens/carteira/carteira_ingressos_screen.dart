@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -179,13 +179,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
     if (!mounted) return;
 
-    final nomeController = TextEditingController(
-      text: (item['nmparticipante'] ?? '').toString(),
-    );
-
-    final cpfController = TextEditingController(
-      text: _formatarCpf((item['cpfparticipante'] ?? '').toString()),
-    );
+    final nomeController = TextEditingController();
+    final cpfController = TextEditingController();
 
     final tipoPreco = (item['tipopreco'] ?? '').toString().toUpperCase();
     final ehMeiaEntrada = tipoPreco.startsWith('MEIA');
@@ -350,6 +345,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   ) async {
     final token = (item['qrtokenitvenda'] ?? '').toString().trim();
     final qrData = 'CLUBBAR-INGRESSO:$token';
+    final corIngresso = _corIngresso(item);
     final nomeEvento = _primeiroTexto(item, const [
       'nmevento',
       'nmproduto',
@@ -395,7 +391,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            side: const BorderSide(color: Colors.amber, width: 2),
+            side: BorderSide(color: corIngresso, width: 2),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -409,7 +405,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   Container(
                     height: 56,
                     width: double.infinity,
-                    color: Colors.black,
+                    color: corIngresso,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
@@ -467,9 +463,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: corIngresso.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.blue.shade200),
+                            border: Border.all(
+                              color: corIngresso.withValues(alpha: 0.35),
+                            ),
                           ),
                           child: Column(
                             children: [
@@ -501,8 +499,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                           child: ElevatedButton(
                             onPressed: () => Navigator.pop(dialogContext),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              foregroundColor: Colors.black,
+                              backgroundColor: corIngresso,
+                              foregroundColor: Colors.white,
                             ),
                             child: const Text('Voltar'),
                           ),
@@ -544,6 +542,22 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return padrao;
   }
 
+  Color _corIngresso(Map<String, dynamic> item) {
+    final tipoPreco = (item['tipopreco'] ?? '').toString().trim().toUpperCase();
+    final modalidade = (item['nmpreco'] ?? '').toString().trim().toUpperCase();
+    final setor = (item['nmsetor'] ?? '').toString().trim().toLowerCase();
+    final detalhes = (item['tipo_ingresso'] ?? '')
+        .toString()
+        .split(RegExp(r'\s*[•·]\s*'))
+        .map((parte) => parte.trim())
+        .where((parte) => parte.toLowerCase() != setor);
+    final ehCortesia =
+        tipoPreco == 'CORTESIA' ||
+        modalidade == 'CORTESIA' ||
+        detalhes.any((parte) => parte.toUpperCase() == 'CORTESIA');
+    return ehCortesia ? Colors.green.shade700 : Colors.blue.shade700;
+  }
+
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final nomeIngresso = (item['nmevento'] ?? item['nmproduto'] ?? 'Ingresso')
         .toString()
@@ -573,10 +587,13 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         .trim();
 
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
+    final horarioEvento = dataEvento.replaceFirstMapped(
+      RegExp(r'^(\d{2}/\d{2}/\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)$'),
+      (match) => '${match[1]}\n${match[2]}',
+    );
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
     final setor = (item['nmsetor'] ?? '').toString().trim();
     final modalidade = (item['nmpreco'] ?? '').toString().trim();
-    final tipoPreco = (item['tipopreco'] ?? '').toString().trim().toUpperCase();
     final detalhesModalidade = tipoIngresso
         .split(RegExp(r'\s*[•·]\s*'))
         .map((parte) => parte.trim())
@@ -588,14 +605,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final modalidadeExibida = detalhesModalidade.isNotEmpty
         ? detalhesModalidade
         : modalidade;
-    final ehCortesia = tipoPreco.isNotEmpty
-        ? tipoPreco == 'CORTESIA'
-        : modalidade.toUpperCase() == 'CORTESIA' ||
-              (modalidade.isEmpty &&
-                  modalidadeExibida.toUpperCase() == 'CORTESIA');
-    final corIngresso = ehCortesia
-        ? Colors.green.shade700
-        : Colors.blue.shade700;
+    final corIngresso = _corIngresso(item);
     final enderecoEvento =
         (item['endereco_evento_completo'] ??
                 item['dsendlocevento'] ??
@@ -680,6 +690,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ),
                           ),
                         ],
+                        if (setor.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Setor: $setor',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -692,9 +711,21 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Local e data do evento
+                  // Horário e local do evento
                   Row(
                     children: [
+                      _informacaoIngresso(
+                        icone: Icons.event_outlined,
+                        titulo: 'Horário',
+                        valor: horarioEvento.isEmpty
+                            ? 'Não informada'
+                            : horarioEvento,
+                        corIcone: Colors.blue.shade700,
+                        flex: 2,
+                      ),
+
+                      const SizedBox(width: 5),
+
                       _informacaoIngresso(
                         icone: Icons.place_outlined,
                         titulo: 'Local',
@@ -702,17 +733,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ? 'Não informado'
                             : enderecoEvento,
                         corIcone: Colors.green.shade700,
-                      ),
-
-                      const SizedBox(width: 5),
-
-                      _informacaoIngresso(
-                        icone: Icons.event_outlined,
-                        titulo: 'Data e hora do evento',
-                        valor: dataEvento.isEmpty
-                            ? 'Não informada'
-                            : dataEvento,
-                        corIcone: Colors.blue.shade700,
+                        flex: 3,
                       ),
                     ],
                   ),
@@ -731,11 +752,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       ),
                     ),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.person_rounded,
-                          color: Colors.blue,
+                          color: corIngresso,
                           size: 18,
                         ),
                         const SizedBox(width: 6),
@@ -759,7 +780,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 nomeParticipante.isEmpty
                                     ? 'Participante não informado'
                                     : nomeParticipante,
-                                maxLines: 2,
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 14,
@@ -767,58 +788,17 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ),
 
-                              const SizedBox(height: 3),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      cpfParticipante.isEmpty
-                                          ? 'CPF não informado'
-                                          : 'CPF: $cpfParticipante',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.grey.shade700,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  Flexible(
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerRight,
-                                      child: OutlinedButton.icon(
-                                        onPressed: () =>
-                                            _abrirDialogAlterarParticipante(
-                                              item,
-                                            ),
-                                        icon: const Icon(
-                                          Icons.edit_outlined,
-                                          size: 16,
-                                        ),
-                                        label: const Text(
-                                          'Alterar participante',
-                                        ),
-                                        style: OutlinedButton.styleFrom(
-                                          minimumSize: Size.zero,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 6,
-                                          ),
-                                          backgroundColor: Colors.amber
-                                              .withValues(alpha: 0.18),
-                                          foregroundColor: Colors.black87,
-                                          side: BorderSide.none,
-                                          textStyle: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                cpfParticipante.isEmpty
+                                    ? 'CPF não informado'
+                                    : 'CPF: $cpfParticipante',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
 
                               if (nomeAnterior.isNotEmpty &&
@@ -850,6 +830,40 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Tooltip(
+                          message: 'Transferir ingresso',
+                          child: SizedBox(
+                            width: 58,
+                            height: 58,
+                            child: OutlinedButton(
+                              onPressed: () =>
+                                  _abrirDialogAlterarParticipante(item),
+                              style: OutlinedButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                backgroundColor: corIngresso.withValues(
+                                  alpha: 0.1,
+                                ),
+                                foregroundColor: corIngresso,
+                                side: BorderSide(color: corIngresso),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.edit_outlined, size: 18),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Transferir',
+                                    style: TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -858,6 +872,27 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   ...[
                     Row(
                       children: [
+                        Expanded(
+                          child: SizedBox(
+                            height: 42,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _compartilharIngresso(item),
+                              icon: const Icon(
+                                Icons.card_giftcard_rounded,
+                                size: 18,
+                              ),
+                              label: const Text('Presentear'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: corIngresso,
+                                side: BorderSide(color: corIngresso),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: SizedBox(
                             height: 42,
@@ -876,34 +911,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                 ),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber,
-                                foregroundColor: Colors.black,
+                                backgroundColor: corIngresso,
+                                foregroundColor: Colors.white,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: SizedBox(
-                            height: 42,
-                            child: OutlinedButton.icon(
-                              onPressed: () => _compartilharIngresso(item),
-                              icon: const Icon(
-                                Icons.card_giftcard_rounded,
-                                size: 18,
-                              ),
-                              label: const Text('Presentear'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF7A5A00),
-                                side: const BorderSide(
-                                  color: Color(0xFFE0C36A),
                                 ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
@@ -992,8 +1004,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     required String titulo,
     required String valor,
     Color? corIcone,
+    int flex = 1,
   }) {
     return Expanded(
+      flex: flex,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         decoration: BoxDecoration(

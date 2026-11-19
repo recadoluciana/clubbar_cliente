@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
@@ -7,6 +7,8 @@ import '../../services/carteira_badge_notifier.dart';
 import 'carteira_loja_screen.dart';
 import 'carteira_ingressos_screen.dart';
 import '../../widgets/clubbar_app_bar.dart';
+import '../perfil/perfil_screen.dart';
+
 import 'package:clubbar_cliente/config/app_config.dart';
 
 class CarteiraScreen extends StatefulWidget {
@@ -271,8 +273,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
   Widget _logoLoja(String url) {
     Widget placeholder() {
       return Container(
-        width: 68,
-        height: 68,
+        width: 52,
+        height: 52,
         decoration: BoxDecoration(
           color: Colors.amber.withValues(alpha: 0.14),
           shape: BoxShape.circle,
@@ -281,7 +283,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         child: Icon(
           Icons.storefront_rounded,
           color: Colors.amber.shade800,
-          size: 30,
+          size: 24,
         ),
       );
     }
@@ -291,8 +293,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     }
 
     return Container(
-      width: 68,
-      height: 68,
+      width: 52,
+      height: 52,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: Colors.grey.shade200, width: 2),
@@ -307,8 +309,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
       child: ClipOval(
         child: Image.network(
           url,
-          width: 68,
-          height: 68,
+          width: 52,
+          height: 52,
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) => placeholder(),
         ),
@@ -365,7 +367,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 20,
+                            fontSize: 17,
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -388,7 +390,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
 
               Row(
                 children: [
@@ -504,6 +506,31 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
         children: [
+          if (nomeCliente.trim().isNotEmpty &&
+              nomeCliente != 'não identificado') ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () =>
+                    MainNavigationController.abrirTela(const PerfilScreen()),
+                icon: const Icon(Icons.person_outline_rounded, size: 18),
+                label: Text(
+                  'Carteira de ${nomeCliente.trim()}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey.shade700,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
+                  alignment: Alignment.centerLeft,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           if (erro != null)
             _erroWidget()
           else if (lojasResumo.isEmpty)
@@ -531,8 +558,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
           onTap: ativo ? onTap : null,
           borderRadius: BorderRadius.circular(18),
           child: Container(
-            height: 76,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            height: 42,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
@@ -541,40 +568,26 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                     : Colors.grey.shade200,
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        titulo,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: ativo ? Colors.black87 : Colors.grey.shade500,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                Expanded(
+                  child: Text(
+                    '$titulo · $quantidade',
+                    semanticsLabel:
+                        '$titulo: $quantidade ${quantidade == 1 ? 'item' : 'itens'}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: ativo ? Colors.black87 : Colors.grey.shade500,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      size: 22,
-                      color: ativo ? cor : Colors.grey.shade400,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 5),
-
-                Text(
-                  quantidade == 1 ? '1 item' : '$quantidade itens',
-                  style: TextStyle(
-                    color: ativo ? cor : Colors.grey.shade400,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
                   ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: ativo ? cor : Colors.grey.shade400,
                 ),
               ],
             ),
@@ -594,6 +607,8 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarLogo: false,
+        mostrarSessao: false,
+        tituloAlinhadoEsquerda: true,
         onVoltar: widget.lojaSelecionadaId == null
             ? MainNavigationController.irParaHome
             : MainNavigationController.fecharTelaInterna,

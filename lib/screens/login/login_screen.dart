@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -18,6 +18,10 @@ import '../main/main_navigation_screen.dart';
 import '../../utils/app_snackbar.dart';
 import 'termos_uso_screen.dart';
 import '../pagamento/politica_compra_screen.dart';
+
+@visibleForTesting
+bool loginAppleCanceladoNoNavegador(SignInWithAppleCredentialsException erro) =>
+    erro.message == 'Authentication failed with popup_closed_by_user';
 
 class LoginScreen extends StatefulWidget {
   final bool mostrarVoltar;
@@ -303,6 +307,10 @@ class _LoginScreenState extends State<LoginScreen> {
       await _concluirLogin(response);
     } on SignInWithAppleAuthorizationException catch (erro) {
       if (erro.code != AuthorizationErrorCode.canceled && mounted) {
+        AppSnackBar.erro(context, 'Não foi possível entrar com a Apple.');
+      }
+    } on SignInWithAppleCredentialsException catch (erro) {
+      if (!loginAppleCanceladoNoNavegador(erro) && mounted) {
         AppSnackBar.erro(context, 'Não foi possível entrar com a Apple.');
       }
     } catch (erro) {

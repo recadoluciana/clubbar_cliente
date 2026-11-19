@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+
 import '../../services/http_with_timeout.dart' as http;
 
 import '../../services/api_service.dart';
@@ -8,8 +9,15 @@ import '../../widgets/clubbar_app_bar.dart';
 
 class PoliticaCompraScreen extends StatefulWidget {
   final String tipo;
+  final bool emModal;
+  final ScrollController? scrollController;
 
-  const PoliticaCompraScreen({super.key, this.tipo = 'INGRESSO'});
+  const PoliticaCompraScreen({
+    super.key,
+    this.tipo = 'INGRESSO',
+    this.emModal = false,
+    this.scrollController,
+  });
 
   @override
   State<PoliticaCompraScreen> createState() => _PoliticaCompraScreenState();
@@ -66,18 +74,8 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: ClubbarAppBar(
-      titulo: widget.tipo == 'PRIVACIDADE'
-          ? 'Política de Privacidade'
-          : 'Política Clubbar',
-      mostrarVoltar: true,
-      mostrarSessao: false,
-      mostrarLogo: false,
-      onVoltar: () => Navigator.pop(context),
-    ),
-    backgroundColor: const Color(0xFFF6F6F6),
-    body: _politica == null && _erro == null
+  Widget build(BuildContext context) {
+    final conteudo = _politica == null && _erro == null
         ? const Center(child: CircularProgressIndicator())
         : _erro != null
         ? Center(
@@ -99,8 +97,22 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
             ),
           )
         : ListView(
+            controller: widget.scrollController,
             padding: const EdgeInsets.all(20),
             children: [
+              if (widget.emModal) ...[
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+              ],
               Text(
                 _politica!['titulo']?.toString() ?? 'Política de compra',
                 style: const TextStyle(
@@ -115,6 +127,46 @@ class _PoliticaCompraScreenState extends State<PoliticaCompraScreen> {
                 style: const TextStyle(fontSize: 16, height: 1.55),
               ),
             ],
-          ),
+          );
+    if (widget.emModal) return conteudo;
+    return Scaffold(
+      appBar: ClubbarAppBar(
+        titulo: widget.tipo == 'PRIVACIDADE'
+            ? 'Política de Privacidade'
+            : 'Política Clubbar',
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        mostrarLogo: false,
+        onVoltar: () => Navigator.pop(context),
+      ),
+      backgroundColor: const Color(0xFFF6F6F6),
+      body: conteudo,
+    );
+  }
+}
+
+void mostrarPoliticaCompra(BuildContext context, {String tipo = 'INGRESSO'}) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => DraggableScrollableSheet(
+      initialChildSize: 0.74,
+      minChildSize: 0.45,
+      maxChildSize: 0.94,
+      expand: false,
+      builder: (context, scrollController) => Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: PoliticaCompraScreen(
+          tipo: tipo,
+          emModal: true,
+          scrollController: scrollController,
+        ),
+      ),
+    ),
   );
 }
