@@ -49,6 +49,7 @@ class _ParticipantesReservaScreenState
   final List<TextEditingController> nomes = [];
   final List<TextEditingController> cpfs = [];
   final List<int?> beneficiosParticipantes = [];
+  final List<Map<String, dynamic>> dadosParticipantes = [];
   Timer? timer;
   late DateTime expiraEm;
   Duration restante = Duration.zero;
@@ -61,10 +62,22 @@ class _ParticipantesReservaScreenState
   void initState() {
     super.initState();
     final quantidade = int.tryParse('${widget.reserva['quantidade']}') ?? 1;
+    final itens = widget.reserva['itens'];
+    if (itens is List) {
+      for (final item in itens.whereType<Map>()) {
+        final quantidadeItem = int.tryParse('${item['quantidade']}') ?? 1;
+        for (var i = 0; i < quantidadeItem; i++) {
+          dadosParticipantes.add(Map<String, dynamic>.from(item));
+        }
+      }
+    }
     for (var i = 0; i < quantidade; i++) {
       nomes.add(TextEditingController());
       cpfs.add(TextEditingController());
       beneficiosParticipantes.add(null);
+      if (dadosParticipantes.length <= i) {
+        dadosParticipantes.add(widget.reserva);
+      }
     }
     expiraEm =
         _expiracaoDaResposta(widget.reserva) ??
@@ -237,6 +250,8 @@ class _ParticipantesReservaScreenState
         return;
       }
       final valorTotalComTaxa = _valorTotalComTaxa(reserva);
+      final ingressos = _itensFinanceiros(reserva, 'valor_unitario');
+      final taxas = _itensFinanceiros(reserva, 'valor_taxa_unitaria');
       timer?.cancel();
       final reservaEncerrada = await Navigator.push<bool>(
         context,
@@ -244,12 +259,8 @@ class _ParticipantesReservaScreenState
           builder: (_) => EscolhaPagamentoScreen(
             loja: widget.loja,
             totalProdutos: 0,
-            totalIngressos:
-                double.tryParse('${reserva['valor_unitario']}')! *
-                int.parse('${reserva['quantidade']}'),
-            taxaConveniencia:
-                double.tryParse('${reserva['valor_taxa_unitaria']}')! *
-                int.parse('${reserva['quantidade']}'),
+            totalIngressos: ingressos,
+            taxaConveniencia: taxas,
             totalPagar: valorTotalComTaxa,
             reservaIngressoId: int.parse('${reserva['reserva_ingresso_id']}'),
             reservaExpiracao: expiraEm,
@@ -342,6 +353,9 @@ class _ParticipantesReservaScreenState
   );
 
   double _valorTotalComTaxa(Map<String, dynamic> reserva) {
+    if (reserva['itens'] is List || reserva['compra_evento_id'] != null) {
+      return double.tryParse('${reserva['valor_total']}') ?? 0;
+    }
     final valorUnitario = double.tryParse('${reserva['valor_unitario']}') ?? 0;
     final taxaUnitaria =
         double.tryParse('${reserva['valor_taxa_unitaria']}') ?? 0;
@@ -351,6 +365,21 @@ class _ParticipantesReservaScreenState
     return totalCalculado > 0
         ? totalCalculado
         : (double.tryParse('${reserva['valor_total']}') ?? 0);
+  }
+
+  double _itensFinanceiros(Map<String, dynamic> reserva, String campo) {
+    final itens = reserva['itens'];
+    if (itens is List) {
+      return itens.fold<double>(0, (total, item) {
+        if (item is! Map) return total;
+        final unitario = double.tryParse('${item[campo] ?? 0}') ?? 0;
+        final quantidade = int.tryParse('${item['quantidade'] ?? 1}') ?? 1;
+        return total + unitario * quantidade;
+      });
+    }
+    final unitario = double.tryParse('${reserva[campo] ?? 0}') ?? 0;
+    final quantidade = int.tryParse('${reserva['quantidade'] ?? 1}') ?? 1;
+    return unitario * quantidade;
   }
 
   Widget _resumoCompacto(String titulo, String valor) {
@@ -364,6 +393,42 @@ class _ParticipantesReservaScreenState
           ),
           TextSpan(text: valor),
         ],
+      ),
+    );
+  }
+
+  List<BeneficioIngresso> _beneficiosDoParticipante(int indice) {
+    final dados = indice < dadosParticipantes.length
+        ? dadosParticipantes[indice]['beneficios_validos']
+        : null;
+    if (dados is! List) return const [];
+    return dados
+        .whereType<Map>()
+        .map(
+          (item) => BeneficioIngresso.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .where((item) => item.id > 0)
+        .toList(growable: false);
+  }
+
+  Widget _dadosIngresso(int indice) {
+    final item = indice < dadosParticipantes.length
+        ? dadosParticipantes[indice]
+        : widget.reserva;
+    final lote = '${item['nome_lote'] ?? ''}'.trim();
+    final setor = '${item['nome_setor'] ?? ''}'.trim();
+    final modalidade = '${item['nome_modalidade'] ?? ''}'.trim();
+    final textos = [
+      if (lote.isNotEmpty) 'Lote: $lote',
+      if (setor.isNotEmpty) 'Setor: $setor',
+      if (modalidade.isNotEmpty) 'Modalidade: $modalidade',
+    ];
+    if (textos.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 2),
+      child: Text(
+        textos.join('  •  '),
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
       ),
     );
   }
@@ -499,16 +564,6 @@ class _ParticipantesReservaScreenState
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 2,
-                      children: [
-                        _resumoCompacto('Lote', widget.nomeLote),
-                        _resumoCompacto('Setor', widget.nomeSetor),
-                        _resumoCompacto('Modalidade', widget.modalidade),
-                      ],
-                    ),
                     const Divider(height: 20),
                     Row(
                       children: [
@@ -566,6 +621,7 @@ class _ParticipantesReservaScreenState
                         ),
                       ],
                     ),
+                    _dadosIngresso(i),
                     const SizedBox(height: 8),
                     TextField(
                       controller: nomes[i],
@@ -577,13 +633,13 @@ class _ParticipantesReservaScreenState
                       keyboardType: TextInputType.number,
                       decoration: _campoParticipante('CPF'),
                     ),
-                    if (widget.beneficios.isNotEmpty) ...[
+                    if (_beneficiosDoParticipante(i).isNotEmpty) ...[
                       const SizedBox(height: 8),
                       DropdownButtonFormField<int>(
                         initialValue: beneficiosParticipantes[i],
                         isDense: true,
                         decoration: _campoParticipante('Benefício'),
-                        items: widget.beneficios
+                        items: _beneficiosDoParticipante(i)
                             .map(
                               (beneficio) => DropdownMenuItem<int>(
                                 value: beneficio.id,
