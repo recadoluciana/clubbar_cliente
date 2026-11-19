@@ -1181,6 +1181,60 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }
   }
 
+  Future<void> iniciarReservaGrupo(List<EventoLote> opcoes) async {
+    final itens = opcoes
+        .map(
+          (lote) => {
+            'lote_id': lote.loteId,
+            'lotepreco_id': lote.lotePrecoId,
+            'quantidade': _quantidadesModalidades[lote.lotePrecoId] ?? 1,
+          },
+        )
+        .toList();
+    final total = itens.fold<int>(
+      0,
+      (s, item) => s + (item['quantidade'] as int),
+    );
+    if (total > 5) {
+      AppSnackBar.aviso(context, 'O limite é de 5 ingressos por compra.');
+      return;
+    }
+    setState(() => processandoCompra = true);
+    try {
+      final clienteId = await _obterClienteIdLogado();
+      if (clienteId == null) return;
+      final reserva = await apiService.criarReservaIngressoGrupo(
+        clienteId: clienteId,
+        itens: itens,
+      );
+      if (!mounted) return;
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ParticipantesReservaScreen(
+            loja: widget.loja,
+            reserva: reserva,
+            nomeEvento: evento?.titulo ?? opcoes.first.nome,
+            dataHoraEvento: DateFormatters.dataHoraSimples(
+              evento?.dataInicio ?? '',
+            ),
+            imagemEventoUrl: evento?.bannerUrl ?? '',
+            nomeLote: 'Modalidades selecionadas',
+            nomeSetor: opcoes.first.nomeSetor,
+            modalidade: 'Compra conjunta',
+            beneficios: opcoes.expand((lote) => lote.beneficios).toList(),
+          ),
+        ),
+      );
+      await carregarStatusLotes();
+    } catch (e) {
+      if (mounted)
+        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) setState(() => processandoCompra = false);
+    }
+  }
+
   Widget linhaInfo({
     required IconData icone,
     required String titulo,
@@ -1431,6 +1485,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             ),
           ...opcoes.map(_cardModalidadeDireta),
+          if (opcoes.length > 1)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: processandoCompra
+                    ? null
+                    : () => iniciarReservaGrupo(opcoes),
+                icon: const Icon(Icons.shopping_bag_outlined),
+                label: const Text('Comprar modalidades juntas'),
+              ),
+            ),
         ],
       ),
     );
