@@ -5,6 +5,19 @@ import 'package:intl/intl.dart';
 import 'horario_brasil.dart';
 
 class DateFormatters {
+  static String terminoEvento(String inicio, String fim) {
+    final dataInicio = HorarioBrasil.deTextoBrasil(inicio);
+    final dataFim = HorarioBrasil.deTextoBrasil(fim);
+    if (dataInicio != null &&
+        dataFim != null &&
+        dataInicio.year == dataFim.year &&
+        dataInicio.month == dataFim.month &&
+        dataInicio.day == dataFim.day) {
+      return "até ${DateFormat("HH'h'mm").format(dataFim)}";
+    }
+    return 'até ${dataCompleta(fim)}';
+  }
+
   static String dataCompleta(String valor) {
     if (valor.trim().isEmpty) return 'Data não informada';
 

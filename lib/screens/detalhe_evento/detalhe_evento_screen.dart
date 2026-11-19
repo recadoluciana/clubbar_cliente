@@ -1925,6 +1925,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (ev.nomeLoja.trim().isNotEmpty) ...[
+                            Center(
+                              child: Text(
+                                ev.nomeLoja,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
                           Container(
                             width: double.infinity,
                             clipBehavior: Clip.antiAlias,
@@ -2088,16 +2101,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                          if (ev.nomeLoja.trim().isNotEmpty) ...[
-                            const SizedBox(height: 3),
-                            Text(
-                              ev.nomeLoja,
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 12,
-                              ),
+                          if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            _informacaoDoEvento(
+                              icone: Icons.verified_user_outlined,
+                              texto:
+                                  'Classificação etária: ${ev.classificacaoEtaria}',
                             ),
                           ],
+                          _faixaSituacaoEContato(ev),
                           const SizedBox(height: 10),
                           Container(
                             width: double.infinity,
@@ -2108,9 +2120,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               border: Border.all(color: Colors.grey.shade200),
                             ),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Icon(
@@ -2119,13 +2132,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                       color: Colors.blue.shade700,
                                     ),
                                     const SizedBox(width: 8),
-                                    Expanded(
+                                    Flexible(
                                       child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment.center,
                                         children: [
                                           Text(
                                             formatarDataHora(ev.dataInicio),
+                                            textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.blue.shade700,
                                               fontSize: 16,
@@ -2134,7 +2148,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           ),
                                           if (ev.dataFim.trim().isNotEmpty)
                                             Text(
-                                              'até ${formatarDataHora(ev.dataFim)}',
+                                              DateFormatters.terminoEvento(
+                                                ev.dataInicio,
+                                                ev.dataFim,
+                                              ),
+                                              textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 color: Colors.blue.shade700,
                                                 fontSize: 12,
@@ -2151,6 +2169,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         ev.nomeLoja.trim().toLowerCase()) ...[
                                   Text(
                                     ev.local,
+                                    textAlign: TextAlign.center,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -2160,22 +2179,33 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                 ],
-                                _informacaoDoEvento(
-                                  icone: Icons.location_on_outlined,
-                                  texto: ev.enderecoFormatado,
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.location_on_outlined,
+                                      size: 16,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        ev.enderecoFormatado,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          height: 1.25,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
-                          if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
-                            const SizedBox(height: 8),
-                            _informacaoDoEvento(
-                              icone: Icons.verified_user_outlined,
-                              texto:
-                                  'Classificação etária: ${ev.classificacaoEtaria}',
-                            ),
-                          ],
-                          _faixaSituacaoEContato(ev),
                           if (atracoesOrdenadas.isNotEmpty) ...[
                             const SizedBox(height: 14),
                             Text(
