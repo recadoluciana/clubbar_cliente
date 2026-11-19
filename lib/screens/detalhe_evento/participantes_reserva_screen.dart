@@ -436,28 +436,6 @@ class _ParticipantesReservaScreenState
           titulo: widget.loja.nome,
           mostrarVoltar: true,
           mostrarSessao: false,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.timer_outlined,
-                    color: Colors.amber,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$minutos:$segundos',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
         backgroundColor: const Color(0xFFF5F5F5),
         body: ListView(
@@ -500,6 +478,25 @@ class _ParticipantesReservaScreenState
                             ],
                           ),
                         ),
+                        const SizedBox(width: 8),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.timer_outlined,
+                              color: Colors.red,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '$minutos:$segundos',
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -507,9 +504,9 @@ class _ParticipantesReservaScreenState
                       spacing: 12,
                       runSpacing: 2,
                       children: [
-                        _resumoCompacto('Modalidade', widget.modalidade),
-                        _resumoCompacto('Setor', widget.nomeSetor),
                         _resumoCompacto('Lote', widget.nomeLote),
+                        _resumoCompacto('Setor', widget.nomeSetor),
+                        _resumoCompacto('Modalidade', widget.modalidade),
                       ],
                     ),
                     const Divider(height: 20),
