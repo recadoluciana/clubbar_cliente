@@ -1283,9 +1283,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           .add(lote);
     }
     return porGlobal.values.map((opcoesDoGlobal) {
-      final porSetor = <int, List<EventoLote>>{};
+      // Cada modalidade pode ter um lote/preço próprio, mas deve aparecer
+      // no mesmo agrupamento visual quando pertence ao mesmo setor.
+      final porSetor = <String, List<EventoLote>>{};
       for (final opcao in opcoesDoGlobal) {
-        porSetor.putIfAbsent(opcao.loteId, () => []).add(opcao);
+        final setor = opcao.nomeSetor.trim().toLowerCase();
+        porSetor.putIfAbsent(setor, () => []).add(opcao);
       }
       return porSetor.values.toList();
     }).toList();
