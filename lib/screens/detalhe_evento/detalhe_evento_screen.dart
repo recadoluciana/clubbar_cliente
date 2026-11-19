@@ -141,37 +141,26 @@ class _ModalidadesIngressoScreenState
                   ),
                 ),
                 if (nomeSetor.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.stadium_outlined,
-                          size: 16,
-                          color: Colors.blue.shade700,
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            'Setor: $nomeSetor',
-                            style: TextStyle(
-                              color: Colors.blue.shade800,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                            ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.stadium_outlined,
+                        size: 16,
+                        color: Colors.blue.shade700,
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          'Setor: $nomeSetor',
+                          style: TextStyle(
+                            color: Colors.blue.shade800,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -316,6 +305,15 @@ class _ModalidadesIngressoScreenState
     final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
     final disponivelModalidade = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivelModalidade > 0;
+    final situacao = lote.situacaoVendaEm(HorarioBrasil.agora());
+    final textoSituacao = situacao == 'Disponível' && !vendaDisponivel
+        ? 'Indisponível'
+        : situacao;
+    final corSituacao = textoSituacao == 'Disponível'
+        ? Colors.green.shade700
+        : textoSituacao == 'Esgotado'
+        ? Colors.red.shade700
+        : Colors.grey.shade700;
     final podeDiminuir = quantidade > 1;
     final podeAumentar =
         quantidade < _limitePorTransacao(lote) &&
@@ -351,38 +349,36 @@ class _ModalidadesIngressoScreenState
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                disponivelModalidade == 1
-                    ? '1 ingresso disponível'
-                    : '$disponivelModalidade ingressos disponíveis',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: disponivelModalidade > 0
-                      ? Colors.green.shade700
-                      : Colors.red,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ] else ...[
-              const SizedBox(height: 8),
-              Text(
-                disponivelModalidade == 1
-                    ? '1 ingresso disponível'
-                    : '$disponivelModalidade ingressos disponíveis',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: disponivelModalidade > 0
-                      ? Colors.green.shade700
-                      : Colors.red,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
             ],
-            const SizedBox(height: 3),
-            Text(
-              _textoLimitePorTransacao(lote),
-              style: TextStyle(fontSize: 11, color: Colors.black54),
+            const SizedBox(height: 8),
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                Text(
+                  _textoLimitePorTransacao(lote),
+                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: corSituacao.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    textoSituacao,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: corSituacao,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 6),
             Row(
