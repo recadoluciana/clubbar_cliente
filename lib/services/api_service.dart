@@ -570,6 +570,41 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<Map<String, dynamic>> criarCompraEventoItem({
+    required int clienteId,
+    required Map<String, dynamic> item,
+  }) async {
+    final response = await http.post(
+      Uri.parse(
+        '$baseUrl/reservas-ingressos/compra-evento?cliente_id=$clienteId',
+      ),
+      headers: await _headersAutenticado(),
+      body: jsonEncode(item),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
+  Future<Map<String, dynamic>> adicionarIngressoCompraEvento({
+    required int compraEventoId,
+    required int clienteId,
+    required Map<String, dynamic> item,
+  }) async {
+    final response = await http.post(
+      Uri.parse(
+        '$baseUrl/reservas-ingressos/compra-evento/$compraEventoId/ingressos?cliente_id=$clienteId',
+      ),
+      headers: await _headersAutenticado(),
+      body: jsonEncode(item),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> salvarParticipantesReserva({
     required int reservaId,
     required List<Map<String, dynamic>> participantes,

@@ -521,6 +521,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   EventoDetalhe? evento;
   List<EventoLote> lotes = [];
   final Map<int, int> _quantidadesModalidades = {};
+  Map<String, dynamic>? _compraEvento;
 
   @override
   void initState() {
@@ -1120,36 +1121,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     try {
       final clienteId = await _obterClienteIdLogado();
       if (clienteId == null) return;
-      final reserva = await apiService.criarReservaIngresso(
-        clienteId: clienteId,
-        loteId: lote.loteId,
-        lotePrecoId: lote.lotePrecoId,
-        quantidade: quantidade,
-      );
+      final item = {
+        'lote_id': lote.loteId,
+        'lotepreco_id': lote.lotePrecoId,
+        'quantidade': quantidade,
+      };
+      final compraAtual = _compraEvento;
+      final compra = compraAtual == null
+          ? await apiService.criarCompraEventoItem(
+              clienteId: clienteId,
+              item: item,
+            )
+          : await apiService.adicionarIngressoCompraEvento(
+              compraEventoId: int.parse('${compraAtual['compra_evento_id']}'),
+              clienteId: clienteId,
+              item: item,
+            );
       if (!mounted) return;
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ParticipantesReservaScreen(
-            loja: widget.loja,
-            reserva: reserva,
-            nomeEvento: evento?.titulo ?? lote.nome,
-            dataHoraEvento: DateFormatters.dataHoraSimples(
-              evento?.dataInicio ?? '',
-            ),
-            imagemEventoUrl: evento?.bannerUrl ?? '',
-            nomeLote: lote.nome,
-            nomeSetor: lote.nomeSetor.trim().isEmpty
-                ? 'Setor não informado'
-                : lote.nomeSetor,
-            modalidade: _nomeModalidade(lote),
-            // A relação retornada ao criar a reserva é a que o servidor
-            // aceitará ao salvar os participantes. Ela evita que uma lista
-            // carregada antes da reserva mostre um benefício já inválido.
-            beneficios: _beneficiosValidosDaReserva(reserva, lote.beneficios),
-          ),
-        ),
-      );
+      setState(() => _compraEvento = compra);
+      AppSnackBar.sucesso(context, 'Ingresso adicionado à compra do evento.');
       await carregarStatusLotes();
     } catch (e) {
       if (mounted) {
@@ -1235,6 +1225,48 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }
   }
 
+  List<BeneficioIngresso> _beneficiosDaCompra(Map<String, dynamic> compra) {
+    final itens = compra['itens'];
+    if (itens is! List) return const [];
+    final vistos = <int>{};
+    return itens
+        .whereType<Map>()
+        .expand(
+          (item) => (item['beneficios_validos'] is List)
+              ? (item['beneficios_validos'] as List).whereType<Map>().map(
+                  (beneficio) => BeneficioIngresso.fromJson(
+                    Map<String, dynamic>.from(beneficio),
+                  ),
+                )
+              : const <BeneficioIngresso>[],
+        )
+        .where((beneficio) => beneficio.id > 0 && vistos.add(beneficio.id))
+        .toList();
+  }
+
+  Future<void> _abrirCompraEvento() async {
+    final compra = _compraEvento;
+    if (compra == null || !mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ParticipantesReservaScreen(
+          loja: widget.loja,
+          reserva: compra,
+          nomeEvento: evento?.titulo ?? 'Evento',
+          dataHoraEvento: DateFormatters.dataHoraSimples(
+            evento?.dataInicio ?? '',
+          ),
+          imagemEventoUrl: evento?.bannerUrl ?? '',
+          nomeLote: 'Compra do evento',
+          nomeSetor: 'Modalidades selecionadas',
+          modalidade: 'Compra do evento',
+          beneficios: _beneficiosDaCompra(compra),
+        ),
+      ),
+    );
+  }
+
   Widget linhaInfo({
     required IconData icone,
     required String titulo,
@@ -1268,6 +1300,34 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _sacolaCompraEvento() {
+    final compra = _compraEvento!;
+    final quantidade = int.tryParse('${compra['quantidade'] ?? 0}') ?? 0;
+    final total = double.tryParse('${compra['valor_total'] ?? 0}') ?? 0;
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            const Icon(Icons.shopping_bag_outlined),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+            FilledButton(
+              onPressed: processandoCompra ? null : _abrirCompraEvento,
+              child: const Text('Continuar'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1488,17 +1548,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             ),
           ...opcoes.map(_cardModalidadeDireta),
-          if (opcoes.length > 1)
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: processandoCompra
-                    ? null
-                    : () => iniciarReservaGrupo(opcoes),
-                icon: const Icon(Icons.shopping_bag_outlined),
-                label: const Text('Comprar modalidades juntas'),
-              ),
-            ),
         ],
       ),
     );
@@ -2374,6 +2423,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ],
 
                           const SizedBox(height: 12),
+                          if (_compraEvento != null) ...[
+                            _sacolaCompraEvento(),
+                            const SizedBox(height: 12),
+                          ],
                           Container(
                             key: _ingressosKey,
                             child: Row(
