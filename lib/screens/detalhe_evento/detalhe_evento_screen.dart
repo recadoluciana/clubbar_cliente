@@ -1262,10 +1262,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Widget _cardSelecaoSetor(List<EventoLote> opcoes) {
     final lote = opcoes.first;
     final capacidade = lote.qtCapacidadeSetor ?? lote.qtTotal;
-    final disponivel = lote.qtDisponivel;
-    final temIngressoDisponivel = opcoes.any(
-      (opcao) => opcao.podeComprarEm(HorarioBrasil.agora()),
-    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1295,7 +1291,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     Text(
                       lote.nomeSetor.trim().isEmpty
                           ? 'Setor não informado'
-                          : lote.nomeSetor,
+                          : 'Setor: ${lote.nomeSetor}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -1307,19 +1303,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       style: const TextStyle(
                         fontSize: 12,
                         color: Colors.black54,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      disponivel == 1
-                          ? '1 ingresso disponível'
-                          : '$disponivel ingressos disponíveis',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: temIngressoDisponivel
-                            ? Colors.green.shade700
-                            : Colors.red.shade700,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -1894,15 +1877,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final unicoLoteGlobal = lotesGlobais.length == 1
         ? lotesGlobais.first.first.first
         : null;
-    final capacidadeExibida = unicoLoteGlobal == null
-        ? 0
-        : lotesGlobais.first.fold<int>(
-            0,
-            (total, opcoesDoSetor) =>
-                total +
-                (opcoesDoSetor.first.qtCapacidadeSetor ??
-                    opcoesDoSetor.first.qtTotal),
-          );
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
@@ -2296,28 +2270,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         )
-                                      : Text.rich(
-                                          TextSpan(
-                                            style: const TextStyle(
-                                              color: Colors.black,
-                                            ),
-                                            children: [
-                                              TextSpan(
-                                                text: unicoLoteGlobal.nome,
-                                                style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text:
-                                                    ' ($capacidadeExibida ${capacidadeExibida == 1 ? 'ingresso' : 'ingressos'})',
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.normal,
-                                                ),
-                                              ),
-                                            ],
+                                      : Text(
+                                          unicoLoteGlobal.nome,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                 ),
