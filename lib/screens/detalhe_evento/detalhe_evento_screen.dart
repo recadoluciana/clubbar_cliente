@@ -2344,10 +2344,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 ),
                                 style: _estiloLinksEvento(),
                               ),
+                              const SizedBox(height: 6),
                               TextButton.icon(
                                 onPressed: _abrirExplicacaoTaxas,
                                 icon: const Icon(Icons.info_outline, size: 18),
-                                label: const Text('Entenda a taxa'),
+                                label: const Text('Entenda as taxas'),
                                 style: _estiloLinksEvento(),
                               ),
                             ],

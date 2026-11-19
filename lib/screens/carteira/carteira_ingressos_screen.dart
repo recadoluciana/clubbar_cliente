@@ -690,6 +690,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ),
                           ),
                         ],
+                        if (setor.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Setor: $setor',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
                       ],
                     ),
                   ),
