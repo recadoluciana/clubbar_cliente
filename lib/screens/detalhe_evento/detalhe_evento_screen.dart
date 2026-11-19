@@ -1880,7 +1880,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: ev?.titulo ?? 'Evento',
+        titulo: (ev?.nomeLoja.trim().isNotEmpty ?? false)
+            ? ev!.nomeLoja
+            : widget.loja.nome,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
@@ -1899,19 +1901,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (ev.nomeLoja.trim().isNotEmpty) ...[
-                            Center(
-                              child: Text(
-                                ev.nomeLoja,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                          ],
                           Container(
                             width: double.infinity,
                             clipBehavior: Clip.antiAlias,
@@ -2182,76 +2171,101 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ),
                           if (atracoesOrdenadas.isNotEmpty) ...[
                             const SizedBox(height: 14),
-                            Text(
-                              atracoesOrdenadas.length == 1
-                                  ? 'Atração'
-                                  : 'Atrações',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.grey.shade200),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            SizedBox(
-                              height: 60,
-                              child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: atracoesOrdenadas.length,
-                                separatorBuilder: (_, _) =>
-                                    const SizedBox(width: 10),
-                                itemBuilder: (context, index) {
-                                  final atracao = atracoesOrdenadas[index];
-                                  return SizedBox(
-                                    width: 156,
-                                    child: Material(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: InkWell(
-                                        onTap: () =>
-                                            _abrirDetalhesAtracao(atracao),
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 6,
-                                          ),
-                                          decoration: BoxDecoration(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Atrações',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    height: 60,
+                                    child: ListView.separated(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: atracoesOrdenadas.length,
+                                      separatorBuilder: (_, _) =>
+                                          const SizedBox(width: 10),
+                                      itemBuilder: (context, index) {
+                                        final atracao =
+                                            atracoesOrdenadas[index];
+                                        return SizedBox(
+                                          width: 176,
+                                          child: Material(
+                                            color: Colors.white,
                                             borderRadius: BorderRadius.circular(
                                               12,
                                             ),
-                                            border: Border.all(
-                                              color: Colors.grey.shade300,
-                                              width: 1,
-                                            ),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              _fotoAtracao(
-                                                atracao,
-                                                tamanho: 34,
-                                              ),
-                                              const SizedBox(width: 7),
-                                              Expanded(
-                                                child: Text(
-                                                  atracao.nome,
-                                                  style: const TextStyle(
-                                                    color: Colors.black87,
-                                                    fontSize: 13,
-                                                    fontWeight: FontWeight.w900,
-                                                    height: 1.15,
+                                            child: InkWell(
+                                              onTap: () =>
+                                                  _abrirDetalhesAtracao(
+                                                    atracao,
                                                   ),
-                                                  maxLines: 2,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 6,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: Colors.grey.shade300,
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    _fotoAtracao(
+                                                      atracao,
+                                                      tamanho: 34,
+                                                    ),
+                                                    const SizedBox(width: 7),
+                                                    Expanded(
+                                                      child: Text(
+                                                        atracao.nome,
+                                                        style: const TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w900,
+                                                          height: 1.15,
+                                                        ),
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                    const Icon(
+                                                      Icons
+                                                          .chevron_right_rounded,
+                                                      size: 20,
+                                                      color: Colors.blue,
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                      ),
+                                        );
+                                      },
                                     ),
-                                  );
-                                },
+                                  ),
+                                ],
                               ),
                             ),
                           ],
