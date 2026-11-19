@@ -49,6 +49,7 @@ class _ParticipantesReservaScreenState
   final List<TextEditingController> nomes = [];
   final List<TextEditingController> cpfs = [];
   final List<int?> beneficiosParticipantes = [];
+  final List<Map<String, dynamic>> dadosParticipantes = [];
   Timer? timer;
   late DateTime expiraEm;
   Duration restante = Duration.zero;
@@ -61,10 +62,22 @@ class _ParticipantesReservaScreenState
   void initState() {
     super.initState();
     final quantidade = int.tryParse('${widget.reserva['quantidade']}') ?? 1;
+    final itens = widget.reserva['itens'];
+    if (itens is List) {
+      for (final item in itens.whereType<Map>()) {
+        final quantidadeItem = int.tryParse('${item['quantidade']}') ?? 1;
+        for (var i = 0; i < quantidadeItem; i++) {
+          dadosParticipantes.add(Map<String, dynamic>.from(item));
+        }
+      }
+    }
     for (var i = 0; i < quantidade; i++) {
       nomes.add(TextEditingController());
       cpfs.add(TextEditingController());
       beneficiosParticipantes.add(null);
+      if (dadosParticipantes.length <= i) {
+        dadosParticipantes.add(widget.reserva);
+      }
     }
     expiraEm =
         _expiracaoDaResposta(widget.reserva) ??
@@ -368,6 +381,42 @@ class _ParticipantesReservaScreenState
     );
   }
 
+  List<BeneficioIngresso> _beneficiosDoParticipante(int indice) {
+    final dados = indice < dadosParticipantes.length
+        ? dadosParticipantes[indice]['beneficios_validos']
+        : null;
+    if (dados is! List) return const [];
+    return dados
+        .whereType<Map>()
+        .map(
+          (item) => BeneficioIngresso.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .where((item) => item.id > 0)
+        .toList(growable: false);
+  }
+
+  Widget _dadosIngresso(int indice) {
+    final item = indice < dadosParticipantes.length
+        ? dadosParticipantes[indice]
+        : widget.reserva;
+    final lote = '${item['nome_lote'] ?? ''}'.trim();
+    final setor = '${item['nome_setor'] ?? ''}'.trim();
+    final modalidade = '${item['nome_modalidade'] ?? ''}'.trim();
+    final textos = [
+      if (lote.isNotEmpty) 'Lote: $lote',
+      if (setor.isNotEmpty) 'Setor: $setor',
+      if (modalidade.isNotEmpty) 'Modalidade: $modalidade',
+    ];
+    if (textos.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 6, bottom: 2),
+      child: Text(
+        textos.join('  •  '),
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+      ),
+    );
+  }
+
   Widget _logoEvento() {
     final imagem = widget.imagemEventoUrl.trim();
     return ClipRRect(
@@ -499,16 +548,6 @@ class _ParticipantesReservaScreenState
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 2,
-                      children: [
-                        _resumoCompacto('Lote', widget.nomeLote),
-                        _resumoCompacto('Setor', widget.nomeSetor),
-                        _resumoCompacto('Modalidade', widget.modalidade),
-                      ],
-                    ),
                     const Divider(height: 20),
                     Row(
                       children: [
@@ -566,6 +605,7 @@ class _ParticipantesReservaScreenState
                         ),
                       ],
                     ),
+                    _dadosIngresso(i),
                     const SizedBox(height: 8),
                     TextField(
                       controller: nomes[i],
@@ -577,13 +617,13 @@ class _ParticipantesReservaScreenState
                       keyboardType: TextInputType.number,
                       decoration: _campoParticipante('CPF'),
                     ),
-                    if (widget.beneficios.isNotEmpty) ...[
+                    if (_beneficiosDoParticipante(i).isNotEmpty) ...[
                       const SizedBox(height: 8),
                       DropdownButtonFormField<int>(
                         initialValue: beneficiosParticipantes[i],
                         isDense: true,
                         decoration: _campoParticipante('Benefício'),
-                        items: widget.beneficios
+                        items: _beneficiosDoParticipante(i)
                             .map(
                               (beneficio) => DropdownMenuItem<int>(
                                 value: beneficio.id,
