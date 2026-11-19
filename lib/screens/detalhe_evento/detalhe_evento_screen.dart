@@ -125,37 +125,41 @@ class _ModalidadesIngressoScreenState
                 ? 'Escolha a modalidade'
                 : widget.nomeEvento,
             subtitulo: widget.dataHoraEvento,
-            icone: Icons.confirmation_number_rounded,
-            imagemAvatarUrl: widget.imagemEventoUrl,
-            tamanhoAvatar: 56,
-            larguraAvatar: 86,
-            avatarRetangular: true,
-            corTitulo: Colors.black87,
-            maxLinhasTitulo: 2,
-            conteudoInferior: nomeSetor.isEmpty
-                ? null
-                : Align(
-                    alignment: Alignment.centerLeft,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.blue.shade200),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.stadium_outlined,
-                            size: 16,
-                            color: Colors.blue.shade700,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
+            subtituloWidget: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                Text(
+                  widget.dataHoraEvento,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (nomeSetor.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.stadium_outlined,
+                          size: 16,
+                          color: Colors.blue.shade700,
+                        ),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
                             'Setor: $nomeSetor',
                             style: TextStyle(
                               color: Colors.blue.shade800,
@@ -163,10 +167,19 @@ class _ModalidadesIngressoScreenState
                               fontWeight: FontWeight.w800,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
+              ],
+            ),
+            icone: Icons.confirmation_number_rounded,
+            imagemAvatarUrl: widget.imagemEventoUrl,
+            tamanhoAvatar: 56,
+            larguraAvatar: 86,
+            avatarRetangular: true,
+            corTitulo: Colors.black87,
+            maxLinhasTitulo: 2,
           ),
           Expanded(
             child: ListView(
