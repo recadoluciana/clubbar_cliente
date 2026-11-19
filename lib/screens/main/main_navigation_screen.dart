@@ -179,6 +179,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             telaInterna is DetalheLojaScreen ||
             telaInterna is AgendaEventosScreen ||
             telaInterna is ProdutosLojaScreen ||
+            telaInterna is DetalheEventoScreen ||
             carteiraDaLoja ||
             carrinhoDaLoja;
         final homeSelecionada =
@@ -236,6 +237,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
                         : telaInterna is ProdutosLojaScreen
                         ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                        : telaInterna is DetalheEventoScreen
+                        ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
                         : null,
                   ),
 
@@ -252,6 +255,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                         : telaInterna is AgendaEventosScreen
                         ? () => _abrirCarteiraDaLoja(telaInterna.loja)
                         : telaInterna is ProdutosLojaScreen
+                        ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                        : telaInterna is DetalheEventoScreen
                         ? () => _abrirCarteiraDaLoja(telaInterna.loja)
                         : null,
                   ),

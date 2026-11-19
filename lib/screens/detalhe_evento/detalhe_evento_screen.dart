@@ -10,6 +10,8 @@ import '../../models/evento_lote.dart';
 import '../../models/loja.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
+import '../../services/cart_badge_notifier.dart';
+import '../../services/carteira_badge_notifier.dart';
 import '../../services/main_navigation_controller.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
@@ -543,7 +545,52 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   @override
   void initState() {
     super.initState();
+    CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    _carregarQuantidadesDaLoja();
+    CarteiraBadgeNotifier.refresh.addListener(_carregarQuantidadesDaLoja);
     carregarDados();
+  }
+
+  @override
+  void dispose() {
+    CarteiraBadgeNotifier.refresh.removeListener(_carregarQuantidadesDaLoja);
+    super.dispose();
+  }
+
+  Future<void> _carregarQuantidadesDaLoja() async {
+    final clienteId = await authStorage.obterClienteId();
+    if (clienteId == null || clienteId == 0 || !mounted) return;
+    try {
+      final carrinho = await apiService.buscarCarrinho(
+        clienteId: clienteId,
+        organizacaoId: widget.loja.organizacaoId,
+        lojaId: widget.loja.id,
+      );
+      final itens = carrinho['itens'];
+      final total = itens is List
+          ? itens.fold<int>(
+              0,
+              (soma, item) => soma + (int.tryParse('${item['qt']}') ?? 1),
+            )
+          : 0;
+      if (mounted) CartBadgeNotifier.atualizarItensDaLojaSelecionada(total);
+    } catch (_) {
+      if (mounted) CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    }
+    try {
+      final itens = await apiService.buscarPendentes(
+        clienteId: clienteId,
+        lojaId: widget.loja.id,
+      );
+      final total = itens.fold<int>(
+        0,
+        (soma, item) => soma + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
+      );
+      if (mounted) CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(total);
+    } catch (_) {
+      if (mounted) CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    }
   }
 
   Future<void> carregarStatusLotes() async {
