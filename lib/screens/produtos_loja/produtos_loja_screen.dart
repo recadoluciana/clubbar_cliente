@@ -15,8 +15,6 @@ import '../../services/main_navigation_controller.dart';
 import 'produto_compartilhado_screen.dart';
 import '../../utils/categoria_icon_utils.dart';
 import '../../widgets/clubbar_contact_links.dart';
-import '../carrinho/carrinho_screen.dart';
-import '../pagamento/politica_compra_screen.dart';
 
 class ProdutosLojaScreen extends StatefulWidget {
   final Loja loja;
@@ -44,7 +42,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   bool _selecaoInicialDefinida = false;
   int? clienteId;
 
-  int quantidadeCarrinho = 0;
   final Map<int, int> quantidadesSelecionadas = {};
   final Set<int> produtosEmAlteracao = {};
   final Map<int, Map<String, dynamic>> _promocoesPercentuaisPorProduto = {};
@@ -85,13 +82,42 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   @override
   void initState() {
     super.initState();
+    CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    carregarQuantidadeCarrinho();
+    _carregarQuantidadeCarteiraLoja();
+    CarteiraBadgeNotifier.refresh.addListener(_carregarQuantidadeCarteiraLoja);
     carregarDados();
   }
 
   @override
   void dispose() {
+    CarteiraBadgeNotifier.refresh.removeListener(
+      _carregarQuantidadeCarteiraLoja,
+    );
     _buscaController.dispose();
     super.dispose();
+  }
+
+  Future<void> _carregarQuantidadeCarteiraLoja() async {
+    try {
+      final id = await authStorage.obterClienteId();
+      if (id == null || id == 0) {
+        if (mounted) CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+        return;
+      }
+      final itens = await apiService.buscarPendentes(
+        clienteId: id,
+        lojaId: widget.loja.id,
+      );
+      final total = itens.fold<int>(
+        0,
+        (soma, item) => soma + (int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0),
+      );
+      if (mounted) CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(total);
+    } catch (_) {
+      if (mounted) CarteiraBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    }
   }
 
   Future<void> carregarDados() async {
@@ -181,10 +207,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       if (id == null || id == 0) {
         CartBadgeNotifier.limpar();
 
-        if (!mounted) return;
-        setState(() {
-          quantidadeCarrinho = 0;
-        });
+        if (mounted) CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
 
         return;
       }
@@ -213,16 +236,12 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       CartBadgeNotifier.atualizar(total);
 
       if (!mounted) return;
-      setState(() {
-        quantidadeCarrinho = totalLoja;
-      });
+      CartBadgeNotifier.atualizarItensDaLojaSelecionada(totalLoja);
     } catch (_) {
       CartBadgeNotifier.limpar();
 
       if (!mounted) return;
-      setState(() {
-        quantidadeCarrinho = 0;
-      });
+      CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
     }
   }
 
@@ -396,15 +415,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _abrirCarrinhoDaLoja() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => CarrinhoScreen(loja: widget.loja)),
-    );
-
-    if (mounted) await carregarQuantidadeCarrinho();
   }
 
   List<Produto> get produtosFiltrados {
@@ -636,10 +646,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         mostrarVoltar: true,
         mostrarSessao: false,
         mostrarIconeSessao: false,
-        mostrarCarrinho: vendasHabilitadas,
-        carrinhoAntesDaSessao: false,
-        quantidadeCarrinho: quantidadeCarrinho,
-        onCarrinhoTap: _abrirCarrinhoDaLoja,
         onVoltar: () {
           // O cardápio é aberto pela navegação interna do Client. Fechá-la
           // primeiro evita que o navegador intercepte o retorno e mantenha a
@@ -662,8 +668,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           MainNavigationController.fecharTelaInterna();
         },
       ),
-
-      bottomNavigationBar: _barraPoliticaCompra(),
 
       body: carregando
           ? const Center(child: CircularProgressIndicator())
@@ -751,46 +755,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                 ),
               ],
             ),
-    );
-  }
-
-  Widget _barraPoliticaCompra() {
-    final cor = Theme.of(context).colorScheme.primary;
-    return SafeArea(
-      top: false,
-      child: Material(
-        color: Colors.white,
-        elevation: 8,
-        child: SizedBox(
-          height: 44,
-          child: Center(
-            child: TextButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const PoliticaCompraScreen(tipo: 'PRODUTO'),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.policy_outlined, size: 18),
-              label: const Text('Política de compra de produto'),
-              style: TextButton.styleFrom(
-                foregroundColor: cor,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                ),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
