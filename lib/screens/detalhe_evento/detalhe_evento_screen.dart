@@ -2124,10 +2124,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               border: Border.all(color: Colors.grey.shade200),
                             ),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Icon(
@@ -2139,11 +2138,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                     Flexible(
                                       child: Column(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.center,
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             formatarDataHora(ev.dataInicio),
-                                            textAlign: TextAlign.center,
                                             style: TextStyle(
                                               color: Colors.blue.shade700,
                                               fontSize: 16,
@@ -2156,7 +2154,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                                 ev.dataInicio,
                                                 ev.dataFim,
                                               ),
-                                              textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 color: Colors.blue.shade700,
                                                 fontSize: 12,
@@ -2173,7 +2170,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         ev.nomeLoja.trim().toLowerCase()) ...[
                                   Text(
                                     ev.local,
-                                    textAlign: TextAlign.center,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -2184,7 +2180,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   const SizedBox(height: 2),
                                 ],
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
                                       Icons.location_on_outlined,
@@ -2195,7 +2190,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                     Flexible(
                                       child: Text(
                                         ev.enderecoFormatado,
-                                        textAlign: TextAlign.center,
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
