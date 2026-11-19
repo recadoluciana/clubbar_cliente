@@ -528,6 +528,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   bool carregando = true;
   bool atualizandoLotes = false;
   bool processandoCompra = false;
+  bool _descricaoExpandida = false;
   String? erro;
 
   EventoDetalhe? evento;
@@ -2324,6 +2325,77 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                           ],
                           const SizedBox(height: 4),
+                          if (ev.descricao.trim().isNotEmpty &&
+                              ev.descricao.trim().toLowerCase() != 'null') ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final estilo = TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.grey.shade800,
+                                    height: 1.5,
+                                  );
+                                  final medida = TextPainter(
+                                    text: TextSpan(
+                                      text: ev.descricao,
+                                      style: estilo,
+                                    ),
+                                    maxLines: 2,
+                                    textDirection: Directionality.of(context),
+                                    textScaler: MediaQuery.textScalerOf(
+                                      context,
+                                    ),
+                                  )..layout(maxWidth: constraints.maxWidth);
+                                  final temMaisTexto = medida.didExceedMaxLines;
+                                  medida.dispose();
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        ev.descricao,
+                                        textAlign: TextAlign.justify,
+                                        maxLines: _descricaoExpandida
+                                            ? null
+                                            : 2,
+                                        overflow: _descricaoExpandida
+                                            ? null
+                                            : TextOverflow.ellipsis,
+                                        style: estilo,
+                                      ),
+                                      if (temMaisTexto)
+                                        TextButton.icon(
+                                          onPressed: () => setState(
+                                            () => _descricaoExpandida =
+                                                !_descricaoExpandida,
+                                          ),
+                                          icon: Icon(
+                                            _descricaoExpandida
+                                                ? Icons.expand_less
+                                                : Icons.expand_more,
+                                          ),
+                                          label: Text(
+                                            _descricaoExpandida
+                                                ? 'Ver menos'
+                                                : 'Ver mais',
+                                          ),
+                                          style: _estiloLinksEvento(),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -2353,42 +2425,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ],
                           ),
-                          if (ev.descricao.trim().isNotEmpty &&
-                              ev.descricao.trim().toLowerCase() != 'null') ...[
-                            const SizedBox(height: 8),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(color: Colors.grey.shade300),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const Text(
-                                    'Descrição',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    ev.descricao,
-                                    textAlign: TextAlign.justify,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.grey.shade800,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
                         ],
                       ),
                     ),
