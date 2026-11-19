@@ -725,7 +725,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna is DetalheLojaScreen ||
                 telaInterna is AgendaEventosScreen ||
                 telaInterna is ProdutosLojaScreen ||
-                telaInterna is DetalheEventoScreen ||
                 telaInterna is CarteiraScreen;
 
             return Scaffold(
