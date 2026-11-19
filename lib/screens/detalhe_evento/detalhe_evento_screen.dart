@@ -523,6 +523,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   final Map<int, int> _quantidadesModalidades = {};
   Map<String, dynamic>? _compraEvento;
   bool _sacolaExpandida = false;
+  bool _removendoItemSacola = false;
 
   @override
   void initState() {
@@ -1268,6 +1269,48 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
+  Future<void> _removerItemSacola(Map item) async {
+    final compra = _compraEvento;
+    if (compra == null || _removendoItemSacola) return;
+    final compraId = int.tryParse('${compra['compra_evento_id']}');
+    final reservaId = int.tryParse('${item['reserva_ingresso_id']}');
+    final clienteId = await authStorage.obterClienteId();
+    if (compraId == null || reservaId == null || clienteId == null) return;
+    setState(() => _removendoItemSacola = true);
+    try {
+      final resposta = await apiService.removerIngressoCompraEvento(
+        compraEventoId: compraId,
+        reservaId: reservaId,
+        clienteId: clienteId,
+      );
+      final itens =
+          (compra['itens'] as List?)
+              ?.whereType<Map>()
+              .where(
+                (outro) => '${outro['reserva_ingresso_id']}' != '$reservaId',
+              )
+              .map((outro) => Map<String, dynamic>.from(outro))
+              .toList() ??
+          <Map<String, dynamic>>[];
+      if (!mounted) return;
+      setState(() {
+        _compraEvento = itens.isEmpty
+            ? null
+            : {
+                ...compra,
+                'itens': itens,
+                'quantidade': resposta['quantidade'],
+                'valor_total': resposta['valor_total'],
+              };
+      });
+    } catch (e) {
+      if (mounted)
+        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) setState(() => _removendoItemSacola = false);
+    }
+  }
+
   Widget linhaInfo({
     required IconData icone,
     required String titulo,
@@ -1330,24 +1373,47 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                   ),
-                  Icon(
-                    _sacolaExpandida ? Icons.expand_less : Icons.expand_more,
+                  IconButton(
+                    tooltip: _sacolaExpandida
+                        ? 'Recolher sacola'
+                        : 'Expandir sacola',
+                    onPressed: () =>
+                        setState(() => _sacolaExpandida = !_sacolaExpandida),
+                    icon: Icon(
+                      _sacolaExpandida ? Icons.expand_less : Icons.expand_more,
+                    ),
                   ),
+                  if (_sacolaExpandida)
+                    IconButton(
+                      tooltip: 'Fechar sacola',
+                      onPressed: () => setState(() => _sacolaExpandida = false),
+                      icon: const Icon(Icons.close),
+                    ),
                 ],
               ),
             ),
             if (_sacolaExpandida) ...[
               const Divider(height: 18),
               for (final item in itens)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'} · ${item['nome_setor'] ?? 'Setor'}',
-                      style: const TextStyle(fontSize: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'} · ${item['nome_setor'] ?? 'Setor'}',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
                     ),
-                  ),
+                    IconButton(
+                      tooltip: 'Remover da sacola',
+                      onPressed: _removendoItemSacola
+                          ? null
+                          : () => _removerItemSacola(item),
+                      icon: const Icon(Icons.delete_outline, size: 19),
+                    ),
+                  ],
                 ),
             ],
             const SizedBox(height: 8),
