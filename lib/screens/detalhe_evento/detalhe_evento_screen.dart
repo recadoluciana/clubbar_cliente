@@ -219,12 +219,7 @@ class _ModalidadesIngressoScreenState
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            const PoliticaCompraScreen(tipo: 'INGRESSO'),
-                      ),
-                    ),
+                    onPressed: () => mostrarPoliticaCompra(context),
                     icon: const Icon(Icons.policy_outlined, size: 17),
                     label: const Text('Política de compra'),
                     style: estilo,
@@ -237,7 +232,7 @@ class _ModalidadesIngressoScreenState
                   child: TextButton.icon(
                     onPressed: widget.onEntenderTaxa,
                     icon: const Icon(Icons.receipt_long_outlined, size: 17),
-                    label: const Text('Entenda nossa taxa'),
+                    label: const Text('Entenda nossas taxas'),
                     style: estilo,
                   ),
                 ),
@@ -1560,17 +1555,31 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ),
               ),
             const SizedBox(height: 6),
-            Text(
-              disponivel == 1
-                  ? '1 ingresso disponível'
-                  : '$disponivel ingressos disponíveis',
-              style: TextStyle(
-                fontSize: 12,
-                color: modalidadeDisponivel
+            Builder(
+              builder: (context) {
+                final situacao = lote.situacaoVendaEm(HorarioBrasil.agora());
+                final cor = situacao == 'Disponível'
                     ? Colors.green.shade700
-                    : Colors.red,
-                fontWeight: FontWeight.w700,
-              ),
+                    : Colors.red.shade700;
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: cor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    situacao,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: cor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 3),
             Text(
