@@ -423,14 +423,6 @@ class _ModalidadesIngressoScreenState
                 ),
               ],
             ),
-            if (lote.preco > 0)
-              const Padding(
-                padding: EdgeInsets.only(top: 4),
-                child: Text(
-                  'A taxa de processamento, quando aplicável, será informada ao escolher o pagamento.',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -1607,14 +1599,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ),
               ],
             ),
-            if (lote.preco > 0)
-              const Padding(
-                padding: EdgeInsets.only(top: 4),
-                child: Text(
-                  'A taxa de processamento, quando aplicável, será informada ao escolher o pagamento.',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
