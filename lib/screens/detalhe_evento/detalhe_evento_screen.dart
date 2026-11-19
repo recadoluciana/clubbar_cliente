@@ -301,7 +301,6 @@ class _ModalidadesIngressoScreenState
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
     final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
     final ehCortesia = _ehCortesia(lote);
-    final ehMeiaLegal = lote.aplicaCotaLegal;
     final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
     final disponivelModalidade = lote.qtDisponivelParaCompra;
     final modalidadeDisponivel = disponivelModalidade > 0;
@@ -340,16 +339,6 @@ class _ModalidadesIngressoScreenState
               mostrarQuemTemDireito: ehMeiaEntrada,
               exigeComprovante: lote.exigeComprovante,
             ),
-            if (ehMeiaLegal) ...[
-              const SizedBox(height: 6),
-              Text(
-                'Cota deste setor: ${lote.cotaLegalSetor} ingresso${lote.cotaLegalSetor == 1 ? '' : 's'} (${lote.percentualCotaLegal == lote.percentualCotaLegal.roundToDouble() ? lote.percentualCotaLegal.toInt() : lote.percentualCotaLegal}% da capacidade do setor)',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
             const SizedBox(height: 8),
             Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
