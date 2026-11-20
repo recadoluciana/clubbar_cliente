@@ -1399,21 +1399,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               : Icons.expand_more,
                         ),
                       ),
-                      if (itens.length == 1)
-                        IconButton(
-                          tooltip: 'Remover item da sacola',
-                          onPressed: _removendoItemSacola
-                              ? null
-                              : () => _removerItemSacola(itens.first),
-                          icon: const Icon(Icons.delete_outline),
-                        ),
-                      if (_sacolaExpandida)
-                        IconButton(
-                          tooltip: 'Fechar sacola',
-                          onPressed: () =>
-                              setState(() => _sacolaExpandida = false),
-                          icon: const Icon(Icons.close),
-                        ),
                     ],
                   ),
                 ),
@@ -1436,7 +1421,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           onPressed: _removendoItemSacola
                               ? null
                               : () => _removerItemSacola(item),
-                          icon: const Icon(Icons.delete_outline, size: 19),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            size: 19,
+                            color: Colors.red,
+                          ),
                         ),
                       ],
                     ),
