@@ -1367,6 +1367,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           margin: EdgeInsets.zero,
           color: Theme.of(context).colorScheme.primaryContainer,
           child: SingleChildScrollView(
+            physics: _sacolaExpandida
+                ? null
+                : const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(14),
             child: Column(
               children: [
