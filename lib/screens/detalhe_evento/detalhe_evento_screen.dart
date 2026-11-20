@@ -1355,84 +1355,100 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final itens = (compra['itens'] is List)
         ? (compra['itens'] as List).whereType<Map>().toList()
         : const <Map>[];
-    return Card(
-      color: Theme.of(context).colorScheme.primaryContainer,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () => setState(() => _sacolaExpandida = !_sacolaExpandida),
-              child: Row(
-                children: [
-                  const Icon(Icons.shopping_bag_outlined),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: _sacolaExpandida
-                        ? 'Recolher sacola'
-                        : 'Expandir sacola',
-                    onPressed: () =>
-                        setState(() => _sacolaExpandida = !_sacolaExpandida),
-                    icon: Icon(
-                      _sacolaExpandida ? Icons.expand_less : Icons.expand_more,
-                    ),
-                  ),
-                  if (itens.length == 1)
-                    IconButton(
-                      tooltip: 'Remover item da sacola',
-                      onPressed: _removendoItemSacola
-                          ? null
-                          : () => _removerItemSacola(itens.first),
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-                  if (_sacolaExpandida)
-                    IconButton(
-                      tooltip: 'Fechar sacola',
-                      onPressed: () => setState(() => _sacolaExpandida = false),
-                      icon: const Icon(Icons.close),
-                    ),
-                ],
-              ),
-            ),
-            if (_sacolaExpandida) ...[
-              const Divider(height: 18),
-              for (final item in itens)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
+    // A sacola é deliberadamente compacta: ela substitui a navegação inferior
+    // e não deve virar uma segunda tela sobre o evento.
+    final altura = _sacolaExpandida ? 220.0 : 86.0;
+
+    return SafeArea(
+      top: false,
+      child: SizedBox(
+        height: altura,
+        child: Card(
+          margin: EdgeInsets.zero,
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              children: [
+                InkWell(
+                  onTap: () =>
+                      setState(() => _sacolaExpandida = !_sacolaExpandida),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.shopping_bag_outlined),
+                      const SizedBox(width: 10),
+                      Expanded(
                         child: Text(
-                          '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'} · ${item['nome_setor'] ?? 'Setor'}',
-                          style: const TextStyle(fontSize: 12),
+                          '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
+                          style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
-                    ),
-                    IconButton(
-                      tooltip: 'Remover da sacola',
-                      onPressed: _removendoItemSacola
-                          ? null
-                          : () => _removerItemSacola(item),
-                      icon: const Icon(Icons.delete_outline, size: 19),
-                    ),
-                  ],
+                      IconButton(
+                        tooltip: _sacolaExpandida
+                            ? 'Recolher sacola'
+                            : 'Expandir sacola',
+                        onPressed: () => setState(
+                          () => _sacolaExpandida = !_sacolaExpandida,
+                        ),
+                        icon: Icon(
+                          _sacolaExpandida
+                              ? Icons.expand_less
+                              : Icons.expand_more,
+                        ),
+                      ),
+                      if (itens.length == 1)
+                        IconButton(
+                          tooltip: 'Remover item da sacola',
+                          onPressed: _removendoItemSacola
+                              ? null
+                              : () => _removerItemSacola(itens.first),
+                          icon: const Icon(Icons.delete_outline),
+                        ),
+                      if (_sacolaExpandida)
+                        IconButton(
+                          tooltip: 'Fechar sacola',
+                          onPressed: () =>
+                              setState(() => _sacolaExpandida = false),
+                          icon: const Icon(Icons.close),
+                        ),
+                    ],
+                  ),
                 ),
-            ],
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: processandoCompra ? null : _abrirCompraEvento,
-                child: const Text('Continuar'),
-              ),
+                if (_sacolaExpandida) ...[
+                  const Divider(height: 18),
+                  for (final item in itens)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Text(
+                              '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'} · ${item['nome_setor'] ?? 'Setor'}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Remover da sacola',
+                          onPressed: _removendoItemSacola
+                              ? null
+                              : () => _removerItemSacola(item),
+                          icon: const Icon(Icons.delete_outline, size: 19),
+                        ),
+                      ],
+                    ),
+                ],
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: processandoCompra ? null : _abrirCompraEvento,
+                    child: const Text('Continuar'),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
