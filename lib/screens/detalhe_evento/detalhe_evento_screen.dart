@@ -1383,6 +1383,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       _sacolaExpandida ? Icons.expand_less : Icons.expand_more,
                     ),
                   ),
+                  if (itens.length == 1)
+                    IconButton(
+                      tooltip: 'Remover item da sacola',
+                      onPressed: _removendoItemSacola
+                          ? null
+                          : () => _removerItemSacola(itens.first),
+                      icon: const Icon(Icons.delete_outline),
+                    ),
                   if (_sacolaExpandida)
                     IconButton(
                       tooltip: 'Fechar sacola',
@@ -2148,6 +2156,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           : erro != null || ev == null
           ? estadoErro()
           : Stack(
+              fit: StackFit.expand,
               children: [
                 RefreshIndicator(
                   onRefresh: carregarDados,
@@ -2722,7 +2731,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   Positioned(
                     left: 16,
                     right: 16,
-                    bottom: 12,
+                    bottom: 0,
                     child: _sacolaCompraEvento(),
                   ),
               ],
