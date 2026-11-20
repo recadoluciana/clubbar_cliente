@@ -206,7 +206,10 @@ class _ParticipantesReservaScreenState
         return;
       }
       final beneficioId = beneficiosParticipantes[i];
-      if (widget.beneficios.isNotEmpty && beneficioId == null) {
+      // A compra pode reunir modalidades diferentes. O benefício só é
+      // obrigatório para o item/modalidade que realmente oferece benefícios;
+      // cortesia e ingresso inteiro não devem herdar a exigência de outro item.
+      if (_beneficiosDoParticipante(i).isNotEmpty && beneficioId == null) {
         AppSnackBar.erro(
           context,
           'Escolha o benefício do participante ${i + 1}.',
