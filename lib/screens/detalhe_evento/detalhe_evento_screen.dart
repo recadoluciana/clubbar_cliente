@@ -1278,7 +1278,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     if (compraId == null || reservaId == null || clienteId == null) return;
     setState(() => _removendoItemSacola = true);
     try {
-      final resposta = await apiService.removerIngressoCompraEvento(
+      await apiService.removerIngressoCompraEvento(
         compraEventoId: compraId,
         reservaId: reservaId,
         clienteId: clienteId,
@@ -1292,6 +1292,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               .map((outro) => Map<String, dynamic>.from(outro))
               .toList() ??
           <Map<String, dynamic>>[];
+      final quantidadeAtual = itens.fold<int>(
+        0,
+        (total, outro) =>
+            total + (int.tryParse('${outro['quantidade'] ?? 1}') ?? 1),
+      );
+      final valorAtual = itens.fold<double>(
+        0,
+        (total, outro) =>
+            total +
+            (double.tryParse(
+                  '${outro['valor_total'] ?? outro['subtotal'] ?? 0}',
+                ) ??
+                0),
+      );
       if (!mounted) return;
       setState(() {
         _compraEvento = itens.isEmpty
@@ -1299,8 +1313,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             : {
                 ...compra,
                 'itens': itens,
-                'quantidade': resposta['quantidade'],
-                'valor_total': resposta['valor_total'],
+                'quantidade': quantidadeAtual,
+                'valor_total': valorAtual,
               };
       });
     } catch (e) {
