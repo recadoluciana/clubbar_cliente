@@ -50,6 +50,7 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
   final _expiration = PciFieldState();
   final _security = PciFieldState();
   final _name = TextEditingController();
+  late final TextEditingController _email;
   late final TextEditingController _document;
   String? _bin;
   PaymentMethod? _method;
@@ -63,6 +64,7 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
   @override
   void initState() {
     super.initState();
+    _email = TextEditingController(text: widget.payerEmail.trim());
     _document = TextEditingController(
       text: widget.payerDocument.replaceAll(RegExp(r'[^0-9]'), ''),
     );
@@ -93,6 +95,7 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
     _expiration.dispose();
     _security.dispose();
     _name.dispose();
+    _email.dispose();
     _document.dispose();
     super.dispose();
   }
@@ -152,9 +155,12 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
 
   Future<void> _submit() async {
     if (_loading || _metadataLoading) return;
+    final email = _email.text.trim();
     final cpf = _document.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (_name.text.trim().isEmpty || cpf.length != 11) {
-      setState(() => _error = 'Informe o nome e o CPF do titular do cartão.');
+    if (_name.text.trim().isEmpty || cpf.length != 11 || !email.contains('@')) {
+      setState(
+        () => _error = 'Informe nome, e-mail e CPF do titular do cartão.',
+      );
       return;
     }
     final method = _method;
@@ -333,6 +339,16 @@ class _MercadoPagoCardScreenState extends State<MercadoPagoCardScreen> {
                         : _metadataLoading
                         ? 'Identificando cartão...'
                         : 'Pagar com cartão',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _email,
+                  enabled: !_loading,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'E-mail',
+                    border: OutlineInputBorder(),
                   ),
                 ),
                 if (_configurationError != null || _error != null)
