@@ -2155,587 +2155,540 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null
           ? estadoErro()
-          : Stack(
-              fit: StackFit.expand,
-              children: [
-                RefreshIndicator(
-                  onRefresh: carregarDados,
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                clipBehavior: Clip.antiAlias,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                                child: SizedBox(
-                                  height: 200,
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      if (ev.bannerUrl.trim().isNotEmpty)
-                                        Image.network(
-                                          ev.bannerUrl,
-                                          width: double.infinity,
-                                          fit: BoxFit.fill,
-                                        )
-                                      else
-                                        Container(
-                                          color: Colors.grey.shade300,
-                                          child: const Icon(
-                                            Icons.image_not_supported,
-                                            size: 48,
-                                          ),
-                                        ),
-                                      if (ev.jaIniciado)
-                                        Positioned(
-                                          left: 12,
-                                          bottom: 12,
-                                          child: _badgeEventoIniciado(),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Transform.translate(
-                                offset: const Offset(0, -22),
-                                child: Center(
-                                  child: Builder(
-                                    builder: (botaoContext) =>
-                                        ElevatedButton.icon(
-                                          onPressed: () =>
-                                              compartilharEvento(botaoContext),
-                                          icon: const Icon(
-                                            Icons.ios_share,
-                                            size: 18,
-                                          ),
-                                          label: const Text('Compartilhar'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: Colors.blue,
-                                            elevation: 4,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 18,
-                                              vertical: 10,
-                                            ),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(22),
-                                            ),
-                                          ),
-                                        ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+          : RefreshIndicator(
+              onRefresh: carregarDados,
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: SizedBox(
+                              height: 200,
+                              child: Stack(
+                                fit: StackFit.expand,
                                 children: [
-                                  if (lotes.isNotEmpty)
-                                    Flexible(
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        height: 44,
-                                        child: FilledButton.icon(
-                                          onPressed: _irParaIngressos,
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: Colors.blue,
-                                            foregroundColor: Colors.white,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 12,
-                                              vertical: 10,
-                                            ),
-                                            minimumSize: const Size(0, 44),
-                                            tapTargetSize: MaterialTapTargetSize
-                                                .shrinkWrap,
-                                          ),
-                                          icon: const Icon(
-                                            Icons.confirmation_number_outlined,
-                                            size: 18,
-                                          ),
-                                          label: const FittedBox(
-                                            fit: BoxFit.scaleDown,
-                                            child: Text(
-                                              'Comprar ingresso',
-                                              maxLines: 1,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  if (lotes.isEmpty) const Spacer(),
-                                  if (lotes.isNotEmpty)
-                                    const SizedBox(width: 10),
-                                  Flexible(
-                                    child: SizedBox(
+                                  if (ev.bannerUrl.trim().isNotEmpty)
+                                    Image.network(
+                                      ev.bannerUrl,
                                       width: double.infinity,
-                                      height: 44,
-                                      child: FilledButton.icon(
-                                        onPressed: () {
-                                          MainNavigationController.abrirTela(
-                                            ProdutosLojaScreen(
-                                              loja: widget.loja,
-                                            ),
-                                          );
-                                        },
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: Colors.amber,
-                                          foregroundColor: Colors.black,
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 10,
-                                          ),
-                                          minimumSize: const Size(0, 44),
-                                          tapTargetSize:
-                                              MaterialTapTargetSize.shrinkWrap,
-                                        ),
-                                        icon: const Icon(
-                                          Icons.shopping_bag_outlined,
-                                          size: 18,
-                                        ),
-                                        label: const FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                'Cardápio',
-                                                style: TextStyle(
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                              Text(
-                                                'Comprar produto',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                      fit: BoxFit.fill,
+                                    )
+                                  else
+                                    Container(
+                                      color: Colors.grey.shade300,
+                                      child: const Icon(
+                                        Icons.image_not_supported,
+                                        size: 48,
                                       ),
                                     ),
-                                  ),
+                                  if (ev.jaIniciado)
+                                    Positioned(
+                                      left: 12,
+                                      bottom: 12,
+                                      child: _badgeEventoIniciado(),
+                                    ),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                ev.titulo,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                _informacaoDoEvento(
-                                  icone: Icons.verified_user_outlined,
-                                  texto:
-                                      'Classificação etária: ${ev.classificacaoEtaria}',
-                                ),
-                              ],
-                              _faixaSituacaoEContato(ev),
-                              const SizedBox(height: 10),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.grey.shade200,
+                            ),
+                          ),
+                          Transform.translate(
+                            offset: const Offset(0, -22),
+                            child: Center(
+                              child: Builder(
+                                builder: (botaoContext) => ElevatedButton.icon(
+                                  onPressed: () =>
+                                      compartilharEvento(botaoContext),
+                                  icon: const Icon(Icons.ios_share, size: 18),
+                                  label: const Text('Compartilhar'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.blue,
+                                    elevation: 4,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 18,
+                                      vertical: 10,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(22),
+                                    ),
                                   ),
                                 ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Icon(
-                                          Icons.event_outlined,
-                                          size: 20,
-                                          color: Colors.blue.shade700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (lotes.isNotEmpty)
+                                Flexible(
+                                  child: SizedBox(
+                                    width: double.infinity,
+                                    height: 44,
+                                    child: FilledButton.icon(
+                                      onPressed: _irParaIngressos,
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 10,
                                         ),
-                                        const SizedBox(width: 8),
-                                        Flexible(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                formatarDataHora(ev.dataInicio),
-                                                style: TextStyle(
-                                                  color: Colors.blue.shade700,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
-                                              ),
-                                              if (ev.dataFim.trim().isNotEmpty)
-                                                Text(
-                                                  DateFormatters.terminoEvento(
-                                                    ev.dataInicio,
-                                                    ev.dataFim,
-                                                  ),
-                                                  style: TextStyle(
-                                                    color: Colors.blue.shade700,
-                                                    fontSize: 12,
-                                                  ),
-                                                ),
-                                            ],
+                                        minimumSize: const Size(0, 44),
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      icon: const Icon(
+                                        Icons.confirmation_number_outlined,
+                                        size: 18,
+                                      ),
+                                      label: const FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          'Comprar ingresso',
+                                          maxLines: 1,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    if (ev.local.trim().isNotEmpty &&
-                                        ev.local.trim().toLowerCase() !=
-                                            ev.nomeLoja
-                                                .trim()
-                                                .toLowerCase()) ...[
-                                      Text(
-                                        ev.local,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                        ),
                                       ),
-                                      const SizedBox(height: 2),
-                                    ],
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on_outlined,
-                                          size: 16,
-                                          color: Colors.grey.shade700,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Flexible(
-                                          child: Text(
-                                            ev.enderecoFormatado,
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              if (lotes.isEmpty) const Spacer(),
+                              if (lotes.isNotEmpty) const SizedBox(width: 10),
+                              Flexible(
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: 44,
+                                  child: FilledButton.icon(
+                                    onPressed: () {
+                                      MainNavigationController.abrirTela(
+                                        ProdutosLojaScreen(loja: widget.loja),
+                                      );
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: Colors.amber,
+                                      foregroundColor: Colors.black,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 10,
+                                      ),
+                                      minimumSize: const Size(0, 44),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.shopping_bag_outlined,
+                                      size: 18,
+                                    ),
+                                    label: const FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Cardápio',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                          Text(
+                                            'Comprar produto',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              height: 1.25,
-                                              color: Colors.grey.shade700,
+                                              fontWeight: FontWeight.w800,
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
-                              if (atracoesOrdenadas.isNotEmpty) ...[
-                                const SizedBox(height: 14),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: Colors.grey.shade200,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Atrações',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.normal,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      SizedBox(
-                                        height: 60,
-                                        child: ListView.separated(
-                                          scrollDirection: Axis.horizontal,
-                                          itemCount: atracoesOrdenadas.length,
-                                          separatorBuilder: (_, _) =>
-                                              const SizedBox(width: 10),
-                                          itemBuilder: (context, index) {
-                                            final atracao =
-                                                atracoesOrdenadas[index];
-                                            return SizedBox(
-                                              width: 176,
-                                              child: Material(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: InkWell(
-                                                  onTap: () =>
-                                                      _abrirDetalhesAtracao(
-                                                        atracao,
-                                                      ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 8,
-                                                          vertical: 6,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            12,
-                                                          ),
-                                                      border: Border.all(
-                                                        color: Colors
-                                                            .grey
-                                                            .shade300,
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        _fotoAtracao(
-                                                          atracao,
-                                                          tamanho: 34,
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 7,
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                            atracao.nome,
-                                                            style:
-                                                                const TextStyle(
-                                                                  color: Colors
-                                                                      .black87,
-                                                                  fontSize: 13,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w900,
-                                                                  height: 1.15,
-                                                                ),
-                                                            maxLines: 2,
-                                                            overflow:
-                                                                TextOverflow
-                                                                    .ellipsis,
-                                                          ),
-                                                        ),
-                                                        const Icon(
-                                                          Icons
-                                                              .chevron_right_rounded,
-                                                          size: 20,
-                                                          color: Colors.blue,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-
-                              const SizedBox(height: 12),
-                              Container(
-                                key: _ingressosKey,
-                                child: Row(
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            ev.titulo,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            _informacaoDoEvento(
+                              icone: Icons.verified_user_outlined,
+                              texto:
+                                  'Classificação etária: ${ev.classificacaoEtaria}',
+                            ),
+                          ],
+                          _faixaSituacaoEContato(ev),
+                          const SizedBox(height: 10),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: Colors.grey.shade200),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Expanded(
-                                      child: unicoLoteGlobal == null
-                                          ? const Text(
-                                              'Ingressos',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )
-                                          : Text(
-                                              unicoLoteGlobal.nome,
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                    Icon(
+                                      Icons.event_outlined,
+                                      size: 20,
+                                      color: Colors.blue.shade700,
                                     ),
-                                    TextButton.icon(
-                                      onPressed: atualizandoLotes
-                                          ? null
-                                          : atualizarLotes,
-                                      icon: atualizandoLotes
-                                          ? const SizedBox.square(
-                                              dimension: 16,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                          : const Icon(Icons.refresh, size: 18),
-                                      label: const Text('Atualizar'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-
-                              if (lotes.isEmpty)
-                                estadoVazioLotes()
-                              else ...[
-                                ...lotesGlobais.map(
-                                  (setores) => cardLoteGlobal(
-                                    setores,
-                                    exibirNomeLote: lotesGlobais.length > 1,
-                                    exibirNomeSetor: true,
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 4),
-                              if (ev.descricao.trim().isNotEmpty &&
-                                  ev.descricao.trim().toLowerCase() !=
-                                      'null') ...[
-                                const SizedBox(height: 8),
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(22),
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                  child: LayoutBuilder(
-                                    builder: (context, constraints) {
-                                      final estilo = TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.grey.shade800,
-                                        height: 1.5,
-                                      );
-                                      final medida = TextPainter(
-                                        text: TextSpan(
-                                          text: ev.descricao,
-                                          style: estilo,
-                                        ),
-                                        maxLines: 2,
-                                        textDirection: Directionality.of(
-                                          context,
-                                        ),
-                                        textScaler: MediaQuery.textScalerOf(
-                                          context,
-                                        ),
-                                      )..layout(maxWidth: constraints.maxWidth);
-                                      final temMaisTexto =
-                                          medida.didExceedMaxLines;
-                                      medida.dispose();
-                                      return Column(
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            ev.descricao,
-                                            textAlign: TextAlign.justify,
-                                            maxLines: _descricaoExpandida
-                                                ? null
-                                                : 2,
-                                            overflow: _descricaoExpandida
-                                                ? null
-                                                : TextOverflow.ellipsis,
-                                            style: estilo,
+                                            formatarDataHora(ev.dataInicio),
+                                            style: TextStyle(
+                                              color: Colors.blue.shade700,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w800,
+                                            ),
                                           ),
-                                          if (temMaisTexto)
-                                            TextButton.icon(
-                                              onPressed: () => setState(
-                                                () => _descricaoExpandida =
-                                                    !_descricaoExpandida,
+                                          if (ev.dataFim.trim().isNotEmpty)
+                                            Text(
+                                              DateFormatters.terminoEvento(
+                                                ev.dataInicio,
+                                                ev.dataFim,
                                               ),
-                                              icon: Icon(
-                                                _descricaoExpandida
-                                                    ? Icons.expand_less
-                                                    : Icons.expand_more,
+                                              style: TextStyle(
+                                                color: Colors.blue.shade700,
+                                                fontSize: 12,
                                               ),
-                                              label: Text(
-                                                _descricaoExpandida
-                                                    ? 'Ver menos'
-                                                    : 'Ver mais',
-                                              ),
-                                              style: _estiloLinksEvento(),
                                             ),
                                         ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                              ],
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextButton.icon(
-                                    onPressed: () => Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) =>
-                                            const PoliticaCompraScreen(
-                                              tipo: 'INGRESSO',
-                                            ),
                                       ),
                                     ),
-                                    icon: const Icon(
-                                      Icons.policy_outlined,
-                                      size: 18,
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                if (ev.local.trim().isNotEmpty &&
+                                    ev.local.trim().toLowerCase() !=
+                                        ev.nomeLoja.trim().toLowerCase()) ...[
+                                  Text(
+                                    ev.local,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
                                     ),
-                                    label: const Text(
-                                      'Política de compra de ingresso',
-                                    ),
-                                    style: _estiloLinksEvento(),
                                   ),
-                                  const SizedBox(height: 6),
-                                  TextButton.icon(
-                                    onPressed: _abrirExplicacaoTaxas,
-                                    icon: const Icon(
-                                      Icons.info_outline,
-                                      size: 18,
+                                  const SizedBox(height: 2),
+                                ],
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on_outlined,
+                                      size: 16,
+                                      color: Colors.grey.shade700,
                                     ),
-                                    label: const Text('Entenda as taxas'),
-                                    style: _estiloLinksEvento(),
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        ev.enderecoFormatado,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          height: 1.25,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (atracoesOrdenadas.isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Atrações',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.normal,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  SizedBox(
+                                    height: 60,
+                                    child: ListView.separated(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: atracoesOrdenadas.length,
+                                      separatorBuilder: (_, _) =>
+                                          const SizedBox(width: 10),
+                                      itemBuilder: (context, index) {
+                                        final atracao =
+                                            atracoesOrdenadas[index];
+                                        return SizedBox(
+                                          width: 176,
+                                          child: Material(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                            child: InkWell(
+                                              onTap: () =>
+                                                  _abrirDetalhesAtracao(
+                                                    atracao,
+                                                  ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 6,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  border: Border.all(
+                                                    color: Colors.grey.shade300,
+                                                    width: 1,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    _fotoAtracao(
+                                                      atracao,
+                                                      tamanho: 34,
+                                                    ),
+                                                    const SizedBox(width: 7),
+                                                    Expanded(
+                                                      child: Text(
+                                                        atracao.nome,
+                                                        style: const TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.w900,
+                                                          height: 1.15,
+                                                        ),
+                                                        maxLines: 2,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                    const Icon(
+                                                      Icons
+                                                          .chevron_right_rounded,
+                                                      size: 20,
+                                                      color: Colors.blue,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 12),
+                          Container(
+                            key: _ingressosKey,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: unicoLoteGlobal == null
+                                      ? const Text(
+                                          'Ingressos',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        )
+                                      : Text(
+                                          unicoLoteGlobal.nome,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: atualizandoLotes
+                                      ? null
+                                      : atualizarLotes,
+                                  icon: atualizandoLotes
+                                      ? const SizedBox.square(
+                                          dimension: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : const Icon(Icons.refresh, size: 18),
+                                  label: const Text('Atualizar'),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          if (lotes.isEmpty)
+                            estadoVazioLotes()
+                          else ...[
+                            ...lotesGlobais.map(
+                              (setores) => cardLoteGlobal(
+                                setores,
+                                exibirNomeLote: lotesGlobais.length > 1,
+                                exibirNomeSetor: true,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 4),
+                          if (ev.descricao.trim().isNotEmpty &&
+                              ev.descricao.trim().toLowerCase() != 'null') ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final estilo = TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.grey.shade800,
+                                    height: 1.5,
+                                  );
+                                  final medida = TextPainter(
+                                    text: TextSpan(
+                                      text: ev.descricao,
+                                      style: estilo,
+                                    ),
+                                    maxLines: 2,
+                                    textDirection: Directionality.of(context),
+                                    textScaler: MediaQuery.textScalerOf(
+                                      context,
+                                    ),
+                                  )..layout(maxWidth: constraints.maxWidth);
+                                  final temMaisTexto = medida.didExceedMaxLines;
+                                  medida.dispose();
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        ev.descricao,
+                                        textAlign: TextAlign.justify,
+                                        maxLines: _descricaoExpandida
+                                            ? null
+                                            : 2,
+                                        overflow: _descricaoExpandida
+                                            ? null
+                                            : TextOverflow.ellipsis,
+                                        style: estilo,
+                                      ),
+                                      if (temMaisTexto)
+                                        TextButton.icon(
+                                          onPressed: () => setState(
+                                            () => _descricaoExpandida =
+                                                !_descricaoExpandida,
+                                          ),
+                                          icon: Icon(
+                                            _descricaoExpandida
+                                                ? Icons.expand_less
+                                                : Icons.expand_more,
+                                          ),
+                                          label: Text(
+                                            _descricaoExpandida
+                                                ? 'Ver menos'
+                                                : 'Ver mais',
+                                          ),
+                                          style: _estiloLinksEvento(),
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const PoliticaCompraScreen(
+                                      tipo: 'INGRESSO',
+                                    ),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.policy_outlined,
+                                  size: 18,
+                                ),
+                                label: const Text(
+                                  'Política de compra de ingresso',
+                                ),
+                                style: _estiloLinksEvento(),
+                              ),
+                              const SizedBox(height: 6),
+                              TextButton.icon(
+                                onPressed: _abrirExplicacaoTaxas,
+                                icon: const Icon(Icons.info_outline, size: 18),
+                                label: const Text('Entenda as taxas'),
+                                style: _estiloLinksEvento(),
+                              ),
                             ],
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                if (_compraEvento != null)
-                  Positioned(
-                    left: 16,
-                    right: 16,
-                    bottom: 0,
-                    child: _sacolaCompraEvento(),
-                  ),
-              ],
+                ],
+              ),
             ),
+      bottomNavigationBar: _compraEvento == null ? null : _sacolaCompraEvento(),
     );
   }
 }
