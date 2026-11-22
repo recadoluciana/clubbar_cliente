@@ -57,6 +57,7 @@ class _ParticipantesReservaScreenState
   bool _reservaFinalizada = false;
   bool _reservaCancelada = false;
   bool _verificandoExpiracao = false;
+  bool _checkoutIniciado = false;
 
   @override
   void initState() {
@@ -165,7 +166,7 @@ class _ParticipantesReservaScreenState
   }
 
   Future<void> _cancelarReservaSeNecessario() async {
-    if (_reservaFinalizada || _reservaCancelada) return;
+    if (_reservaFinalizada || _reservaCancelada || _checkoutIniciado) return;
     _reservaCancelada = true;
     final reservaId =
         int.tryParse('${widget.reserva['reserva_ingresso_id']}') ?? 0;
@@ -256,6 +257,7 @@ class _ParticipantesReservaScreenState
       final ingressos = _itensFinanceiros(reserva, 'valor_unitario');
       final taxas = _itensFinanceiros(reserva, 'valor_taxa_unitaria');
       timer?.cancel();
+      _checkoutIniciado = true;
       final reservaEncerrada = await Navigator.push<bool>(
         context,
         MaterialPageRoute(
