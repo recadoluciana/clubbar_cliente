@@ -1930,46 +1930,54 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             const Divider(height: 18),
             Row(
               children: [
-                const Text(
-                  'Subtotal',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Subtotal',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        ValueFormatters.moeda(total),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const Spacer(),
-                Text(
-                  ValueFormatters.moeda(total),
-                  style: const TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w900,
+                const SizedBox(width: 10),
+                FilledButton.icon(
+                  onPressed:
+                      !vendaDisponivel ||
+                          processandoCompra ||
+                          !modalidadeDisponivel
+                      ? null
+                      : () => iniciarReserva(
+                          lote,
+                          quantidadeSelecionada: quantidade,
+                        ),
+                  icon: const Icon(Icons.add_shopping_cart, size: 17),
+                  label: const Text('Adicionar'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    backgroundColor: ehCortesia
+                        ? const Color(0xFF5B9BD5)
+                        : AppColors.amareloCerveja,
+                    foregroundColor: ehCortesia ? Colors.white : Colors.black,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade600,
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed:
-                    !vendaDisponivel ||
-                        processandoCompra ||
-                        !modalidadeDisponivel
-                    ? null
-                    : () => iniciarReserva(
-                        lote,
-                        quantidadeSelecionada: quantidade,
-                      ),
-                icon: const Icon(Icons.local_activity_outlined),
-                label: Text(
-                  ehCortesia ? 'Resgatar ingresso' : 'Comprar ingresso',
-                ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: ehCortesia
-                      ? const Color(0xFF5B9BD5)
-                      : AppColors.amareloCerveja,
-                  foregroundColor: ehCortesia ? Colors.white : Colors.black,
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  disabledForegroundColor: Colors.grey.shade600,
-                ),
-              ),
             ),
           ],
         ),
