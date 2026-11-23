@@ -1283,46 +1283,54 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         reservaId: reservaId,
         clienteId: clienteId,
       );
-      final itens =
-          (compra['itens'] as List?)
-              ?.whereType<Map>()
-              .where(
-                (outro) => '${outro['reserva_ingresso_id']}' != '$reservaId',
-              )
-              .map((outro) => Map<String, dynamic>.from(outro))
-              .toList() ??
-          <Map<String, dynamic>>[];
-      final quantidadeAtual = itens.fold<int>(
-        0,
-        (total, outro) =>
-            total + (int.tryParse('${outro['quantidade'] ?? 1}') ?? 1),
-      );
-      final valorAtual = itens.fold<double>(
-        0,
-        (total, outro) =>
-            total +
-            (double.tryParse(
-                  '${outro['valor_total'] ?? outro['subtotal'] ?? 0}',
-                ) ??
-                0),
-      );
-      if (!mounted) return;
-      setState(() {
-        _compraEvento = itens.isEmpty
-            ? null
-            : {
-                ...compra,
-                'itens': itens,
-                'quantidade': quantidadeAtual,
-                'valor_total': valorAtual,
-              };
-      });
+      _removerItemLocalDaSacola(compra, reservaId);
     } catch (e) {
-      if (mounted)
-        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+      final mensagem = apiService.mensagemErroAmigavel(e);
+      if (mensagem.toLowerCase().contains('item da compra não encontrado')) {
+        // O checkout pode ter encerrado a reserva no servidor enquanto a
+        // tela ainda mantinha uma cópia antiga da sacola.
+        _removerItemLocalDaSacola(compra, reservaId);
+      } else if (mounted) {
+        AppSnackBar.erro(context, mensagem);
+      }
     } finally {
       if (mounted) setState(() => _removendoItemSacola = false);
     }
+  }
+
+  void _removerItemLocalDaSacola(Map<String, dynamic> compra, int reservaId) {
+    final itens =
+        (compra['itens'] as List?)
+            ?.whereType<Map>()
+            .where((outro) => '${outro['reserva_ingresso_id']}' != '$reservaId')
+            .map((outro) => Map<String, dynamic>.from(outro))
+            .toList() ??
+        <Map<String, dynamic>>[];
+    final quantidadeAtual = itens.fold<int>(
+      0,
+      (total, outro) =>
+          total + (int.tryParse('${outro['quantidade'] ?? 1}') ?? 1),
+    );
+    final valorAtual = itens.fold<double>(
+      0,
+      (total, outro) =>
+          total +
+          (double.tryParse(
+                '${outro['valor_total'] ?? outro['subtotal'] ?? 0}',
+              ) ??
+              0),
+    );
+    if (!mounted) return;
+    setState(() {
+      _compraEvento = itens.isEmpty
+          ? null
+          : {
+              ...compra,
+              'itens': itens,
+              'quantidade': quantidadeAtual,
+              'valor_total': valorAtual,
+            };
+    });
   }
 
   Widget linhaInfo({
