@@ -180,9 +180,37 @@ class _ModalidadesIngressoScreenState
               padding: const EdgeInsets.all(16),
               children: [
                 if (descricaoSetor.isNotEmpty && !descricaoPadrao) ...[
-                  Text(
-                    descricaoSetor,
-                    style: TextStyle(color: Colors.grey.shade700, height: 1.4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF4CC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE8C96A)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome_outlined,
+                          size: 19,
+                          color: Color(0xFF8A6500),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            descricaoSetor,
+                            style: const TextStyle(
+                              color: Color(0xFF5F4900),
+                              fontWeight: FontWeight.w700,
+                              height: 1.35,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 14),
                 ],
