@@ -105,6 +105,7 @@ class _ModalidadesIngressoScreenState
   int _itensNaSacola = 0;
   double _totalSacola = 0;
   bool _sacolaExpandida = false;
+  final List<String> _detalhesSacola = [];
 
   @override
   Widget build(BuildContext context) {
@@ -257,14 +258,17 @@ class _ModalidadesIngressoScreenState
                 ),
                 if (_sacolaExpandida) ...[
                   const Divider(height: 12),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Itens adicionados nesta compra',
-                      style: TextStyle(fontSize: 12),
+                  for (final detalhe in _detalhesSacola)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          detalhe,
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
@@ -475,6 +479,9 @@ class _ModalidadesIngressoScreenState
                               setState(() {
                                 _itensNaSacola += quantidade;
                                 _totalSacola += totalPagar;
+                                _detalhesSacola.add(
+                                  '$quantidade x ${widget.nomeModalidade(lote)} · ${lote.nomeSetor}',
+                                );
                               });
                             }
                           } finally {
