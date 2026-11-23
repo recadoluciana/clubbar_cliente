@@ -1396,7 +1396,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : const <Map>[];
     // A sacola é deliberadamente compacta: ela substitui a navegação inferior
     // e não deve virar uma segunda tela sobre o evento.
-    final altura = _sacolaExpandida ? 220.0 : 124.0;
+    final altura = _sacolaExpandida ? 220.0 : 64.0;
 
     return SafeArea(
       top: false,
@@ -1409,7 +1409,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             physics: _sacolaExpandida
                 ? null
                 : const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
             child: Column(
               children: [
                 InkWell(
@@ -1469,14 +1469,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       ],
                     ),
                 ],
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton(
-                    onPressed: processandoCompra ? null : _abrirCompraEvento,
-                    child: const Text('Continuar'),
+                if (_sacolaExpandida) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: processandoCompra ? null : _abrirCompraEvento,
+                      child: const Text('Continuar'),
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
