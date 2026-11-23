@@ -102,6 +102,9 @@ class _ModalidadesIngressoScreenState
     extends State<_ModalidadesIngressoScreen> {
   final Map<int, int> _quantidades = {};
   bool _processando = false;
+  int _itensNaSacola = 0;
+  double _totalSacola = 0;
+  bool _sacolaExpandida = false;
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +158,7 @@ class _ModalidadesIngressoScreenState
                           'Setor: $nomeSetor',
                           style: TextStyle(
                             color: Colors.blue.shade800,
-                            fontSize: 13,
+                            fontSize: 15,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -197,47 +200,55 @@ class _ModalidadesIngressoScreenState
   }
 
   Widget _rodapeModalidades() {
-    final corRodape = Theme.of(context).colorScheme.primary;
-    final estilo = TextButton.styleFrom(
-      foregroundColor: corRodape,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
-      minimumSize: Size.zero,
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    );
-
     return SafeArea(
       top: false,
       child: Material(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.primaryContainer,
         elevation: 8,
-        child: SizedBox(
-          height: 44,
-          child: Row(
-            children: [
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: () => mostrarPoliticaCompra(context),
-                    icon: const Icon(Icons.policy_outlined, size: 17),
-                    label: const Text('Política de compra'),
-                    style: estilo,
-                  ),
+        child: InkWell(
+          onTap: () => setState(() => _sacolaExpandida = !_sacolaExpandida),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.shopping_bag_outlined, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '$_itensNaSacola ${_itensNaSacola == 1 ? 'item' : 'itens'} na sacola · ${ValueFormatters.moeda(_totalSacola)}',
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                    Icon(
+                      _sacolaExpandida ? Icons.expand_more : Icons.expand_less,
+                    ),
+                  ],
                 ),
-              ),
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: widget.onEntenderTaxa,
-                    icon: const Icon(Icons.receipt_long_outlined, size: 17),
-                    label: const Text('Entenda nossas taxas'),
-                    style: estilo,
+                if (_sacolaExpandida) ...[
+                  const Divider(height: 12),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Itens adicionados nesta compra',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _itensNaSacola == 0
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: const Text('Continuar'),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
@@ -429,6 +440,12 @@ class _ModalidadesIngressoScreenState
                         setState(() => _processando = true);
                         try {
                           await widget.onComprar(lote, quantidade);
+                          if (mounted) {
+                            setState(() {
+                              _itensNaSacola += quantidade;
+                              _totalSacola += totalPagar;
+                            });
+                          }
                         } finally {
                           if (mounted) setState(() => _processando = false);
                         }
