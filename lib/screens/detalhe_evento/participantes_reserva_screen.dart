@@ -504,9 +504,10 @@ class _ParticipantesReservaScreenState
     final valorTotal = _valorTotalComTaxa(widget.reserva);
     final ehCortesia = valorTotal <= 0;
     return PopScope(
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) unawaited(_cancelarReservaSeNecessario());
-      },
+      // Voltar para a tela de modalidades não cancela a reserva. O usuário
+      // pode revisar a sacola e retornar para preencher os participantes;
+      // cancelamento ocorre somente por expiração ou ação explícita.
+      onPopInvokedWithResult: (_, _) {},
       child: Scaffold(
         appBar: ClubbarAppBar(
           titulo: widget.loja.nome,
