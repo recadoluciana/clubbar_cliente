@@ -42,7 +42,7 @@ bool _ehModalidadeMeiaEntrada(EventoLote lote) =>
     lote.tipoIngresso.trim().toUpperCase() == 'MEIA_IDOSO';
 
 int _limitePorTransacao(EventoLote lote) =>
-    _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
+    _ehCortesia(lote) ? 2 : _limiteIngressosPorTransacao;
 
 String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
     ? 'Limite de 1 ingresso por CPF'
@@ -1299,6 +1299,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         );
       }
       return;
+    }
+    if (_ehCortesia(lote)) {
+      final compraAtual = _compraEvento;
+      final cortesiasNaCompra = compraAtual?['itens'] is List
+          ? (compraAtual!['itens'] as List).whereType<Map>().fold<int>(
+              0,
+              (total, item) =>
+                  total +
+                  ((double.tryParse('${item['valor_unitario'] ?? 0}') ?? 0) <= 0
+                      ? (int.tryParse('${item['quantidade'] ?? 1}') ?? 1)
+                      : 0),
+            )
+          : 0;
+      if (cortesiasNaCompra + quantidade > 2) {
+        AppSnackBar.aviso(
+          context,
+          'Você pode adicionar no máximo 2 cortesias por transação.',
+        );
+        return;
+      }
     }
     setState(() => processandoCompra = true);
     try {
