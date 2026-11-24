@@ -2496,7 +2496,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     style: const TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.w800,
-                      fontSize: 13,
+                      fontSize: 16,
                     ),
                   ),
                 ],
