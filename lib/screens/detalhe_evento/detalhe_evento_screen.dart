@@ -1439,7 +1439,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : const <Map>[];
     // A sacola é deliberadamente compacta: ela substitui a navegação inferior
     // e não deve virar uma segunda tela sobre o evento.
-    final altura = _sacolaExpandida ? 220.0 : 64.0;
+    final altura = _sacolaExpandida ? 154.0 : 64.0;
 
     return SafeArea(
       top: false,
@@ -2684,12 +2684,23 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           if (ev.descricao.trim().isNotEmpty &&
                               ev.descricao.trim().toLowerCase() != 'null') ...[
                             const SizedBox(height: 8),
+                            const Padding(
+                              padding: EdgeInsets.only(left: 4, bottom: 5),
+                              child: Text(
+                                'Descrição',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black54,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(22),
+                                borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: Colors.grey.shade300),
                               ),
                               child: LayoutBuilder(
@@ -2704,7 +2715,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                       text: ev.descricao,
                                       style: estilo,
                                     ),
-                                    maxLines: 2,
+                                    maxLines: 3,
                                     textDirection: Directionality.of(context),
                                     textScaler: MediaQuery.textScalerOf(
                                       context,
@@ -2721,7 +2732,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                         textAlign: TextAlign.justify,
                                         maxLines: _descricaoExpandida
                                             ? null
-                                            : 2,
+                                            : 3,
                                         overflow: _descricaoExpandida
                                             ? null
                                             : TextOverflow.ellipsis,
