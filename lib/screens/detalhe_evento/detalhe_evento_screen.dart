@@ -948,6 +948,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? perfil
         : 'https://www.instagram.com/${perfil.replaceFirst(RegExp(r'^@'), '')}/';
     final telefone = atracao.telefoneContato.replaceAll(RegExp(r'[^0-9+]'), '');
+    var fotoAtual = 0;
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -978,25 +979,97 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ),
               ),
               if (fotos.isNotEmpty) ...[
-                SizedBox(
-                  height: 220,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: fotos.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 10),
-                    itemBuilder: (_, index) => ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
-                      child: Image.network(
-                        fotos[index],
-                        width: 300,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const SizedBox(
-                          width: 300,
-                          child: Icon(Icons.broken_image_outlined),
+                StatefulBuilder(
+                  builder: (context, setFotoState) {
+                    void irPara(int indice) {
+                      final proxima = indice.clamp(0, fotos.length - 1) as int;
+                      setFotoState(() => fotoAtual = proxima);
+                    }
+
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 220,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(18),
+                                child: Container(
+                                  width: double.infinity,
+                                  color: Colors.black,
+                                  child: PageView.builder(
+                                    controller: PageController(
+                                      initialPage: fotoAtual,
+                                    ),
+                                    itemCount: fotos.length,
+                                    onPageChanged: (indice) =>
+                                        setFotoState(() => fotoAtual = indice),
+                                    itemBuilder: (_, index) => Image.network(
+                                      fotos[index],
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (_, _, _) => const Icon(
+                                        Icons.broken_image_outlined,
+                                        color: Colors.white,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (fotos.length > 1)
+                                Positioned(
+                                  left: 4,
+                                  child: IconButton.filled(
+                                    onPressed: () => irPara(fotoAtual - 1),
+                                    icon: const Icon(Icons.chevron_left),
+                                    color: Colors.white,
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: Colors.black54,
+                                    ),
+                                  ),
+                                ),
+                              if (fotos.length > 1)
+                                Positioned(
+                                  right: 4,
+                                  child: IconButton.filled(
+                                    onPressed: () => irPara(fotoAtual + 1),
+                                    icon: const Icon(Icons.chevron_right),
+                                    color: Colors.white,
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: Colors.black54,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
+                        if (fotos.length > 1) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              for (var index = 0; index < fotos.length; index++)
+                                AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  width: index == fotoAtual ? 18 : 7,
+                                  height: 7,
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: index == fotoAtual
+                                        ? Colors.blue.shade700
+                                        : Colors.grey.shade400,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    );
+                  },
                 ),
                 const SizedBox(height: 18),
               ],
