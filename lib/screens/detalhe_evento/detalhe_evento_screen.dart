@@ -2544,7 +2544,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           'Comprar ingresso',
                                           maxLines: 1,
                                           style: TextStyle(
-                                            fontSize: 11,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.w800,
                                           ),
                                         ),
@@ -2587,14 +2587,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           Text(
                                             'Cardápio',
                                             style: TextStyle(
-                                              fontSize: 11,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
                                           Text(
                                             'Comprar produto',
                                             style: TextStyle(
-                                              fontSize: 11,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w800,
                                             ),
                                           ),
