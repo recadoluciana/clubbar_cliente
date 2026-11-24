@@ -1702,7 +1702,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         height: 56,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFFFE3A8),
           border: Border(top: BorderSide(color: Colors.grey.shade300)),
         ),
         child: Row(
