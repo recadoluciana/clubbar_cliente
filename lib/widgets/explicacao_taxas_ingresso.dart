@@ -4,6 +4,7 @@ Widget _itemTaxa(String titulo, String descricao) {
   return Padding(
     padding: const EdgeInsets.only(top: 10),
     child: RichText(
+      textAlign: TextAlign.justify,
       text: TextSpan(
         style: TextStyle(
           color: Colors.grey.shade800,
@@ -67,6 +68,7 @@ void mostrarExplicacaoTaxas(BuildContext context) {
             const SizedBox(height: 14),
             Text(
               'No Clubbar, os valores aplicáveis são apresentados antes da confirmação do pedido.',
+              textAlign: TextAlign.justify,
               style: TextStyle(
                 color: Colors.grey.shade800,
                 fontSize: 14,
