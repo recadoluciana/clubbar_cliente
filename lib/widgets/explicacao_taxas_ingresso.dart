@@ -101,26 +101,26 @@ void mostrarExplicacaoTaxas(BuildContext context) {
             const SizedBox(height: 22),
             Padding(
               padding: const EdgeInsets.only(top: 10),
-              child: RichText(
-                text: TextSpan(
-                  style: TextStyle(
-                    color: Colors.grey.shade800,
-                    fontSize: 14,
-                    height: 1.4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Taxa de processamento',
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
-                  children: const [
+                  Text('É destinada a:'),
+                  Text.rich(
                     TextSpan(
-                      text: 'Taxa de processamento: ',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                      children: [
+                        TextSpan(
+                          text: 'Meio de pagamento: ',
+                          style: TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        TextSpan(text: 'Mercado Pago.'),
+                      ],
                     ),
-                    TextSpan(text: 'É destinada a: '),
-                    TextSpan(
-                      text: 'Meio de pagamento: ',
-                      style: TextStyle(fontWeight: FontWeight.w800),
-                    ),
-                    TextSpan(text: 'Mercado Pago.'),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             _itemTaxa(
