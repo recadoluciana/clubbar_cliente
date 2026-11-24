@@ -1647,11 +1647,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ],
                 if (expandidaComItens) ...[
                   const SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: processandoCompra ? null : _abrirCompraEvento,
-                      child: const Text('Continuar'),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      width: 132,
+                      height: 36,
+                      child: FilledButton(
+                        onPressed: processandoCompra
+                            ? null
+                            : _abrirCompraEvento,
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Continuar'),
+                      ),
                     ),
                   ),
                 ],
