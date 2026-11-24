@@ -1469,13 +1469,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         if (status == 'EXPIRADA' ||
             status == 'CANCELADA' ||
             (segundos != null && segundos <= 0)) {
+          // Ao voltar da tela de participantes, apenas sincronizamos a
+          // sacola. A mensagem de expiração deve aparecer somente no fluxo
+          // de confirmação, não como efeito colateral da navegação.
           _removerItemLocalDaSacola(compra, reservaId);
-          if (mounted) {
-            AppSnackBar.erro(
-              context,
-              'A reserva expirou. Adicione o ingresso novamente.',
-            );
-          }
           return;
         }
         reserva = {
