@@ -106,7 +106,6 @@ class _ModalidadesIngressoScreenState
   bool _processando = false;
   int _itensNaSacola = 0;
   double _totalSacola = 0;
-  bool _sacolaExpandida = false;
   final List<String> _detalhesSacola = [];
 
   @override
@@ -1610,63 +1609,47 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final quantidade = quantidadeDosItens > quantidadeInformada
         ? quantidadeDosItens
         : quantidadeInformada;
-    // A sacola é deliberadamente compacta: ela substitui a navegação inferior
-    // e não deve virar uma segunda tela sobre o evento.
-    final altura = 52.0;
-
     return SafeArea(
       top: false,
-      child: SizedBox(
-        height: altura,
-        child: Card(
-          margin: EdgeInsets.zero,
-          color: Theme.of(context).colorScheme.primaryContainer,
-          child: SingleChildScrollView(
-            physics: _sacolaExpandida
-                ? null
-                : const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-            child: Column(
-              children: [
-                InkWell(
-                  onTap: itens.isEmpty
-                      ? null
-                      : () => setState(
-                          () => _sacolaExpandida = !_sacolaExpandida,
-                        ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.confirmation_num_outlined),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          '$quantidade ${quantidade == 1 ? 'item' : 'itens'} na sacola · ${ValueFormatters.moeda(total)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        height: 34,
-                        child: FilledButton(
-                          onPressed: itens.isEmpty || processandoCompra
-                              ? null
-                              : _abrirCompraEvento,
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text('Continuar'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      child: Container(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.confirmation_num_outlined, size: 21),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} adicionados · ${ValueFormatters.moeda(total)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
             ),
-          ),
+            const SizedBox(width: 10),
+            SizedBox(
+              height: 38,
+              child: FilledButton(
+                onPressed: itens.isEmpty || processandoCompra
+                    ? null
+                    : _abrirCompraEvento,
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.amareloCerveja,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 18),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('Continuar'),
+              ),
+            ),
+          ],
         ),
       ),
     );
