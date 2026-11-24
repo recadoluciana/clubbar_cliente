@@ -1977,161 +1977,164 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _nomeModalidade(lote),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
-                color: ehCortesia ? Colors.green.shade800 : Colors.black87,
+      child: SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _nomeModalidade(lote),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: ehCortesia ? Colors.green.shade800 : Colors.black87,
+                ),
               ),
-            ),
-            _informacoesMeiaEntrada(
-              mostrarQuemTemDireito: ehMeiaEntrada,
-              exigeComprovante: lote.exigeComprovante,
-            ),
-            if (cortesiaEsgotada)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
+              _informacoesMeiaEntrada(
+                mostrarQuemTemDireito: ehMeiaEntrada,
+                exigeComprovante: lote.exigeComprovante,
+              ),
+              if (cortesiaEsgotada)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: Colors.red.shade300),
+                    ),
+                    child: Text(
+                      'Cortesias esgotadas',
+                      style: TextStyle(
+                        color: Colors.red.shade700,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.red.shade300),
-                  ),
+                ),
+              if (ehCortesia && lote.horarioLimiteEntrada != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6),
                   child: Text(
-                    'Cortesias esgotadas',
+                    'Válido para entrada até as ${lote.horarioLimiteEntrada} horas.',
                     style: TextStyle(
-                      color: Colors.red.shade700,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      color: Colors.deepOrange.shade700,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),
-              ),
-            if (ehCortesia && lote.horarioLimiteEntrada != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  'Válido para entrada até as ${lote.horarioLimiteEntrada} horas.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.deepOrange.shade700,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Text(
-                  _textoLimitePorTransacao(lote),
-                  style: const TextStyle(fontSize: 11, color: Colors.black54),
-                ),
-                Builder(
-                  builder: (context) {
-                    final situacao = lote.situacaoVendaEm(
-                      HorarioBrasil.agora(),
-                    );
-                    final cor = situacao == 'Disponível'
-                        ? Colors.green.shade700
-                        : Colors.red.shade700;
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        situacao,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: cor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                if (ehCortesia) botaoAdicionar,
-              ],
-            ),
-            const SizedBox(height: 6),
-            if (!ehCortesia) ...[
-              Row(
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Expanded(
-                    child: Wrap(
-                      spacing: 5,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          ValueFormatters.moeda(lote.preco),
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                          ),
+                  Text(
+                    _textoLimitePorTransacao(lote),
+                    style: const TextStyle(fontSize: 11, color: Colors.black54),
+                  ),
+                  Builder(
+                    builder: (context) {
+                      final situacao = lote.situacaoVendaEm(
+                        HorarioBrasil.agora(),
+                      );
+                      final cor = situacao == 'Disponível'
+                          ? Colors.green.shade700
+                          : Colors.red.shade700;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
                         ),
-                        Text(
-                          '(+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
-                          style: const TextStyle(
+                        decoration: BoxDecoration(
+                          color: cor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          situacao,
+                          style: TextStyle(
                             fontSize: 11,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.normal,
+                            color: cor,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                  _controleQuantidadeModalidade(
-                    lote: lote,
-                    quantidade: quantidade,
-                    disponibilidade: disponivel,
-                  ),
+                  if (ehCortesia) botaoAdicionar,
                 ],
               ),
-              const Divider(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Subtotal',
-                          style: TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          ValueFormatters.moeda(total),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
+              const SizedBox(height: 6),
+              if (!ehCortesia) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: Wrap(
+                        spacing: 5,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            ValueFormatters.moeda(lote.preco),
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                      ],
+                          Text(
+                            '(+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.black54,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  botaoAdicionar,
-                ],
-              ),
+                    _controleQuantidadeModalidade(
+                      lote: lote,
+                      quantidade: quantidade,
+                      disponibilidade: disponivel,
+                    ),
+                  ],
+                ),
+                const Divider(height: 18),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Subtotal',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            ValueFormatters.moeda(total),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    botaoAdicionar,
+                  ],
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
