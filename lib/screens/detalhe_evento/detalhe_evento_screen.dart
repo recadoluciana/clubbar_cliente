@@ -1321,7 +1321,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             );
       if (!mounted) return;
       setState(() => _compraEvento = compra);
-      AppSnackBar.sucesso(context, 'Ingresso adicionado à compra do evento.');
+      AppSnackBar.sucesso(context, 'Ingresso adicionado.');
       await carregarStatusLotes();
     } catch (e) {
       if (mounted) {
