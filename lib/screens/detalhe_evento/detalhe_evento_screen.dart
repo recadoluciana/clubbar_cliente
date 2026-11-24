@@ -45,7 +45,7 @@ int _limitePorTransacao(EventoLote lote) =>
     _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
 
 String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
-    ? 'Limite de 1 ingresso gratuito por CPF'
+    ? 'Limite de 1 ingresso por CPF'
     : 'Limite de 5 ingressos por transação';
 
 String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
@@ -1612,8 +1612,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : quantidadeInformada;
     // A sacola é deliberadamente compacta: ela substitui a navegação inferior
     // e não deve virar uma segunda tela sobre o evento.
-    final expandidaComItens = _sacolaExpandida && itens.isNotEmpty;
-    final altura = expandidaComItens ? 154.0 : 42.0;
+    final altura = 52.0;
 
     return SafeArea(
       top: false,
@@ -1637,7 +1636,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         ),
                   child: Row(
                     children: [
-                      const Icon(Icons.shopping_bag_outlined),
+                      const Icon(Icons.confirmation_num_outlined),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -1647,81 +1646,24 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
-                      IconButton(
-                        tooltip: expandidaComItens
-                            ? 'Recolher sacola'
-                            : 'Expandir sacola',
-                        onPressed: itens.isEmpty
-                            ? null
-                            : () => setState(
-                                () => _sacolaExpandida = !_sacolaExpandida,
-                              ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(
-                          minWidth: 28,
-                          minHeight: 28,
-                        ),
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(
-                          expandidaComItens
-                              ? Icons.expand_less
-                              : Icons.expand_more,
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        height: 34,
+                        child: FilledButton(
+                          onPressed: itens.isEmpty || processandoCompra
+                              ? null
+                              : _abrirCompraEvento,
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text('Continuar'),
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (expandidaComItens) ...[
-                  const Divider(height: 18),
-                  for (final item in itens)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'} · ${item['nome_setor'] ?? 'Setor'}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 12),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          tooltip: 'Remover da sacola',
-                          onPressed: _removendoItemSacola
-                              ? null
-                              : () => _removerItemSacola(item),
-                          icon: const Icon(
-                            Icons.delete_outline,
-                            size: 19,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-                if (expandidaComItens) ...[
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: SizedBox(
-                      width: 132,
-                      height: 36,
-                      child: FilledButton(
-                        onPressed: processandoCompra
-                            ? null
-                            : _abrirCompraEvento,
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text('Continuar'),
-                      ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -2025,10 +1967,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        backgroundColor: ehCortesia
-            ? const Color(0xFF5B9BD5)
-            : AppColors.amareloCerveja,
-        foregroundColor: ehCortesia ? Colors.white : Colors.black,
+        backgroundColor: AppColors.amareloCerveja,
+        foregroundColor: Colors.black,
         disabledBackgroundColor: Colors.grey.shade300,
         disabledForegroundColor: Colors.grey.shade600,
       ),
@@ -2932,10 +2872,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             const Padding(
                               padding: EdgeInsets.only(left: 4, bottom: 5),
                               child: Text(
-                                'Descrição',
+                                'Descrição do evento',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.black54,
+                                  fontSize: 15,
+                                  color: Colors.black,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -3007,6 +2947,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
+                            TextButton.icon(
+                              onPressed: _abrirExplicacaoTaxas,
+                              icon: const Icon(Icons.info_outline, size: 17),
+                              label: const Text('Entenda nossas taxas'),
+                              style: _estiloLinksEvento(),
+                            ),
                           ],
                         ],
                       ),
