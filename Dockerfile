@@ -25,7 +25,9 @@ ARG GOOGLE_OAUTH_CLIENT_ID=""
 ARG APPLE_SERVICE_ID=""
 ARG APPLE_REDIRECT_URI=""
 
-RUN flutter build web --release \
+# O build JavaScript não usa Wasm. Desabilitamos apenas o dry-run Wasm,
+# incompatível com imports legados de dependências web como secure storage.
+RUN flutter build web --release --no-wasm-dry-run \
     --dart-define=API_BASE_URL=${API_BASE_URL} \
     --dart-define=APP_WEB_URL=${APP_WEB_URL} \
     --dart-define=SITE_URL=${SITE_URL} \

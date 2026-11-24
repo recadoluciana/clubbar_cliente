@@ -107,6 +107,7 @@ class _ModalidadesIngressoScreenState
   int _itensNaSacola = 0;
   double _totalSacola = 0;
   final List<String> _detalhesSacola = [];
+  bool _sacolaExpandida = false;
 
   @override
   void initState() {
