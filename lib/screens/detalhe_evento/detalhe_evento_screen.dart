@@ -45,7 +45,7 @@ int _limitePorTransacao(EventoLote lote) =>
     _ehCortesia(lote) ? 1 : _limiteIngressosPorTransacao;
 
 String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
-    ? 'Limite de 1 ingresso gratuito por CPF neste evento'
+    ? 'Limite de 1 ingresso gratuito por CPF'
     : 'Limite de 5 ingressos por transação';
 
 String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
@@ -1870,36 +1870,44 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ),
               ),
             const SizedBox(height: 6),
-            Builder(
-              builder: (context) {
-                final situacao = lote.situacaoVendaEm(HorarioBrasil.agora());
-                final cor = situacao == 'Disponível'
-                    ? Colors.green.shade700
-                    : Colors.red.shade700;
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: cor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    situacao,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: cor,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 3),
-            Text(
-              _textoLimitePorTransacao(lote),
-              style: TextStyle(fontSize: 11, color: Colors.black54),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(
+                  _textoLimitePorTransacao(lote),
+                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                ),
+                Builder(
+                  builder: (context) {
+                    final situacao = lote.situacaoVendaEm(
+                      HorarioBrasil.agora(),
+                    );
+                    final cor = situacao == 'Disponível'
+                        ? Colors.green.shade700
+                        : Colors.red.shade700;
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: cor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        situacao,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: cor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
             const SizedBox(height: 6),
             Row(
