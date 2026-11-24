@@ -1559,7 +1559,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 title: Text(
                   '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'}',
                 ),
-                subtitle: Text('${item['nome_setor'] ?? 'Setor'}'),
+                subtitle: Text(
+                  '${item['nome_setor'] ?? 'Setor'} · ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
+                ),
+                trailing: IconButton(
+                  tooltip: 'Remover ingresso',
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  onPressed: _removendoItemSacola
+                      ? null
+                      : () async {
+                          await _removerItemSacola(item);
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                ),
               ),
           ],
         ),
