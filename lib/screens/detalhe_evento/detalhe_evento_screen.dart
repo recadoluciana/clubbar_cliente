@@ -2351,23 +2351,23 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                 Flexible(
                                   child: SizedBox(
                                     width: double.infinity,
-                                    height: 44,
+                                    height: 38,
                                     child: FilledButton.icon(
                                       onPressed: _irParaIngressos,
                                       style: FilledButton.styleFrom(
                                         backgroundColor: Colors.blue,
                                         foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 10,
+                                          horizontal: 10,
+                                          vertical: 6,
                                         ),
-                                        minimumSize: const Size(0, 44),
+                                        minimumSize: const Size(0, 38),
                                         tapTargetSize:
                                             MaterialTapTargetSize.shrinkWrap,
                                       ),
                                       icon: const Icon(
                                         Icons.confirmation_number_outlined,
-                                        size: 18,
+                                        size: 16,
                                       ),
                                       label: const FittedBox(
                                         fit: BoxFit.scaleDown,
@@ -2375,7 +2375,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           'Comprar ingresso',
                                           maxLines: 1,
                                           style: TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 11,
                                             fontWeight: FontWeight.w800,
                                           ),
                                         ),
@@ -2388,7 +2388,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                               Flexible(
                                 child: SizedBox(
                                   width: double.infinity,
-                                  height: 44,
+                                  height: 38,
                                   child: FilledButton.icon(
                                     onPressed: () {
                                       MainNavigationController.abrirTela(
@@ -2399,16 +2399,16 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                       backgroundColor: Colors.amber,
                                       foregroundColor: Colors.black,
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 10,
+                                        horizontal: 10,
+                                        vertical: 6,
                                       ),
-                                      minimumSize: const Size(0, 44),
+                                      minimumSize: const Size(0, 38),
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
                                     icon: const Icon(
                                       Icons.shopping_bag_outlined,
-                                      size: 18,
+                                      size: 16,
                                     ),
                                     label: const FittedBox(
                                       fit: BoxFit.scaleDown,
