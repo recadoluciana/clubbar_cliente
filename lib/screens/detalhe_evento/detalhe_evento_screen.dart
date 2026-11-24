@@ -79,6 +79,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final String Function(EventoLote) nomeModalidade;
   final Future<void> Function(EventoLote lote, int quantidade) onComprar;
   final VoidCallback onEntenderTaxa;
+  final Map<String, dynamic>? compraEvento;
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
@@ -91,6 +92,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.nomeModalidade,
     required this.onComprar,
     required this.onEntenderTaxa,
+    this.compraEvento,
   });
 
   @override
@@ -106,6 +108,23 @@ class _ModalidadesIngressoScreenState
   double _totalSacola = 0;
   bool _sacolaExpandida = false;
   final List<String> _detalhesSacola = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final compra = widget.compraEvento;
+    _itensNaSacola = int.tryParse('${compra?['quantidade'] ?? 0}') ?? 0;
+    _totalSacola = double.tryParse('${compra?['valor_total'] ?? 0}') ?? 0;
+    final itens = compra?['itens'];
+    if (itens is List) {
+      _detalhesSacola.addAll(
+        itens.whereType<Map>().map(
+          (item) =>
+              '${item['quantidade'] ?? 1} x ${item['nome_modalidade'] ?? 'Ingresso'} · ${item['nome_setor'] ?? 'Setor'}',
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1524,7 +1543,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   }
 
   Widget _sacolaCompraEvento() {
-    final compra = _compraEvento!;
+    final compra = _compraEvento ?? const <String, dynamic>{};
     final quantidade = int.tryParse('${compra['quantidade'] ?? 0}') ?? 0;
     final total = double.tryParse('${compra['valor_total'] ?? 0}') ?? 0;
     final itens = (compra['itens'] is List)
@@ -1557,7 +1576,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
+                          '$quantidade ${quantidade == 1 ? 'item' : 'itens'} na sacola · ${ValueFormatters.moeda(total)}',
                           style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
@@ -1685,6 +1704,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           onComprar: (lote, quantidade) =>
               iniciarReserva(lote, quantidadeSelecionada: quantidade),
           onEntenderTaxa: _abrirExplicacaoTaxas,
+          compraEvento: _compraEvento,
         ),
       ),
     );
@@ -2900,7 +2920,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ],
               ),
             ),
-      bottomNavigationBar: _compraEvento == null ? null : _sacolaCompraEvento(),
+      bottomNavigationBar: _sacolaCompraEvento(),
     );
   }
 }
