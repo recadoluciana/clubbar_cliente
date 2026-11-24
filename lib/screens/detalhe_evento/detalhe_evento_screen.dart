@@ -269,13 +269,22 @@ class _ModalidadesIngressoScreenState
                         ),
                       ),
                     ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _itensNaSacola == 0
-                          ? null
-                          : () => Navigator.of(context).pop(),
-                      child: const Text('Continuar'),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SizedBox(
+                      width: 132,
+                      height: 36,
+                      child: FilledButton(
+                        onPressed: _itensNaSacola == 0
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Text('Continuar'),
+                      ),
                     ),
                   ),
                 ],
