@@ -2565,10 +2565,40 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           ),
                           if (ev.classificacaoEtaria.trim().isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            _informacaoDoEvento(
-                              icone: Icons.verified_user_outlined,
-                              texto:
-                                  'Classificação etária: ${ev.classificacaoEtaria}',
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _informacaoDoEvento(
+                                    icone: Icons.verified_user_outlined,
+                                    texto:
+                                        'Classificação etária: ${ev.classificacaoEtaria}',
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const PoliticaCompraScreen(
+                                            tipo: 'INGRESSO',
+                                          ),
+                                    ),
+                                  ),
+                                  icon: const Icon(
+                                    Icons.policy_outlined,
+                                    size: 16,
+                                  ),
+                                  label: const Text('Política de compra'),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    textStyle: const TextStyle(fontSize: 11),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                           _faixaSituacaoEContato(ev),
@@ -2898,35 +2928,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ),
                             const SizedBox(height: 8),
                           ],
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const PoliticaCompraScreen(
-                                      tipo: 'INGRESSO',
-                                    ),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.policy_outlined,
-                                  size: 18,
-                                ),
-                                label: const Text(
-                                  'Política de compra de ingresso',
-                                ),
-                                style: _estiloLinksEvento(),
-                              ),
-                              const SizedBox(height: 6),
-                              TextButton.icon(
-                                onPressed: _abrirExplicacaoTaxas,
-                                icon: const Icon(Icons.info_outline, size: 18),
-                                label: const Text('Entenda as taxas'),
-                                style: _estiloLinksEvento(),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
