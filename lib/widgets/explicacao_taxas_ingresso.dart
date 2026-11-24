@@ -119,11 +119,6 @@ void mostrarExplicacaoTaxas(BuildContext context) {
               'Segurança',
               'tecnologias e controles que protegem os dados e a operação financeira.',
             ),
-            const SizedBox(height: 22),
-            const Text(
-              'Taxa de processamento: É destinada a:',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
-            ),
           ],
         ),
       ),
