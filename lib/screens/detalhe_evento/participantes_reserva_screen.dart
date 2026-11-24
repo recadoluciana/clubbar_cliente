@@ -62,15 +62,20 @@ class _ParticipantesReservaScreenState
   @override
   void initState() {
     super.initState();
-    final quantidade = int.tryParse('${widget.reserva['quantidade']}') ?? 1;
+    var quantidade = int.tryParse('${widget.reserva['quantidade']}') ?? 1;
     final itens = widget.reserva['itens'];
     if (itens is List) {
       for (final item in itens.whereType<Map>()) {
         final quantidadeItem = int.tryParse('${item['quantidade']}') ?? 1;
+        // A compra agrupada pode chegar com o resumo antigo (quantidade 1)
+        // enquanto a lista de itens já contém duas cortesias. A lista é a
+        // fonte correta para montar um participante por ingresso.
         for (var i = 0; i < quantidadeItem; i++) {
           dadosParticipantes.add(Map<String, dynamic>.from(item));
         }
       }
+      final quantidadeDosItens = dadosParticipantes.length;
+      if (quantidadeDosItens > quantidade) quantidade = quantidadeDosItens;
     }
     for (var i = 0; i < quantidade; i++) {
       nomes.add(TextEditingController());

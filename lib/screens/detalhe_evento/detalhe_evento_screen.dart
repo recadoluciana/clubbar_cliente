@@ -1593,11 +1593,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget _sacolaCompraEvento() {
     final compra = _compraEvento ?? const <String, dynamic>{};
-    final quantidade = int.tryParse('${compra['quantidade'] ?? 0}') ?? 0;
     final total = double.tryParse('${compra['valor_total'] ?? 0}') ?? 0;
     final itens = (compra['itens'] is List)
         ? (compra['itens'] as List).whereType<Map>().toList()
         : const <Map>[];
+    final quantidadeInformada =
+        int.tryParse('${compra['quantidade'] ?? 0}') ?? 0;
+    final quantidadeDosItens = itens.fold<int>(
+      0,
+      (soma, item) => soma + (int.tryParse('${item['quantidade'] ?? 1}') ?? 1),
+    );
+    final quantidade = quantidadeDosItens > quantidadeInformada
+        ? quantidadeDosItens
+        : quantidadeInformada;
     // A sacola é deliberadamente compacta: ela substitui a navegação inferior
     // e não deve virar uma segunda tela sobre o evento.
     final expandidaComItens = _sacolaExpandida && itens.isNotEmpty;
