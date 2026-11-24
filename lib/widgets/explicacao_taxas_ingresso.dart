@@ -81,7 +81,7 @@ void mostrarExplicacaoTaxas(BuildContext context) {
             ),
             const SizedBox(height: 14),
             Text(
-              'No Clubbar, os valores aplicáveis são apresentados antes da confirmação do pedido. Eles ajudam a viabilizar a experiência de compra e o processamento seguro do pagamento.',
+              'No Clubbar, os valores aplicáveis são apresentados antes da confirmação do pedido.',
               style: TextStyle(
                 color: Colors.grey.shade800,
                 fontSize: 14,
@@ -94,7 +94,7 @@ void mostrarExplicacaoTaxas(BuildContext context) {
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
             ),
             Text(
-              'É o valor destinado à estrutura que torna a venda e o acompanhamento do ingresso possíveis.',
+              'É o valor destinado à: estrutura que torna a venda e o acompanhamento do ingresso possíveis.',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 14,
