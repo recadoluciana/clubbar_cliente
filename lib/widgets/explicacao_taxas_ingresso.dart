@@ -58,7 +58,7 @@ void mostrarExplicacaoTaxas(BuildContext context) {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Entenda as taxas da compra',
+                    'Entenda nossas taxas',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
                   ),
                 ),
