@@ -1,19 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../utils/app_snackbar.dart';
-
-Future<void> _abrirReferenciaTaxas(BuildContext context) async {
-  final abriu = await launchUrl(
-    Uri.parse(
-      'https://www.stj.jus.br/sites/portalp/Paginas/Comunicacao/Noticias/15102020-STJ-readequa-entendimento-sobre-abuso-da-taxa-de-conveniencia-em-venda-de-ingressos-pela-internet.aspx',
-    ),
-    mode: LaunchMode.externalApplication,
-  );
-  if (!abriu && context.mounted) {
-    AppSnackBar.erro(context, 'Não foi possível abrir a referência.');
-  }
-}
 
 Widget _itemTaxa(String titulo, String descricao) {
   return Padding(
@@ -147,22 +132,6 @@ void mostrarExplicacaoTaxas(BuildContext context) {
                 fontSize: 14,
                 height: 1.45,
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'O total da compra, com as taxas aplicáveis, sempre é exibido antes do pagamento — uma medida de transparência alinhada ao entendimento do STJ sobre a cobrança de conveniência na venda online de ingressos.',
-              style: TextStyle(
-                color: Colors.grey.shade800,
-                fontSize: 14,
-                height: 1.45,
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextButton.icon(
-              onPressed: () => _abrirReferenciaTaxas(context),
-              icon: const Icon(Icons.open_in_new_rounded, size: 18),
-              label: const Text('Consultar orientação do STJ'),
-              style: TextButton.styleFrom(alignment: Alignment.centerLeft),
             ),
           ],
         ),
