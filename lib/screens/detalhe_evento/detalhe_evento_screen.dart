@@ -1653,6 +1653,22 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             const SizedBox(width: 10),
             SizedBox(
               height: 38,
+              child: OutlinedButton(
+                onPressed: itens.isEmpty || processandoCompra
+                    ? null
+                    : _abrirCompraEvento,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.black87,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text('Ver ingressos'),
+              ),
+            ),
+            const SizedBox(width: 6),
+            SizedBox(
+              height: 38,
               child: FilledButton(
                 onPressed: itens.isEmpty || processandoCompra
                     ? null
@@ -2069,10 +2085,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       );
                     },
                   ),
-                  if (ehCortesia) botaoAdicionar,
                 ],
               ),
               const SizedBox(height: 6),
+              if (ehCortesia)
+                Align(alignment: Alignment.centerRight, child: botaoAdicionar),
               if (!ehCortesia) ...[
                 Row(
                   children: [
