@@ -949,6 +949,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : 'https://www.instagram.com/${perfil.replaceFirst(RegExp(r'^@'), '')}/';
     final telefone = atracao.telefoneContato.replaceAll(RegExp(r'[^0-9+]'), '');
     var fotoAtual = 0;
+    final fotoController = PageController();
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -983,7 +984,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   builder: (context, setFotoState) {
                     void irPara(int indice) {
                       final proxima = indice.clamp(0, fotos.length - 1) as int;
-                      setFotoState(() => fotoAtual = proxima);
+                      fotoController.animateToPage(
+                        proxima,
+                        duration: const Duration(milliseconds: 260),
+                        curve: Curves.easeOut,
+                      );
                     }
 
                     return Column(
@@ -999,9 +1004,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   width: double.infinity,
                                   color: Colors.black,
                                   child: PageView.builder(
-                                    controller: PageController(
-                                      initialPage: fotoAtual,
-                                    ),
+                                    controller: fotoController,
                                     itemCount: fotos.length,
                                     onPageChanged: (indice) =>
                                         setFotoState(() => fotoAtual = indice),
