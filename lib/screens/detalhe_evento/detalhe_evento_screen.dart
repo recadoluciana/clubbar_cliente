@@ -155,14 +155,6 @@ class _ModalidadesIngressoScreenState
               spacing: 8,
               runSpacing: 4,
               children: [
-                Text(
-                  widget.dataHoraEvento,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
                 if (nomeSetor.isNotEmpty)
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -185,6 +177,14 @@ class _ModalidadesIngressoScreenState
                       ),
                     ],
                   ),
+                Text(
+                  widget.dataHoraEvento,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ),
             icone: Icons.confirmation_number_rounded,
