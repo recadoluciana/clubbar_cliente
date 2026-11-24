@@ -79,7 +79,7 @@ void mostrarExplicacaoTaxas(BuildContext context) {
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
             ),
             Text(
-              'É o valor destinado à:',
+              'É o valor destinado a:',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 14,
