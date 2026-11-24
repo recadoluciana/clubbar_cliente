@@ -1555,7 +1555,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : const <Map>[];
     // A sacola é deliberadamente compacta: ela substitui a navegação inferior
     // e não deve virar uma segunda tela sobre o evento.
-    final altura = _sacolaExpandida ? 154.0 : 50.0;
+    final altura = _sacolaExpandida ? 154.0 : 42.0;
 
     return SafeArea(
       top: false,
@@ -1595,8 +1595,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         ),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
-                          minWidth: 32,
-                          minHeight: 32,
+                          minWidth: 28,
+                          minHeight: 28,
                         ),
                         visualDensity: VisualDensity.compact,
                         icon: Icon(
