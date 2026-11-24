@@ -79,7 +79,7 @@ void mostrarExplicacaoTaxas(BuildContext context) {
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
             ),
             Text(
-              'É o valor destinado à: estrutura que torna a venda e o acompanhamento do ingresso possíveis.',
+              'É o valor destinado à:',
               style: TextStyle(
                 color: Colors.grey.shade700,
                 fontSize: 14,
