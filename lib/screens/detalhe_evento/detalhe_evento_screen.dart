@@ -2067,22 +2067,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     );
                   },
                 ),
+                if (ehCortesia) botaoAdicionar,
               ],
             ),
             const SizedBox(height: 6),
-            if (ehCortesia)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _controleQuantidadeModalidade(
-                    lote: lote,
-                    quantidade: quantidade,
-                    disponibilidade: disponivel,
-                  ),
-                  botaoAdicionar,
-                ],
-              )
-            else ...[
+            if (!ehCortesia) ...[
               Row(
                 children: [
                   Expanded(
