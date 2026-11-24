@@ -1709,23 +1709,34 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Expanded(
-              child: InkWell(
-                onTap: itens.isEmpty || processandoCompra
-                    ? null
-                    : _verIngressosSacola,
-                child: Row(
-                  children: [
-                    const Icon(Icons.confirmation_num_outlined, size: 21),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w800),
-                      ),
+              child: Container(
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.amareloCerveja,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: itens.isEmpty || processandoCompra
+                      ? null
+                      : _verIngressosSacola,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.confirmation_num_outlined, size: 21),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -1743,7 +1754,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text('Continuar'),
+                child: const Text(
+                  'Continuar',
+                  style: TextStyle(fontWeight: FontWeight.w800),
+                ),
               ),
             ),
           ],
