@@ -1126,16 +1126,17 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   runSpacing: 4,
                   children: [
                     if (perfil.isNotEmpty)
-                      TextButton.icon(
+                      TextButton(
                         onPressed: () => _abrirLinkAtracao(instagramUrl),
-                        icon: const Icon(Icons.alternate_email, size: 18),
-                        label: Text(perfil),
+                        child: Text(perfil),
                       ),
                     if (telefone.isNotEmpty)
-                      TextButton.icon(
-                        onPressed: () => _abrirLinkAtracao('tel:$telefone'),
-                        icon: const Icon(Icons.phone, size: 18),
-                        label: const Text('Contratar show'),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        child: Text(atracao.telefoneContato),
                       ),
                   ],
                 ),
