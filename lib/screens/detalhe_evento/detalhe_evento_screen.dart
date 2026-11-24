@@ -1708,31 +1708,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.confirmation_num_outlined, size: 21),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-            ),
-            const SizedBox(width: 10),
-            SizedBox(
-              height: 38,
-              child: OutlinedButton(
-                onPressed: itens.isEmpty || processandoCompra
+            Expanded(
+              child: InkWell(
+                onTap: itens.isEmpty || processandoCompra
                     ? null
                     : _verIngressosSacola,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.black87,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                child: Row(
+                  children: [
+                    const Icon(Icons.confirmation_num_outlined, size: 21),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text('Ver ingressos'),
               ),
             ),
             const SizedBox(width: 6),
