@@ -2420,6 +2420,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         return inicioA.compareTo(inicioB);
       });
     final lotesGlobais = _lotesGlobaisAgrupados;
+    final nomesLotes = lotesGlobais
+        .map((setores) => setores.first.first.nome.trim())
+        .where((nome) => nome.isNotEmpty)
+        .toSet();
     final unicoLoteGlobal = lotesGlobais.length == 1
         ? lotesGlobais.first.first.first
         : null;
@@ -2887,7 +2891,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             ...lotesGlobais.map(
                               (setores) => cardLoteGlobal(
                                 setores,
-                                exibirNomeLote: lotesGlobais.length > 1,
+                                exibirNomeLote: nomesLotes.length > 1,
                                 exibirNomeSetor: true,
                               ),
                             ),
