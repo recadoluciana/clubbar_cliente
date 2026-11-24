@@ -121,17 +121,8 @@ void mostrarExplicacaoTaxas(BuildContext context) {
             ),
             const SizedBox(height: 22),
             const Text(
-              'Parcelamento e transparência',
+              'Taxa de processamento: É destinada a:',
               style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'A taxa de conveniência segue a configuração do estabelecimento. Os valores de conveniência, processamento e total são informados antes da confirmação. No Mercado Pago, o cartão para ingressos está disponível à vista.',
-              style: TextStyle(
-                color: Colors.grey.shade800,
-                fontSize: 14,
-                height: 1.45,
-              ),
             ),
           ],
         ),
