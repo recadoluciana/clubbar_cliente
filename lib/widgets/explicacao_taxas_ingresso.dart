@@ -99,9 +99,29 @@ void mostrarExplicacaoTaxas(BuildContext context) {
               'funcionalidades necessárias à venda, conforme a configuração da produção.',
             ),
             const SizedBox(height: 22),
-            _itemTaxa(
-              'Taxa de processamento',
-              'É destinada a: Meio de pagamento: Mercado Pago.',
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.grey.shade800,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                  children: const [
+                    TextSpan(
+                      text: 'Taxa de processamento: ',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    TextSpan(text: 'É destinada a: '),
+                    TextSpan(
+                      text: 'Meio de pagamento: ',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    TextSpan(text: 'Mercado Pago.'),
+                  ],
+                ),
+              ),
             ),
             _itemTaxa(
               'Transação financeira',
