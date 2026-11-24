@@ -1627,6 +1627,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final quantidade = quantidadeDosItens > quantidadeInformada
         ? quantidadeDosItens
         : quantidadeInformada;
+    final segundosReserva = int.tryParse('${compra['segundos_restantes']}');
+    final tempoReserva = segundosReserva == null
+        ? null
+        : '${(segundosReserva ~/ 60).toString().padLeft(2, '0')}:${(segundosReserva % 60).toString().padLeft(2, '0')}';
     return SafeArea(
       top: false,
       child: Container(
@@ -1643,7 +1647,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} adicionados · ${ValueFormatters.moeda(total)}',
+                '$quantidade ${quantidade == 1 ? 'ingresso' : 'ingressos'} · ${ValueFormatters.moeda(total)}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
@@ -1651,6 +1655,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             ),
             const SizedBox(width: 10),
+            if (tempoReserva != null) ...[
+              const Icon(Icons.timer_outlined, size: 17, color: Colors.red),
+              const SizedBox(width: 3),
+              Text(
+                tempoReserva,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             SizedBox(
               height: 38,
               child: OutlinedButton(
