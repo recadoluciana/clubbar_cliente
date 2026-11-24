@@ -474,6 +474,7 @@ class _ParticipantesReservaScreenState
     return InputDecoration(
       labelText: texto,
       isDense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       filled: true,
       fillColor: Colors.white,
       border: OutlineInputBorder(
