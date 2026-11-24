@@ -418,7 +418,10 @@ class _ModalidadesIngressoScreenState
               children: [
                 Text(
                   _textoLimitePorTransacao(lote),
-                  style: const TextStyle(fontSize: 11, color: Colors.black54),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: ehCortesia ? Colors.black : Colors.black54,
+                  ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -1443,7 +1446,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         );
         final status = '${atual['status'] ?? ''}'.toUpperCase();
         final segundos = int.tryParse('${atual['segundos_restantes']}');
-        if (status == 'EXPIRADA' || status == 'CANCELADA' ||
+        if (status == 'EXPIRADA' ||
+            status == 'CANCELADA' ||
             (segundos != null && segundos <= 0)) {
           _removerItemLocalDaSacola(compra, reservaId);
           if (mounted) {
@@ -2011,6 +2015,24 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       widget.loja.vrtaxaminimaingresso,
     );
     final total = (lote.preco + taxa) * quantidade;
+    final botaoAdicionar = FilledButton.icon(
+      onPressed: !vendaDisponivel || processandoCompra || !modalidadeDisponivel
+          ? null
+          : () => iniciarReserva(lote, quantidadeSelecionada: quantidade),
+      icon: const Icon(Icons.add, size: 17),
+      label: const Text('Adicionar'),
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        backgroundColor: ehCortesia
+            ? const Color(0xFF5B9BD5)
+            : AppColors.amareloCerveja,
+        foregroundColor: ehCortesia ? Colors.white : Colors.black,
+        disabledBackgroundColor: Colors.grey.shade300,
+        disabledForegroundColor: Colors.grey.shade600,
+      ),
+    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -2107,90 +2129,78 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ],
             ),
             const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: Wrap(
-                    spacing: 5,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        ValueFormatters.moeda(lote.preco),
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        '(+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                    ],
+            if (ehCortesia)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _controleQuantidadeModalidade(
+                    lote: lote,
+                    quantidade: quantidade,
+                    disponibilidade: disponivel,
                   ),
-                ),
-                _controleQuantidadeModalidade(
-                  lote: lote,
-                  quantidade: quantidade,
-                  disponibilidade: disponivel,
-                ),
-              ],
-            ),
-            const Divider(height: 18),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Subtotal',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        ValueFormatters.moeda(total),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
+                  botaoAdicionar,
+                ],
+              )
+            else ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: Wrap(
+                      spacing: 5,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          ValueFormatters.moeda(lote.preco),
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                FilledButton.icon(
-                  onPressed:
-                      !vendaDisponivel ||
-                          processandoCompra ||
-                          !modalidadeDisponivel
-                      ? null
-                      : () => iniciarReserva(
-                          lote,
-                          quantidadeSelecionada: quantidade,
+                        Text(
+                          '(+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.normal,
+                          ),
                         ),
-                  icon: const Icon(Icons.add, size: 17),
-                  label: const Text('Adicionar'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
+                      ],
                     ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: ehCortesia
-                        ? const Color(0xFF5B9BD5)
-                        : AppColors.amareloCerveja,
-                    foregroundColor: ehCortesia ? Colors.white : Colors.black,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
                   ),
-                ),
-              ],
-            ),
+                  _controleQuantidadeModalidade(
+                    lote: lote,
+                    quantidade: quantidade,
+                    disponibilidade: disponivel,
+                  ),
+                ],
+              ),
+              const Divider(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Subtotal',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          ValueFormatters.moeda(total),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  botaoAdicionar,
+                ],
+              ),
+            ],
           ],
         ),
       ),
