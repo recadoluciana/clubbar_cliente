@@ -1087,17 +1087,35 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ],
               if (atracao.descricao.trim().isNotEmpty) ...[
                 const SizedBox(height: 20),
-                const Text(
-                  'Sobre a atração',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  atracao.descricao,
-                  style: TextStyle(
-                    color: Colors.grey.shade800,
-                    fontSize: 14,
-                    height: 1.45,
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Sobre a atração',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        atracao.descricao,
+                        style: TextStyle(
+                          color: Colors.grey.shade800,
+                          fontSize: 14,
+                          height: 1.45,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
