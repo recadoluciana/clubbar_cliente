@@ -109,6 +109,7 @@ void mostrarExplicacaoTaxas(BuildContext context) {
                     style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   Text('É destinada a:'),
+                  SizedBox(height: 8),
                   Text.rich(
                     TextSpan(
                       children: [
