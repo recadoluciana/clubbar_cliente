@@ -2583,14 +2583,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                           Text(
                                             'Cardápio',
                                             style: TextStyle(
-                                              fontSize: 10,
+                                              fontSize: 11,
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
                                           Text(
                                             'Comprar produto',
                                             style: TextStyle(
-                                              fontSize: 12,
+                                              fontSize: 11,
                                               fontWeight: FontWeight.w800,
                                             ),
                                           ),
