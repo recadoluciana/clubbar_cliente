@@ -99,17 +99,9 @@ void mostrarExplicacaoTaxas(BuildContext context) {
               'funcionalidades necessárias à venda, conforme a configuração da produção.',
             ),
             const SizedBox(height: 22),
-            const Text(
+            _itemTaxa(
               'Taxa de processamento',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
-            ),
-            Text(
-              'Nos ingressos pagos pelo Mercado Pago, cobramos 2% do valor dos ingressos por processamento, com arredondamento por ingresso. Essa parcela ajuda a cobrir o custo do pagamento. Se o custo for maior, o Clubbar absorve a diferença.',
-              style: TextStyle(
-                color: Colors.grey.shade700,
-                fontSize: 14,
-                height: 1.4,
-              ),
+              'É destinada a: Meio de pagamento: Mercado Pago.',
             ),
             _itemTaxa(
               'Transação financeira',
