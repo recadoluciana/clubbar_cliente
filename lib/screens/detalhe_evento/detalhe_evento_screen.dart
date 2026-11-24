@@ -1696,12 +1696,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final quantidade = quantidadeDosItens > quantidadeInformada
         ? quantidadeDosItens
         : quantidadeInformada;
-    final segundosReserva = _segundosReservaSacola > 0
-        ? _segundosReservaSacola
-        : int.tryParse('${compra['segundos_restantes']}');
-    final tempoReserva = segundosReserva == null
-        ? null
-        : '${(segundosReserva ~/ 60).toString().padLeft(2, '0')}:${(segundosReserva % 60).toString().padLeft(2, '0')}';
     return SafeArea(
       top: false,
       child: Container(
@@ -1726,19 +1720,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            if (tempoReserva != null) ...[
-              const Icon(Icons.timer_outlined, size: 17, color: Colors.red),
-              const SizedBox(width: 3),
-              Text(
-                tempoReserva,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
             SizedBox(
               height: 38,
               child: OutlinedButton(
@@ -2507,6 +2488,27 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
+        actions: [
+          if (_segundosReservaSacola > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${(_segundosReservaSacola ~/ 60).toString().padLeft(2, '0')}:${(_segundosReservaSacola % 60).toString().padLeft(2, '0')}',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
