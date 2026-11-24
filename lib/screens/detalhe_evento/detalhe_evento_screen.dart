@@ -1101,39 +1101,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   ),
                 ),
               ],
-              if (perfil.isNotEmpty ||
-                  telefone.isNotEmpty ||
-                  atracao.videoInstagram.trim().isNotEmpty ||
-                  atracao.videoYoutube.trim().isNotEmpty) ...[
+              if (perfil.isNotEmpty || telefone.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                const Text(
-                  'Contato e vídeos',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    if (perfil.isNotEmpty)
+                      TextButton.icon(
+                        onPressed: () => _abrirLinkAtracao(instagramUrl),
+                        icon: const Icon(Icons.alternate_email, size: 18),
+                        label: Text(perfil),
+                      ),
+                    if (telefone.isNotEmpty)
+                      TextButton.icon(
+                        onPressed: () => _abrirLinkAtracao('tel:$telefone'),
+                        icon: const Icon(Icons.phone, size: 18),
+                        label: const Text('Contratar show'),
+                      ),
+                  ],
                 ),
-                if (perfil.isNotEmpty)
-                  TextButton.icon(
-                    onPressed: () => _abrirLinkAtracao(instagramUrl),
-                    icon: const Icon(Icons.alternate_email),
-                    label: const Text('Instagram da atração'),
-                  ),
-                if (telefone.isNotEmpty)
-                  TextButton.icon(
-                    onPressed: () => _abrirLinkAtracao('tel:$telefone'),
-                    icon: const Icon(Icons.phone),
-                    label: Text('Contratar show: ${atracao.telefoneContato}'),
-                  ),
-                if (atracao.videoInstagram.trim().isNotEmpty)
-                  TextButton.icon(
-                    onPressed: () => _abrirLinkAtracao(atracao.videoInstagram),
-                    icon: const Icon(Icons.play_circle_outline),
-                    label: const Text('Assistir no Instagram'),
-                  ),
-                if (atracao.videoYoutube.trim().isNotEmpty)
-                  TextButton.icon(
-                    onPressed: () => _abrirLinkAtracao(atracao.videoYoutube),
-                    icon: const Icon(Icons.play_circle_outline),
-                    label: const Text('Assistir no YouTube'),
-                  ),
               ],
             ],
           ),
