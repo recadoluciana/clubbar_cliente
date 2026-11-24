@@ -1136,7 +1136,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           horizontal: 12,
                           vertical: 8,
                         ),
-                        child: Text(atracao.telefoneContato),
+                        child: Text(
+                          'Contratar show: ${atracao.telefoneContato}',
+                        ),
                       ),
                   ],
                 ),
