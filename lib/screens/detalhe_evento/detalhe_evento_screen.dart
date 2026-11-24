@@ -256,7 +256,7 @@ class _ModalidadesIngressoScreenState
         child: InkWell(
           onTap: () => setState(() => _sacolaExpandida = !_sacolaExpandida),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -1555,7 +1555,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : const <Map>[];
     // A sacola é deliberadamente compacta: ela substitui a navegação inferior
     // e não deve virar uma segunda tela sobre o evento.
-    final altura = _sacolaExpandida ? 154.0 : 64.0;
+    final altura = _sacolaExpandida ? 154.0 : 50.0;
 
     return SafeArea(
       top: false,
@@ -1568,7 +1568,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             physics: _sacolaExpandida
                 ? null
                 : const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
             child: Column(
               children: [
                 InkWell(
@@ -1593,6 +1593,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         onPressed: () => setState(
                           () => _sacolaExpandida = !_sacolaExpandida,
                         ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
+                        visualDensity: VisualDensity.compact,
                         icon: Icon(
                           _sacolaExpandida
                               ? Icons.expand_less
