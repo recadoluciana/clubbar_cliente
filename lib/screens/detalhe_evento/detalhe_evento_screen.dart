@@ -520,7 +520,7 @@ class _ModalidadesIngressoScreenState
                             if (mounted) setState(() => _processando = false);
                           }
                         },
-                  icon: const Icon(Icons.add_shopping_cart, size: 17),
+                  icon: const Icon(Icons.add, size: 17),
                   label: const Text('Adicionar'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -2102,7 +2102,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                           lote,
                           quantidadeSelecionada: quantidade,
                         ),
-                  icon: const Icon(Icons.add_shopping_cart, size: 17),
+                  icon: const Icon(Icons.add, size: 17),
                   label: const Text('Adicionar'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
