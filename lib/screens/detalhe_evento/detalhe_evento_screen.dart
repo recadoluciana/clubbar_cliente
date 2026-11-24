@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../widgets/explicacao_taxas_ingresso.dart';
 
 import 'package:material_ui/material_ui.dart';
@@ -621,6 +623,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Map<String, dynamic>? _compraEvento;
   bool _sacolaExpandida = false;
   bool _removendoItemSacola = false;
+  Timer? _timerReservaSacola;
+  int _segundosReservaSacola = 0;
 
   @override
   void initState() {
@@ -634,8 +638,23 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   @override
   void dispose() {
+    _timerReservaSacola?.cancel();
     CarteiraBadgeNotifier.refresh.removeListener(_carregarQuantidadesDaLoja);
     super.dispose();
+  }
+
+  void _iniciarTimerReservaSacola(Map<String, dynamic> compra) {
+    final segundos = int.tryParse('${compra['segundos_restantes']}');
+    if (segundos == null) return;
+    _timerReservaSacola?.cancel();
+    _segundosReservaSacola = segundos;
+    _timerReservaSacola = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {
+        _segundosReservaSacola = (_segundosReservaSacola - 1).clamp(0, 86400);
+      });
+      if (_segundosReservaSacola == 0) _timerReservaSacola?.cancel();
+    });
   }
 
   Future<void> _carregarQuantidadesDaLoja() async {
@@ -1342,6 +1361,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             );
       if (!mounted) return;
       setState(() => _compraEvento = compra);
+      _iniciarTimerReservaSacola(compra);
       AppSnackBar.sucesso(context, 'Ingresso adicionado.');
       await carregarStatusLotes();
     } catch (e) {
@@ -1484,7 +1504,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           'compra_evento_id':
               compra['compra_evento_id'] ?? atual['compra_evento_id'],
         };
-        if (mounted) setState(() => _compraEvento = reserva);
+        if (mounted) {
+          setState(() => _compraEvento = reserva);
+          _iniciarTimerReservaSacola(reserva);
+        }
       } catch (_) {
         // Mantém o fluxo disponível quando a consulta falhar por uma
         // indisponibilidade momentânea; a confirmação ainda valida no API.
@@ -1505,6 +1528,40 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           nomeSetor: 'Modalidades selecionadas',
           modalidade: 'Compra do evento',
           beneficios: _beneficiosDaCompra(reserva),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _verIngressosSacola() async {
+    final compra = _compraEvento;
+    final itens = compra?['itens'] is List
+        ? (compra!['itens'] as List).whereType<Map>().toList()
+        : const <Map>[];
+    if (itens.isEmpty || !mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+          children: [
+            const Text(
+              'Ingressos adicionados',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 12),
+            for (final item in itens)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.confirmation_num_outlined),
+                title: Text(
+                  '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'}',
+                ),
+                subtitle: Text('${item['nome_setor'] ?? 'Setor'}'),
+              ),
+          ],
         ),
       ),
     );
@@ -1627,7 +1684,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final quantidade = quantidadeDosItens > quantidadeInformada
         ? quantidadeDosItens
         : quantidadeInformada;
-    final segundosReserva = int.tryParse('${compra['segundos_restantes']}');
+    final segundosReserva = _segundosReservaSacola > 0
+        ? _segundosReservaSacola
+        : int.tryParse('${compra['segundos_restantes']}');
     final tempoReserva = segundosReserva == null
         ? null
         : '${(segundosReserva ~/ 60).toString().padLeft(2, '0')}:${(segundosReserva % 60).toString().padLeft(2, '0')}';
@@ -1673,7 +1732,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               child: OutlinedButton(
                 onPressed: itens.isEmpty || processandoCompra
                     ? null
-                    : _abrirCompraEvento,
+                    : _verIngressosSacola,
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.black87,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
