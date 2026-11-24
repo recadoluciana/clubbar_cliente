@@ -142,7 +142,8 @@ class _ModalidadesIngressoScreenState
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
-      bottomNavigationBar: _rodapeModalidades(),
+      // A sacola única pertence à tela principal do evento.
+      bottomNavigationBar: null,
       body: Column(
         children: [
           ClubbarPageHeader(
@@ -515,6 +516,7 @@ class _ModalidadesIngressoScreenState
                                   '$quantidade x ${widget.nomeModalidade(lote)} · ${lote.nomeSetor}',
                                 );
                               });
+                              Navigator.of(context).pop();
                             }
                           } finally {
                             if (mounted) setState(() => _processando = false);
