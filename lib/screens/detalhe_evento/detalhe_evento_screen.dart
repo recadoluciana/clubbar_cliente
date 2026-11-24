@@ -267,6 +267,8 @@ class _ModalidadesIngressoScreenState
                     Expanded(
                       child: Text(
                         '$_itensNaSacola ${_itensNaSacola == 1 ? 'item' : 'itens'} na sacola · ${ValueFormatters.moeda(_totalSacola)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -1579,6 +1581,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       Expanded(
                         child: Text(
                           '$quantidade ${quantidade == 1 ? 'item' : 'itens'} na sacola · ${ValueFormatters.moeda(total)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w800),
                         ),
                       ),
