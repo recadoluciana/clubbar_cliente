@@ -1498,6 +1498,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
     if (!mounted) return;
     setState(() {
+      if (itens.isEmpty) _sacolaExpandida = false;
       _compraEvento = itens.isEmpty
           ? null
           : {
@@ -1555,7 +1556,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         : const <Map>[];
     // A sacola é deliberadamente compacta: ela substitui a navegação inferior
     // e não deve virar uma segunda tela sobre o evento.
-    final altura = _sacolaExpandida ? 154.0 : 42.0;
+    final expandidaComItens = _sacolaExpandida && itens.isNotEmpty;
+    final altura = expandidaComItens ? 154.0 : 42.0;
 
     return SafeArea(
       top: false,
@@ -1572,8 +1574,11 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             child: Column(
               children: [
                 InkWell(
-                  onTap: () =>
-                      setState(() => _sacolaExpandida = !_sacolaExpandida),
+                  onTap: itens.isEmpty
+                      ? null
+                      : () => setState(
+                          () => _sacolaExpandida = !_sacolaExpandida,
+                        ),
                   child: Row(
                     children: [
                       const Icon(Icons.shopping_bag_outlined),
@@ -1587,12 +1592,14 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         ),
                       ),
                       IconButton(
-                        tooltip: _sacolaExpandida
+                        tooltip: expandidaComItens
                             ? 'Recolher sacola'
                             : 'Expandir sacola',
-                        onPressed: () => setState(
-                          () => _sacolaExpandida = !_sacolaExpandida,
-                        ),
+                        onPressed: itens.isEmpty
+                            ? null
+                            : () => setState(
+                                () => _sacolaExpandida = !_sacolaExpandida,
+                              ),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(
                           minWidth: 28,
@@ -1600,7 +1607,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         ),
                         visualDensity: VisualDensity.compact,
                         icon: Icon(
-                          _sacolaExpandida
+                          expandidaComItens
                               ? Icons.expand_less
                               : Icons.expand_more,
                         ),
@@ -1608,7 +1615,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ],
                   ),
                 ),
-                if (_sacolaExpandida) ...[
+                if (expandidaComItens) ...[
                   const Divider(height: 18),
                   for (final item in itens)
                     Row(
@@ -1638,7 +1645,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       ],
                     ),
                 ],
-                if (_sacolaExpandida) ...[
+                if (expandidaComItens) ...[
                   const SizedBox(height: 8),
                   SizedBox(
                     width: double.infinity,
