@@ -284,6 +284,8 @@ class _ModalidadesIngressoScreenState
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           detalhe,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontSize: 12),
                         ),
                       ),
@@ -1606,6 +1608,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             padding: const EdgeInsets.only(bottom: 4),
                             child: Text(
                               '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'} · ${item['nome_setor'] ?? 'Setor'}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 12),
                             ),
                           ),
