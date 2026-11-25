@@ -82,7 +82,6 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final Future<void> Function(EventoLote lote, int quantidade) onComprar;
   final VoidCallback onEntenderTaxa;
   final Map<String, dynamic>? compraEvento;
-  final Widget Function(VoidCallback atualizar) construirRodape;
   final int Function() segundosReserva;
 
   const _ModalidadesIngressoScreen({
@@ -97,7 +96,6 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.onComprar,
     required this.onEntenderTaxa,
     this.compraEvento,
-    required this.construirRodape,
     required this.segundosReserva,
   });
 
@@ -180,9 +178,6 @@ class _ModalidadesIngressoScreenState
             ),
         ],
       ),
-      bottomNavigationBar: widget.construirRodape(() {
-        if (mounted) setState(() {});
-      }),
       body: Column(
         children: [
           ClubbarPageHeader(
@@ -643,6 +638,124 @@ class _ModalidadesIngressoScreenState
                   },
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add_rounded, size: 19),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConferenciaSacolaScreen extends StatefulWidget {
+  final String nomeEvento;
+  final String dataEvento;
+  final String imagemEvento;
+  final List<Map<String, dynamic>> itens;
+  final Future<void> Function(Map<String, dynamic> item) onRemover;
+
+  const _ConferenciaSacolaScreen({
+    required this.nomeEvento,
+    required this.dataEvento,
+    required this.imagemEvento,
+    required this.itens,
+    required this.onRemover,
+  });
+
+  @override
+  State<_ConferenciaSacolaScreen> createState() =>
+      _ConferenciaSacolaScreenState();
+}
+
+class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
+  late List<Map<String, dynamic>> itens;
+  bool removendo = false;
+
+  @override
+  void initState() {
+    super.initState();
+    itens = widget.itens.map(Map<String, dynamic>.from).toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final total = itens.fold<double>(
+      0,
+      (soma, item) =>
+          soma +
+          (double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ??
+              0),
+    );
+    return Scaffold(
+      appBar: AppBar(title: const Text('Conferir sacola')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            child: ListTile(
+              leading: widget.imagemEvento.trim().isEmpty
+                  ? const Icon(Icons.event_outlined)
+                  : Image.network(
+                      widget.imagemEvento,
+                      width: 56,
+                      fit: BoxFit.cover,
+                    ),
+              title: Text(
+                widget.nomeEvento,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+              subtitle: Text(widget.dataEvento),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Ingressos adicionados',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          ...itens.map(
+            (item) => Card(
+              child: ListTile(
+                title: Text(
+                  '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'}',
+                ),
+                subtitle: Text(
+                  '${item['nome_setor'] ?? 'Setor'} · ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
+                ),
+                trailing: IconButton(
+                  tooltip: 'Excluir ingresso',
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  onPressed: removendo
+                      ? null
+                      : () async {
+                          setState(() => removendo = true);
+                          try {
+                            await widget.onRemover(item);
+                            if (!mounted) return;
+                            setState(
+                              () => itens.removeWhere(
+                                (outro) =>
+                                    '${outro['reserva_ingresso_id']}' ==
+                                    '${item['reserva_ingresso_id']}',
+                              ),
+                            );
+                          } finally {
+                            if (mounted) setState(() => removendo = false);
+                          }
+                        },
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Total: ${ValueFormatters.moeda(total)}',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 20),
+          FilledButton(
+            onPressed: itens.isEmpty
+                ? null
+                : () => Navigator.pop(context, true),
+            child: const Text('Continuar compra'),
           ),
         ],
       ),
@@ -1615,46 +1728,15 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? (compra!['itens'] as List).whereType<Map>().toList()
         : const <Map>[];
     if (itens.isEmpty || !mounted) return;
-    final confirmado = await showModalBottomSheet<bool>(
-      context: context,
-      showDragHandle: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
-          children: [
-            const Text(
-              'Ingressos adicionados',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 12),
-            for (final item in itens)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.confirmation_num_outlined),
-                title: Text(
-                  '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'}',
-                ),
-                subtitle: Text(
-                  '${item['nome_setor'] ?? 'Setor'} · ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
-                ),
-                trailing: IconButton(
-                  tooltip: 'Remover ingresso',
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  onPressed: _removendoItemSacola
-                      ? null
-                      : () async {
-                          await _removerItemSacola(item);
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                ),
-              ),
-            const SizedBox(height: 12),
-            FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Confirmar ingressos'),
-            ),
-          ],
+    final confirmado = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _ConferenciaSacolaScreen(
+          nomeEvento: evento?.titulo ?? 'Evento',
+          dataEvento: DateFormatters.dataCompleta(evento?.dataInicio ?? ''),
+          imagemEvento: evento?.bannerUrl ?? '',
+          itens: itens.map(Map<String, dynamic>.from).toList(),
+          onRemover: _removerItemSacola,
         ),
       ),
     );
@@ -1663,7 +1745,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }
   }
 
-  Future<void> _removerItemSacola(Map item) async {
+  Future<void> _removerItemSacola(Map<String, dynamic> item) async {
     final compra = _compraEvento;
     if (compra == null || _removendoItemSacola) return;
     final compraId = int.tryParse('${compra['compra_evento_id']}');
@@ -1959,8 +2041,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               iniciarReserva(lote, quantidadeSelecionada: quantidade),
           onEntenderTaxa: _abrirExplicacaoTaxas,
           compraEvento: _compraEvento,
-          construirRodape: (atualizar) =>
-              _sacolaCompraEvento(atualizarModalidades: atualizar),
           segundosReserva: () => _segundosReservaSacola,
         ),
       ),
@@ -1973,7 +2053,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
 
   Widget _cardSelecaoSetor(List<EventoLote> opcoes) {
     final lote = opcoes.first;
-    final capacidade = lote.qtCapacidadeSetor ?? lote.qtTotal;
+    final restantes = lote.qtDisponivel;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -2011,10 +2091,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Capacidade: $capacidade ${capacidade == 1 ? 'pessoa' : 'pessoas'}',
+                      '$restantes ${restantes == 1 ? 'restante' : 'restantes'}',
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Colors.black54,
+                        color: Colors.blue,
                       ),
                     ),
                   ],
