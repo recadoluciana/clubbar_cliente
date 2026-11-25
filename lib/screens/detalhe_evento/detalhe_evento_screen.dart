@@ -1489,7 +1489,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       // participantes. Mantemos esse estado ao retornar da tela seguinte.
       setState(() => _compraEvento = reserva);
       _iniciarTimerReservaSacola(reserva);
-      await _verIngressosSacola(confirmar: true);
+      // A conferência é aberta exclusivamente pelo badge da sacola na
+      // topbar. Após adicionar, o usuário permanece no detalhe do evento.
       if (!mounted) return;
       final reservaId = int.tryParse('${reserva['reserva_ingresso_id']}');
       final clienteIdRetorno = await authStorage.obterClienteId();
@@ -1841,7 +1842,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   onTap: itens.isEmpty || processandoCompra
                       ? null
                       : () async {
-                          await _verIngressosSacola();
+                          Navigator.of(context).pop();
                           atualizarModalidades?.call();
                         },
                   child: Padding(
@@ -1873,7 +1874,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 onPressed: itens.isEmpty || processandoCompra
                     ? null
                     : () async {
-                        await _verIngressosSacola(confirmar: true);
+                        Navigator.of(context).pop();
                         atualizarModalidades?.call();
                       },
                 style: FilledButton.styleFrom(
@@ -2672,7 +2673,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                       : 'Nenhum ingresso adicionado',
                   onPressed: itensSacola.isEmpty || processandoCompra
                       ? null
-                      : _abrirCompraEvento,
+                      : () => _verIngressosSacola(confirmar: true),
                   icon: const Icon(
                     Icons.shopping_bag_outlined,
                     color: Colors.white,
