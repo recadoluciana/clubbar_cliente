@@ -575,25 +575,6 @@ class _ParticipantesReservaScreenState
                             ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.timer_outlined,
-                              color: Colors.red,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$minutos:$segundos',
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                     const Divider(height: 20),

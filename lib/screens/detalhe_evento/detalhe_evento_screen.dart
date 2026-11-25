@@ -1439,7 +1439,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
             loja: widget.loja,
             reserva: reserva,
             nomeEvento: evento?.titulo ?? opcoes.first.nome,
-            dataHoraEvento: DateFormatters.dataHoraSimples(
+            dataHoraEvento: DateFormatters.dataCompleta(
               evento?.dataInicio ?? '',
             ),
             imagemEventoUrl: evento?.bannerUrl ?? '',
@@ -1531,9 +1531,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           loja: widget.loja,
           reserva: reserva,
           nomeEvento: evento?.titulo ?? 'Evento',
-          dataHoraEvento: DateFormatters.dataHoraSimples(
-            evento?.dataInicio ?? '',
-          ),
+          dataHoraEvento: DateFormatters.dataCompleta(evento?.dataInicio ?? ''),
           imagemEventoUrl: evento?.bannerUrl ?? '',
           nomeLote: 'Compra do evento',
           nomeSetor: 'Modalidades selecionadas',
