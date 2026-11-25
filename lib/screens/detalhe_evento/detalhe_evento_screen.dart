@@ -1485,6 +1485,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         itens: itens,
       );
       if (!mounted) return;
+      // A reserva agrupada já pertence à sacola antes do preenchimento dos
+      // participantes. Mantemos esse estado ao retornar da tela seguinte.
+      setState(() => _compraEvento = reserva);
+      _iniciarTimerReservaSacola(reserva);
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -1503,6 +1507,32 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           ),
         ),
       );
+      if (!mounted) return;
+      final reservaId = int.tryParse('${reserva['reserva_ingresso_id']}');
+      final clienteId = await authStorage.obterClienteId();
+      if (reservaId != null && clienteId != null) {
+        try {
+          final atual = await apiService.consultarReserva(
+            reservaId: reservaId,
+            clienteId: clienteId,
+          );
+          final status = '${atual['status'] ?? ''}'.toUpperCase();
+          if (status == 'CANCELADA' || status == 'EXPIRADA') {
+            _removerItemLocalDaSacola(reserva, reservaId);
+          } else {
+            setState(
+              () => _compraEvento = {
+                ...reserva,
+                ...atual,
+                'itens': reserva['itens'],
+              },
+            );
+            _iniciarTimerReservaSacola(_compraEvento!);
+          }
+        } catch (_) {
+          // Mantém a sacola local quando a consulta de retorno falhar.
+        }
+      }
       await carregarStatusLotes();
     } catch (e) {
       if (mounted)
