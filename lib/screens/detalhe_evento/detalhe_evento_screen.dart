@@ -1489,24 +1489,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       // participantes. Mantemos esse estado ao retornar da tela seguinte.
       setState(() => _compraEvento = reserva);
       _iniciarTimerReservaSacola(reserva);
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ParticipantesReservaScreen(
-            loja: widget.loja,
-            reserva: reserva,
-            nomeEvento: evento?.titulo ?? opcoes.first.nome,
-            dataHoraEvento: DateFormatters.dataCompleta(
-              evento?.dataInicio ?? '',
-            ),
-            imagemEventoUrl: evento?.bannerUrl ?? '',
-            nomeLote: 'Modalidades selecionadas',
-            nomeSetor: opcoes.first.nomeSetor,
-            modalidade: 'Compra conjunta',
-            beneficios: opcoes.expand((lote) => lote.beneficios).toList(),
-          ),
-        ),
-      );
+      await _verIngressosSacola(confirmar: true);
       if (!mounted) return;
       final reservaId = int.tryParse('${reserva['reserva_ingresso_id']}');
       final clienteIdRetorno = await authStorage.obterClienteId();
