@@ -11,6 +11,7 @@ import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
+import '../../utils/value_formatters.dart';
 
 import 'package:clubbar_cliente/config/app_config.dart';
 
@@ -587,6 +588,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         .trim();
 
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
+    final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
+    final valorIngresso = double.tryParse('${item['vrunititvenda'] ?? ''}');
     final horarioEvento = dataEvento.replaceFirstMapped(
       RegExp(r'^(\d{2}/\d{2}/\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)$'),
       (match) => '${match[1]}\n${match[2]}',
@@ -734,6 +737,30 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             : enderecoEvento,
                         corIcone: Colors.green.shade700,
                         flex: 3,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Row(
+                    children: [
+                      _informacaoIngresso(
+                        icone: Icons.receipt_long_outlined,
+                        titulo: 'Compra',
+                        valor: dataCompra.isEmpty
+                            ? 'Não informada'
+                            : dataCompra,
+                        corIcone: Colors.blue.shade700,
+                      ),
+                      const SizedBox(width: 5),
+                      _informacaoIngresso(
+                        icone: Icons.confirmation_num_outlined,
+                        titulo: 'Valor do ingresso',
+                        valor: valorIngresso == null
+                            ? 'Não informado'
+                            : ValueFormatters.moeda(valorIngresso),
+                        corIcone: Colors.blue.shade700,
                       ),
                     ],
                   ),
