@@ -82,6 +82,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final Future<void> Function(EventoLote lote, int quantidade) onComprar;
   final VoidCallback onEntenderTaxa;
   final Map<String, dynamic>? compraEvento;
+  final Widget Function(VoidCallback atualizar) construirRodape;
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
@@ -95,6 +96,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.onComprar,
     required this.onEntenderTaxa,
     this.compraEvento,
+    required this.construirRodape,
   });
 
   @override
@@ -144,8 +146,9 @@ class _ModalidadesIngressoScreenState
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
-      // A sacola única pertence à tela principal do evento.
-      bottomNavigationBar: null,
+      bottomNavigationBar: widget.construirRodape(() {
+        if (mounted) setState(() {});
+      }),
       body: Column(
         children: [
           ClubbarPageHeader(
@@ -514,13 +517,7 @@ class _ModalidadesIngressoScreenState
                           try {
                             await widget.onComprar(lote, quantidade);
                             if (mounted) {
-                              setState(() {
-                                _itensNaSacola += quantidade;
-                                _totalSacola += totalPagar;
-                                _detalhesSacola.add(
-                                  '$quantidade x ${widget.nomeModalidade(lote)} · ${lote.nomeSetor}',
-                                );
-                              });
+                              setState(() {});
                             }
                           } finally {
                             if (mounted) setState(() => _processando = false);
@@ -1680,7 +1677,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Widget _sacolaCompraEvento() {
+  Widget _sacolaCompraEvento({VoidCallback? atualizarModalidades}) {
     final compra = _compraEvento ?? const <String, dynamic>{};
     final total = double.tryParse('${compra['valor_total'] ?? 0}') ?? 0;
     final itens = (compra['itens'] is List)
@@ -1718,7 +1715,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                   borderRadius: BorderRadius.circular(20),
                   onTap: itens.isEmpty || processandoCompra
                       ? null
-                      : _verIngressosSacola,
+                      : () async {
+                          await _verIngressosSacola();
+                          atualizarModalidades?.call();
+                        },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
@@ -1747,7 +1747,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               child: FilledButton(
                 onPressed: itens.isEmpty || processandoCompra
                     ? null
-                    : _abrirCompraEvento,
+                    : () async {
+                        await _abrirCompraEvento();
+                        atualizarModalidades?.call();
+                      },
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.amareloCerveja,
                   foregroundColor: Colors.black,
@@ -1830,6 +1833,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               iniciarReserva(lote, quantidadeSelecionada: quantidade),
           onEntenderTaxa: _abrirExplicacaoTaxas,
           compraEvento: _compraEvento,
+          construirRodape: (atualizar) =>
+              _sacolaCompraEvento(atualizarModalidades: atualizar),
         ),
       ),
     );
