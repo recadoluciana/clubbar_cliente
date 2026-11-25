@@ -1701,18 +1701,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   ) {
     final quantidade = itens.fold<int>(
       0,
-      (total, item) => total + (int.tryParse('${item['quantidade'] ?? 1}') ?? 1),
+      (total, item) =>
+          total + (int.tryParse('${item['quantidade'] ?? 1}') ?? 1),
     );
     final valor = itens.fold<double>(
       0,
-      (total, item) => total +
-          (double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0),
+      (total, item) =>
+          total +
+          (double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ??
+              0),
     );
     if (!mounted) return;
     setState(() {
       _compraEvento = itens.isEmpty
           ? null
-          : {...compra, 'itens': itens, 'quantidade': quantidade, 'valor_total': valor};
+          : {
+              ...compra,
+              'itens': itens,
+              'quantidade': quantidade,
+              'valor_total': valor,
+            };
       if (itens.isEmpty) _sacolaExpandida = false;
     });
   }
@@ -2056,7 +2064,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     ),
                     TextSpan(
                       text:
-                          ' (${lote.qtCapacidadeSetor ?? lote.qtTotal} ${(lote.qtCapacidadeSetor ?? lote.qtTotal) == 1 ? 'ingresso' : 'ingressos'})',
+                          ' (${lote.qtDisponivel} ${lote.qtDisponivel == 1 ? 'restante' : 'restantes'})',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.normal,
