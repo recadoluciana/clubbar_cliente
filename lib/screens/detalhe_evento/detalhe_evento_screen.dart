@@ -83,6 +83,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final VoidCallback onEntenderTaxa;
   final Map<String, dynamic>? compraEvento;
   final Widget Function(VoidCallback atualizar) construirRodape;
+  final int Function() segundosReserva;
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
@@ -97,6 +98,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.onEntenderTaxa,
     this.compraEvento,
     required this.construirRodape,
+    required this.segundosReserva,
   });
 
   @override
@@ -112,10 +114,14 @@ class _ModalidadesIngressoScreenState
   double _totalSacola = 0;
   final List<String> _detalhesSacola = [];
   bool _sacolaExpandida = false;
+  Timer? _timerTopbar;
 
   @override
   void initState() {
     super.initState();
+    _timerTopbar = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
     final compra = widget.compraEvento;
     _itensNaSacola = int.tryParse('${compra?['quantidade'] ?? 0}') ?? 0;
     _totalSacola = double.tryParse('${compra?['valor_total'] ?? 0}') ?? 0;
@@ -131,7 +137,14 @@ class _ModalidadesIngressoScreenState
   }
 
   @override
+  void dispose() {
+    _timerTopbar?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final segundosReserva = widget.segundosReserva();
     final lote = widget.opcoes.first;
     final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
     final nomeSetor = lote.nomeSetor.trim();
@@ -145,6 +158,27 @@ class _ModalidadesIngressoScreenState
         titulo: widget.nomeLoja,
         mostrarVoltar: true,
         mostrarSessao: false,
+        actions: [
+          if (segundosReserva > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${(segundosReserva ~/ 60).toString().padLeft(2, '0')}:${(segundosReserva % 60).toString().padLeft(2, '0')}',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: widget.construirRodape(() {
         if (mounted) setState(() {});
@@ -1848,6 +1882,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           compraEvento: _compraEvento,
           construirRodape: (atualizar) =>
               _sacolaCompraEvento(atualizarModalidades: atualizar),
+          segundosReserva: () => _segundosReservaSacola,
         ),
       ),
     );
