@@ -521,7 +521,6 @@ class _ModalidadesIngressoScreenState
                                   '$quantidade x ${widget.nomeModalidade(lote)} · ${lote.nomeSetor}',
                                 );
                               });
-                              Navigator.of(context).pop();
                             }
                           } finally {
                             if (mounted) setState(() => _processando = false);
