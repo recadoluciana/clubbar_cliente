@@ -224,25 +224,6 @@ class _ParticipantesReservaScreenState
     }
   }
 
-  Future<void> _cancelarReservaSeNecessario() async {
-    if (_reservaFinalizada || _reservaCancelada || _checkoutIniciado) return;
-    _reservaCancelada = true;
-    final reservaId =
-        int.tryParse('${widget.reserva['reserva_ingresso_id']}') ?? 0;
-    final clienteId = int.tryParse('${widget.reserva['cliente_id']}') ?? 0;
-    if (reservaId <= 0 || clienteId <= 0) return;
-    try {
-      await api.cancelarReservaIngresso(
-        reservaId: reservaId,
-        clienteId: clienteId,
-      );
-    } catch (_) {
-      // Se o app for fechado abruptamente, a expiração no servidor libera a
-      // reserva no prazo definido. Uma venda já confirmada também não pode
-      // ser cancelada por esta ação.
-    }
-  }
-
   @override
   void dispose() {
     timer?.cancel();
@@ -577,9 +558,9 @@ class _ParticipantesReservaScreenState
     final valorTotal = _valorTotalComTaxa(widget.reserva);
     final ehCortesia = valorTotal <= 0;
     return PopScope(
-      onPopInvokedWithResult: (didPop, _) {
-        if (didPop) unawaited(_cancelarReservaSeNecessario());
-      },
+      // Voltar ao detalhe apenas preserva a reserva na sacola. O cancelamento
+      // ocorre ao sair definitivamente do detalhe ou pela expiração.
+      onPopInvokedWithResult: (_, _) {},
       child: Scaffold(
         appBar: ClubbarAppBar(
           titulo: widget.loja.nome,
