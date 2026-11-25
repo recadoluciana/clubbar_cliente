@@ -1733,6 +1733,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                             style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
                         ),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.chevron_right, size: 22),
                       ],
                     ),
                   ),
