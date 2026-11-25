@@ -1625,13 +1625,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     );
   }
 
-  Future<void> _verIngressosSacola() async {
+  Future<void> _verIngressosSacola({bool confirmar = false}) async {
     final compra = _compraEvento;
     final itens = compra?['itens'] is List
         ? (compra!['itens'] as List).whereType<Map>().toList()
         : const <Map>[];
     if (itens.isEmpty || !mounted) return;
-    await showModalBottomSheet<void>(
+    final confirmado = await showModalBottomSheet<bool>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
@@ -1665,10 +1665,18 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                         },
                 ),
               ),
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Confirmar ingressos'),
+            ),
           ],
         ),
       ),
     );
+    if (confirmar && confirmado == true && mounted) {
+      await _abrirCompraEvento();
+    }
   }
 
   Future<void> _removerItemSacola(Map item) async {
@@ -1882,7 +1890,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 onPressed: itens.isEmpty || processandoCompra
                     ? null
                     : () async {
-                        await _abrirCompraEvento();
+                        await _verIngressosSacola(confirmar: true);
                         atualizarModalidades?.call();
                       },
                 style: FilledButton.styleFrom(
