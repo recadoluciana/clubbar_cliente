@@ -139,7 +139,7 @@ class _ParticipantesReservaScreenState
     }
     expiraEm =
         _expiracaoDaResposta(widget.reserva) ??
-        HorarioBrasil.agora().add(const Duration(minutes: 35));
+        HorarioBrasil.agora().add(const Duration(minutes: 15));
     _tick();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
   }
