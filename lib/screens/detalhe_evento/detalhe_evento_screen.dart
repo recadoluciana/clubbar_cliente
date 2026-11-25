@@ -684,8 +684,25 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   @override
   void dispose() {
     _timerReservaSacola?.cancel();
+    unawaited(_cancelarReservaAoSair());
     CarteiraBadgeNotifier.refresh.removeListener(_carregarQuantidadesDaLoja);
     super.dispose();
+  }
+
+  Future<void> _cancelarReservaAoSair() async {
+    final compra = _compraEvento;
+    final reservaId = int.tryParse('${compra?['reserva_ingresso_id']}');
+    final clienteId = await authStorage.obterClienteId();
+    if (reservaId == null || clienteId == null) return;
+    try {
+      await apiService.cancelarReservaIngresso(
+        reservaId: reservaId,
+        clienteId: clienteId,
+      );
+    } catch (_) {
+      // A expiração automática continua sendo o fallback caso o app seja
+      // encerrado antes de a requisição de cancelamento terminar.
+    }
   }
 
   void _iniciarTimerReservaSacola(Map<String, dynamic> compra) {
