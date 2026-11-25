@@ -685,7 +685,14 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
               0),
     );
     return Scaffold(
-      appBar: AppBar(title: const Text('Conferir sacola')),
+      appBar: AppBar(
+        title: const Text('Conferir sacola'),
+        leading: IconButton(
+          tooltip: 'Voltar',
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context, itens),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -727,16 +734,17 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
                       ? null
                       : () async {
                           setState(() => removendo = true);
+                          setState(
+                            () => itens.removeWhere(
+                              (outro) =>
+                                  '${outro['reserva_ingresso_id']}' ==
+                                  '${item['reserva_ingresso_id']}',
+                            ),
+                          );
                           try {
                             await widget.onRemover(item);
-                            if (!mounted) return;
-                            setState(
-                              () => itens.removeWhere(
-                                (outro) =>
-                                    '${outro['reserva_ingresso_id']}' ==
-                                    '${item['reserva_ingresso_id']}',
-                              ),
-                            );
+                          } catch (_) {
+                            if (mounted) setState(() => itens.add(item));
                           } finally {
                             if (mounted) setState(() => removendo = false);
                           }
@@ -1734,7 +1742,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? (compra!['itens'] as List).whereType<Map>().toList()
         : const <Map>[];
     if (itens.isEmpty || !mounted) return;
-    final confirmado = await Navigator.push<bool>(
+    final retorno = await Navigator.push<dynamic>(
       context,
       MaterialPageRoute(
         builder: (_) => _ConferenciaSacolaScreen(
@@ -1746,7 +1754,13 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ),
       ),
     );
-    if (confirmar && confirmado == true && mounted) {
+    if (retorno is List) {
+      _atualizarSacolaComItens(
+        compra!,
+        retorno.whereType<Map>().map(Map<String, dynamic>.from).toList(),
+      );
+    }
+    if (confirmar && retorno == true && mounted) {
       await _abrirCompraEvento();
     }
   }
@@ -1782,6 +1796,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         _removerItemLocalDaSacola(compra, reservaId);
       } else if (mounted) {
         AppSnackBar.erro(context, mensagem);
+        rethrow;
       }
     } finally {
       if (mounted) setState(() => _removendoItemSacola = false);
@@ -2098,10 +2113,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                     const SizedBox(height: 2),
                     Text(
                       '$restantes ${restantes == 1 ? 'restante' : 'restantes'}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue,
-                      ),
+                      style: const TextStyle(fontSize: 12, color: Colors.blue),
                     ),
                   ],
                 ),
