@@ -48,7 +48,7 @@ int _limitePorTransacao(EventoLote lote) =>
 
 String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
     ? 'Limite de 1 ingresso por CPF'
-    : 'Limite de 5 ingressos por transação';
+    : '5 ingressos por compra';
 
 String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
     ? 'Cortesia limitada a 1 ingresso por CPF neste evento.'
@@ -243,6 +243,21 @@ class _ModalidadesIngressoScreenState
                 ...widget.opcoes.map(
                   (opcao) =>
                       _cardModalidade(opcao, vendaDisponivel: vendaDisponivel),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: widget.onEntenderTaxa,
+                    icon: const Icon(Icons.info_outline, size: 17),
+                    label: const Text('Entenda nossas taxas'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
               ],
