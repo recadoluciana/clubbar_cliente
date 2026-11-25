@@ -61,7 +61,9 @@ class _ParticipantesReservaScreenState
 
   Future<void> _removerParticipante(int indice) async {
     if (salvando || _verificandoExpiracao) return;
-    final reservaId = int.tryParse('${dadosParticipantes[indice]['reserva_ingresso_id'] ?? widget.reserva['reserva_ingresso_id']}');
+    final reservaId = int.tryParse(
+      '${dadosParticipantes[indice]['reserva_ingresso_id'] ?? widget.reserva['reserva_ingresso_id']}',
+    );
     final clienteId = int.tryParse('${widget.reserva['cliente_id']}');
     final compraId = int.tryParse('${widget.reserva['compra_evento_id']}');
     if (reservaId == null || clienteId == null) return;
@@ -575,10 +577,9 @@ class _ParticipantesReservaScreenState
     final valorTotal = _valorTotalComTaxa(widget.reserva);
     final ehCortesia = valorTotal <= 0;
     return PopScope(
-      // Voltar para a tela de modalidades não cancela a reserva. O usuário
-      // pode revisar a sacola e retornar para preencher os participantes;
-      // cancelamento ocorre somente por expiração ou ação explícita.
-      onPopInvokedWithResult: (_, _) {},
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) unawaited(_cancelarReservaSeNecessario());
+      },
       child: Scaffold(
         appBar: ClubbarAppBar(
           titulo: widget.loja.nome,
@@ -708,8 +709,13 @@ class _ParticipantesReservaScreenState
                         const Spacer(),
                         IconButton(
                           tooltip: 'Excluir participante',
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
-                          onPressed: salvando ? null : () => _removerParticipante(i),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                          ),
+                          onPressed: salvando
+                              ? null
+                              : () => _removerParticipante(i),
                         ),
                       ],
                     ),
