@@ -1509,12 +1509,12 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       );
       if (!mounted) return;
       final reservaId = int.tryParse('${reserva['reserva_ingresso_id']}');
-      final clienteId = await authStorage.obterClienteId();
-      if (reservaId != null && clienteId != null) {
+      final clienteIdRetorno = await authStorage.obterClienteId();
+      if (reservaId != null && clienteIdRetorno != null) {
         try {
           final atual = await apiService.consultarReserva(
             reservaId: reservaId,
-            clienteId: clienteId,
+            clienteId: clienteIdRetorno,
           );
           final status = '${atual['status'] ?? ''}'.toUpperCase();
           if (status == 'CANCELADA' || status == 'EXPIRADA') {
