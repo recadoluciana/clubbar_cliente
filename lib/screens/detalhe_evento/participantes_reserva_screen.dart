@@ -684,8 +684,10 @@ class _ParticipantesReservaScreenState
                 ehCortesia ? 'Resgatar cortesia' : 'Continuar para pagamento',
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                foregroundColor: Colors.black,
+                backgroundColor: ehCortesia
+                    ? Colors.green.shade700
+                    : Colors.amber,
+                foregroundColor: ehCortesia ? Colors.white : Colors.black,
                 minimumSize: const Size.fromHeight(54),
               ),
             ),
