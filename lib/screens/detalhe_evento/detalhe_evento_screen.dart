@@ -1425,7 +1425,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       setState(() => _compraEvento = compra);
       _iniciarTimerReservaSacola(compra);
       AppSnackBar.sucesso(context, 'Ingresso adicionado.');
-      await carregarStatusLotes();
+      // A inclusão já reserva o estoque no servidor. Recarrega a mesma fonte
+      // usada pelo botão "Atualizar" para refletir imediatamente o saldo.
+      await atualizarLotes();
     } catch (e) {
       if (mounted) {
         if (apiService.erroDeSessao(e)) {
