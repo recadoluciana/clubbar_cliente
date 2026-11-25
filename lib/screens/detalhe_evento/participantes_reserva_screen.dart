@@ -581,24 +581,26 @@ class _ParticipantesReservaScreenState
                         ),
                       ],
                     ),
-                    const Divider(height: 20),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'Subtotal',
-                            style: TextStyle(fontWeight: FontWeight.w800),
+                    if (valorTotal != 0) ...[
+                      const Divider(height: 20),
+                      Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              'Subtotal',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
                           ),
-                        ),
-                        Text(
-                          ValueFormatters.moeda(valorTotal),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                          Text(
+                            ValueFormatters.moeda(valorTotal),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
