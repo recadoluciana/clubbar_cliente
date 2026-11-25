@@ -115,9 +115,7 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
     final handle = loja.instagram.replaceAll('@', '').trim();
 
     if (handle.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Instagram não informado')));
+      AppSnackBar.aviso(context, 'Instagram não informado');
       return;
     }
 
@@ -169,7 +167,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
       try {
         await Clipboard.setData(ClipboardData(text: texto));
         if (!mounted) return;
-        AppSnackBar.info(
+        AppSnackBar.sucesso(
           context,
           'O link da loja foi copiado. Cole-o no WhatsApp, e-mail ou onde preferir.',
         );

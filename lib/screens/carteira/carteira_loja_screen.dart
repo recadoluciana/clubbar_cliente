@@ -311,7 +311,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
     try {
       await Clipboard.setData(ClipboardData(text: texto));
       if (!mounted) return;
-      AppSnackBar.info(
+      AppSnackBar.sucesso(
         context,
         'A mensagem do presente foi copiada. Cole-a no WhatsApp, e-mail ou onde preferir.',
       );

@@ -297,7 +297,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!mounted) return;
 
     if (!logado) {
-      AppSnackBar.info(context, 'Faça login para acessar sua carteira');
+      AppSnackBar.aviso(context, 'Faça login para acessar sua carteira');
       return;
     }
 
@@ -317,7 +317,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     if (!mounted) return;
 
     if (!logado) {
-      AppSnackBar.info(context, 'Faça login para acessar seu carrinho');
+      AppSnackBar.aviso(context, 'Faça login para acessar seu carrinho');
       return;
     }
 

@@ -227,7 +227,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
       } else {
         if (validacaoFinal) _iniciarVerificacaoPendente();
         if (manual) {
-          AppSnackBar.info(
+          AppSnackBar.aviso(
             context,
             _pixDeTeste
                 ? 'O Pix continua pendente. Este QR Code de teste não permite concluir o pagamento.'
@@ -337,17 +337,13 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
   void copiarCodigoPix(BuildContext context) {
     if (codigoPix.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Código PIX não disponível')),
-      );
+      AppSnackBar.aviso(context, 'Código PIX não disponível');
       return;
     }
 
     Clipboard.setData(ClipboardData(text: codigoPix));
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Código PIX copiado com sucesso')),
-    );
+    AppSnackBar.sucesso(context, 'Código PIX copiado com sucesso');
   }
 
   Widget _qrCodeWidget() {

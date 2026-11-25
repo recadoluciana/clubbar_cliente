@@ -240,7 +240,7 @@ class _ProdutoCompartilhadoScreenState
     if (quantidade == null ||
         quantidade < 1 ||
         quantidade > _limiteQuantidade) {
-      AppSnackBar.info(
+      AppSnackBar.aviso(
         context,
         _ehCortesia
             ? 'Cortesia limitada a 1 unidade por transação.'
@@ -283,7 +283,7 @@ class _ProdutoCompartilhadoScreenState
 
       if (!mounted) return;
 
-      AppSnackBar.info(
+      AppSnackBar.sucesso(
         context,
         quantidade == 1
             ? 'Produto adicionado ao carrinho.'

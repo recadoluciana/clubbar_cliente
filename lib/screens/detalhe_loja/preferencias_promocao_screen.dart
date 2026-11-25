@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../utils/app_snackbar.dart';
+
 import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../../services/notificacoes_promocionais.dart';
@@ -123,9 +125,7 @@ class _PreferenciasPromocaoScreenState
     } catch (e) {
       if (!mounted) return;
       setState(() => _carregando = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
-      );
+      AppSnackBar.erro(context, e.toString().replaceFirst('Exception: ', ''));
     }
   }
 

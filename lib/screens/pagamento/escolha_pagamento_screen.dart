@@ -390,13 +390,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       return;
     }
     if (erro.toString().toLowerCase().contains('timeout')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'A conexão demorou. Antes de gerar outro PIX, confira se a compra apareceu na carteira.',
-          ),
-          backgroundColor: Colors.deepOrange,
-        ),
+      AppSnackBar.aviso(
+        context,
+        'A conexão demorou. Antes de gerar outro PIX, confira se a compra apareceu na carteira.',
       );
       return;
     }
@@ -1058,7 +1054,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         endereco['uf']!.length != 2;
     if (incompleto) {
       if (mounted) {
-        AppSnackBar.info(
+        AppSnackBar.aviso(
           context,
           'Para receber o pedido, complete seu endereço em Perfil/Dados pessoais.',
         );
@@ -1602,12 +1598,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
         if (resultado != true) {
           if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(_mensagemPagamentoNaoConcluido),
-              backgroundColor: Colors.red,
-            ),
-          );
+          AppSnackBar.aviso(context, _mensagemPagamentoNaoConcluido);
           Navigator.pop(context);
           return;
         }
@@ -1644,12 +1635,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           if (!confirmado) {
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(_mensagemPagamentoNaoConfirmado),
-                backgroundColor: Colors.red,
-              ),
-            );
+            AppSnackBar.aviso(context, _mensagemPagamentoNaoConfirmado);
             Navigator.pop(context);
             return;
           }

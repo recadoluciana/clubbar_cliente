@@ -1,4 +1,7 @@
 import 'package:material_ui/material_ui.dart';
+
+import '../utils/app_snackbar.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 class ClubbarContactLinks extends StatelessWidget {
@@ -37,9 +40,7 @@ class ClubbarContactLinks extends StatelessWidget {
   Future<void> _abrir(BuildContext context, Uri uri) async {
     final abriu = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!abriu && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível abrir este contato.')),
-      );
+      AppSnackBar.erro(context, 'Não foi possível abrir este contato.');
     }
   }
 

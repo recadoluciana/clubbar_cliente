@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
+
+import '../../utils/app_snackbar.dart';
 import '../../services/http_with_timeout.dart' as http;
 
 import '../../config/app_config.dart';
@@ -117,22 +119,16 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
       _rolarAteFinal();
     } on _SessaoCoraException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Sua sessão expirou. Entre novamente para falar com a Cora.',
-            ),
-          ),
+        AppSnackBar.aviso(
+          context,
+          'Sua sessão expirou. Entre novamente para falar com a Cora.',
         );
       }
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Não foi possível enviar a mensagem. Tente novamente.',
-            ),
-          ),
+        AppSnackBar.erro(
+          context,
+          'Não foi possível enviar a mensagem. Tente novamente.',
         );
       }
     } finally {

@@ -290,7 +290,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       if (!mounted) return;
       setState(() => quantidadesSelecionadas[chaveItem] = 1);
-      AppSnackBar.info(
+      AppSnackBar.sucesso(
         context,
         observacao.trim().isEmpty
             ? '"${produto.nmproduto}" adicionado ao carrinho'
