@@ -59,6 +59,58 @@ class _ParticipantesReservaScreenState
   bool _verificandoExpiracao = false;
   bool _checkoutIniciado = false;
 
+  Future<void> _removerParticipante(int indice) async {
+    if (salvando || _verificandoExpiracao) return;
+    final reservaId = int.tryParse('${dadosParticipantes[indice]['reserva_ingresso_id'] ?? widget.reserva['reserva_ingresso_id']}');
+    final clienteId = int.tryParse('${widget.reserva['cliente_id']}');
+    final compraId = int.tryParse('${widget.reserva['compra_evento_id']}');
+    if (reservaId == null || clienteId == null) return;
+    setState(() => salvando = true);
+    try {
+      final resposta = compraId != null
+          ? await api.removerIngressoCompraEvento(
+              compraEventoId: compraId,
+              reservaId: reservaId,
+              clienteId: clienteId,
+            )
+          : await api.cancelarReservaIngresso(
+              reservaId: reservaId,
+              clienteId: clienteId,
+            );
+      final itens = (resposta['itens'] as List?)
+          ?.whereType<Map>()
+          .expand<Map<String, dynamic>>((item) {
+            final dados = Map<String, dynamic>.from(item);
+            final quantidade = int.tryParse('${dados['quantidade'] ?? 1}') ?? 1;
+            return List<Map<String, dynamic>>.filled(quantidade, dados);
+          })
+          .toList();
+      if (itens == null || itens.isEmpty) {
+        if (mounted) Navigator.pop(context, true);
+        return;
+      }
+      for (final controller in [...nomes, ...cpfs]) {
+        controller.dispose();
+      }
+      nomes.clear();
+      cpfs.clear();
+      beneficiosParticipantes.clear();
+      dadosParticipantes
+        ..clear()
+        ..addAll(itens);
+      for (var i = 0; i < itens.length; i++) {
+        nomes.add(TextEditingController());
+        cpfs.add(TextEditingController());
+        beneficiosParticipantes.add(null);
+      }
+      if (mounted) setState(() {});
+    } catch (erro) {
+      if (mounted) AppSnackBar.erro(context, api.mensagemErroAmigavel(erro));
+    } finally {
+      if (mounted) setState(() => salvando = false);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -652,6 +704,12 @@ class _ParticipantesReservaScreenState
                         Text(
                           'Participante ${i + 1}',
                           style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          tooltip: 'Excluir participante',
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: salvando ? null : () => _removerParticipante(i),
                         ),
                       ],
                     ),
