@@ -428,17 +428,21 @@ class _ParticipantesReservaScreenState
     final lote = '${item['nome_lote'] ?? ''}'.trim();
     final setor = '${item['nome_setor'] ?? ''}'.trim();
     final modalidade = '${item['nome_modalidade'] ?? ''}'.trim();
-    final textos = [
+    final primeiraLinha = [
       if (lote.isNotEmpty) 'Lote: $lote',
       if (setor.isNotEmpty) 'Setor: $setor',
-      if (modalidade.isNotEmpty) 'Modalidade: $modalidade',
     ];
-    if (textos.isEmpty) return const SizedBox.shrink();
+    if (primeiraLinha.isEmpty && modalidade.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 2),
       child: Text(
-        textos.join('  •  '),
-        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+        [
+          if (primeiraLinha.isNotEmpty) primeiraLinha.join('  •  '),
+          if (modalidade.isNotEmpty) 'Modalidade: $modalidade',
+        ].join('\n'),
+        style: const TextStyle(fontSize: 12, color: Colors.black),
       ),
     );
   }
