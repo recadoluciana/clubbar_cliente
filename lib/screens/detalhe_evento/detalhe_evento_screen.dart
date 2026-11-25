@@ -1631,12 +1631,20 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     if (compraId == null || reservaId == null || clienteId == null) return;
     setState(() => _removendoItemSacola = true);
     try {
-      await apiService.removerIngressoCompraEvento(
+      final resposta = await apiService.removerIngressoCompraEvento(
         compraEventoId: compraId,
         reservaId: reservaId,
         clienteId: clienteId,
       );
-      _removerItemLocalDaSacola(compra, reservaId);
+      final itensServidor = (resposta['itens'] as List?)
+          ?.whereType<Map>()
+          .map((outro) => Map<String, dynamic>.from(outro))
+          .toList();
+      if (itensServidor != null) {
+        _atualizarSacolaComItens(compra, itensServidor);
+      } else {
+        _removerItemLocalDaSacola(compra, reservaId);
+      }
     } catch (e) {
       final mensagem = apiService.mensagemErroAmigavel(e);
       if (mensagem.toLowerCase().contains('item da compra não encontrado')) {
@@ -1684,6 +1692,28 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
               'quantidade': quantidadeAtual,
               'valor_total': valorAtual,
             };
+    });
+  }
+
+  void _atualizarSacolaComItens(
+    Map<String, dynamic> compra,
+    List<Map<String, dynamic>> itens,
+  ) {
+    final quantidade = itens.fold<int>(
+      0,
+      (total, item) => total + (int.tryParse('${item['quantidade'] ?? 1}') ?? 1),
+    );
+    final valor = itens.fold<double>(
+      0,
+      (total, item) => total +
+          (double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0),
+    );
+    if (!mounted) return;
+    setState(() {
+      _compraEvento = itens.isEmpty
+          ? null
+          : {...compra, 'itens': itens, 'quantidade': quantidade, 'valor_total': valor};
+      if (itens.isEmpty) _sacolaExpandida = false;
     });
   }
 

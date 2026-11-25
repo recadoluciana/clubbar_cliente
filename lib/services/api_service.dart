@@ -637,7 +637,7 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
-  Future<void> cancelarReservaIngresso({
+  Future<Map<String, dynamic>> cancelarReservaIngresso({
     required int reservaId,
     required int clienteId,
   }) async {
@@ -648,6 +648,7 @@ class ApiService {
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extrairMensagemHttp(response));
     }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
   Future<Map<String, dynamic>> criarPixReserva({
