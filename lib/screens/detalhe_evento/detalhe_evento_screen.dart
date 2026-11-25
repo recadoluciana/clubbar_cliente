@@ -2541,6 +2541,19 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final unicoLoteGlobal = lotesGlobais.length == 1
         ? lotesGlobais.first.first.first
         : null;
+    final itensSacola = _compraEvento?['itens'] is List
+        ? (_compraEvento!['itens'] as List).whereType<Map>().toList()
+        : const <Map>[];
+    final quantidadeItens = itensSacola.fold<int>(
+      0,
+      (total, item) =>
+          total + (int.tryParse('${item['quantidade'] ?? 1}') ?? 1),
+    );
+    final quantidadeInformada =
+        int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0;
+    final quantidadeSacola = quantidadeItens > quantidadeInformada
+        ? quantidadeItens
+        : quantidadeInformada;
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
@@ -2570,6 +2583,55 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ],
               ),
             ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  tooltip: quantidadeSacola > 0
+                      ? 'Continuar para participantes'
+                      : 'Nenhum ingresso adicionado',
+                  onPressed: itensSacola.isEmpty || processandoCompra
+                      ? null
+                      : _abrirCompraEvento,
+                  icon: const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.white,
+                  ),
+                ),
+                Positioned(
+                  right: 2,
+                  top: 3,
+                  child: IgnorePointer(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        quantidadeSacola > 99 ? '99+' : '$quantidadeSacola',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
       body: carregando
@@ -3127,7 +3189,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                 ],
               ),
             ),
-      bottomNavigationBar: _sacolaCompraEvento(),
     );
   }
 }
