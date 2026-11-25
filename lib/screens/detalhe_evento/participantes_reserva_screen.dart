@@ -91,6 +91,9 @@ class _ParticipantesReservaScreenState
         if (mounted) Navigator.pop(context, true);
         return;
       }
+      widget.reserva['itens'] = resposta['itens'];
+      widget.reserva['quantidade'] = resposta['quantidade'];
+      widget.reserva['valor_total'] = resposta['valor_total'];
       for (final controller in [...nomes, ...cpfs]) {
         controller.dispose();
       }
