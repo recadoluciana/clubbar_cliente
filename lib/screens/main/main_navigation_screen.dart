@@ -11,6 +11,7 @@ import '../carrinho/carrinho_screen.dart';
 import '../carteira/carteira_screen.dart';
 import '../carteira/carteira_loja_screen.dart';
 import '../carteira/carteira_ingressos_screen.dart';
+import '../cortesias/cortesias_disponiveis_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
 import '../perfil/perfil_screen.dart';
@@ -727,6 +728,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna is DetalheLojaScreen ||
                 telaInterna is AgendaEventosScreen ||
                 telaInterna is ProdutosLojaScreen ||
+                telaInterna is CortesiasDisponiveisScreen ||
                 telaInterna is CarteiraScreen ||
                 telaInterna is CarteiraLojaScreen ||
                 telaInterna is CarteiraIngressosScreen;
