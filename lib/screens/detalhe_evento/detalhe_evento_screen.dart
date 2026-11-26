@@ -83,6 +83,8 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final VoidCallback onEntenderTaxa;
   final Map<String, dynamic>? compraEvento;
   final int Function() segundosReserva;
+  final int Function() quantidadeSacola;
+  final Future<void> Function()? onSacolaTap;
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
@@ -97,6 +99,8 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.onEntenderTaxa,
     this.compraEvento,
     required this.segundosReserva,
+    required this.quantidadeSacola,
+    this.onSacolaTap,
   });
 
   @override
@@ -176,6 +180,56 @@ class _ModalidadesIngressoScreenState
                 ],
               ),
             ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                IconButton(
+                  tooltip: 'Conferir sacola',
+                  onPressed: widget.onSacolaTap == null
+                      ? null
+                      : () => widget.onSacolaTap!(),
+                  icon: const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: Colors.white,
+                  ),
+                ),
+                if (widget.quantidadeSacola() > 0)
+                  Positioned(
+                    right: 2,
+                    top: 3,
+                    child: IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 2,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          widget.quantidadeSacola() > 99
+                              ? '99+'
+                              : '${widget.quantidadeSacola()}',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
       body: Column(
@@ -578,7 +632,7 @@ class _ModalidadesIngressoScreenState
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     backgroundColor: ehCortesia
                         ? const Color(0xFF5B9BD5)
-                        : AppColors.amareloCerveja,
+                        : const Color(0xFFFFC107),
                     foregroundColor: ehCortesia ? Colors.white : Colors.black,
                     disabledBackgroundColor: Colors.grey.shade300,
                     disabledForegroundColor: Colors.grey.shade600,
@@ -1731,6 +1785,8 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         <Map<String, dynamic>>[];
     final reserva = {
       ...compra,
+      if (itens.isNotEmpty)
+        'reserva_ingresso_id': itens.first['reserva_ingresso_id'],
       'itens': itens
           .map((item) => {...item, 'quantidade': 1})
           .toList(),
@@ -2080,6 +2136,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           onEntenderTaxa: _abrirExplicacaoTaxas,
           compraEvento: _compraEvento,
           segundosReserva: () => _segundosReservaSacola,
+          quantidadeSacola: () =>
+              int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0,
+          onSacolaTap: () => _verIngressosSacola(confirmar: true),
         ),
       ),
     );
