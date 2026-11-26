@@ -1105,6 +1105,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
+        tituloAlinhadoEsquerda: true,
         onVoltar: widget.onVoltar,
       ),
 
