@@ -651,6 +651,7 @@ class _ConferenciaSacolaScreen extends StatefulWidget {
   final String imagemEvento;
   final List<Map<String, dynamic>> itens;
   final Future<void> Function(Map<String, dynamic> item) onRemover;
+  final Future<void> Function() onInformarParticipante;
 
   const _ConferenciaSacolaScreen({
     required this.nomeEvento,
@@ -658,6 +659,7 @@ class _ConferenciaSacolaScreen extends StatefulWidget {
     required this.imagemEvento,
     required this.itens,
     required this.onRemover,
+    required this.onInformarParticipante,
   });
 
   @override
@@ -760,15 +762,13 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
           ),
           const SizedBox(height: 20),
           FilledButton(
-            onPressed: itens.isEmpty
-                ? null
-                : () => Navigator.pop(context, true),
+            onPressed: itens.isEmpty ? null : widget.onInformarParticipante,
             child: const Text('Continuar - Informar participante'),
           ),
           const SizedBox(height: 10),
           OutlinedButton(
             onPressed: () => Navigator.pop(context, false),
-            label: const Text('Adicionar ingresso'),
+            child: const Text('Adicionar ingresso'),
           ),
         ],
       ),
@@ -1750,6 +1750,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           imagemEvento: evento?.bannerUrl ?? '',
           itens: itens.map(Map<String, dynamic>.from).toList(),
           onRemover: _removerItemSacola,
+          onInformarParticipante: _abrirCompraEvento,
         ),
       ),
     );
@@ -1758,9 +1759,6 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         compra!,
         retorno.whereType<Map>().map(Map<String, dynamic>.from).toList(),
       );
-    }
-    if (confirmar && retorno == true && mounted) {
-      await _abrirCompraEvento();
     }
   }
 
