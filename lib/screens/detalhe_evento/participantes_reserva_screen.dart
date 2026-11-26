@@ -131,8 +131,10 @@ class _ParticipantesReservaScreenState
           dadosParticipantes.add(Map<String, dynamic>.from(item));
         }
       }
-      final quantidadeDosItens = dadosParticipantes.length;
-      if (quantidadeDosItens > quantidade) quantidade = quantidadeDosItens;
+      // Depois de excluir um ingresso, o resumo da compra pode ainda conter
+      // a quantidade anterior. A lista de itens sincronizada é a fonte de
+      // verdade para abrir um participante por ingresso restante.
+      quantidade = dadosParticipantes.length;
     }
     for (var i = 0; i < quantidade; i++) {
       nomes.add(TextEditingController());
