@@ -959,6 +959,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
       ),
 
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ClubbarPageHeader(
             titulo: widget.nomeLoja,
@@ -968,27 +969,28 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
             icone: Icons.inventory_2_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
           ),
+          if (itensTela.any((item) => !_isDelivery(item)))
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Text(
+                'Apresente o QR Code para o atendente',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          else
+            const SizedBox(height: 20),
 
           Expanded(
             child: RefreshIndicator(
               onRefresh: _atualizarItens,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 children: [
-                  if (itensTela.any((item) => !_isDelivery(item))) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        'Apresente o QR Code para o atendente',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
                   if (itensTela.isEmpty)
                     _estadoVazio()
                   else
