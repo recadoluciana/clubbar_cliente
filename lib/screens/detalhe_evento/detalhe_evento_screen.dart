@@ -652,6 +652,7 @@ class _ConferenciaSacolaScreen extends StatefulWidget {
   final List<Map<String, dynamic>> itens;
   final Future<void> Function(Map<String, dynamic> item) onRemover;
   final Future<void> Function() onInformarParticipante;
+  final int Function() segundosReserva;
 
   const _ConferenciaSacolaScreen({
     required this.nomeEvento,
@@ -660,6 +661,7 @@ class _ConferenciaSacolaScreen extends StatefulWidget {
     required this.itens,
     required this.onRemover,
     required this.onInformarParticipante,
+    required this.segundosReserva,
   });
 
   @override
@@ -670,11 +672,21 @@ class _ConferenciaSacolaScreen extends StatefulWidget {
 class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
   late List<Map<String, dynamic>> itens;
   bool removendo = false;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     itens = widget.itens.map(Map<String, dynamic>.from).toList();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -694,6 +706,27 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context, itens),
         ),
+        actions: [
+          if (widget.segundosReserva() > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 14),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${(widget.segundosReserva() ~/ 60).toString().padLeft(2, '0')}:${(widget.segundosReserva() % 60).toString().padLeft(2, '0')}',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -1751,6 +1784,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           itens: itens.map(Map<String, dynamic>.from).toList(),
           onRemover: _removerItemSacola,
           onInformarParticipante: _abrirCompraEvento,
+          segundosReserva: () => _segundosReservaSacola,
         ),
       ),
     );
