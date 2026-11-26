@@ -261,7 +261,7 @@ void main() {
     expect(find.text('Local'), findsOneWidget);
     expect(find.text('Rua do evento, 123'), findsOneWidget);
     expect(find.text('Horário evento'), findsOneWidget);
-    expect(find.text('13/12/2026\n13:00'), findsOneWidget);
+    expect(find.text('13/12/2026 13:00'), findsOneWidget);
     expect(
       tester.getTopLeft(find.text('Horário evento')).dy,
       lessThan(tester.getTopLeft(find.text('Local')).dy),
@@ -300,7 +300,7 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Cortesia'), findsOneWidget);
-      expect(find.text('Não informado'), findsNWidgets(4));
+      expect(find.text('Não informado'), findsNWidgets(3));
     },
   );
 }

@@ -1,5 +1,4 @@
 import 'package:clubbar_cliente/screens/carteira/carteira_ingressos_screen.dart';
-import 'package:clubbar_cliente/utils/value_formatters.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -44,11 +43,11 @@ void main() {
       await tester.pump();
       expect(find.text('Festival'), findsOneWidget);
       expect(find.text('Setor: Pista'), findsOneWidget);
-      expect(find.text('13/12/2026\n13:00'), findsOneWidget);
+      expect(find.text('13/12/2026 13:00'), findsOneWidget);
       expect(find.text('06/11/2026 15:57'), findsOneWidget);
       expect(find.text('Ana Beatriz'), findsOneWidget);
       expect(find.text('CPF: 123.456.789-09'), findsOneWidget);
-      expect(find.text(ValueFormatters.moeda(12.99)), findsOneWidget);
+      expect(find.text('Valor pago'), findsNothing);
       expect(find.text('Transferir participante'), findsOneWidget);
       expect(find.text('Presentear alguém'), findsOneWidget);
       expect(find.text('Exibir QR Code'), findsOneWidget);

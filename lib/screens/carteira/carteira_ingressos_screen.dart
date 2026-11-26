@@ -11,7 +11,6 @@ import '../../utils/app_snackbar.dart';
 import '../../widgets/clubbar_page_header.dart';
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
-import '../../utils/value_formatters.dart';
 
 import 'package:clubbar_cliente/config/app_config.dart';
 
@@ -616,16 +615,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
-    final valorIngresso = double.tryParse('${item['vrunititvenda'] ?? ''}');
-    final taxaIngresso = double.tryParse('${item['vrtaxaitvenda'] ?? ''}');
-    final quantidadeIngresso = int.tryParse('${item['qtitvenda'] ?? 1}') ?? 1;
-    final valorPago = valorIngresso == null || taxaIngresso == null
-        ? null
-        : valorIngresso * quantidadeIngresso + taxaIngresso;
-    final horarioEvento = dataEvento.replaceFirstMapped(
-      RegExp(r'^(\d{2}/\d{2}/\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)$'),
-      (match) => '${match[1]}\n${match[2]}',
-    );
+    final horarioEvento = dataEvento.replaceAll(RegExp(r'\s+'), ' ');
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
     final setor = (item['nmsetor'] ?? '').toString().trim();
     final modalidade = (item['nmpreco'] ?? '').toString().trim();
@@ -674,7 +664,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   top: Radius.circular(21),
                 ),
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -687,8 +680,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: 58,
-                        height: 58,
+                        width: 52,
+                        height: 52,
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -737,61 +730,62 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(15, 14, 15, 0),
+                padding: const EdgeInsets.fromLTRB(15, 10, 15, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _informacaoIngresso(
-                          icone: Icons.event_outlined,
-                          titulo: 'Horário evento',
-                          valor: horarioEvento.isEmpty
-                              ? 'Não informado'
-                              : horarioEvento,
-                          corIcone: corIngresso,
-                        ),
-                        const SizedBox(width: 8),
-                        _informacaoIngresso(
-                          icone: Icons.receipt_long_outlined,
-                          titulo: 'Comprado em',
-                          valor: dataCompra.isEmpty
-                              ? 'Não informado'
-                              : dataCompra,
-                          corIcone: corIngresso,
-                        ),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final larguraMinima =
+                            360 *
+                            MediaQuery.textScalerOf(context).scale(12) /
+                            12;
+                        final largura = constraints.maxWidth >= larguraMinima
+                            ? (constraints.maxWidth - 8) / 2
+                            : constraints.maxWidth;
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            SizedBox(
+                              width: largura,
+                              child: _informacaoIngresso(
+                                icone: Icons.event_outlined,
+                                titulo: 'Horário evento',
+                                valor: horarioEvento.isEmpty
+                                    ? 'Não informado'
+                                    : horarioEvento,
+                                corIcone: corIngresso,
+                              ),
+                            ),
+                            SizedBox(
+                              width: largura,
+                              child: _informacaoIngresso(
+                                icone: Icons.receipt_long_outlined,
+                                titulo: 'Comprado em',
+                                valor: dataCompra.isEmpty
+                                    ? 'Não informado'
+                                    : dataCompra,
+                                corIcone: corIngresso,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _informacaoIngresso(
-                          icone: Icons.place_outlined,
-                          titulo: 'Local',
-                          valor: enderecoEvento.isEmpty
-                              ? 'Não informado'
-                              : enderecoEvento,
-                          corIcone: corIngresso,
-                          flex: 3,
-                        ),
-                        const SizedBox(width: 8),
-                        _informacaoIngresso(
-                          icone: Icons.confirmation_num_outlined,
-                          titulo: 'Valor pago',
-                          valor: valorPago == null
-                              ? 'Não informado'
-                              : ValueFormatters.moeda(valorPago),
-                          corIcone: corIngresso,
-                          flex: 2,
-                        ),
-                      ],
+                    _informacaoIngresso(
+                      icone: Icons.place_outlined,
+                      titulo: 'Local',
+                      valor: enderecoEvento.isEmpty
+                          ? 'Não informado'
+                          : enderecoEvento,
+                      corIcone: corIngresso,
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 10),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: corIngresso.withValues(alpha: .06),
                         borderRadius: BorderRadius.circular(14),
@@ -859,14 +853,14 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 6),
                 child: CustomPaint(
                   size: const Size(double.infinity, 14),
                   painter: _DivisoriaIngressoPainter(corIngresso),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                padding: const EdgeInsets.fromLTRB(15, 0, 15, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -1007,55 +1001,51 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     required String titulo,
     required String valor,
     Color? corIcone,
-    int flex = 1,
   }) {
-    return Expanded(
-      flex: flex,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          children: [
-            Icon(icone, size: 18, color: corIcone ?? Colors.grey.shade700),
-            const SizedBox(width: 7),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    titulo,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(icone, size: 18, color: corIcone ?? Colors.grey.shade700),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 2),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 3,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        valor,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                        ),
+                ),
+                const SizedBox(height: 2),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 3,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      valor,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
