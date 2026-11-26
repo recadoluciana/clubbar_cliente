@@ -69,7 +69,7 @@ void main() {
     expect(find.text('2 ingressos'), findsOneWidget);
     expect(find.text('1 ingresso'), findsOneWidget);
     expect(find.byTooltip('Transferir participante'), findsNothing);
-    expect(find.text('Presentear alguém'), findsNothing);
+    expect(find.text('Presentear'), findsNothing);
     expect(find.text('Exibir QR Code'), findsNothing);
 
     await tester.tap(find.text('Ver ingressos').first);

@@ -1084,7 +1084,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                             ),
                             label: const FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: Text('Presentear alguém'),
+                              child: Text('Presentear'),
                             ),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: corIngresso,
