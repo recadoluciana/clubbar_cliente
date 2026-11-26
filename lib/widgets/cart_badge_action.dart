@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
+import '../core/theme/app_colors.dart';
+
 import '../models/loja.dart';
 import '../screens/carrinho/carrinho_lojas_screen.dart';
 import '../screens/carrinho/carrinho_screen.dart';
@@ -19,7 +21,7 @@ class CartBadgeAction extends StatelessWidget {
 
         if (totalItensCarrinho > 0) {
           icon = Badge(
-            backgroundColor: Colors.blue.shade600,
+            backgroundColor: AppColors.marromSuave,
             label: Text(
               totalItensCarrinho > 99 ? '99+' : '$totalItensCarrinho',
               style: const TextStyle(

@@ -5,6 +5,7 @@ import '../screens/perfil/perfil_screen.dart';
 import '../services/auth_storage.dart';
 import '../services/main_navigation_controller.dart';
 import 'app_version_text.dart';
+import '../core/theme/app_colors.dart';
 
 class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titulo;
@@ -68,7 +69,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
           decoration: BoxDecoration(
-            color: Colors.blue.shade600,
+            color: AppColors.marromSuave,
             borderRadius: BorderRadius.circular(20),
           ),
           constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
@@ -142,7 +143,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(
               Icons.person_rounded,
               size: 20,
-              color: Colors.amber,
+              color: AppColors.marromSuave,
             ),
             label: nome,
           );

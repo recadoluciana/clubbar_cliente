@@ -26,6 +26,7 @@ import '../../services/deep_link_service.dart';
 import '../../widgets/api_status_indicator.dart';
 import '../atendimento_cora/atendimento_cora_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
+import '../../core/theme/app_colors.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -66,7 +67,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }) {
     final selecionado = estaSelecionado ?? currentIndex == index;
 
-    final corIcone = selecionado ? Colors.amber.shade700 : Colors.black87;
+    final corIcone = selecionado ? AppColors.marromClubbar : Colors.black87;
     const corTexto = Colors.black87;
 
     return Expanded(
