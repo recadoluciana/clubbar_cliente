@@ -38,6 +38,33 @@ class CarteiraIngressosScreen extends StatefulWidget {
       _CarteiraIngressosScreenState();
 }
 
+class _DivisoriaIngressoPainter extends CustomPainter {
+  const _DivisoriaIngressoPainter(this.cor);
+
+  final Color cor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final linha = Paint()
+      ..color = cor.withValues(alpha: .35)
+      ..strokeWidth = 1;
+    for (double x = 15; x < size.width - 15; x += 9) {
+      canvas.drawLine(
+        Offset(x, size.height / 2),
+        Offset(x + 4, size.height / 2),
+        linha,
+      );
+    }
+    final recorte = Paint()..color = const Color(0xFFF6F6F6);
+    canvas.drawCircle(Offset(0, size.height / 2), 7, recorte);
+    canvas.drawCircle(Offset(size.width, size.height / 2), 7, recorte);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DivisoriaIngressoPainter antigo) =>
+      antigo.cor != cor;
+}
+
 class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   late List<Map<String, dynamic>> itensTela;
   final ApiService apiService = ApiService();
@@ -622,347 +649,291 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
             .toString()
             .trim();
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        color: Colors.white,
-        elevation: 2,
-        shadowColor: Colors.black.withValues(alpha: 0.12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: corIngresso, width: 1.5),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          children: [
-            // Faixa superior do ingresso
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(15, 14, 15, 13),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    Colors.blue.withValues(alpha: 0.12),
-                    Colors.amber.withValues(alpha: 0.10),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 620),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: corIngresso.withValues(alpha: .65)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: .07),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(21),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        corIngresso.withValues(alpha: .13),
+                        Colors.amber.withValues(alpha: .08),
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 58,
+                        height: 58,
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: _imagemItem(item),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nomeIngresso,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Text(
+                              modalidadeExibida.isEmpty
+                                  ? 'Ingresso'
+                                  : modalidadeExibida,
+                              style: TextStyle(
+                                color: corIngresso,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Setor: ${setor.isEmpty ? 'Não informado' : setor}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(15, 14, 15, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _informacaoIngresso(
+                          icone: Icons.event_outlined,
+                          titulo: 'Horário evento',
+                          valor: horarioEvento.isEmpty
+                              ? 'Não informado'
+                              : horarioEvento,
+                          corIcone: corIngresso,
+                        ),
+                        const SizedBox(width: 8),
+                        _informacaoIngresso(
+                          icone: Icons.receipt_long_outlined,
+                          titulo: 'Comprado em',
+                          valor: dataCompra.isEmpty
+                              ? 'Não informado'
+                              : dataCompra,
+                          corIcone: corIngresso,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _informacaoIngresso(
+                          icone: Icons.place_outlined,
+                          titulo: 'Local',
+                          valor: enderecoEvento.isEmpty
+                              ? 'Não informado'
+                              : enderecoEvento,
+                          corIcone: corIngresso,
+                          flex: 3,
+                        ),
+                        const SizedBox(width: 8),
+                        _informacaoIngresso(
+                          icone: Icons.confirmation_num_outlined,
+                          titulo: 'Valor pago',
+                          valor: valorPago == null
+                              ? 'Não informado'
+                              : ValueFormatters.moeda(valorPago),
+                          corIcone: corIngresso,
+                          flex: 2,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: corIngresso.withValues(alpha: .06),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.person_outline_rounded,
+                            color: corIngresso,
+                            size: 21,
+                          ),
+                          const SizedBox(width: 9),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'PARTICIPANTE',
+                                  style: TextStyle(
+                                    color: corIngresso,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: .6,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  nomeParticipante.isEmpty
+                                      ? 'Participante não informado'
+                                      : nomeParticipante,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  cpfParticipante.isEmpty
+                                      ? 'CPF não informado'
+                                      : 'CPF: $cpfParticipante',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                if (nomeAnterior.isNotEmpty &&
+                                    nomeNovo.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Alterado de $nomeAnterior para $nomeNovo',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 62,
-                    height: 62,
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(17),
-                      border: Border.all(
-                        color: Colors.blue.withValues(alpha: 0.20),
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: _imagemItem(item),
-                    ),
-                  ),
-
-                  const SizedBox(width: 4),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          nomeIngresso,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                            height: 1.15,
-                          ),
-                        ),
-                        if (modalidadeExibida.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            modalidadeExibida,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: corIngresso,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                        if (setor.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'Setor: $setor',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: CustomPaint(
+                  size: const Size(double.infinity, 14),
+                  painter: _DivisoriaIngressoPainter(corIngresso),
+                ),
               ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(15, 4, 5, 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Horário e local do evento
-                  Row(
-                    children: [
-                      _informacaoIngresso(
-                        icone: Icons.event_outlined,
-                        titulo: 'Horário evento',
-                        valor: horarioEvento.isEmpty
-                            ? 'Não informada'
-                            : horarioEvento,
-                        corIcone: Colors.blue.shade700,
-                        flex: 2,
-                      ),
-
-                      const SizedBox(width: 5),
-
-                      _informacaoIngresso(
-                        icone: Icons.place_outlined,
-                        titulo: 'Local',
-                        valor: enderecoEvento.isEmpty
-                            ? 'Não informado'
-                            : enderecoEvento,
-                        corIcone: Colors.green.shade700,
-                        flex: 3,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Row(
-                    children: [
-                      _informacaoIngresso(
-                        icone: Icons.receipt_long_outlined,
-                        titulo: 'Comprado em',
-                        valor: dataCompra.isEmpty
-                            ? 'Não informada'
-                            : dataCompra,
-                        corIcone: Colors.blue.shade700,
-                      ),
-                      const SizedBox(width: 5),
-                      _informacaoIngresso(
-                        icone: Icons.confirmation_num_outlined,
-                        titulo: 'Valor pago',
-                        valor: valorPago == null
-                            ? 'Não informado'
-                            : ValueFormatters.moeda(valorPago),
-                        corIcone: Colors.blue.shade700,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Participante
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(13),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.blue.withValues(alpha: 0.16),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(15, 0, 15, 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () => _abrirDialogAlterarParticipante(item),
+                      icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                      label: const Text('Transferir participante'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: corIngresso,
+                        side: BorderSide(
+                          color: corIngresso.withValues(alpha: .5),
+                        ),
+                        minimumSize: const Size(0, 42),
                       ),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.person_rounded,
-                          color: corIngresso,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 6),
-
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Participante',
-                                style: TextStyle(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-
-                              const SizedBox(height: 3),
-
-                              Text(
-                                nomeParticipante.isEmpty
-                                    ? 'Participante não informado'
-                                    : nomeParticipante,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-
-                              Text(
-                                cpfParticipante.isEmpty
-                                    ? 'CPF não informado'
-                                    : 'CPF: $cpfParticipante',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.grey.shade700,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-
-                              if (nomeAnterior.isNotEmpty &&
-                                  nomeNovo.isNotEmpty) ...[
-                                const SizedBox(height: 7),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Icon(
-                                      Icons.swap_horiz_rounded,
-                                      size: 16,
-                                      color: Colors.amber.shade800,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        'Alterado de $nomeAnterior para $nomeNovo',
-                                        style: TextStyle(
-                                          color: Colors.grey.shade700,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          height: 1.25,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Tooltip(
-                          message: 'Transferir ingresso',
-                          child: SizedBox(
-                            width: 58,
-                            height: 58,
-                            child: OutlinedButton(
-                              onPressed: () =>
-                                  _abrirDialogAlterarParticipante(item),
-                              style: OutlinedButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                backgroundColor: corIngresso.withValues(
-                                  alpha: 0.1,
-                                ),
-                                foregroundColor: corIngresso,
-                                side: BorderSide(color: corIngresso),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.edit_outlined, size: 18),
-                                  SizedBox(height: 2),
-                                  Text(
-                                    'Transferir',
-                                    style: TextStyle(fontSize: 10),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-                  ...[
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
-                          child: SizedBox(
-                            height: 42,
-                            child: OutlinedButton.icon(
-                              onPressed: () => _compartilharIngresso(item),
-                              icon: const Icon(
-                                Icons.card_giftcard_rounded,
-                                size: 18,
+                          child: OutlinedButton.icon(
+                            onPressed: () => _compartilharIngresso(item),
+                            icon: const Icon(
+                              Icons.card_giftcard_rounded,
+                              size: 18,
+                            ),
+                            label: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Presentear alguém'),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: corIngresso,
+                              side: BorderSide(
+                                color: corIngresso.withValues(alpha: .5),
                               ),
-                              label: const Text('Presentear'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: corIngresso,
-                                side: BorderSide(color: corIngresso),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
                               ),
+                              minimumSize: const Size(0, 44),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: SizedBox(
-                            height: 42,
-                            child: ElevatedButton.icon(
-                              onPressed: () =>
-                                  _abrirQrOuRetirada(context, item),
-                              icon: const Icon(
-                                Icons.qr_code_2_rounded,
-                                size: 21,
+                          child: FilledButton.icon(
+                            onPressed: () => _abrirQrOuRetirada(context, item),
+                            icon: const Icon(Icons.qr_code_2_rounded, size: 19),
+                            label: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text('Exibir QR Code'),
+                            ),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: corIngresso,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
                               ),
-                              label: const Text(
-                                'Exibir QR Code',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: corIngresso,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                              ),
+                              minimumSize: const Size(0, 44),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
