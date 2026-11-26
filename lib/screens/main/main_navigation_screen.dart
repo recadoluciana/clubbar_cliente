@@ -669,7 +669,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           label: Text(
             total > 99 ? '99+' : '$total',
             style: const TextStyle(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 10,
               fontWeight: FontWeight.bold,
             ),

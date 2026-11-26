@@ -238,6 +238,39 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
 
                   const SizedBox(height: 14),
 
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: .10),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 20,
+                          color: Color(0xFF7A5A00),
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'A nova senha deve conter pelo menos 6 caracteres e ser diferente da senha atual.',
+                            style: TextStyle(
+                              color: Color(0xFF6A5200),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
                   TextFormField(
                     controller: _novaSenhaCtrl,
                     obscureText: ocultarNovaSenha,
@@ -311,47 +344,11 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
                     },
                   ),
 
-                  const SizedBox(height: 12),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: .10),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.amber.withValues(alpha: .35),
-                      ),
-                    ),
-                    child: const Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          size: 20,
-                          color: Color(0xFF7A5A00),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'A nova senha deve conter pelo menos 6 caracteres e ser diferente da senha atual.',
-                            style: TextStyle(
-                              color: Color(0xFF6A5200),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
                   const SizedBox(height: 24),
 
                   SizedBox(
                     width: double.infinity,
-                    height: 54,
+                    height: 50,
                     child: ElevatedButton.icon(
                       onPressed: carregando ? null : salvarNovaSenha,
                       icon: carregando
@@ -372,15 +369,15 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.amber,
-                        foregroundColor: Colors.black,
+                        backgroundColor: const Color(0xFFFFD65A),
+                        foregroundColor: const Color(0xFF5F4900),
                         disabledBackgroundColor: Colors.amber.withValues(
                           alpha: .55,
                         ),
                         disabledForegroundColor: Colors.black54,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(24),
                         ),
                       ),
                     ),
