@@ -665,7 +665,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         }
 
         return Badge(
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.amber,
           label: Text(
             total > 99 ? '99+' : '$total',
             style: const TextStyle(
