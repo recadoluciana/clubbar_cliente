@@ -243,6 +243,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       extendBodyBehindAppBar: false,
       appBar: ClubbarAppBar(
         titulo: 'Perfil',
+        tituloAlinhadoEsquerda: true,
         iconeTitulo: Icons.person_rounded,
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,

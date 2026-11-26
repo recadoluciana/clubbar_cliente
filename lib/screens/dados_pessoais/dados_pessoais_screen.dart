@@ -299,6 +299,7 @@ class _DadosPessoaisScreenState extends State<DadosPessoaisScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
         titulo: 'Dados pessoais',
+        tituloAlinhadoEsquerda: true,
         iconeTitulo: Icons.badge_rounded,
         corIconeTitulo: Colors.blue,
         mostrarVoltar: true,

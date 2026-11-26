@@ -18,6 +18,7 @@ class MeusPedidosScreen extends StatelessWidget {
       appBar: const ClubbarAppBar(
         titulo: 'Minhas compras',
         iconeTitulo: Icons.receipt_long_rounded,
+        tituloAlinhadoEsquerda: true,
         corIconeTitulo: Colors.orange,
         mostrarVoltar: true,
         mostrarSessao: false,
@@ -1138,6 +1139,7 @@ class _PedidosPorTipoScreenState extends State<PedidosPorTipoScreen> {
             : 'Minhas compras - Produtos',
         iconeTitulo: Icons.receipt_long_rounded,
         corIconeTitulo: Colors.orange,
+        tituloAlinhadoEsquerda: true,
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
