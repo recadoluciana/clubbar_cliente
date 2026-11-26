@@ -30,6 +30,24 @@ class PagamentoSucessoScreen extends StatefulWidget {
     this.lojaDestino,
   });
 
+  static void abrirResgate(
+    BuildContext context, {
+    required PagamentoSucessoScreen tela,
+  }) {
+    final naNavegacaoPrincipal =
+        context.findAncestorWidgetOfExactType<MainNavigationScreen>() != null;
+    final navigator = Navigator.of(context, rootNavigator: true);
+    // O resgate terminou: o histórico não deve reabrir a compra concluída.
+    MainNavigationController.irParaHome();
+    MainNavigationController.abrirTela(tela);
+    if (!naNavegacaoPrincipal) {
+      navigator.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+        (_) => false,
+      );
+    }
+  }
+
   @override
   State<PagamentoSucessoScreen> createState() => _PagamentoSucessoScreenState();
 }
@@ -75,6 +93,8 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
   }
 
   void _voltarAoApp() {
+    final naNavegacaoPrincipal =
+        context.findAncestorWidgetOfExactType<MainNavigationScreen>() != null;
     final loja = widget.lojaDestino;
     if (loja != null) {
       MainNavigationController.limparTelasInternas();
@@ -83,7 +103,8 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
       MainNavigationController.irParaHome();
     }
 
-    Navigator.of(context).pushAndRemoveUntil(
+    if (naNavegacaoPrincipal) return;
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
       (_) => false,
     );

@@ -24,6 +24,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
   final String nomeSetor;
   final String modalidade;
   final List<BeneficioIngresso> beneficios;
+  final VoidCallback? onReservaConcluida;
 
   const ParticipantesReservaScreen({
     super.key,
@@ -36,6 +37,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
     required this.nomeSetor,
     required this.modalidade,
     this.beneficios = const [],
+    this.onReservaConcluida,
   });
 
   @override
@@ -330,6 +332,11 @@ class _ParticipantesReservaScreenState
 
   Future<void> _mostrarSucesso(bool gratuito) async {
     timer?.cancel();
+    widget.onReservaConcluida?.call();
+    if (gratuito) {
+      PagamentoSucessoScreen.abrirResgate(context, tela: _telaSucesso(true));
+      return;
+    }
     final navigator = Navigator.of(context);
     final navigatorPrincipal = Navigator.of(context, rootNavigator: true);
     final rotaParticipantes = ModalRoute.of(context);
@@ -348,7 +355,7 @@ class _ParticipantesReservaScreenState
     await resultado;
   }
 
-  Widget _telaSucesso(bool gratuito) => PagamentoSucessoScreen(
+  PagamentoSucessoScreen _telaSucesso(bool gratuito) => PagamentoSucessoScreen(
     lojaDestino: widget.loja,
     tituloAppBar: gratuito ? widget.nomeEvento : 'Pagamento',
     tituloSucesso: gratuito ? 'Resgate realizado com sucesso' : null,
