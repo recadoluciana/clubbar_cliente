@@ -18,6 +18,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onCarrinhoTap;
   final bool mostrarVersao;
   final bool mostrarVoltar;
+  final bool mostrarHome;
   final String logoPath;
   final VoidCallback? onVoltar;
   final List<Widget> actions;
@@ -42,6 +43,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onCarrinhoTap,
     this.mostrarVersao = false,
     this.mostrarVoltar = false,
+    this.mostrarHome = false,
     this.logoPath = 'assets/images/clubbar_topbar.png',
     this.onVoltar,
     this.actions = const [],
@@ -117,7 +119,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
         if (sessao?.logado == true) {
           if (!mostrarPerfil) return const SizedBox.shrink();
           final nome = ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 80),
+            constraints: BoxConstraints(
+              maxWidth: mostrarHome && MediaQuery.sizeOf(context).width < 420
+                  ? 64
+                  : 80,
+            ),
             child: Text(
               _primeiroNome(sessao?.nome ?? ''),
               maxLines: 1,
@@ -186,6 +192,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final bool temTitulo = titulo != null && titulo!.trim().isNotEmpty;
+    final exibirHome = mostrarHome && !mostrarVoltar;
     final exibirLogoPequenaEsquerda =
         mostrarLogoPequenaEsquerdaComTitulo && temTitulo && !mostrarVoltar;
 
@@ -200,7 +207,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? !logoAlinhadaEsquerda
           : false,
       toolbarHeight: 58,
-      leadingWidth: exibirLogoPequenaEsquerda ? 118 : null,
+      leadingWidth: exibirHome
+          ? 100
+          : exibirLogoPequenaEsquerda
+          ? 118
+          : null,
       titleSpacing: temTitulo
           ? (tituloAlinhadoEsquerda ? 8 : NavigationToolbar.kMiddleSpacing)
           : logoAlinhadaEsquerda
@@ -229,6 +240,20 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                   MainNavigationController.irParaHome();
                 }
               },
+            )
+          : exibirHome
+          ? TextButton.icon(
+              onPressed: MainNavigationController.irParaHome,
+              style: TextButton.styleFrom(foregroundColor: Colors.white),
+              icon: const Icon(
+                Icons.home_rounded,
+                color: Colors.amber,
+                size: 22,
+              ),
+              label: const Text(
+                'Home',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              ),
             )
           : exibirLogoPequenaEsquerda
           ? Padding(
@@ -290,7 +315,14 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
               child: IgnorePointer(
                 child: SizedBox(
                   height: 58,
-                  child: Center(child: _logoClubbar()),
+                  child: Padding(
+                    // Mantém a logo no centro da tela e reserva espaço para
+                    // Home e sessão também em celulares estreitos.
+                    padding: EdgeInsets.symmetric(
+                      horizontal: exibirHome ? 120 : 0,
+                    ),
+                    child: Center(child: _logoClubbar()),
+                  ),
                 ),
               ),
             ),

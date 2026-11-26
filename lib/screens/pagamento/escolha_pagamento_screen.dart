@@ -1284,10 +1284,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     if (metodo.toUpperCase() == 'PIX' && codigoPix.isNotEmpty) {
       if (!mounted) return;
       if (widget.reservaIngressoId != null) _timerReserva?.cancel();
-      final reservaEncerrada = await Navigator.of(
-        context,
-        rootNavigator: true,
-      ).push<bool>(
+      final reservaEncerrada = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
           builder: (_) => PixPagamentoScreen(
             loja: widget.loja,
@@ -1500,7 +1497,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             );
       if (!mounted) return;
       if (widget.reservaIngressoId != null) _timerReserva?.cancel();
-      final resultadoPix = await Navigator.of(context, rootNavigator: true).push(
+      final resultadoPix = await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => PixPagamentoScreen(
             loja: widget.loja,

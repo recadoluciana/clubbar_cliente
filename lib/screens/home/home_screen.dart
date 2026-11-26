@@ -1054,7 +1054,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       appBar: const ClubbarAppBar(
         mostrarVoltar: false,
         mostrarPerfil: true,
-        logoAlinhadaEsquerda: true,
+        mostrarHome: true,
       ),
       body: RefreshIndicator(
         onRefresh: carregarHome,
