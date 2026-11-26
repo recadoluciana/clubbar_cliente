@@ -67,7 +67,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }) {
     final selecionado = estaSelecionado ?? currentIndex == index;
 
-    final corIcone = selecionado ? AppColors.marromClubbar : Colors.black87;
+    final corIcone = selecionado ? Colors.amber.shade700 : Colors.black87;
     const corTexto = Colors.black87;
 
     return Expanded(
