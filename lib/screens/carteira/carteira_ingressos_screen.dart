@@ -1349,9 +1349,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         children: [
           ClubbarPageHeader(
             titulo: widget.nomeLoja,
-            subtitulo: itensTela.isEmpty
-                ? subtituloAux
-                : '$subtituloAux\nSelecione um evento para ver seus ingressos.',
+            subtitulo: subtituloAux,
             maxLinhasSubtitulo: 3,
             icone: Icons.storefront_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),

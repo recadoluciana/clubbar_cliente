@@ -203,7 +203,7 @@ void main() {
       await tester.pump();
       expect(
         find.text(
-          '1 ingresso disponível\nSelecione um evento para ver seus ingressos.',
+          '1 ingresso disponível',
         ),
         findsOneWidget,
       );

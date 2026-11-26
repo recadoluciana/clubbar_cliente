@@ -346,11 +346,11 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     AppSnackBar.sucesso(context, 'Código PIX copiado com sucesso');
   }
 
-  Widget _qrCodeWidget() {
+  Widget _qrCodeWidget({required double tamanho}) {
     if (codigoPix.trim().isEmpty) {
       return Container(
-        width: 185,
-        height: 185,
+        width: tamanho,
+        height: tamanho,
         decoration: BoxDecoration(
           color: Colors.grey.shade200,
           borderRadius: BorderRadius.circular(20),
@@ -365,8 +365,8 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     }
 
     return Container(
-      width: 200,
-      height: 200,
+      width: tamanho,
+      height: tamanho,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -382,9 +382,130 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
       child: QrImageView(
         data: codigoPix,
         version: QrVersions.auto,
-        size: 180,
+        size: tamanho - 20,
         backgroundColor: Colors.white,
         errorCorrectionLevel: QrErrorCorrectLevel.M,
+      ),
+    );
+  }
+
+  Widget _informacoesPagamento() {
+    return ListView(
+      padding: const EdgeInsets.all(14),
+      children: [
+        const Text(
+          'Pagamento iniciado',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
+        const Text('Aguardando pagamento'),
+        const SizedBox(height: 12),
+
+        if (_pixDeTeste) ...[
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.amber.shade50,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: Colors.amber.shade300),
+            ),
+            child: const Text(
+              'Ambiente de teste do Mercado Pago. Este QR Code valida a criação do Pix, mas não permite concluir ou aprovar o pagamento. Não use seu banco para pagá-lo. A compra só será liberada após uma confirmação válida do Mercado Pago.',
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        _barraExpiracao(),
+        const SizedBox(height: 8),
+        Text(
+          _compraDeIngresso
+              ? 'Pague o Pix dentro do prazo exibido. Os ingressos serão confirmados após a aprovação do pagamento.'
+              : 'Pague o Pix dentro do prazo exibido. A compra será confirmada após a aprovação do pagamento.',
+        ),
+
+        if (_verificandoAposExpiracao) ...[
+          const SizedBox(height: 12),
+          const Text(
+            'O tempo do QR Code terminou, mas a confirmação do pagamento ainda não foi verificada. Não pague novamente até conferir a compra na carteira.',
+            style: TextStyle(color: Colors.deepOrange),
+          ),
+        ],
+
+        if (widget.mercadoPago || _verificandoAposExpiracao)
+          TextButton.icon(
+            onPressed: _consultando
+                ? null
+                : () => _consultarPagamento(
+                    validacaoFinal: _verificandoAposExpiracao,
+                    manual: true,
+                  ),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Verificar pagamento agora'),
+          ),
+
+        const SizedBox(height: 12),
+        const Text(
+          'Ou copie o código PIX',
+          style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+        ),
+
+        const SizedBox(height: 10),
+
+        Container(
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: SelectableText(
+            codigoPix.trim().isEmpty ? 'Código PIX não disponível' : codigoPix,
+            style: TextStyle(
+              color: Colors.grey.shade800,
+              height: 1.3,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _areaQrCode(double tamanho, {required bool mostrarTitulo}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (mostrarTitulo) ...[
+            const Text(
+              'Escaneie o QR Code',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+          ],
+          Center(child: _qrCodeWidget(tamanho: tamanho)),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 46,
+            child: ElevatedButton.icon(
+              onPressed: () => copiarCodigoPix(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+              icon: const Icon(Icons.copy_all_rounded, size: 20),
+              label: const Text(
+                'Copiar código PIX',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -402,6 +523,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         },
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ClubbarPageHeader(
             titulo: 'Pagamento via Pix',
@@ -411,157 +533,67 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
             icone: Icons.pix,
             corIcone: Colors.green,
             corTitulo: Colors.blue,
+            conteudoInferior: Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: Row(
+                children: [
+                  const Icon(Icons.payments_outlined, color: Colors.green),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Valor total',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    valorTotalFormatado,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(14),
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.green.shade100),
-                  ),
-                  child: Row(
+            child: SafeArea(
+              top: false,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final ladoALado = constraints.maxWidth >= 600;
+                  final mostrarTitulo = constraints.maxHeight >= 300;
+                  final tamanhoQr =
+                      (ladoALado
+                              ? constraints.maxHeight -
+                                    (mostrarTitulo ? 116 : 82)
+                              : constraints.maxHeight * .4)
+                          .clamp(96.0, 200.0);
+                  final qrCode = _areaQrCode(
+                    tamanhoQr,
+                    mostrarTitulo: mostrarTitulo,
+                  );
+                  if (ladoALado) {
+                    return Row(
+                      children: [
+                        Expanded(child: _informacoesPagamento()),
+                        SizedBox(width: 300, child: Center(child: qrCode)),
+                      ],
+                    );
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(Icons.payments_outlined, color: Colors.green),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Valor total',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      Text(
-                        valorTotalFormatado,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.green,
-                        ),
-                      ),
+                      Expanded(child: _informacoesPagamento()),
+                      qrCode,
                     ],
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  'Pagamento iniciado',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                ),
-                const Text('Aguardando pagamento'),
-                const SizedBox(height: 12),
-
-                if (_pixDeTeste) ...[
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade50,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: Colors.amber.shade300),
-                    ),
-                    child: const Text(
-                      'Ambiente de teste do Mercado Pago. Este QR Code valida a criação do Pix, mas não permite concluir ou aprovar o pagamento. Não use seu banco para pagá-lo. A compra só será liberada após uma confirmação válida do Mercado Pago.',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-
-                _barraExpiracao(),
-                const SizedBox(height: 8),
-                Text(
-                  _compraDeIngresso
-                      ? 'Pague o Pix dentro do prazo exibido. Os ingressos serão confirmados após a aprovação do pagamento.'
-                      : 'Pague o Pix dentro do prazo exibido. A compra será confirmada após a aprovação do pagamento.',
-                ),
-
-                if (_verificandoAposExpiracao) ...[
-                  const SizedBox(height: 12),
-                  const Text(
-                    'O tempo do QR Code terminou, mas a confirmação do pagamento ainda não foi verificada. Não pague novamente até conferir a compra na carteira.',
-                    style: TextStyle(color: Colors.deepOrange),
-                  ),
-                ],
-
-                if (widget.mercadoPago || _verificandoAposExpiracao)
-                  TextButton.icon(
-                    onPressed: _consultando
-                        ? null
-                        : () => _consultarPagamento(
-                            validacaoFinal: _verificandoAposExpiracao,
-                            manual: true,
-                          ),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Verificar pagamento agora'),
-                  ),
-
-                const SizedBox(height: 12),
-
-                const Text(
-                  'Escaneie o QR Code',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                Center(child: _qrCodeWidget()),
-
-                const SizedBox(height: 16),
-
-                const Text(
-                  'Ou copie o código PIX',
-                  style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                Container(
-                  padding: const EdgeInsets.all(13),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: SelectableText(
-                    codigoPix.trim().isEmpty
-                        ? 'Código PIX não disponível'
-                        : codigoPix,
-                    style: TextStyle(
-                      color: Colors.grey.shade800,
-                      height: 1.3,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                SizedBox(
-                  height: 46,
-                  child: ElevatedButton.icon(
-                    onPressed: () => copiarCodigoPix(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                    icon: const Icon(Icons.copy_all_rounded, size: 20),
-                    label: const Text(
-                      'Copiar código PIX',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
+                  );
+                },
+              ),
             ),
           ),
         ],

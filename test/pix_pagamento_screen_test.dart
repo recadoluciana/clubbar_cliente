@@ -1,8 +1,11 @@
 import 'package:clubbar_cliente/models/loja.dart';
 import 'package:clubbar_cliente/screens/pagamento/pix_pagamento_screen.dart';
 import 'package:clubbar_cliente/services/api_service.dart';
+import 'package:clubbar_cliente/widgets/clubbar_page_header.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class _ApiIndisponivel extends ApiService {
   @override
@@ -237,7 +240,12 @@ void main() {
     );
     final consultasAntes = api.consultas;
     final verificar = find.text('Verificar pagamento agora');
-    await tester.ensureVisible(verificar);
+    await tester.scrollUntilVisible(
+      verificar,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(verificar);
     await tester.pump();
     expect(api.consultas, greaterThan(consultasAntes));
@@ -246,23 +254,68 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('consulta um Pix real sem exibir aviso de sandbox', (
-    tester,
-  ) async {
-    final api = _ApiMercadoPago();
-    await _abrirPixMercadoPago(tester, api, teste: false);
-    expect(
-      find.textContaining('Não use seu banco para pagá-lo.'),
-      findsNothing,
-    );
-    final verificar = find.text('Verificar pagamento agora');
-    await tester.ensureVisible(verificar);
-    await tester.tap(verificar);
-    await tester.pump();
-    expect(find.textContaining('sem pagar novamente.'), findsOneWidget);
-    expect(find.byType(PixPagamentoScreen), findsOneWidget);
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
+  for (final tamanho in [
+    const Size(320, 568),
+    const Size(500, 900),
+    const Size(844, 390),
+  ]) {
+    testWidgets('consulta e copia Pix com resumo e QR fixos em $tamanho', (
+      tester,
+    ) async {
+      tester.view.physicalSize = tamanho;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      String? textoCopiado;
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'Clipboard.setData') {
+          textoCopiado = (call.arguments as Map)['text'] as String;
+        }
+        return null;
+      });
+      addTearDown(
+        () => messenger.setMockMethodCallHandler(SystemChannels.platform, null),
+      );
+      final api = _ApiMercadoPago();
+      await _abrirPixMercadoPago(tester, api, teste: false);
+      final resumo = find.byType(ClubbarPageHeader);
+      final qrCode = find.byType(QrImageView);
+      final copiar = find.widgetWithText(ElevatedButton, 'Copiar código PIX');
+      final posicaoResumo = tester.getRect(resumo);
+      final posicaoQr = tester.getRect(qrCode);
+      final posicaoCopiar = tester.getRect(copiar);
+      expect(posicaoResumo.left, 0);
+      expect(posicaoResumo.width, tamanho.width);
+      expect(posicaoQr.top, greaterThanOrEqualTo(posicaoResumo.bottom));
+      expect(posicaoCopiar.bottom, lessThanOrEqualTo(tamanho.height));
+      expect(tester.takeException(), isNull);
+      expect(
+        find.textContaining('Não use seu banco para pagá-lo.'),
+        findsNothing,
+      );
+      final verificar = find.text('Verificar pagamento agora');
+      await tester.scrollUntilVisible(
+        verificar,
+        100,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.getRect(resumo), posicaoResumo);
+      expect(tester.getRect(qrCode), posicaoQr);
+      expect(tester.getRect(copiar), posicaoCopiar);
+      await tester.tap(verificar);
+      await tester.pump();
+      expect(find.textContaining('sem pagar novamente.'), findsOneWidget);
+      expect(find.byType(PixPagamentoScreen), findsOneWidget);
+      await tester.tap(copiar);
+      await tester.pump();
+      expect(textoCopiado, 'codigo-teste');
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    });
+  }
 
   testWidgets('falha na consulta manual não informa pagamento confirmado', (
     tester,
@@ -271,7 +324,12 @@ void main() {
     await _abrirPixMercadoPago(tester, api, teste: false);
     api.indisponivel = true;
     final verificar = find.text('Verificar pagamento agora');
-    await tester.ensureVisible(verificar);
+    await tester.scrollUntilVisible(
+      verificar,
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(verificar);
     await tester.pump();
     expect(
