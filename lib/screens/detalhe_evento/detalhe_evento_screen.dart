@@ -84,7 +84,7 @@ class _NavegacaoEventoState extends State<DetalheEventoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Detalhe, setor e sacola compartilham a navegação principal.
+    // O fluxo do evento até os participantes compartilha a navegação principal.
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -1845,8 +1845,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           .toList(),
       'quantidade': itens.length,
     };
-    await Navigator.of(context, rootNavigator: true).push(
+    await Navigator.of(context).push(
       MaterialPageRoute(
+        settings: const RouteSettings(name: 'participantes-reserva'),
         builder: (_) => ParticipantesReservaScreen(
           loja: widget.loja,
           reserva: reserva,

@@ -128,13 +128,7 @@ class _ParticipantesReservaScreenState
           .toUpperCase();
       if (pagamento == 'PAGO') {
         _reservaFinalizada = true;
-        await Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                _telaSucesso(_valorTotalComTaxa(widget.reserva) <= 0),
-          ),
-        );
+        await _mostrarSucesso(_valorTotalComTaxa(widget.reserva) <= 0);
         return;
       }
       if (pagamento == 'ESTORNADO' || pagamento == 'REFUNDED') {
@@ -230,14 +224,9 @@ class _ParticipantesReservaScreenState
       if (reserva['gratuito'] == true || reserva['venda_id'] != null) {
         _reservaFinalizada = true;
         timer?.cancel();
-        await Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => _telaSucesso(
-              reserva['gratuito'] == true ||
-                  _valorTotalComTaxa(widget.reserva) <= 0,
-            ),
-          ),
+        await _mostrarSucesso(
+          reserva['gratuito'] == true ||
+              _valorTotalComTaxa(widget.reserva) <= 0,
         );
         return;
       }
@@ -246,8 +235,10 @@ class _ParticipantesReservaScreenState
       final taxas = _itensFinanceiros(reserva, 'valor_taxa_unitaria');
       timer?.cancel();
       _checkoutIniciado = true;
-      final reservaEncerrada = await Navigator.push<bool>(
+      final reservaEncerrada = await Navigator.of(
         context,
+        rootNavigator: true,
+      ).push<bool>(
         MaterialPageRoute(
           builder: (_) => EscolhaPagamentoScreen(
             loja: widget.loja,
@@ -334,6 +325,26 @@ class _ParticipantesReservaScreenState
         ),
       ],
     );
+  }
+
+  Future<void> _mostrarSucesso(bool gratuito) async {
+    timer?.cancel();
+    final navigator = Navigator.of(context);
+    final navigatorPrincipal = Navigator.of(context, rootNavigator: true);
+    final rotaParticipantes = ModalRoute.of(context);
+    final tela = _telaSucesso(gratuito);
+    final rotaSucesso = MaterialPageRoute<void>(builder: (_) => tela);
+
+    if (identical(navigator, navigatorPrincipal)) {
+      await navigator.pushReplacement(rotaSucesso);
+      return;
+    }
+
+    // A confirmação continua em tela cheia e o formulário concluído sai
+    // do histórico do evento, sem substituir a navegação principal.
+    final resultado = navigatorPrincipal.push(rotaSucesso);
+    if (rotaParticipantes != null) navigator.removeRoute(rotaParticipantes);
+    await resultado;
   }
 
   Widget _telaSucesso(bool gratuito) => PagamentoSucessoScreen(
@@ -506,7 +517,7 @@ class _ParticipantesReservaScreenState
     final valorTotal = _valorTotalComTaxa(widget.reserva);
     final ehCortesia = valorTotal <= 0;
     return PopScope(
-      // Voltar ao detalhe apenas preserva a reserva na sacola. O cancelamento
+      // Voltar à sacola preserva a reserva. O cancelamento
       // ocorre ao sair definitivamente do detalhe ou pela expiração.
       onPopInvokedWithResult: (_, _) {},
       child: Scaffold(

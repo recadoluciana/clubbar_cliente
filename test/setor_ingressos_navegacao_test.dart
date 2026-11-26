@@ -8,6 +8,8 @@ import 'package:clubbar_cliente/screens/detalhe_evento/detalhe_evento_screen.dar
 import 'package:clubbar_cliente/screens/detalhe_evento/participantes_reserva_screen.dart';
 import 'package:clubbar_cliente/screens/home/home_screen.dart';
 import 'package:clubbar_cliente/screens/main/main_navigation_screen.dart';
+import 'package:clubbar_cliente/screens/pagamento/escolha_pagamento_screen.dart';
+import 'package:clubbar_cliente/screens/pagamento/pagamento_sucesso_screen.dart';
 import 'package:clubbar_cliente/services/main_navigation_controller.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,13 +53,35 @@ void main() {
 
   Future<void> executar(
     WidgetTester tester,
-    Future<void> Function(List<http.Request> requests) verificar,
-  ) async {
+    Future<void> Function(List<http.Request> requests) verificar, {
+    bool cortesia = false,
+  }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final requests = <http.Request>[];
+    final modalidade = cortesia ? 'Cortesia' : 'Inteira';
+    final valor = cortesia ? 0 : 10;
+    final reserva = {
+      'compra_evento_id': 20,
+      'reserva_ingresso_id': 30,
+      'cliente_id': 1,
+      'quantidade': 1,
+      'segundos_restantes': 900,
+      'valor_total': valor,
+      'status': 'PREENCHENDO',
+      'itens': [
+        {
+          'reserva_ingresso_id': 30,
+          'quantidade': 1,
+          'nome_modalidade': modalidade,
+          'nome_setor': 'Pista',
+          'valor_unitario': valor,
+          'valor_total': valor,
+        },
+      ],
+    };
     final client = MockClient((request) async {
       requests.add(request);
       final path = request.url.path;
@@ -81,28 +105,24 @@ void main() {
               'nmsetor': id == 1 ? 'Pista' : 'VIP',
               'qttotallote': 50,
               'precos': [
-                {'lotepreco_id': id, 'nmpreco': 'Inteira', 'vrpreco': 10},
+                {'lotepreco_id': id, 'nmpreco': modalidade, 'vrpreco': valor},
               ],
             },
         ];
       } else if (path == '/reservas-ingressos/compra-evento') {
+        resposta = reserva;
+      } else if (path == '/reservas-ingressos/30/participantes') {
         resposta = {
-          'compra_evento_id': 20,
-          'reserva_ingresso_id': 30,
-          'cliente_id': 1,
-          'quantidade': 1,
-          'segundos_restantes': 900,
-          'itens': [
-            {
-              'reserva_ingresso_id': 30,
-              'quantidade': 1,
-              'nome_modalidade': 'Inteira',
-              'nome_setor': 'Pista',
-              'valor_unitario': 10,
-              'valor_total': 10,
-            },
-          ],
+          ...reserva,
+          'gratuito': cortesia,
+          if (cortesia) 'venda_id': 40,
         };
+      } else if (path == '/reservas-ingressos/30') {
+        resposta = reserva;
+      } else if (path == '/pagamentos/lojas/5/provedor') {
+        resposta = {'provedor_pagamento': 'MERCADO_PAGO'};
+      } else if (path == '/campanhas-doacao/vigente') {
+        resposta = {'campanha': null};
       } else if (path.endsWith('/quantidade-vendida')) {
         resposta = {'qtvendidalote': 0, 'qtdisponivel': 50};
       } else if (path.contains('carrinho') ||
@@ -137,14 +157,14 @@ void main() {
       await tester.ensureVisible(find.text('Setor: Pista'));
       await tester.tap(find.text('Setor: Pista'));
       await tester.pumpAndSettle();
-      expect(find.text('Inteira'), findsOneWidget);
+      expect(find.text(modalidade), findsOneWidget);
       for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
         expect(find.text(item), findsOneWidget);
       }
       // O setor permanece dentro do shell; não cobre a navegação com outra rota.
       expect(
         Navigator.of(
-          tester.element(find.text('Inteira')),
+          tester.element(find.text(modalidade)),
           rootNavigator: true,
         ).canPop(),
         isFalse,
@@ -192,8 +212,10 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
         expect(find.text('Participante 1'), findsOneWidget);
-        expect(find.text('Home'), findsNothing);
-        await tester.tap(find.byIcon(Icons.arrow_back));
+        for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
+          expect(find.text(item), findsOneWidget);
+        }
+        await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(find.text('Conferir sacola'), findsOneWidget);
         expect(find.text('Home'), findsOneWidget);
@@ -222,11 +244,11 @@ void main() {
     },
   );
 
-  for (final origem in ['setor', 'sacola']) {
+  for (final origem in ['setor', 'sacola', 'participantes']) {
     for (final destino in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
       testWidgets('$origem navega diretamente para $destino', (tester) async {
         await executar(tester, (_) async {
-          if (origem == 'sacola') {
+          if (origem != 'setor') {
             await tester.tap(find.text('Adicionar'));
             await tester.pumpAndSettle();
             await tester.tap(find.byTooltip('Conferir sacola'));
@@ -248,6 +270,28 @@ void main() {
               isFalse,
             );
           }
+          if (origem == 'participantes') {
+            tester.view.physicalSize = const Size(800, 1000);
+            await tester.pump();
+            await tester.tap(find.text('Continuar - Informar participante'));
+            await tester.pumpAndSettle();
+            expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+            for (final item in [
+              'Home',
+              'Carrinho',
+              'Carteira',
+              'Cora responde',
+            ]) {
+              expect(find.text(item), findsOneWidget);
+            }
+            expect(
+              Navigator.of(
+                tester.element(find.byType(ParticipantesReservaScreen)),
+                rootNavigator: true,
+              ).canPop(),
+              isFalse,
+            );
+          }
           await tester.tap(find.text(destino));
           // Home tem uma animação contínua; não esperamos todas as animações.
           await tester.pump();
@@ -255,6 +299,7 @@ void main() {
           await tester.pump();
           expect(find.text('Setor: Pista'), findsNothing);
           expect(find.text('Conferir sacola'), findsNothing);
+          expect(find.byType(ParticipantesReservaScreen), findsNothing);
           switch (destino) {
             case 'Home':
               expect(find.byType(HomeScreen), findsOneWidget);
@@ -281,5 +326,76 @@ void main() {
         });
       });
     }
+  }
+
+  for (final cortesia in [false, true]) {
+    testWidgets(
+      'participantes continuam para ${cortesia ? 'sucesso da cortesia' : 'pagamento e retorno'}',
+      (tester) async {
+        await executar(tester, (requests) async {
+          tester.view.physicalSize = const Size(800, 1000);
+          await tester.pump();
+          await tester.tap(find.text('Adicionar'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.byTooltip('Conferir sacola'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Continuar - Informar participante'));
+          await tester.pumpAndSettle();
+          await tester.enterText(
+            find.widgetWithText(TextField, 'Nome completo'),
+            'Participante Teste',
+          );
+          await tester.enterText(
+            find.widgetWithText(TextField, 'CPF'),
+            '12345678909',
+          );
+          await tester.tap(
+            find.text(
+              cortesia ? 'Resgatar cortesia' : 'Continuar para pagamento',
+            ),
+          );
+          await tester.pumpAndSettle();
+          final envio = requests.singleWhere(
+            (r) => r.method == 'PUT' && r.url.path.endsWith('/participantes'),
+          );
+          expect(jsonDecode(envio.body)['participantes'], [
+            {'nome': 'Participante Teste', 'cpf': '12345678909'},
+          ]);
+          expect(find.text('Home'), findsNothing);
+          if (cortesia) {
+            expect(find.byType(PagamentoSucessoScreen), findsOneWidget);
+            expect(find.text('Resgate realizado com sucesso'), findsOneWidget);
+            expect(
+              find.byType(ParticipantesReservaScreen, skipOffstage: false),
+              findsNothing,
+            );
+            expect(
+              find.byType(MainNavigationScreen, skipOffstage: false),
+              findsOneWidget,
+            );
+          } else {
+            expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
+            expect(
+              tester
+                  .widget<EscolhaPagamentoScreen>(
+                    find.byType(EscolhaPagamentoScreen),
+                  )
+                  .totalPagar,
+              10,
+            );
+            await tester.tap(find.byIcon(Icons.arrow_back));
+            await tester.pumpAndSettle();
+            expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+            expect(find.text('Home'), findsOneWidget);
+            expect(find.text('Participante Teste'), findsOneWidget);
+            expect(find.text('12345678909'), findsOneWidget);
+            await tester.tap(find.byIcon(Icons.arrow_back));
+            await tester.pumpAndSettle();
+            expect(find.text('Conferir sacola'), findsOneWidget);
+          }
+          expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
+        }, cortesia: cortesia);
+      },
+    );
   }
 }
