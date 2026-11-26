@@ -88,18 +88,21 @@ void main() {
           onVoltar: () {},
           itens: [
             {
+              'itvenda_id': 1,
               'nmproduto': 'Ingresso cortesia',
               'nmpreco': 'Cortesia',
               'tipopreco': 'CORTESIA',
               'qtitvenda': 1,
             },
             {
+              'itvenda_id': 2,
               'nmproduto': 'Ingresso meia',
               'nmpreco': 'Meia-entrada',
               'tipopreco': 'MEIA',
               'qtitvenda': 1,
             },
             {
+              'itvenda_id': 3,
               'nmproduto': 'Ingresso legado',
               'nmpreco': 'Inteira',
               'tipopreco': 'INTEIRA',
@@ -112,30 +115,16 @@ void main() {
       ),
     );
     await tester.pump();
-    Color corBorda(String nome) {
-      final containers = tester.widgetList<Container>(
-        find.ancestor(of: find.text(nome), matching: find.byType(Container)),
-      );
-      final cartao = containers.firstWhere(
-        (c) =>
-            c.decoration is BoxDecoration &&
-            (c.decoration as BoxDecoration).border != null,
+    Color corBorda(int id) {
+      final cartao = tester.widget<Container>(
+        find.byKey(ValueKey('ingresso-$id')),
       );
       return ((cartao.decoration as BoxDecoration).border as Border).top.color;
     }
 
-    expect(
-      corBorda('Ingresso cortesia'),
-      Colors.green.shade700.withValues(alpha: .65),
-    );
-    expect(
-      corBorda('Ingresso meia'),
-      Colors.blue.shade700.withValues(alpha: .65),
-    );
-    expect(
-      corBorda('Ingresso legado'),
-      Colors.green.shade700.withValues(alpha: .65),
-    );
+    expect(corBorda(1), Colors.green.shade700.withValues(alpha: .65));
+    expect(corBorda(2), Colors.blue.shade700.withValues(alpha: .65));
+    expect(corBorda(3), Colors.green.shade700.withValues(alpha: .65));
     final iconesParticipante = tester
         .widgetList<Icon>(find.byIcon(Icons.person_outline_rounded))
         .map((icon) => icon.color)
@@ -176,52 +165,54 @@ void main() {
     }
   });
 
-  testWidgets('ações ficam abaixo do participante e presente à esquerda', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(390, 1000);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(
-      MaterialApp(
-        home: CarteiraIngressosScreen(
-          nomeLoja: 'Loja',
-          logoLoja: '',
-          nomeCliente: 'Cliente',
-          onAtualizar: null,
-          onVoltar: () {},
-          itens: [
-            {
-              'nmproduto': 'Evento',
-              'nmparticipante': 'Ana Beatriz de Oliveira Silva',
-              'cpfparticipante': '12345678909',
-              'qtitvenda': 1,
-            },
-          ],
+  testWidgets(
+    'transferência fica ao lado do participante e presente à esquerda',
+    (tester) async {
+      tester.view.physicalSize = const Size(390, 1000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: CarteiraIngressosScreen(
+            nomeLoja: 'Loja',
+            logoLoja: '',
+            nomeCliente: 'Cliente',
+            onAtualizar: null,
+            onVoltar: () {},
+            itens: [
+              {
+                'nmproduto': 'Evento',
+                'nmparticipante': 'Ana Beatriz de Oliveira Silva',
+                'cpfparticipante': '12345678909',
+                'qtitvenda': 1,
+              },
+            ],
+          ),
         ),
-      ),
-    );
-    await tester.pump();
-    expect(
-      find.text(
-        '1 ingresso disponível\nApresente o QR Code na portaria do evento',
-      ),
-      findsOneWidget,
-    );
-    final nome = find.text('Ana Beatriz de Oliveira Silva');
-    final cpf = find.text('CPF: 123.456.789-09');
-    final acao = find.widgetWithText(OutlinedButton, 'Transferir participante');
-    expect(nome, findsOneWidget);
-    expect(cpf, findsOneWidget);
-    expect(acao, findsOneWidget);
-    expect(tester.getRect(acao).top, greaterThan(tester.getRect(cpf).bottom));
-    expect(
-      tester.getTopLeft(find.text('Presentear alguém')).dx,
-      lessThan(tester.getTopLeft(find.text('Exibir QR Code')).dx),
-    );
-    expect(tester.takeException(), isNull);
-  });
+      );
+      await tester.pump();
+      expect(
+        find.text(
+          '1 ingresso disponível\nApresente o QR Code na portaria do evento',
+        ),
+        findsOneWidget,
+      );
+      final nome = find.text('Ana Beatriz de Oliveira Silva');
+      final cpf = find.text('CPF: 123.456.789-09');
+      final acao = find.byTooltip('Transferir participante');
+      expect(nome, findsOneWidget);
+      expect(cpf, findsOneWidget);
+      expect(acao, findsOneWidget);
+      expect(tester.getRect(acao).left, greaterThan(tester.getRect(cpf).right));
+      expect(tester.getRect(acao).top, lessThan(tester.getRect(cpf).bottom));
+      expect(
+        tester.getTopLeft(find.text('Presentear alguém')).dx,
+        lessThan(tester.getTopLeft(find.text('Exibir QR Code')).dx),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets('ingresso mostra modalidade, local, data do evento e da compra', (
     tester,
