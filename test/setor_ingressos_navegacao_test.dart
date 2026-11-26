@@ -12,6 +12,7 @@ import 'package:clubbar_cliente/screens/pagamento/escolha_pagamento_screen.dart'
 import 'package:clubbar_cliente/screens/pagamento/pagamento_sucesso_screen.dart';
 import 'package:clubbar_cliente/screens/pagamento/pix_pagamento_screen.dart';
 import 'package:clubbar_cliente/services/main_navigation_controller.dart';
+import 'package:clubbar_cliente/widgets/clubbar_page_header.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -19,6 +20,7 @@ import 'package:http/testing.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -56,6 +58,8 @@ void main() {
     WidgetTester tester,
     Future<void> Function(List<http.Request> requests) verificar, {
     bool cortesia = false,
+    String provedor = 'MERCADO_PAGO',
+    String Function()? statusPagamento,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -120,7 +124,10 @@ void main() {
         };
       } else if (path == '/reservas-ingressos/30' ||
           path == '/reservas-ingressos/30/status') {
-        resposta = reserva;
+        resposta = {
+          ...reserva,
+          if (statusPagamento != null) 'status_pagamento': statusPagamento(),
+        };
       } else if (path == '/clientes/me') {
         resposta = {'nrcpfcliente': '12345678909'};
       } else if (path == '/reservas-ingressos/30/cotacao-mercado-pago') {
@@ -131,7 +138,8 @@ void main() {
           'processamento': 0,
           'total': valor,
         };
-      } else if (path == '/reservas-ingressos/30/mercado-pago') {
+      } else if (path == '/reservas-ingressos/30/mercado-pago' ||
+          path == '/reservas-ingressos/30/pix') {
         resposta = {
           'pagamento_id': 'pix-teste',
           'pix_copia_cola': 'codigo-teste',
@@ -139,7 +147,7 @@ void main() {
           'expiration_date': '2099-12-13T13:00:00-03:00',
         };
       } else if (path == '/pagamentos/lojas/5/provedor') {
-        resposta = {'provedor_pagamento': 'MERCADO_PAGO'};
+        resposta = {'provedor_pagamento': provedor};
       } else if (path == '/campanhas-doacao/vigente') {
         resposta = {'campanha': null};
       } else if (path.endsWith('/quantidade-vendida')) {
@@ -263,7 +271,16 @@ void main() {
     },
   );
 
-  for (final origem in ['setor', 'sacola', 'participantes', 'pagamento']) {
+  for (final origem in [
+    'setor',
+    'sacola',
+    'participantes',
+    'pagamento',
+    'pix Mercado Pago',
+    'pix Asaas',
+  ]) {
+    final pix = origem.startsWith('pix');
+    final provedor = origem == 'pix Asaas' ? 'ASAAS' : 'MERCADO_PAGO';
     for (final destino in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
       testWidgets('$origem navega diretamente para $destino', (tester) async {
         await executar(tester, (_) async {
@@ -289,7 +306,7 @@ void main() {
               isFalse,
             );
           }
-          if (origem == 'participantes' || origem == 'pagamento') {
+          if (origem == 'participantes' || origem == 'pagamento' || pix) {
             tester.view.physicalSize = const Size(800, 1000);
             await tester.pump();
             await tester.tap(find.text('Continuar - Informar participante'));
@@ -311,7 +328,7 @@ void main() {
               isFalse,
             );
           }
-          if (origem == 'pagamento') {
+          if (origem == 'pagamento' || pix) {
             await tester.enterText(
               find.widgetWithText(TextField, 'Nome completo'),
               'Participante Teste',
@@ -339,6 +356,64 @@ void main() {
               isFalse,
             );
           }
+          if (pix) {
+            await tester.tap(find.text('Pagamento PIX'));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 500));
+            await tester.pump();
+            if (provedor == 'MERCADO_PAGO') {
+              await tester.tap(find.text('Continuar'));
+            }
+            await tester.pumpAndSettle();
+            expect(find.byType(PixPagamentoScreen), findsOneWidget);
+            for (final item in [
+              'Home',
+              'Carrinho',
+              'Carteira',
+              'Cora responde',
+            ]) {
+              expect(find.text(item), findsOneWidget);
+            }
+            expect(
+              Navigator.of(
+                tester.element(find.byType(PixPagamentoScreen)),
+                rootNavigator: true,
+              ).canPop(),
+              isFalse,
+            );
+            tester.view.physicalSize = switch (destino) {
+              'Home' => const Size(320, 568),
+              'Carteira' => const Size(844, 390),
+              _ => const Size(500, 900),
+            };
+            await tester.pump();
+            final resumo = find.byType(ClubbarPageHeader);
+            final qrCode = find.byType(QrImageView);
+            final copiar = find.widgetWithText(
+              ElevatedButton,
+              'Copiar código PIX',
+            );
+            final posicaoResumo = tester.getRect(resumo);
+            final posicaoQr = tester.getRect(qrCode);
+            final posicaoCopiar = tester.getRect(copiar);
+            expect(posicaoResumo.left, 0);
+            expect(posicaoResumo.width, tester.view.physicalSize.width);
+            expect(posicaoQr.top, greaterThanOrEqualTo(posicaoResumo.bottom));
+            expect(
+              posicaoCopiar.bottom,
+              lessThan(tester.getRect(find.text('Home')).top),
+            );
+            await tester.drag(find.byType(ListView), const Offset(0, -200));
+            await tester.pump();
+            expect(tester.getRect(resumo), posicaoResumo);
+            expect(tester.getRect(qrCode), posicaoQr);
+            expect(tester.getRect(copiar), posicaoCopiar);
+            expect(tester.takeException(), isNull);
+            // Os tamanhos reduzidos acima verificam o Pix; os destinos usam
+            // o tamanho padrão deste teste de navegação.
+            tester.view.physicalSize = const Size(500, 1000);
+            await tester.pump();
+          }
           await tester.tap(find.text(destino));
           // Home tem uma animação contínua; não esperamos todas as animações.
           await tester.pump();
@@ -348,6 +423,7 @@ void main() {
           expect(find.text('Conferir sacola'), findsNothing);
           expect(find.byType(ParticipantesReservaScreen), findsNothing);
           expect(find.byType(EscolhaPagamentoScreen), findsNothing);
+          expect(find.byType(PixPagamentoScreen), findsNothing);
           switch (destino) {
             case 'Home':
               expect(find.byType(HomeScreen), findsOneWidget);
@@ -371,16 +447,18 @@ void main() {
             case 'Cora responde':
               expect(find.byType(AtendimentoCoraScreen), findsOneWidget);
           }
-        });
+        }, provedor: provedor);
       });
     }
   }
 
-  for (final cortesia in [false, true]) {
-    testWidgets(
-      'participantes continuam para ${cortesia ? 'sucesso da cortesia' : 'pagamento e retorno'}',
-      (tester) async {
-        await executar(tester, (requests) async {
+  for (final fluxo in ['retorno', 'cortesia', 'pix pago']) {
+    final cortesia = fluxo == 'cortesia';
+    testWidgets('participantes continuam para $fluxo', (tester) async {
+      var statusPagamento = 'PENDENTE';
+      await executar(
+        tester,
+        (requests) async {
           tester.view.physicalSize = const Size(800, 1000);
           await tester.pump();
           await tester.tap(find.text('Adicionar'));
@@ -448,7 +526,14 @@ void main() {
             await tester.tap(find.text('Continuar'));
             await tester.pumpAndSettle();
             expect(find.byType(PixPagamentoScreen), findsOneWidget);
-            expect(find.text('Home'), findsNothing);
+            for (final item in [
+              'Home',
+              'Carrinho',
+              'Carteira',
+              'Cora responde',
+            ]) {
+              expect(find.text(item), findsOneWidget);
+            }
             expect(
               requests.where(
                 (r) =>
@@ -457,6 +542,26 @@ void main() {
               ),
               hasLength(1),
             );
+            if (fluxo == 'pix pago') {
+              statusPagamento = 'PAGO';
+              await tester.pump(const Duration(seconds: 3));
+              await tester.pumpAndSettle();
+              expect(find.byType(PagamentoSucessoScreen), findsOneWidget);
+              expect(
+                find.text('Pagamento realizado com sucesso'),
+                findsOneWidget,
+              );
+              expect(
+                find.byType(PixPagamentoScreen, skipOffstage: false),
+                findsNothing,
+              );
+              expect(
+                find.byType(MainNavigationScreen, skipOffstage: false),
+                findsOneWidget,
+              );
+              expect(find.text('Home'), findsNothing);
+              return;
+            }
             await tester.tap(find.byIcon(Icons.arrow_back));
             await tester.pumpAndSettle();
             expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
@@ -472,8 +577,10 @@ void main() {
             expect(find.text('Conferir sacola'), findsOneWidget);
           }
           expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
-        }, cortesia: cortesia);
-      },
-    );
+        },
+        cortesia: cortesia,
+        statusPagamento: () => statusPagamento,
+      );
+    });
   }
 }

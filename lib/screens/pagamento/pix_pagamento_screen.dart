@@ -192,17 +192,24 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
         if (!mounted) return;
         CartBadgeNotifier.limpar();
         CarteiraBadgeNotifier.atualizar();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => PagamentoSucessoScreen(
-              sucesso: true,
-              cashbackGerado:
-                  double.tryParse('${response['cashback_gerado'] ?? 0}') ?? 0,
-              lojaDestino: widget.loja,
-            ),
+        final navigator = Navigator.of(context);
+        final navigatorPrincipal = Navigator.of(context, rootNavigator: true);
+        final rotaPix = ModalRoute.of(context);
+        final rotaSucesso = MaterialPageRoute<void>(
+          builder: (_) => PagamentoSucessoScreen(
+            sucesso: true,
+            cashbackGerado:
+                double.tryParse('${response['cashback_gerado'] ?? 0}') ?? 0,
+            lojaDestino: widget.loja,
           ),
         );
+        if (identical(navigator, navigatorPrincipal)) {
+          navigator.pushReplacement(rotaSucesso);
+        } else {
+          // A confirmação permanece em tela cheia, fora do fluxo do evento.
+          navigatorPrincipal.push(rotaSucesso);
+          if (rotaPix != null) navigator.removeRoute(rotaPix);
+        }
       } else if ({'EXPIRED', 'EXPIRADO', 'EXPIRADA'}.contains(statusAtual)) {
         await _encerrarComoExpirado();
       } else if (_compraDeIngresso &&
@@ -472,7 +479,10 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
 
   Widget _areaQrCode(double tamanho, {required bool mostrarTitulo}) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: mostrarTitulo ? 12 : 8,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -570,7 +580,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
                   final tamanhoQr =
                       (ladoALado
                               ? constraints.maxHeight -
-                                    (mostrarTitulo ? 116 : 82)
+                                    (mostrarTitulo ? 116 : 74)
                               : constraints.maxHeight * .4)
                           .clamp(96.0, 200.0);
                   final qrCode = _areaQrCode(
