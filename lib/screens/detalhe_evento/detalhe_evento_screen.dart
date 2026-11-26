@@ -651,7 +651,8 @@ class _ConferenciaSacolaScreen extends StatefulWidget {
   final String imagemEvento;
   final List<Map<String, dynamic>> itens;
   final Future<void> Function(Map<String, dynamic> item) onRemover;
-  final Future<void> Function() onInformarParticipante;
+  final Future<void> Function(List<Map<String, dynamic>> itens)
+  onInformarParticipante;
   final int Function() segundosReserva;
 
   const _ConferenciaSacolaScreen({
@@ -795,7 +796,9 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
           ),
           const SizedBox(height: 20),
           FilledButton(
-            onPressed: itens.isEmpty ? null : widget.onInformarParticipante,
+            onPressed: itens.isEmpty
+                ? null
+                : () => widget.onInformarParticipante(itens),
             style: FilledButton.styleFrom(
               backgroundColor: const Color(0xFFFFC107),
               foregroundColor: Colors.black,
@@ -1713,12 +1716,26 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         .toList();
   }
 
-  Future<void> _abrirCompraEvento() async {
+  Future<void> _abrirCompraEvento([
+    List<Map<String, dynamic>>? itensAtualizados,
+  ]) async {
     final compra = _compraEvento;
     if (compra == null || !mounted) return;
     // A sacola já foi sincronizada após a exclusão. A navegação deve ser
     // imediata; a API valida a validade da reserva ao salvar os participantes.
-    final reserva = compra;
+    final itens = itensAtualizados ??
+        (compra['itens'] as List?)
+            ?.whereType<Map>()
+            .map((item) => Map<String, dynamic>.from(item))
+            .toList() ??
+        <Map<String, dynamic>>[];
+    final reserva = {
+      ...compra,
+      'itens': itens
+          .map((item) => {...item, 'quantidade': 1})
+          .toList(),
+      'quantidade': itens.length,
+    };
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1752,7 +1769,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           imagemEvento: evento?.bannerUrl ?? '',
           itens: itens.map(Map<String, dynamic>.from).toList(),
           onRemover: _removerItemSacola,
-          onInformarParticipante: _abrirCompraEvento,
+          onInformarParticipante: (itens) => _abrirCompraEvento(itens),
           segundosReserva: () => _segundosReservaSacola,
         ),
       ),
