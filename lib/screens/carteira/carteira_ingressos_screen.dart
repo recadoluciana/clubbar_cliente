@@ -12,7 +12,6 @@ import '../../widgets/clubbar_page_header.dart';
 import '../../utils/presente_image_generator.dart';
 import '../../utils/share_image_file.dart';
 import '../../utils/value_formatters.dart';
-import '../../core/theme/app_colors.dart';
 
 import 'package:clubbar_cliente/config/app_config.dart';
 
@@ -545,7 +544,19 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   }
 
   Color _corIngresso(Map<String, dynamic> item) {
-    return AppColors.marromClubbar;
+    final tipoPreco = (item['tipopreco'] ?? '').toString().trim().toUpperCase();
+    final modalidade = (item['nmpreco'] ?? '').toString().trim().toUpperCase();
+    final setor = (item['nmsetor'] ?? '').toString().trim().toLowerCase();
+    final detalhes = (item['tipo_ingresso'] ?? '')
+        .toString()
+        .split(RegExp(r'\s*[•·]\s*'))
+        .map((parte) => parte.trim())
+        .where((parte) => parte.toLowerCase() != setor);
+    final ehCortesia =
+        tipoPreco == 'CORTESIA' ||
+        modalidade == 'CORTESIA' ||
+        detalhes.any((parte) => parte.toUpperCase() == 'CORTESIA');
+    return ehCortesia ? Colors.green.shade700 : Colors.blue.shade700;
   }
 
   Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
@@ -609,7 +620,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: Material(
-        color: AppColors.cremeCard,
+        color: Colors.white,
         elevation: 2,
         shadowColor: Colors.black.withValues(alpha: 0.12),
         shape: RoundedRectangleBorder(
@@ -628,8 +639,8 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                   colors: [
-                    AppColors.cremeCard,
-                    AppColors.cremeFundo,
+                    Colors.blue.withValues(alpha: 0.12),
+                    Colors.amber.withValues(alpha: 0.10),
                   ],
                 ),
               ),
@@ -644,7 +655,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(17),
                       border: Border.all(
-                        color: AppColors.marromSuave.withValues(alpha: 0.20),
+                        color: Colors.blue.withValues(alpha: 0.20),
                       ),
                     ),
                     child: ClipRRect(
@@ -712,7 +723,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         valor: horarioEvento.isEmpty
                             ? 'Não informada'
                             : horarioEvento,
-                        corIcone: AppColors.marromSuave,
+                        corIcone: Colors.blue.shade700,
                         flex: 2,
                       ),
 
@@ -724,7 +735,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         valor: enderecoEvento.isEmpty
                             ? 'Não informado'
                             : enderecoEvento,
-                        corIcone: AppColors.marromSuave,
+                        corIcone: Colors.green.shade700,
                         flex: 3,
                       ),
                     ],
@@ -740,7 +751,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         valor: dataCompra.isEmpty
                             ? 'Não informada'
                             : dataCompra,
-                        corIcone: AppColors.marromSuave,
+                        corIcone: Colors.blue.shade700,
                       ),
                       const SizedBox(width: 5),
                       _informacaoIngresso(
@@ -749,7 +760,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         valor: valorIngresso == null
                             ? 'Não informado'
                             : ValueFormatters.moeda(valorIngresso),
-                        corIcone: AppColors.marromSuave,
+                        corIcone: Colors.blue.shade700,
                       ),
                     ],
                   ),
@@ -761,10 +772,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(13),
                     decoration: BoxDecoration(
-                      color: AppColors.cremeFundo,
+                      color: Colors.blue.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.marromSuave.withValues(alpha: 0.20),
+                        color: Colors.blue.withValues(alpha: 0.16),
                       ),
                     ),
                     child: Row(
@@ -826,7 +837,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                     Icon(
                                       Icons.swap_horiz_rounded,
                                       size: 16,
-                                      color: AppColors.marromSuave,
+                                      color: Colors.amber.shade800,
                                     ),
                                     const SizedBox(width: 4),
                                     Expanded(
@@ -1086,12 +1097,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         : '$totalUnidades ingressos disponíveis';
 
     return Scaffold(
-      backgroundColor: AppColors.cremeFundo,
+      backgroundColor: const Color(0xFFF6F6F6),
 
       appBar: ClubbarAppBar(
         titulo: 'Minha Carteira - Ingressos',
         iconeTitulo: Icons.account_balance_wallet_rounded,
-        corIconeTitulo: AppColors.marromSuave,
+        corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
