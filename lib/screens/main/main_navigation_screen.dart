@@ -9,6 +9,8 @@ import '../../services/api_service.dart';
 import '../../services/auth_storage.dart';
 import '../carrinho/carrinho_screen.dart';
 import '../carteira/carteira_screen.dart';
+import '../carteira/carteira_loja_screen.dart';
+import '../carteira/carteira_ingressos_screen.dart';
 import '../carrinho/carrinho_lojas_screen.dart';
 import '../home/home_screen.dart';
 import '../perfil/perfil_screen.dart';
@@ -26,7 +28,6 @@ import '../../services/deep_link_service.dart';
 import '../../widgets/api_status_indicator.dart';
 import '../atendimento_cora/atendimento_cora_screen.dart';
 import '../pagamento/pagamento_sucesso_screen.dart';
-import '../../core/theme/app_colors.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -726,7 +727,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna is DetalheLojaScreen ||
                 telaInterna is AgendaEventosScreen ||
                 telaInterna is ProdutosLojaScreen ||
-                telaInterna is CarteiraScreen;
+                telaInterna is CarteiraScreen ||
+                telaInterna is CarteiraLojaScreen ||
+                telaInterna is CarteiraIngressosScreen;
 
             return Scaffold(
               body: PopScope(
