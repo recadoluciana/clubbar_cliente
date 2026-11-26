@@ -67,7 +67,57 @@ class DetalheEventoScreen extends StatefulWidget {
   });
 
   @override
-  State<DetalheEventoScreen> createState() => _DetalheEventoScreenState();
+  State<DetalheEventoScreen> createState() => _NavegacaoEventoState();
+}
+
+class _NavegacaoEventoState extends State<DetalheEventoScreen> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+
+  void _voltar() {
+    final navigator = _navigatorKey.currentState;
+    if (navigator != null && navigator.canPop()) {
+      navigator.pop();
+    } else {
+      (widget.onVoltar ?? MainNavigationController.fecharTelaInterna)();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Detalhe e setor compartilham a navegação principal e a mesma sacola.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _voltar();
+      },
+      child: Navigator(
+        key: _navigatorKey,
+        onGenerateRoute: (_) => MaterialPageRoute<void>(
+          settings: const RouteSettings(name: 'detalhe-evento'),
+          builder: (_) => _DetalheEventoConteudo(
+            eventoId: widget.eventoId,
+            loja: widget.loja,
+            onVoltar: _voltar,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DetalheEventoConteudo extends StatefulWidget {
+  final int eventoId;
+  final Loja loja;
+  final VoidCallback onVoltar;
+
+  const _DetalheEventoConteudo({
+    required this.eventoId,
+    required this.loja,
+    required this.onVoltar,
+  });
+
+  @override
+  State<_DetalheEventoConteudo> createState() => _DetalheEventoScreenState();
 }
 
 class _ModalidadesIngressoScreen extends StatefulWidget {
@@ -454,7 +504,7 @@ class _ModalidadesIngressoScreenState
           if (exigeComprovante && mostrarQuemTemDireito) const Spacer(),
           if (mostrarQuemTemDireito)
             TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
+              onPressed: () => Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
               ),
               icon: const Icon(Icons.workspace_premium_outlined, size: 17),
@@ -875,7 +925,7 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
   }
 }
 
-class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
+class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
   final Map<int, Map<String, dynamic>> _statusLotes = {};
@@ -1286,6 +1336,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final fotoController = PageController();
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
@@ -1500,7 +1551,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     if (!mounted) return null;
 
     if (clienteId == null || clienteId == 0) {
-      await direcionarParaLogin(context);
+      await direcionarParaLogin(
+        Navigator.of(context, rootNavigator: true).context,
+      );
       return null;
     }
 
@@ -1659,7 +1712,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           await authStorage.limparToken();
           if (mounted) {
             await direcionarParaLogin(
-              context,
+              Navigator.of(context, rootNavigator: true).context,
               mensagem: 'Sua sessão terminou. Entre novamente para comprar seu ingresso.',
             );
           }
@@ -1792,8 +1845,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           .toList(),
       'quantidade': itens.length,
     };
-    await Navigator.push(
-      context,
+    await Navigator.of(context, rootNavigator: true).push(
       MaterialPageRoute(
         builder: (_) => ParticipantesReservaScreen(
           loja: widget.loja,
@@ -1816,8 +1868,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         ? (compra!['itens'] as List).whereType<Map>().toList()
         : const <Map>[];
     if (itens.isEmpty || !mounted) return;
-    final retorno = await Navigator.push<dynamic>(
+    final retorno = await Navigator.of(
       context,
+      rootNavigator: true,
+    ).push<dynamic>(
       MaterialPageRoute(
         builder: (_) => _ConferenciaSacolaScreen(
           nomeEvento: evento?.titulo ?? 'Evento',
@@ -2120,6 +2174,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     final detalhe = evento;
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
+        settings: const RouteSettings(name: 'setor-ingressos'),
         builder: (_) => _ModalidadesIngressoScreen(
           opcoes: opcoes,
           nomeLoja: widget.loja.nome,
@@ -2326,7 +2381,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
           if (exigeComprovante && mostrarQuemTemDireito) const Spacer(),
           if (mostrarQuemTemDireito)
             TextButton.icon(
-              onPressed: () => Navigator.of(context).push(
+              onPressed: () => Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(builder: (_) => const MeiaEntradaScreen()),
               ),
               icon: const Icon(Icons.workspace_premium_outlined, size: 17),
@@ -3077,7 +3132,10 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
                                   ),
                                 ),
                                 TextButton.icon(
-                                  onPressed: () => Navigator.of(context).push(
+                                  onPressed: () => Navigator.of(
+                                    context,
+                                    rootNavigator: true,
+                                  ).push(
                                     MaterialPageRoute(
                                       builder: (_) =>
                                           const PoliticaCompraScreen(

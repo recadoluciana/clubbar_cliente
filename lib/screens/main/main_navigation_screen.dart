@@ -723,8 +723,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               body: PopScope(
                 canPop: telaInterna == null && currentIndex == 0,
                 onPopInvokedWithResult: (didPop, _) {
-                  // A carteira trata seu próprio histórico evento -> ingressos.
-                  if (!didPop && telaInterna is! CarteiraIngressosScreen) {
+                  // Carteira e evento tratam seu próprio histórico de telas.
+                  if (!didPop &&
+                      telaInterna is! CarteiraIngressosScreen &&
+                      telaInterna is! DetalheEventoScreen) {
                     if (telaInterna != null) {
                       MainNavigationController.fecharTelaInterna();
                     } else {
