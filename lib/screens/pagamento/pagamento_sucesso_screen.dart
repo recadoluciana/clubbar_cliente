@@ -32,11 +32,24 @@ class PagamentoSucessoScreen extends StatefulWidget {
   State<PagamentoSucessoScreen> createState() => _PagamentoSucessoScreenState();
 }
 
-class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
+class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animacaoCelebracao;
+
   @override
   void initState() {
     super.initState();
+    _animacaoCelebracao = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
     _atualizarBadges();
+  }
+
+  @override
+  void dispose() {
+    _animacaoCelebracao.dispose();
+    super.dispose();
   }
 
   Future<void> _atualizarBadges() async {
@@ -89,23 +102,38 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Container(
-            width: 420,
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (sucesso) ...[
+                ScaleTransition(
+                  scale: Tween<double>(begin: .92, end: 1.08).animate(
+                    CurvedAnimation(
+                      parent: _animacaoCelebracao,
+                      curve: Curves.easeInOut,
+                    ),
+                  ),
+                  child: const Text('🎉', style: TextStyle(fontSize: 58)),
                 ),
+                const SizedBox(height: 10),
               ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+              Container(
+                width: 420,
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                 Container(
                   width: 92,
                   height: 92,
@@ -211,8 +239,10 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen> {
                     ),
                   ),
                 ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
