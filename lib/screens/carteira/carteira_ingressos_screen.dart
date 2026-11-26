@@ -585,11 +585,132 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return ehCortesia ? Colors.green.shade700 : Colors.blue.shade700;
   }
 
-  Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
-    final nomeIngresso = (item['nmevento'] ?? item['nmproduto'] ?? 'Ingresso')
-        .toString()
-        .trim();
+  Object _chaveEvento(Map<String, dynamic> item) {
+    final eventoId = int.tryParse('${item['evento_id'] ?? ''}');
+    if (eventoId != null && eventoId > 0) return eventoId;
 
+    // Compatibilidade com respostas anteriores à inclusão de evento_id.
+    final nome = _primeiroTexto(item, const ['nmevento', 'nmproduto']);
+    final horario = _primeiroTexto(item, const [
+      'dtinicioevento',
+      'dtinicioevento_fmt',
+    ]);
+    if (nome.isEmpty || horario.isEmpty) return item;
+    return (
+      '${item['loja_id'] ?? widget.nomeLoja}',
+      nome,
+      horario,
+      _primeiroTexto(item, const [
+        'endereco_evento_completo',
+        'dsendlocevento',
+        'endereco_estabelecimento',
+      ]),
+    );
+  }
+
+  Iterable<List<Map<String, dynamic>>> _agruparPorEvento() {
+    final grupos = <Object, List<Map<String, dynamic>>>{};
+    for (final item in itensTela) {
+      (grupos[_chaveEvento(item)] ??= []).add(item);
+    }
+    return grupos.values;
+  }
+
+  Widget _eventoCard(List<Map<String, dynamic>> ingressos) {
+    final evento = ingressos.first;
+    final nome = _primeiroTexto(evento, const [
+      'nmevento',
+      'nmproduto',
+    ], padrao: 'Evento');
+    final horario = _primeiroTexto(evento, const [
+      'dtinicioevento_fmt',
+    ], padrao: 'Não informado').replaceAll(RegExp(r'\s+'), ' ');
+    final local = _primeiroTexto(evento, const [
+      'endereco_evento_completo',
+      'dsendlocevento',
+      'endereco_estabelecimento',
+    ], padrao: 'Não informado');
+    final quantidade = ingressos.fold<int>(
+      0,
+      (total, item) => total + (int.tryParse('${item['qtitvenda'] ?? 1}') ?? 1),
+    );
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 620),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.amber.shade50, Colors.white],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.amber.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SizedBox(
+                    width: 52,
+                    height: 52,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: _imagemItem(evento),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          nome,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          quantidade == 1
+                              ? '1 ingresso'
+                              : '$quantidade ingressos',
+                          style: TextStyle(
+                            color: Colors.grey.shade700,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              _informacaoIngresso(
+                icone: Icons.event_outlined,
+                titulo: 'Horário evento',
+                valor: horario,
+                corIcone: Colors.blue.shade700,
+              ),
+              const SizedBox(height: 6),
+              _informacaoIngresso(
+                icone: Icons.place_outlined,
+                titulo: 'Local',
+                valor: local,
+                corIcone: Colors.blue.shade700,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _itemCard(BuildContext context, Map<String, dynamic> item) {
     final nomeParticipante = (item['nmparticipante'] ?? '').toString().trim();
 
     final cpfOriginal = (item['cpfparticipante'] ?? '').toString().trim();
@@ -613,9 +734,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         .toString()
         .trim();
 
-    final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
-    final horarioEvento = dataEvento.replaceAll(RegExp(r'\s+'), ' ');
     final tipoIngresso = (item['tipo_ingresso'] ?? '').toString().trim();
     final setor = (item['nmsetor'] ?? '').toString().trim();
     final modalidade = (item['nmpreco'] ?? '').toString().trim();
@@ -631,19 +750,15 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         ? detalhesModalidade
         : modalidade;
     final corIngresso = _corIngresso(item);
-    final enderecoEvento =
-        (item['endereco_evento_completo'] ??
-                item['dsendlocevento'] ??
-                item['endereco_estabelecimento'] ??
-                '')
-            .toString()
-            .trim();
 
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 620),
         child: Container(
-          margin: const EdgeInsets.only(bottom: 18),
+          key: item['itvenda_id'] == null
+              ? null
+              : ValueKey('ingresso-${item['itvenda_id']}'),
+          margin: const EdgeInsets.only(bottom: 10),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
@@ -679,34 +794,16 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: _imagemItem(item),
-                        ),
+                      Icon(
+                        Icons.confirmation_number_outlined,
+                        size: 20,
+                        color: corIngresso,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 9),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              nomeIngresso,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const SizedBox(height: 5),
                             Text(
                               modalidadeExibida.isEmpty
                                   ? 'Ingresso'
@@ -734,55 +831,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final larguraMinima =
-                            360 *
-                            MediaQuery.textScalerOf(context).scale(12) /
-                            12;
-                        final largura = constraints.maxWidth >= larguraMinima
-                            ? (constraints.maxWidth - 8) / 2
-                            : constraints.maxWidth;
-                        return Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            SizedBox(
-                              width: largura,
-                              child: _informacaoIngresso(
-                                icone: Icons.event_outlined,
-                                titulo: 'Horário evento',
-                                valor: horarioEvento.isEmpty
-                                    ? 'Não informado'
-                                    : horarioEvento,
-                                corIcone: corIngresso,
-                              ),
-                            ),
-                            SizedBox(
-                              width: largura,
-                              child: _informacaoIngresso(
-                                icone: Icons.receipt_long_outlined,
-                                titulo: 'Comprado em',
-                                valor: dataCompra.isEmpty
-                                    ? 'Não informado'
-                                    : dataCompra,
-                                corIcone: corIngresso,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    _informacaoIngresso(
-                      icone: Icons.place_outlined,
-                      titulo: 'Local',
-                      valor: enderecoEvento.isEmpty
-                          ? 'Não informado'
-                          : enderecoEvento,
-                      corIcone: corIngresso,
-                    ),
-                    const SizedBox(height: 10),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(10),
@@ -790,64 +838,145 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         color: corIngresso.withValues(alpha: .06),
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(
-                            Icons.person_outline_rounded,
-                            color: corIngresso,
-                            size: 21,
-                          ),
-                          const SizedBox(width: 9),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'PARTICIPANTE',
-                                  style: TextStyle(
-                                    color: corIngresso,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: .6,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  nomeParticipante.isEmpty
-                                      ? 'Participante não informado'
-                                      : nomeParticipante,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  cpfParticipante.isEmpty
-                                      ? 'CPF não informado'
-                                      : 'CPF: $cpfParticipante',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                if (nomeAnterior.isNotEmpty &&
-                                    nomeNovo.isNotEmpty) ...[
-                                  const SizedBox(height: 6),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.person_outline_rounded,
+                              color: corIngresso,
+                              size: 21,
+                            ),
+                            const SizedBox(width: 9),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
                                   Text(
-                                    'Alterado de $nomeAnterior para $nomeNovo',
+                                    'PARTICIPANTE',
                                     style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      fontSize: 11,
+                                      color: corIngresso,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: .6,
                                     ),
                                   ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    nomeParticipante.isEmpty
+                                        ? 'Participante não informado'
+                                        : nomeParticipante,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    cpfParticipante.isEmpty
+                                        ? 'CPF não informado'
+                                        : 'CPF: $cpfParticipante',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  if (nomeAnterior.isNotEmpty &&
+                                      nomeNovo.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Alterado de $nomeAnterior para $nomeNovo',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 8),
+                            Tooltip(
+                              message: 'Transferir participante',
+                              child: SizedBox(
+                                width: constraints.maxWidth < 320 ? 44 : 96,
+                                child: OutlinedButton(
+                                  onPressed: () =>
+                                      _abrirDialogAlterarParticipante(item),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: corIngresso,
+                                    side: BorderSide(
+                                      color: corIngresso.withValues(alpha: .5),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                      vertical: 8,
+                                    ),
+                                    minimumSize: const Size(44, 44),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: constraints.maxWidth < 320
+                                      ? const Icon(
+                                          Icons.swap_horiz_rounded,
+                                          size: 20,
+                                        )
+                                      : const Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.swap_horiz_rounded,
+                                              size: 18,
+                                            ),
+                                            Text(
+                                              'Transferir participante',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(fontSize: 11),
+                                            ),
+                                          ],
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          size: 14,
+                          color: Colors.grey.shade600,
+                        ),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Wrap(
+                            spacing: 4,
+                            children: [
+                              Text(
+                                'Comprado em',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              Text(
+                                dataCompra.isEmpty
+                                    ? 'Não informado'
+                                    : dataCompra,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -864,19 +993,6 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    OutlinedButton.icon(
-                      onPressed: () => _abrirDialogAlterarParticipante(item),
-                      icon: const Icon(Icons.swap_horiz_rounded, size: 18),
-                      label: const Text('Transferir participante'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: corIngresso,
-                        side: BorderSide(
-                          color: corIngresso.withValues(alpha: .5),
-                        ),
-                        minimumSize: const Size(0, 42),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -1110,7 +1226,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   if (itensTela.isEmpty)
                     _estadoVazio()
                   else
-                    ...itensTela.map((item) => _itemCard(context, item)),
+                    for (final ingressos in _agruparPorEvento()) ...[
+                      _eventoCard(ingressos),
+                      ...ingressos.map((item) => _itemCard(context, item)),
+                      const SizedBox(height: 12),
+                    ],
                 ],
               ),
             ),
