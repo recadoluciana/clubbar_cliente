@@ -143,7 +143,7 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             icon: const Icon(
               Icons.person_rounded,
               size: 20,
-              color: AppColors.marromSuave,
+              color: Colors.amber,
             ),
             label: nome,
           );
