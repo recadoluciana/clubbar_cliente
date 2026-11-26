@@ -763,12 +763,11 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
             onPressed: itens.isEmpty
                 ? null
                 : () => Navigator.pop(context, true),
-            child: const Text('Informar participante'),
+            child: const Text('Continuar - Informar participante'),
           ),
           const SizedBox(height: 10),
-          OutlinedButton.icon(
+          OutlinedButton(
             onPressed: () => Navigator.pop(context, false),
-            icon: const Icon(Icons.add),
             label: const Text('Adicionar ingresso'),
           ),
         ],
