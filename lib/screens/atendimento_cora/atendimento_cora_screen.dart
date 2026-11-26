@@ -224,7 +224,10 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
           (duvida) => ExpansionTile(
             tilePadding: const EdgeInsets.symmetric(horizontal: 14),
             childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-            title: Text(duvida.pergunta),
+            title: Text(
+              duvida.pergunta,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
             children: [
               Align(
                 alignment: Alignment.centerLeft,
@@ -391,6 +394,7 @@ class _AtendimentoCoraScreenState extends State<AtendimentoCoraScreen> {
         imagemTituloAsset: 'assets/images/corujao.png',
         mostrarVoltar: true,
         mostrarLogo: false,
+        tituloAlinhadoEsquerda: true,
         onVoltar: MainNavigationController.irParaHome,
       ),
       body: Column(
