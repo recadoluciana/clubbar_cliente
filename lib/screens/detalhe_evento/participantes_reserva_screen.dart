@@ -338,7 +338,7 @@ class _ParticipantesReservaScreenState
 
   Widget _telaSucesso(bool gratuito) => PagamentoSucessoScreen(
     lojaDestino: widget.loja,
-    tituloAppBar: gratuito ? 'Resgate' : 'Pagamento',
+    tituloAppBar: gratuito ? widget.nomeEvento : 'Pagamento',
     tituloSucesso: gratuito ? 'Resgate realizado com sucesso' : null,
     descricaoSucesso: gratuito
         ? 'Seu ingresso está disponível na Carteira.'

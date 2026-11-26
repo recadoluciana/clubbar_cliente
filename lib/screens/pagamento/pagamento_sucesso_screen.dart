@@ -43,7 +43,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
     super.initState();
     _animacaoCelebracao = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 10),
     );
     if (widget.sucesso) _animacaoCelebracao.forward();
     _atualizarBadges();
@@ -117,7 +117,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
                           parent: _animacaoCelebracao,
                           curve: const Interval(
                             0,
-                            .2,
+                            .08,
                             curve: Curves.easeOutBack,
                           ),
                         ),
