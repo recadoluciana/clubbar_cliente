@@ -938,6 +938,7 @@ class _CarteiraLojaScreenState extends State<CarteiraLojaScreen> {
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
         mostrarSessao: false,
+        tituloAlinhadoEsquerda: true,
         onVoltar: widget.onVoltar,
         actions: [
           IconButton(
