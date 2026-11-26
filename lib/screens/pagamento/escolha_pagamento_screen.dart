@@ -1841,23 +1841,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _barraTempoReserva(),
-
-          const Text(
-            'Resumo da compra',
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-          ),
-
-          const SizedBox(height: 16),
-
           Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(22),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -1867,7 +1860,13 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
               ],
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const Text(
+                  'Resumo da compra',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 16),
                 if (compraDeProdutos) ...[
                   _linhaResumoComIcone(
                     icon: Icons.shopping_bag_outlined,
@@ -1876,6 +1875,38 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   ),
                   const SizedBox(height: 16),
                   _linhaCashback(),
+                ] else ...[
+                  _linhaResumoComIcone(
+                    icon: Icons.confirmation_number_outlined,
+                    titulo: 'Ingressos',
+                    valor: widget.totalIngressos,
+                  ),
+                  const SizedBox(height: 10),
+                  _linhaResumo('Taxa de conveniência', taxaIngressoCliente),
+                ],
+                const Divider(height: 28),
+                _linhaResumo(
+                  compraDeProdutos ? 'Total a pagar' : 'Subtotal',
+                  totalPagar,
+                  destaque: true,
+                ),
+                if (!compraDeProdutos && _usaMercadoPago)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text(
+                      'A taxa de processamento e o total serão mostrados após a escolha do pagamento.',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                _barraTempoReserva(),
+                if (compraDeProdutos) ...[
                   if (entregaDisponivel) ...[
                     const Divider(height: 24),
                     SwitchListTile(
@@ -1883,8 +1914,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                       value: receberNoEndereco,
                       onChanged: carregandoPagamento
                           ? null
-                          : (valor) =>
-                                setState(() => receberNoEndereco = valor),
+                          : (valor) => setState(() => receberNoEndereco = valor),
                       secondary: Icon(
                         receberNoEndereco
                             ? Icons.delivery_dining_rounded
@@ -1936,178 +1966,178 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                       ),
                     ),
                   ],
-                ] else ...[
-                  _linhaResumoComIcone(
-                    icon: Icons.confirmation_number_outlined,
-                    titulo: 'Ingressos',
-                    valor: widget.totalIngressos,
-                  ),
-                  const SizedBox(height: 10),
-                  _linhaResumo('Taxa de conveniência', taxaIngressoCliente),
                 ],
-                const Divider(height: 28),
-                _linhaResumo(
-                  compraDeProdutos ? 'Total a pagar' : 'Subtotal',
-                  totalPagar,
-                  destaque: true,
-                ),
-                if (!compraDeProdutos && _usaMercadoPago)
+                if (entregaSelecionada)
                   const Padding(
-                    padding: EdgeInsets.only(top: 8),
+                    padding: EdgeInsets.fromLTRB(12, 8, 12, 4),
                     child: Text(
-                      'A taxa de processamento e o total serão mostrados após a escolha do pagamento.',
-                      style: TextStyle(fontSize: 12),
+                      'O estabelecimento confirma o pedido antes de enviá-lo. Você paga ao receber.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.black54, fontSize: 12),
                     ),
+                  ),
+                _cartaoCampanhaDoacao(),
+                const SizedBox(height: 16),
+                Text(
+                  _usaMercadoPago
+                      ? 'Os pagamentos são processados com segurança pelo Mercado Pago.'
+                      : 'Os pagamentos são processados com segurança pelo Asaas.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.black54, height: 1.4),
+                ),
+
+                const SizedBox(height: 12),
+
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(
+                        builder: (_) => PoliticaCompraScreen(
+                          tipo: compraDeProdutos ? 'PRODUTO' : 'INGRESSO',
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.policy_outlined),
+                  label: Text(
+                    compraDeProdutos
+                        ? 'Política de compra de produto'
+                        : 'Política de compra de ingresso',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (!compraDeProdutos)
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(32, 0, 32, 8),
+                    child: Text(
+                      'Para alterar os participantes, acesse sua Carteira/Ingressos.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                if (compraDeProdutos)
+                  ClubbarContactLinks(
+                    emailEstabelecimento: widget.loja.emailContato,
+                    whatsappEstabelecimento: widget.loja.whatsapp,
+                    centralizado: true,
+                    cor: Theme.of(context).colorScheme.primary,
+                    titulo: 'Precisa de ajuda com seu pedido? Fale com o estabelecimento.',
                   ),
               ],
             ),
           ),
-
-          _cartaoCampanhaDoacao(),
-
-          const SizedBox(height: 24),
-
-          if (entregaSelecionada) ...[
-            SizedBox(
-              height: 56,
-              child: OutlinedButton.icon(
-                onPressed: carregandoPagamento ? null : _pagarNaEntrega,
-                icon: _metodoPagamentoProcessando == 'ENTREGA'
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.delivery_dining_rounded, size: 26),
-                label: const Text(
-                  'Pagar na entrega',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF0F6B3B),
-                  side: const BorderSide(color: Color(0xFF0F6B3B), width: 1.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(12, 8, 12, 4),
-              child: Text(
-                'O estabelecimento confirma o pedido antes de enviá-lo. Você paga ao receber.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.black54, fontSize: 12),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-
-          SizedBox(
-            height: 56,
-            child: ElevatedButton.icon(
-              onPressed: carregandoPagamento ? null : abrirPix,
-              icon: _metodoPagamentoProcessando == 'PIX'
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (entregaSelecionada) ...[
+                    SizedBox(
+                      height: 56,
+                      child: OutlinedButton.icon(
+                        onPressed: carregandoPagamento ? null : _pagarNaEntrega,
+                        icon: _metodoPagamentoProcessando == 'ENTREGA'
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.delivery_dining_rounded, size: 26),
+                        label: const Text(
+                          'Pagar na entrega',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF0F6B3B),
+                          side: const BorderSide(
+                            color: Color(0xFF0F6B3B),
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
                       ),
-                    )
-                  : const Icon(Icons.pix, size: 25),
-              label: const Text(
-                'Pagamento PIX',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B9BD5),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-          ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
 
-          const SizedBox(height: 12),
-
-          SizedBox(
-            height: 56,
-            child: ElevatedButton.icon(
-              onPressed: carregandoPagamento ? null : abrirAsaas,
-              icon: _metodoPagamentoProcessando == 'CARTAO'
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.black87,
+                  SizedBox(
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: carregandoPagamento ? null : abrirPix,
+                      icon: _metodoPagamentoProcessando == 'PIX'
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.pix, size: 25),
+                      label: const Text(
+                        'Pagamento PIX',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    )
-                  : const Icon(Icons.account_balance_wallet_outlined, size: 24),
-              label: const Text(
-                'Pagamento com cartão de crédito',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD166),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          Text(
-            _usaMercadoPago
-                ? 'Os pagamentos são processados com segurança pelo Mercado Pago.'
-                : 'Os pagamentos são processados com segurança pelo Asaas.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.black54, height: 1.4),
-          ),
-
-          const SizedBox(height: 12),
-
-          TextButton.icon(
-            onPressed: () {
-              Navigator.of(context, rootNavigator: true).push(
-                MaterialPageRoute(
-                  builder: (_) => PoliticaCompraScreen(
-                    tipo: compraDeProdutos ? 'PRODUTO' : 'INGRESSO',
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5B9BD5),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.policy_outlined),
-            label: Text(
-              compraDeProdutos
-                  ? 'Política de compra de produto'
-                  : 'Política de compra de ingresso',
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          if (!compraDeProdutos)
-            const Padding(
-              padding: EdgeInsets.fromLTRB(32, 0, 32, 8),
-              child: Text(
-                'Para alterar os participantes, acesse sua Carteira/Ingressos.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15),
+
+                  const SizedBox(height: 12),
+
+                  SizedBox(
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: carregandoPagamento ? null : abrirAsaas,
+                      icon: _metodoPagamentoProcessando == 'CARTAO'
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.black87,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.account_balance_wallet_outlined,
+                              size: 24,
+                            ),
+                      label: const Text(
+                        'Pagamento com cartão de crédito',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD166),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          if (compraDeProdutos)
-            ClubbarContactLinks(
-              emailEstabelecimento: widget.loja.emailContato,
-              whatsappEstabelecimento: widget.loja.whatsapp,
-              centralizado: true,
-              cor: Theme.of(context).colorScheme.primary,
-              titulo: 'Precisa de ajuda com seu pedido? Fale com o estabelecimento.',
-            ),
+          ),
         ],
       ),
     );
