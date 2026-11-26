@@ -1716,49 +1716,9 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
   Future<void> _abrirCompraEvento() async {
     final compra = _compraEvento;
     if (compra == null || !mounted) return;
-
-    // A sacola pode ter ficado aberta enquanto a reserva expirava no
-    // servidor. Atualiza o estado antes de exibir os participantes para não
-    // mostrar um contador local desatualizado e só descobrir o problema no
-    // próximo passo.
-    var reserva = compra;
-    final reservaId = int.tryParse('${compra['reserva_ingresso_id']}');
-    final clienteId = await authStorage.obterClienteId();
-    if (reservaId != null && clienteId != null) {
-      try {
-        final atual = await apiService.consultarReserva(
-          reservaId: reservaId,
-          clienteId: clienteId,
-        );
-        final status = '${atual['status'] ?? ''}'.toUpperCase();
-        final segundos = int.tryParse('${atual['segundos_restantes']}');
-        if (status == 'EXPIRADA' ||
-            status == 'CANCELADA' ||
-            (segundos != null && segundos <= 0)) {
-          // Ao voltar da tela de participantes, apenas sincronizamos a
-          // sacola. A mensagem de expiração deve aparecer somente no fluxo
-          // de confirmação, não como efeito colateral da navegação.
-          _removerItemLocalDaSacola(compra, reservaId);
-          return;
-        }
-        reserva = {
-          ...compra,
-          ...atual,
-          // O endpoint de status retorna o estado da reserva, enquanto a
-          // tela precisa continuar usando os itens da compra agrupada.
-          'itens': compra['itens'] ?? atual['itens'],
-          'compra_evento_id':
-              compra['compra_evento_id'] ?? atual['compra_evento_id'],
-        };
-        if (mounted) {
-          setState(() => _compraEvento = reserva);
-          _iniciarTimerReservaSacola(reserva);
-        }
-      } catch (_) {
-        // Mantém o fluxo disponível quando a consulta falhar por uma
-        // indisponibilidade momentânea; a confirmação ainda valida no API.
-      }
-    }
+    // A sacola já foi sincronizada após a exclusão. A navegação deve ser
+    // imediata; a API valida a validade da reserva ao salvar os participantes.
+    final reserva = compra;
     await Navigator.push(
       context,
       MaterialPageRoute(
