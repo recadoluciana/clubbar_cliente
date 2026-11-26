@@ -52,7 +52,7 @@ void main() {
       expect(find.text('CPF: 123.456.789-09'), findsOneWidget);
       expect(find.text('Valor pago'), findsNothing);
       expect(find.byTooltip('Transferir participante'), findsOneWidget);
-      expect(find.text('Presentear alguém'), findsOneWidget);
+      expect(find.text('Presentear'), findsOneWidget);
       expect(find.text('Exibir QR Code'), findsOneWidget);
       expect(tester.takeException(), isNull);
 

@@ -314,11 +314,14 @@ class _ParticipantesReservaScreenState
       children: [
         const Icon(Icons.timer_outlined, color: Colors.red, size: 19),
         const SizedBox(width: 6),
-        Text(
-          'Tempo para concluir a compra: $minutos:$segundos',
-          style: const TextStyle(
-            color: Colors.red,
-            fontWeight: FontWeight.bold,
+        Flexible(
+          child: Text(
+            'Tempo para concluir a compra: $minutos:$segundos',
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ],
@@ -545,8 +548,8 @@ class _ParticipantesReservaScreenState
           ],
         ),
         backgroundColor: const Color(0xFFF5F5F5),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
               decoration: BoxDecoration(
@@ -555,7 +558,9 @@ class _ParticipantesReservaScreenState
                   end: Alignment.bottomRight,
                   colors: [Color(0xFFFFF9E9), Color(0xFFFFE6A6)],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(16),
+                ),
                 border: Border.all(color: const Color(0xFFECCB72)),
               ),
               child: Padding(
@@ -574,6 +579,8 @@ class _ParticipantesReservaScreenState
                             children: [
                               Text(
                                 widget.nomeEvento,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w900,
@@ -611,97 +618,111 @@ class _ParticipantesReservaScreenState
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            for (var i = 0; i < nomes.length; i++)
-              Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 28,
-                          height: 28,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.person_outline_rounded,
-                            size: 17,
-                            color: Colors.grey.shade700,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Participante ${i + 1}',
-                          style: const TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                      ],
-                    ),
-                    _dadosIngresso(i),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: nomes[i],
-                      decoration: _campoParticipante('Nome completo'),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: cpfs[i],
-                      keyboardType: TextInputType.number,
-                      decoration: _campoParticipante('CPF'),
-                    ),
-                    if (_beneficiosDoParticipante(i).isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      DropdownButtonFormField<int>(
-                        initialValue: beneficiosParticipantes[i],
-                        isDense: true,
-                        decoration: _campoParticipante('Benefício'),
-                        items: _beneficiosDoParticipante(i)
-                            .map(
-                              (beneficio) => DropdownMenuItem<int>(
-                                value: beneficio.id,
-                                child: Text(beneficio.nome),
-                              ),
-                            )
-                            .toList(growable: false),
-                        onChanged: (valor) =>
-                            setState(() => beneficiosParticipantes[i] = valor),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                children: [
+                  for (var i = 0; i < nomes.length; i++)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300),
                       ),
-                    ],
-                  ],
-                ),
-              ),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed:
-                  salvando || _verificandoExpiracao || restante <= Duration.zero
-                  ? null
-                  : continuar,
-              icon: Icon(
-                ehCortesia ? Icons.card_giftcard_rounded : Icons.payment,
-              ),
-              label: Text(
-                ehCortesia ? 'Resgatar cortesia' : 'Continuar para pagamento',
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ehCortesia
-                    ? Colors.green.shade700
-                    : Colors.amber,
-                foregroundColor: ehCortesia ? Colors.white : Colors.black,
-                minimumSize: const Size.fromHeight(54),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.person_outline_rounded,
+                                  size: 17,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Participante ${i + 1}',
+                                style: const TextStyle(fontWeight: FontWeight.w800),
+                              ),
+                            ],
+                          ),
+                          _dadosIngresso(i),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: nomes[i],
+                            decoration: _campoParticipante('Nome completo'),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: cpfs[i],
+                            keyboardType: TextInputType.number,
+                            decoration: _campoParticipante('CPF'),
+                          ),
+                          if (_beneficiosDoParticipante(i).isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<int>(
+                              initialValue: beneficiosParticipantes[i],
+                              isDense: true,
+                              decoration: _campoParticipante('Benefício'),
+                              items: _beneficiosDoParticipante(i)
+                                  .map(
+                                    (beneficio) => DropdownMenuItem<int>(
+                                      value: beneficio.id,
+                                      child: Text(beneficio.nome),
+                                    ),
+                                  )
+                                  .toList(growable: false),
+                              onChanged: (valor) =>
+                                  setState(() => beneficiosParticipantes[i] = valor),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                ],
               ),
             ),
-            const SizedBox(height: 12),
-            _contador(minutos, segundos),
-            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed:
+                        salvando || _verificandoExpiracao || restante <= Duration.zero
+                        ? null
+                        : continuar,
+                    icon: Icon(
+                      ehCortesia ? Icons.card_giftcard_rounded : Icons.payment,
+                    ),
+                    label: Text(
+                      ehCortesia ? 'Resgatar cortesia' : 'Continuar para pagamento',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ehCortesia
+                          ? Colors.green.shade700
+                          : Colors.amber,
+                      foregroundColor: ehCortesia ? Colors.white : Colors.black,
+                      minimumSize: const Size.fromHeight(54),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _contador(minutos, segundos),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
           ],
         ),
       ),

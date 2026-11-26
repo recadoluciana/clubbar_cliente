@@ -155,7 +155,7 @@ void main() {
     );
     final presentear = tester
         .widgetList<OutlinedButton>(
-          find.widgetWithText(OutlinedButton, 'Presentear alguém'),
+          find.widgetWithText(OutlinedButton, 'Presentear'),
         )
         .toList();
     final qr = tester
@@ -218,7 +218,7 @@ void main() {
       expect(tester.getRect(acao).left, greaterThan(tester.getRect(cpf).right));
       expect(tester.getRect(acao).top, lessThan(tester.getRect(cpf).bottom));
       expect(
-        tester.getTopLeft(find.text('Presentear alguém')).dx,
+        tester.getTopLeft(find.text('Presentear')).dx,
         lessThan(tester.getTopLeft(find.text('Exibir QR Code')).dx),
       );
       expect(tester.takeException(), isNull);
@@ -282,7 +282,7 @@ void main() {
     }
     expect(find.text('Exibir QR Code'), findsOneWidget);
     expect(find.text('06/11/2026 15:57'), findsOneWidget);
-    expect(find.text('Presentear alguém'), findsOneWidget);
+    expect(find.text('Presentear'), findsOneWidget);
   });
 
   testWidgets(
