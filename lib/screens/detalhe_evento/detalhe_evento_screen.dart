@@ -2290,7 +2290,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         backgroundColor: AppColors.amareloCerveja,
-        foregroundColor: Colors.black,
+        foregroundColor: Colors.white,
         disabledBackgroundColor: Colors.grey.shade300,
         disabledForegroundColor: Colors.grey.shade600,
       ),
