@@ -84,7 +84,7 @@ class _NavegacaoEventoState extends State<DetalheEventoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Detalhe e setor compartilham a navegação principal e a mesma sacola.
+    // Detalhe, setor e sacola compartilham a navegação principal.
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
@@ -1868,11 +1868,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         ? (compra!['itens'] as List).whereType<Map>().toList()
         : const <Map>[];
     if (itens.isEmpty || !mounted) return;
-    final retorno = await Navigator.of(
-      context,
-      rootNavigator: true,
-    ).push<dynamic>(
+    final retorno = await Navigator.of(context).push<dynamic>(
       MaterialPageRoute(
+        settings: const RouteSettings(name: 'conferir-sacola'),
         builder: (_) => _ConferenciaSacolaScreen(
           nomeEvento: evento?.titulo ?? 'Evento',
           dataEvento: DateFormatters.dataCompleta(evento?.dataInicio ?? ''),

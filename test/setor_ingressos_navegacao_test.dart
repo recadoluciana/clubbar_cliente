@@ -185,7 +185,9 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Conferir sacola'), findsOneWidget);
         expect(find.text('1x Inteira'), findsOneWidget);
-        expect(find.text('Home'), findsNothing);
+        for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
+          expect(find.text(item), findsOneWidget);
+        }
         await tester.tap(find.text('Continuar - Informar participante'));
         await tester.pumpAndSettle();
         expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
@@ -194,6 +196,7 @@ void main() {
         await tester.tap(find.byIcon(Icons.arrow_back));
         await tester.pumpAndSettle();
         expect(find.text('Conferir sacola'), findsOneWidget);
+        expect(find.text('Home'), findsOneWidget);
         await tester.tap(find.byIcon(Icons.arrow_back));
         await tester.pumpAndSettle();
         expect(find.text('Inteira'), findsOneWidget);
@@ -204,6 +207,10 @@ void main() {
         await tester.tap(find.byTooltip('Continuar para participantes'));
         await tester.pumpAndSettle();
         expect(find.text('1x Inteira'), findsOneWidget);
+        expect(find.text('Home'), findsOneWidget);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        expect(find.text('Comprar ingresso'), findsOneWidget);
         expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
         expect(
           requests.where(
@@ -215,39 +222,64 @@ void main() {
     },
   );
 
-  for (final destino in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
-    testWidgets('setor navega diretamente para $destino', (tester) async {
-      await executar(tester, (_) async {
-        await tester.tap(find.text(destino));
-        // Home tem uma animação contínua; não esperamos todas as animações.
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 500));
-        await tester.pump();
-        expect(find.text('Setor: Pista'), findsNothing);
-        switch (destino) {
-          case 'Home':
-            expect(find.byType(HomeScreen), findsOneWidget);
-          case 'Carrinho':
-            expect(find.byType(CarrinhoScreen), findsOneWidget);
+  for (final origem in ['setor', 'sacola']) {
+    for (final destino in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
+      testWidgets('$origem navega diretamente para $destino', (tester) async {
+        await executar(tester, (_) async {
+          if (origem == 'sacola') {
+            await tester.tap(find.text('Adicionar'));
+            await tester.pumpAndSettle();
+            await tester.tap(find.byTooltip('Conferir sacola'));
+            await tester.pumpAndSettle();
+            expect(find.text('Conferir sacola'), findsOneWidget);
+            for (final item in [
+              'Home',
+              'Carrinho',
+              'Carteira',
+              'Cora responde',
+            ]) {
+              expect(find.text(item), findsOneWidget);
+            }
             expect(
-              tester
-                  .widget<CarrinhoScreen>(find.byType(CarrinhoScreen))
-                  .loja
-                  .id,
-              5,
+              Navigator.of(
+                tester.element(find.text('Conferir sacola')),
+                rootNavigator: true,
+              ).canPop(),
+              isFalse,
             );
-          case 'Carteira':
-            expect(find.byType(CarteiraScreen), findsOneWidget);
-            expect(
-              tester
-                  .widget<CarteiraScreen>(find.byType(CarteiraScreen))
-                  .lojaSelecionadaId,
-              5,
-            );
-          case 'Cora responde':
-            expect(find.byType(AtendimentoCoraScreen), findsOneWidget);
-        }
+          }
+          await tester.tap(find.text(destino));
+          // Home tem uma animação contínua; não esperamos todas as animações.
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 500));
+          await tester.pump();
+          expect(find.text('Setor: Pista'), findsNothing);
+          expect(find.text('Conferir sacola'), findsNothing);
+          switch (destino) {
+            case 'Home':
+              expect(find.byType(HomeScreen), findsOneWidget);
+            case 'Carrinho':
+              expect(find.byType(CarrinhoScreen), findsOneWidget);
+              expect(
+                tester
+                    .widget<CarrinhoScreen>(find.byType(CarrinhoScreen))
+                    .loja
+                    .id,
+                5,
+              );
+            case 'Carteira':
+              expect(find.byType(CarteiraScreen), findsOneWidget);
+              expect(
+                tester
+                    .widget<CarteiraScreen>(find.byType(CarteiraScreen))
+                    .lojaSelecionadaId,
+                5,
+              );
+            case 'Cora responde':
+              expect(find.byType(AtendimentoCoraScreen), findsOneWidget);
+          }
+        });
       });
-    });
+    }
   }
 }
