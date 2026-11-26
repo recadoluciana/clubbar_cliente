@@ -29,6 +29,7 @@ Map<String, dynamic> ingresso({
 Widget carteira(
   List<Map<String, dynamic>> itens, {
   Future<List<Map<String, dynamic>>> Function()? onAtualizar,
+  VoidCallback? onVoltar,
 }) => MaterialApp(
   home: CarteiraIngressosScreen(
     nomeLoja: 'Casa',
@@ -36,7 +37,7 @@ Widget carteira(
     nomeCliente: 'Cliente',
     itens: itens,
     onAtualizar: onAtualizar,
-    onVoltar: () {},
+    onVoltar: onVoltar ?? () {},
   ),
 );
 
@@ -67,15 +68,29 @@ void main() {
     expect(find.text('Rua do evento, 123'), findsNWidgets(2));
     expect(find.text('2 ingressos'), findsOneWidget);
     expect(find.text('1 ingresso'), findsOneWidget);
-    expect(find.byTooltip('Transferir participante'), findsNWidgets(3));
-    expect(find.text('Presentear alguém'), findsNWidgets(3));
-    expect(find.text('Exibir QR Code'), findsNWidgets(3));
-    expect(
-      tester.getTopLeft(find.byKey(const ValueKey('ingresso-3'))).dy,
-      lessThan(tester.getTopLeft(find.byKey(const ValueKey('ingresso-2'))).dy),
-    );
+    expect(find.byTooltip('Transferir participante'), findsNothing);
+    expect(find.text('Presentear alguém'), findsNothing);
+    expect(find.text('Exibir QR Code'), findsNothing);
+
+    await tester.tap(find.text('Ver ingressos').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Ingressos do evento'), findsOneWidget);
+    expect(find.text('Festival'), findsOneWidget);
+    expect(find.byKey(const ValueKey('ingresso-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('ingresso-3')), findsOneWidget);
+    expect(find.byKey(const ValueKey('ingresso-2')), findsNothing);
+    expect(find.byTooltip('Transferir participante'), findsNWidgets(2));
 
     for (final id in [1, 3, 2]) {
+      if (id == 2) {
+        await tester.tap(find.byIcon(Icons.arrow_back));
+        await tester.pumpAndSettle();
+        expect(find.text('Festival'), findsNWidgets(2));
+        await tester.tap(find.text('Ver ingressos').last);
+        await tester.pumpAndSettle();
+        expect(find.byKey(const ValueKey('ingresso-1')), findsNothing);
+        expect(find.byKey(const ValueKey('ingresso-3')), findsNothing);
+      }
       final card = find.byKey(ValueKey('ingresso-$id'));
       expect(
         find.descendant(of: card, matching: find.text('Participante $id')),
@@ -142,12 +157,21 @@ void main() {
       expect(find.text('13/12/2026 13:00'), findsOneWidget);
       expect(find.text('12/12/2026 13:00'), findsOneWidget);
       expect(
-        tester.getTopLeft(find.byKey(const ValueKey('ingresso-2'))).dy,
-        lessThan(
-          tester.getTopLeft(find.byKey(const ValueKey('ingresso-1'))).dy,
-        ),
+        tester.getTopLeft(find.text('12/12/2026 13:00')).dy,
+        lessThan(tester.getTopLeft(find.text('13/12/2026 13:00')).dy),
       );
       expect(find.text('2 ingressos'), findsOneWidget);
+      await tester.tap(find.text('Ver ingressos').first);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('ingresso-2')), findsOneWidget);
+      expect(find.byKey(const ValueKey('ingresso-1')), findsNothing);
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ver ingressos').last);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('ingresso-1')), findsOneWidget);
+      expect(find.byKey(const ValueKey('ingresso-3')), findsOneWidget);
+      expect(find.byKey(const ValueKey('ingresso-2')), findsNothing);
       expect(tester.takeException(), isNull);
     },
   );
@@ -170,9 +194,68 @@ void main() {
       await atualizacao;
       expect(find.text('Festival'), findsOneWidget);
       expect(find.byKey(const ValueKey('ingresso-1')), findsNothing);
-      expect(find.byKey(const ValueKey('ingresso-2')), findsOneWidget);
       expect(find.text('1 ingresso'), findsOneWidget);
+      await tester.tap(find.text('Ver ingressos'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('ingresso-2')), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets(
+    'atualizar dentro do evento não mostra ingressos de outro evento',
+    (tester) async {
+      telaAlta(tester);
+      await tester.pumpWidget(
+        carteira([
+          ingresso(id: 1, eventoId: 10),
+          ingresso(id: 2, eventoId: 20),
+        ], onAtualizar: () async => [ingresso(id: 2, eventoId: 20)]),
+      );
+      await tester.pump();
+      await tester.tap(find.text('Ver ingressos').first);
+      await tester.pumpAndSettle();
+      final atualizacao = tester
+          .state<RefreshIndicatorState>(find.byType(RefreshIndicator))
+          .show();
+      await tester.pumpAndSettle();
+      await atualizacao;
+      expect(
+        find.text('Não há ingressos disponíveis para este evento.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('ingresso-2')), findsNothing);
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      expect(find.text('Festival'), findsOneWidget);
+      expect(find.text('1 ingresso'), findsOneWidget);
+      await tester.tap(find.text('Ver ingressos'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('ingresso-2')), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('voltar pelo sistema retorna primeiro aos eventos', (
+    tester,
+  ) async {
+    telaAlta(tester);
+    var saidasDaCarteira = 0;
+    await tester.pumpWidget(
+      carteira([
+        ingresso(id: 1, eventoId: 10),
+      ], onVoltar: () => saidasDaCarteira++),
+    );
+    await tester.pump();
+    await tester.tap(find.text('Ver ingressos'));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Ver ingressos'), findsOneWidget);
+    expect(saidasDaCarteira, 0);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(saidasDaCarteira, 1);
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -65,7 +65,10 @@ class _DivisoriaIngressoPainter extends CustomPainter {
 }
 
 class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
-  late List<Map<String, dynamic>> itensTela;
+  late final ValueNotifier<List<Map<String, dynamic>>> _itens;
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  bool _eventoAberto = false;
+  List<Map<String, dynamic>> get itensTela => _itens.value;
   final ApiService apiService = ApiService();
 
   static final String baseUrl = AppConfig.apiBaseUrl;
@@ -73,7 +76,59 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
   @override
   void initState() {
     super.initState();
-    itensTela = _ordenarIngressos(widget.itens);
+    _itens = ValueNotifier(_ordenarIngressos(widget.itens));
+  }
+
+  @override
+  void dispose() {
+    _itens.dispose();
+    super.dispose();
+  }
+
+  Future<void> _atualizarIngressos() async {
+    if (widget.onAtualizar == null) return;
+    try {
+      final novosItens = await widget.onAtualizar!();
+      if (!mounted) return;
+      _itens.value = _ordenarIngressos(novosItens);
+      CarteiraBadgeNotifier.atualizar();
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+      }
+    }
+  }
+
+  void _voltar() {
+    final navigator = _navigatorKey.currentState;
+    if (navigator != null && navigator.canPop()) {
+      navigator.pop();
+    } else {
+      widget.onVoltar();
+    }
+  }
+
+  Future<void> _abrirEvento(Map<String, dynamic> evento) async {
+    if (_eventoAberto) return;
+    _eventoAberto = true;
+    final chave = _chaveEvento(evento);
+    try {
+      await _navigatorKey.currentState!.push<void>(
+        MaterialPageRoute(
+          settings: const RouteSettings(name: 'ingressos-evento'),
+          builder: (context) => ValueListenableBuilder(
+            valueListenable: _itens,
+            builder: (context, itens, _) => _telaIngressosEvento(
+              context,
+              evento,
+              itens.where((item) => _chaveEvento(item) == chave).toList(),
+            ),
+          ),
+        ),
+      );
+    } finally {
+      _eventoAberto = false;
+    }
   }
 
   List<Map<String, dynamic>> _ordenarIngressos(
@@ -342,21 +397,20 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
       if (!mounted) return;
 
-      setState(() {
-        final historico = (item['historico_participantes'] as List? ?? [])
-            .whereType<Map>()
-            .map((registro) => Map<String, dynamic>.from(registro))
-            .toList();
-        historico.add({
-          'nmparticipanteanterior': item['nmparticipante'],
-          'cpfparticipanteanterior': item['cpfparticipante'],
-          'nmparticipantenovo': resultado['nome'],
-          'cpfparticipantenovo': resultado['cpf'],
-        });
-        item['historico_participantes'] = historico;
-        item['nmparticipante'] = resultado['nome'];
-        item['cpfparticipante'] = resultado['cpf'];
+      final historico = (item['historico_participantes'] as List? ?? [])
+          .whereType<Map>()
+          .map((registro) => Map<String, dynamic>.from(registro))
+          .toList();
+      historico.add({
+        'nmparticipanteanterior': item['nmparticipante'],
+        'cpfparticipanteanterior': item['cpfparticipante'],
+        'nmparticipantenovo': resultado['nome'],
+        'cpfparticipantenovo': resultado['cpf'],
       });
+      item['historico_participantes'] = historico;
+      item['nmparticipante'] = resultado['nome'];
+      item['cpfparticipante'] = resultado['cpf'];
+      _itens.value = List.of(itensTela);
 
       AppSnackBar.sucesso(context, 'Ingresso transferido com sucesso.');
     } catch (e) {
@@ -544,17 +598,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
 
     // atualizar itens e badge após retirada ou fechamento do qr
-    if (widget.onAtualizar != null) {
-      final novosItens = await widget.onAtualizar!();
-
-      CarteiraBadgeNotifier.atualizar();
-
-      if (!mounted) return;
-
-      setState(() {
-        itensTela = _ordenarIngressos(novosItens);
-      });
-    }
+    await _atualizarIngressos();
   }
 
   String _primeiroTexto(
@@ -595,7 +639,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       'dtinicioevento',
       'dtinicioevento_fmt',
     ]);
-    if (nome.isEmpty || horario.isEmpty) return item;
+    if (nome.isEmpty || horario.isEmpty) {
+      return item['itvenda_id'] == null
+          ? item
+          : ('ingresso', '${item['itvenda_id']}');
+    }
     return (
       '${item['loja_id'] ?? widget.nomeLoja}',
       nome,
@@ -616,8 +664,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return grupos.values;
   }
 
-  Widget _eventoCard(List<Map<String, dynamic>> ingressos) {
-    final evento = ingressos.first;
+  Widget _eventoCard(
+    List<Map<String, dynamic>> ingressos, {
+    Map<String, dynamic>? eventoOriginal,
+    VoidCallback? onAbrir,
+  }) {
+    final evento = ingressos.isEmpty ? eventoOriginal! : ingressos.first;
     final nome = _primeiroTexto(evento, const [
       'nmevento',
       'nmproduto',
@@ -639,71 +691,94 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         constraints: const BoxConstraints(maxWidth: 620),
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.amber.shade50, Colors.white],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          child: Material(
+            color: Colors.amber.shade50,
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: Colors.amber.shade200),
             ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.amber.shade200),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: 52,
-                    height: 52,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: _imagemItem(evento),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            child: InkWell(
+              onTap: onAbrir,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          nome,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
+                        SizedBox(
+                          width: 52,
+                          height: 52,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: _imagemItem(evento),
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          quantidade == 1
-                              ? '1 ingresso'
-                              : '$quantidade ingressos',
-                          style: TextStyle(
-                            color: Colors.grey.shade700,
-                            fontSize: 12,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                nome,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                quantidade == 1
+                                    ? '1 ingresso'
+                                    : '$quantidade ingressos',
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 10),
+                    _informacaoIngresso(
+                      icone: Icons.event_outlined,
+                      titulo: 'Horário evento',
+                      valor: horario,
+                      corIcone: Colors.blue.shade700,
+                    ),
+                    const SizedBox(height: 6),
+                    _informacaoIngresso(
+                      icone: Icons.place_outlined,
+                      titulo: 'Local',
+                      valor: local,
+                      corIcone: Colors.blue.shade700,
+                    ),
+                    if (onAbrir != null) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Ver ingressos',
+                            style: TextStyle(
+                              color: Colors.amber.shade900,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            color: Colors.amber.shade900,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 10),
-              _informacaoIngresso(
-                icone: Icons.event_outlined,
-                titulo: 'Horário evento',
-                valor: horario,
-                corIcone: Colors.blue.shade700,
-              ),
-              const SizedBox(height: 6),
-              _informacaoIngresso(
-                icone: Icons.place_outlined,
-                titulo: 'Local',
-                valor: local,
-                corIcone: Colors.blue.shade700,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1079,7 +1154,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     );
   }
 
-  Widget _estadoVazio() {
+  Widget _estadoVazio({bool doEvento = false}) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(28),
@@ -1103,7 +1178,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Não há ingressos disponíveis para uso neste estabelecimento.',
+            doEvento ? 'Não há ingressos disponíveis para este evento.' : 'Não há ingressos disponíveis para uso neste estabelecimento.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey.shade700, height: 1.4),
           ),
@@ -1168,6 +1243,69 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // A navegação entre eventos e ingressos fica dentro da carteira para
+    // preservar a barra inferior e tratar o Voltar um nível por vez.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _voltar();
+      },
+      child: Navigator(
+        key: _navigatorKey,
+        onGenerateRoute: (_) => MaterialPageRoute(
+          settings: const RouteSettings(name: 'eventos-carteira'),
+          builder: (context) => ValueListenableBuilder(
+            valueListenable: _itens,
+            builder: (context, _, _) => _telaEventos(context),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _telaIngressosEvento(
+    BuildContext context,
+    Map<String, dynamic> evento,
+    List<Map<String, dynamic>> ingressos,
+  ) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+      appBar: ClubbarAppBar(
+        titulo: 'Ingressos do evento',
+        iconeTitulo: Icons.confirmation_number_outlined,
+        corIconeTitulo: Colors.amber,
+        mostrarVoltar: true,
+        mostrarSessao: false,
+        tituloAlinhadoEsquerda: true,
+        onVoltar: _voltar,
+      ),
+      body: RefreshIndicator(
+        onRefresh: _atualizarIngressos,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          children: [
+            _eventoCard(ingressos, eventoOriginal: evento),
+            if (ingressos.isEmpty)
+              _estadoVazio(doEvento: true)
+            else ...[
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: Text(
+                  'Apresente o QR Code na portaria do evento',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ),
+              ...ingressos.map((item) => _itemCard(context, item)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _telaEventos(BuildContext context) {
     final totalUnidades = itensTela.fold<int>(0, (total, item) {
       final quantidade = int.tryParse('${item['qtitvenda'] ?? 0}') ?? 0;
 
@@ -1197,7 +1335,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
             titulo: widget.nomeLoja,
             subtitulo: itensTela.isEmpty
                 ? subtituloAux
-                : '$subtituloAux\nApresente o QR Code na portaria do evento',
+                : '$subtituloAux\nSelecione um evento para ver seus ingressos.',
             maxLinhasSubtitulo: 3,
             icone: Icons.storefront_rounded,
             imagemAvatarUrl: _buildImageUrl(widget.logoLoja),
@@ -1206,19 +1344,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
 
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () async {
-                if (widget.onAtualizar == null) return;
-
-                final novosItens = await widget.onAtualizar!();
-
-                CarteiraBadgeNotifier.atualizar();
-
-                if (!mounted) return;
-
-                setState(() {
-                  itensTela = _ordenarIngressos(novosItens);
-                });
-              },
+              onRefresh: _atualizarIngressos,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -1226,11 +1352,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                   if (itensTela.isEmpty)
                     _estadoVazio()
                   else
-                    for (final ingressos in _agruparPorEvento()) ...[
-                      _eventoCard(ingressos),
-                      ...ingressos.map((item) => _itemCard(context, item)),
-                      const SizedBox(height: 12),
-                    ],
+                    for (final ingressos in _agruparPorEvento())
+                      _eventoCard(
+                        ingressos,
+                        onAbrir: () => _abrirEvento(ingressos.first),
+                      ),
                 ],
               ),
             ),
