@@ -590,6 +590,11 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     final dataEvento = (item['dtinicioevento_fmt'] ?? '').toString().trim();
     final dataCompra = (item['dtcriacao_fmt'] ?? '').toString().trim();
     final valorIngresso = double.tryParse('${item['vrunititvenda'] ?? ''}');
+    final taxaIngresso = double.tryParse('${item['vrtaxaitvenda'] ?? ''}');
+    final quantidadeIngresso = int.tryParse('${item['qtitvenda'] ?? 1}') ?? 1;
+    final valorPago = valorIngresso == null || taxaIngresso == null
+        ? null
+        : valorIngresso * quantidadeIngresso + taxaIngresso;
     final horarioEvento = dataEvento.replaceFirstMapped(
       RegExp(r'^(\d{2}/\d{2}/\d{4})\s+(\d{2}:\d{2}(?::\d{2})?)$'),
       (match) => '${match[1]}\n${match[2]}',
@@ -719,7 +724,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     children: [
                       _informacaoIngresso(
                         icone: Icons.event_outlined,
-                        titulo: 'Horário',
+                        titulo: 'Horário evento',
                         valor: horarioEvento.isEmpty
                             ? 'Não informada'
                             : horarioEvento,
@@ -747,7 +752,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                     children: [
                       _informacaoIngresso(
                         icone: Icons.receipt_long_outlined,
-                        titulo: 'Compra',
+                        titulo: 'Comprado em',
                         valor: dataCompra.isEmpty
                             ? 'Não informada'
                             : dataCompra,
@@ -756,10 +761,10 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       const SizedBox(width: 5),
                       _informacaoIngresso(
                         icone: Icons.confirmation_num_outlined,
-                        titulo: 'Valor do ingresso',
-                        valor: valorIngresso == null
+                        titulo: 'Valor pago',
+                        valor: valorPago == null
                             ? 'Não informado'
-                            : ValueFormatters.moeda(valorIngresso),
+                            : ValueFormatters.moeda(valorPago),
                         corIcone: Colors.blue.shade700,
                       ),
                     ],
