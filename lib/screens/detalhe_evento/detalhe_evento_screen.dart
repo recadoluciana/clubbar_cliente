@@ -84,7 +84,7 @@ class _NavegacaoEventoState extends State<DetalheEventoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // O fluxo do evento até os participantes compartilha a navegação principal.
+    // O fluxo do evento até o pagamento compartilha a navegação principal.
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {

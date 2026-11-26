@@ -10,6 +10,7 @@ import 'package:clubbar_cliente/screens/home/home_screen.dart';
 import 'package:clubbar_cliente/screens/main/main_navigation_screen.dart';
 import 'package:clubbar_cliente/screens/pagamento/escolha_pagamento_screen.dart';
 import 'package:clubbar_cliente/screens/pagamento/pagamento_sucesso_screen.dart';
+import 'package:clubbar_cliente/screens/pagamento/pix_pagamento_screen.dart';
 import 'package:clubbar_cliente/services/main_navigation_controller.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -117,8 +118,26 @@ void main() {
           'gratuito': cortesia,
           if (cortesia) 'venda_id': 40,
         };
-      } else if (path == '/reservas-ingressos/30') {
+      } else if (path == '/reservas-ingressos/30' ||
+          path == '/reservas-ingressos/30/status') {
         resposta = reserva;
+      } else if (path == '/clientes/me') {
+        resposta = {'nrcpfcliente': '12345678909'};
+      } else if (path == '/reservas-ingressos/30/cotacao-mercado-pago') {
+        resposta = {
+          'ingressos': valor,
+          'conveniencia': 0,
+          'percentual_conveniencia': 0,
+          'processamento': 0,
+          'total': valor,
+        };
+      } else if (path == '/reservas-ingressos/30/mercado-pago') {
+        resposta = {
+          'pagamento_id': 'pix-teste',
+          'pix_copia_cola': 'codigo-teste',
+          'valor_total': valor,
+          'expiration_date': '2099-12-13T13:00:00-03:00',
+        };
       } else if (path == '/pagamentos/lojas/5/provedor') {
         resposta = {'provedor_pagamento': 'MERCADO_PAGO'};
       } else if (path == '/campanhas-doacao/vigente') {
@@ -244,7 +263,7 @@ void main() {
     },
   );
 
-  for (final origem in ['setor', 'sacola', 'participantes']) {
+  for (final origem in ['setor', 'sacola', 'participantes', 'pagamento']) {
     for (final destino in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
       testWidgets('$origem navega diretamente para $destino', (tester) async {
         await executar(tester, (_) async {
@@ -270,7 +289,7 @@ void main() {
               isFalse,
             );
           }
-          if (origem == 'participantes') {
+          if (origem == 'participantes' || origem == 'pagamento') {
             tester.view.physicalSize = const Size(800, 1000);
             await tester.pump();
             await tester.tap(find.text('Continuar - Informar participante'));
@@ -292,6 +311,34 @@ void main() {
               isFalse,
             );
           }
+          if (origem == 'pagamento') {
+            await tester.enterText(
+              find.widgetWithText(TextField, 'Nome completo'),
+              'Participante Teste',
+            );
+            await tester.enterText(
+              find.widgetWithText(TextField, 'CPF'),
+              '12345678909',
+            );
+            await tester.tap(find.text('Continuar para pagamento'));
+            await tester.pumpAndSettle();
+            expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
+            for (final item in [
+              'Home',
+              'Carrinho',
+              'Carteira',
+              'Cora responde',
+            ]) {
+              expect(find.text(item), findsOneWidget);
+            }
+            expect(
+              Navigator.of(
+                tester.element(find.byType(EscolhaPagamentoScreen)),
+                rootNavigator: true,
+              ).canPop(),
+              isFalse,
+            );
+          }
           await tester.tap(find.text(destino));
           // Home tem uma animação contínua; não esperamos todas as animações.
           await tester.pump();
@@ -300,6 +347,7 @@ void main() {
           expect(find.text('Setor: Pista'), findsNothing);
           expect(find.text('Conferir sacola'), findsNothing);
           expect(find.byType(ParticipantesReservaScreen), findsNothing);
+          expect(find.byType(EscolhaPagamentoScreen), findsNothing);
           switch (destino) {
             case 'Home':
               expect(find.byType(HomeScreen), findsOneWidget);
@@ -361,8 +409,8 @@ void main() {
           expect(jsonDecode(envio.body)['participantes'], [
             {'nome': 'Participante Teste', 'cpf': '12345678909'},
           ]);
-          expect(find.text('Home'), findsNothing);
           if (cortesia) {
+            expect(find.text('Home'), findsNothing);
             expect(find.byType(PagamentoSucessoScreen), findsOneWidget);
             expect(find.text('Resgate realizado com sucesso'), findsOneWidget);
             expect(
@@ -374,6 +422,14 @@ void main() {
               findsOneWidget,
             );
           } else {
+            for (final item in [
+              'Home',
+              'Carrinho',
+              'Carteira',
+              'Cora responde',
+            ]) {
+              expect(find.text(item), findsOneWidget);
+            }
             expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
             expect(
               tester
@@ -383,6 +439,28 @@ void main() {
                   .totalPagar,
               10,
             );
+            await tester.tap(find.text('Pagamento PIX'));
+            // O botão mantém o indicador animado enquanto aguarda a confirmação.
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 500));
+            await tester.pump();
+            expect(find.text('Confirme o valor'), findsOneWidget);
+            await tester.tap(find.text('Continuar'));
+            await tester.pumpAndSettle();
+            expect(find.byType(PixPagamentoScreen), findsOneWidget);
+            expect(find.text('Home'), findsNothing);
+            expect(
+              requests.where(
+                (r) =>
+                    r.method == 'POST' &&
+                    r.url.path == '/reservas-ingressos/30/mercado-pago',
+              ),
+              hasLength(1),
+            );
+            await tester.tap(find.byIcon(Icons.arrow_back));
+            await tester.pumpAndSettle();
+            expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
+            expect(find.text('Home'), findsOneWidget);
             await tester.tap(find.byIcon(Icons.arrow_back));
             await tester.pumpAndSettle();
             expect(find.byType(ParticipantesReservaScreen), findsOneWidget);

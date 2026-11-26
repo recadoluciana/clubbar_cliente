@@ -235,11 +235,9 @@ class _ParticipantesReservaScreenState
       final taxas = _itensFinanceiros(reserva, 'valor_taxa_unitaria');
       timer?.cancel();
       _checkoutIniciado = true;
-      final reservaEncerrada = await Navigator.of(
-        context,
-        rootNavigator: true,
-      ).push<bool>(
+      final reservaEncerrada = await Navigator.of(context).push<bool>(
         MaterialPageRoute(
+          settings: const RouteSettings(name: 'pagamento-ingressos'),
           builder: (_) => EscolhaPagamentoScreen(
             loja: widget.loja,
             totalProdutos: 0,
