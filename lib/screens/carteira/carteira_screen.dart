@@ -339,7 +339,7 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     final totalProdutos = int.tryParse('${loja['total_produtos'] ?? 0}') ?? 0;
 
     final totalIngressos = int.tryParse('${loja['total_ingressos'] ?? 0}') ?? 0;
-    final totalLoja = totalProdutos + totalIngressos;
+    final totalFichas = totalProdutos + totalIngressos;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -375,9 +375,9 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                         const SizedBox(height: 5),
 
                         Text(
-                          totalLoja == 1
-                              ? '1 item disponível'
-                              : '$totalLoja itens disponíveis',
+                          'Você possui $totalFichas fichas, sendo '
+                          '$totalProdutos de produtos e $totalIngressos de ingressos;\n'
+                          'Selecione a opção abaixo:',
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 12,
