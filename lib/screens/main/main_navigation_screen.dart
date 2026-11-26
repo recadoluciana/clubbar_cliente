@@ -155,129 +155,110 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _barraNavegacao() {
-    return ValueListenableBuilder<Widget?>(
-      valueListenable: MainNavigationController.telaInterna,
-      builder: (context, telaInterna, _) {
-        final manterNavegacaoVisivel =
-            telaInterna == null ||
-            telaInterna is PerfilScreen ||
-            telaInterna is AtendimentoCoraScreen ||
-            telaInterna is DetalheLojaScreen ||
-            telaInterna is AgendaEventosScreen ||
-            telaInterna is ProdutosLojaScreen ||
-            telaInterna is DetalheEventoScreen ||
-            telaInterna is CarrinhoScreen ||
-            telaInterna is CarteiraScreen;
-        if (!manterNavegacaoVisivel) {
-          return const SizedBox.shrink();
-        }
+  Widget _barraNavegacao(Widget? telaInterna) {
+    final carteiraIngressos = telaInterna is CarteiraIngressosScreen;
+    final coraAtiva = telaInterna is AtendimentoCoraScreen;
+    final carteiraDaLoja =
+        telaInterna is CarteiraScreen && telaInterna.lojaSelecionadaId != null;
+    final carrinhoDaLoja = telaInterna is CarrinhoScreen;
+    final exibirQuantidadeDaLoja =
+        telaInterna is DetalheLojaScreen ||
+        telaInterna is AgendaEventosScreen ||
+        telaInterna is ProdutosLojaScreen ||
+        telaInterna is DetalheEventoScreen ||
+        carteiraDaLoja ||
+        carrinhoDaLoja;
+    final homeSelecionada =
+        currentIndex == 0 &&
+        !coraAtiva &&
+        !carteiraDaLoja &&
+        !carteiraIngressos &&
+        !carrinhoDaLoja;
+    final carrinhoSelecionado =
+        (currentIndex == 1 || carrinhoDaLoja) &&
+        !coraAtiva &&
+        !carteiraIngressos;
+    final carteiraSelecionada =
+        (currentIndex == 2 || carteiraDaLoja) && !coraAtiva;
 
-        final coraAtiva = telaInterna is AtendimentoCoraScreen;
-        final carteiraDaLoja =
-            telaInterna is CarteiraScreen &&
-            telaInterna.lojaSelecionadaId != null;
-        final carrinhoDaLoja = telaInterna is CarrinhoScreen;
-        final exibirQuantidadeDaLoja =
-            telaInterna is DetalheLojaScreen ||
-            telaInterna is AgendaEventosScreen ||
-            telaInterna is ProdutosLojaScreen ||
-            telaInterna is DetalheEventoScreen ||
-            carteiraDaLoja ||
-            carrinhoDaLoja;
-        final homeSelecionada =
-            currentIndex == 0 &&
-            !coraAtiva &&
-            !carteiraDaLoja &&
-            !carrinhoDaLoja;
-        final carrinhoSelecionado =
-            (currentIndex == 1 || carrinhoDaLoja) && !coraAtiva;
-        final carteiraSelecionada =
-            (currentIndex == 2 || carteiraDaLoja) && !coraAtiva;
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade200, width: 1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            children: [
+              _itemBarraNavegacao(
+                index: 0,
+                icone: Icon(
+                  homeSelecionada ? Icons.home_rounded : Icons.home_outlined,
+                ),
+                texto: 'Home',
+                estaSelecionado: homeSelecionada,
+              ),
 
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border(
-              top: BorderSide(color: Colors.grey.shade200, width: 1),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 10,
-                offset: const Offset(0, -2),
+              _itemBarraNavegacao(
+                index: 1,
+                icone: _iconeCarrinhoComBadge(
+                  selecionado: carrinhoSelecionado,
+                  usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
+                ),
+                texto: 'Carrinho',
+                estaSelecionado: carrinhoSelecionado,
+                onTap: telaInterna is DetalheLojaScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : telaInterna is AgendaEventosScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : telaInterna is ProdutosLojaScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : telaInterna is DetalheEventoScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : null,
+              ),
+
+              if (!carteiraIngressos)
+                _itemBarraNavegacao(
+                  index: 2,
+                  icone: _iconeCarteiraComBadge(
+                    selecionado: carteiraSelecionada,
+                    usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
+                  ),
+                  texto: 'Carteira',
+                  estaSelecionado: carteiraSelecionada,
+                  onTap: telaInterna is DetalheLojaScreen
+                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                      : telaInterna is AgendaEventosScreen
+                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                      : telaInterna is ProdutosLojaScreen
+                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                      : telaInterna is DetalheEventoScreen
+                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                      : null,
+                ),
+
+              Expanded(
+                child: ApiStatusIndicator(
+                  selecionado: coraAtiva,
+                  onTap: () => MainNavigationController.abrirTela(
+                    const AtendimentoCoraScreen(),
+                  ),
+                ),
               ),
             ],
           ),
-          child: SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                children: [
-                  _itemBarraNavegacao(
-                    index: 0,
-                    icone: Icon(
-                      homeSelecionada
-                          ? Icons.home_rounded
-                          : Icons.home_outlined,
-                    ),
-                    texto: 'Home',
-                    estaSelecionado: homeSelecionada,
-                  ),
-
-                  _itemBarraNavegacao(
-                    index: 1,
-                    icone: _iconeCarrinhoComBadge(
-                      selecionado: carrinhoSelecionado,
-                      usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
-                    ),
-                    texto: 'Carrinho',
-                    estaSelecionado: carrinhoSelecionado,
-                    onTap: telaInterna is DetalheLojaScreen
-                        ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                        : telaInterna is AgendaEventosScreen
-                        ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                        : telaInterna is ProdutosLojaScreen
-                        ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                        : telaInterna is DetalheEventoScreen
-                        ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                        : null,
-                  ),
-
-                  _itemBarraNavegacao(
-                    index: 2,
-                    icone: _iconeCarteiraComBadge(
-                      selecionado: carteiraSelecionada,
-                      usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
-                    ),
-                    texto: 'Carteira',
-                    estaSelecionado: carteiraSelecionada,
-                    onTap: telaInterna is DetalheLojaScreen
-                        ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                        : telaInterna is AgendaEventosScreen
-                        ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                        : telaInterna is ProdutosLojaScreen
-                        ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                        : telaInterna is DetalheEventoScreen
-                        ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                        : null,
-                  ),
-
-                  Expanded(
-                    child: ApiStatusIndicator(
-                      selecionado: coraAtiva,
-                      onTap: () => MainNavigationController.abrirTela(
-                        const AtendimentoCoraScreen(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -749,7 +730,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 child: telaInterna ?? _buildPage(),
               ),
               bottomNavigationBar: manterNavegacaoVisivel
-                  ? _barraNavegacao()
+                  ? _barraNavegacao(telaInterna)
                   : null,
             );
           },
