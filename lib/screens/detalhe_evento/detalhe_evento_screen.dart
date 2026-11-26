@@ -833,91 +833,100 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
             ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Card(
-            child: ListTile(
-              leading: widget.imagemEvento.trim().isEmpty
-                  ? const Icon(Icons.event_outlined)
-                  : Image.network(
-                      widget.imagemEvento,
-                      width: 56,
-                      fit: BoxFit.cover,
+          ClubbarPageHeader(
+            titulo: widget.nomeEvento,
+            subtitulo: widget.dataEvento,
+            imagemAvatarUrl: widget.imagemEvento,
+            icone: Icons.event_outlined,
+            avatarRetangular: true,
+            larguraAvatar: 56,
+            maxLinhasTitulo: 2,
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              'Ingressos adicionados',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                ...itens.map(
+                  (item) => Card(
+                    child: ListTile(
+                      title: Text(
+                        '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'}',
+                      ),
+                      subtitle: Text(
+                        '${item['nome_setor'] ?? 'Setor'} · ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
+                      ),
+                      trailing: IconButton(
+                        tooltip: 'Excluir ingresso',
+                        icon: const Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: removendo
+                            ? null
+                            : () async {
+                                setState(() => removendo = true);
+                                setState(
+                                  () => itens.removeWhere(
+                                    (outro) =>
+                                        '${outro['reserva_ingresso_id']}' ==
+                                        '${item['reserva_ingresso_id']}',
+                                  ),
+                                );
+                                try {
+                                  await widget.onRemover(item);
+                                } catch (_) {
+                                  if (mounted) setState(() => itens.add(item));
+                                } finally {
+                                  if (mounted) setState(() => removendo = false);
+                                }
+                              },
+                      ),
                     ),
-              title: Text(
-                widget.nomeEvento,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              subtitle: Text(widget.dataEvento),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Ingressos adicionados',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 8),
-          ...itens.map(
-            (item) => Card(
-              child: ListTile(
-                title: Text(
-                  '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'}',
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Total: ${ValueFormatters.moeda(total)}',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
                 ),
-                subtitle: Text(
-                  '${item['nome_setor'] ?? 'Setor'} · ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
-                ),
-                trailing: IconButton(
-                  tooltip: 'Excluir ingresso',
-                  icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  onPressed: removendo
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed: itens.isEmpty
                       ? null
-                      : () async {
-                          setState(() => removendo = true);
-                          setState(
-                            () => itens.removeWhere(
-                              (outro) =>
-                                  '${outro['reserva_ingresso_id']}' ==
-                                  '${item['reserva_ingresso_id']}',
-                            ),
-                          );
-                          try {
-                            await widget.onRemover(item);
-                          } catch (_) {
-                            if (mounted) setState(() => itens.add(item));
-                          } finally {
-                            if (mounted) setState(() => removendo = false);
-                          }
-                        },
+                      : () => widget.onInformarParticipante(itens),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFC107),
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text('Continuar - Informar participante'),
                 ),
-              ),
+                const SizedBox(height: 10),
+                OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFF3CD),
+                    foregroundColor: const Color(0xFF806000),
+                    side: const BorderSide(color: Color(0xFFFFC107)),
+                  ),
+                  child: const Text('Adicionar ingresso'),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Total: ${ValueFormatters.moeda(total)}',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 20),
-          FilledButton(
-            onPressed: itens.isEmpty
-                ? null
-                : () => widget.onInformarParticipante(itens),
-            style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFFFC107),
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('Continuar - Informar participante'),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton(
-            onPressed: () => Navigator.pop(context, false),
-            style: OutlinedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFF3CD),
-              foregroundColor: const Color(0xFF806000),
-              side: const BorderSide(color: Color(0xFFFFC107)),
-            ),
-            child: const Text('Adicionar ingresso'),
           ),
         ],
       ),
