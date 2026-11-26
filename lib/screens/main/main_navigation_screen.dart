@@ -156,7 +156,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _barraNavegacao(Widget? telaInterna) {
-    final carteiraIngressos = telaInterna is CarteiraIngressosScreen;
+    final itensDaCarteira =
+        telaInterna is CarteiraIngressosScreen ||
+        telaInterna is CarteiraLojaScreen;
     final coraAtiva = telaInterna is AtendimentoCoraScreen;
     final carteiraDaLoja =
         telaInterna is CarteiraScreen && telaInterna.lojaSelecionadaId != null;
@@ -172,12 +174,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         currentIndex == 0 &&
         !coraAtiva &&
         !carteiraDaLoja &&
-        !carteiraIngressos &&
+        !itensDaCarteira &&
         !carrinhoDaLoja;
     final carrinhoSelecionado =
         (currentIndex == 1 || carrinhoDaLoja) &&
         !coraAtiva &&
-        !carteiraIngressos;
+        !itensDaCarteira;
     final carteiraSelecionada =
         (currentIndex == 2 || carteiraDaLoja) && !coraAtiva;
 
@@ -227,7 +229,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     : null,
               ),
 
-              if (!carteiraIngressos)
+              if (!itensDaCarteira)
                 _itemBarraNavegacao(
                   index: 2,
                   icone: _iconeCarteiraComBadge(
