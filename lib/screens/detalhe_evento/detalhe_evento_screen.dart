@@ -796,11 +796,20 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
           const SizedBox(height: 20),
           FilledButton(
             onPressed: itens.isEmpty ? null : widget.onInformarParticipante,
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFFFC107),
+              foregroundColor: Colors.black,
+            ),
             child: const Text('Continuar - Informar participante'),
           ),
           const SizedBox(height: 10),
           OutlinedButton(
             onPressed: () => Navigator.pop(context, false),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFF3CD),
+              foregroundColor: const Color(0xFF806000),
+              side: const BorderSide(color: Color(0xFFFFC107)),
+            ),
             child: const Text('Adicionar ingresso'),
           ),
         ],
