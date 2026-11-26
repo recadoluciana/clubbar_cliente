@@ -995,7 +995,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
     }
   }
 
-  Future<void> atualizarLotes() async {
+  Future<void> atualizarLotes({bool mostrarConfirmacao = true}) async {
     if (atualizandoLotes) return;
     setState(() => atualizandoLotes = true);
     try {
@@ -1006,7 +1006,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
         _statusLotes.clear();
       });
       await carregarStatusLotes();
-      if (mounted) {
+      if (mounted && mostrarConfirmacao) {
         AppSnackBar.sucesso(context, 'Informações dos lotes atualizadas.');
       }
     } catch (e) {
@@ -1652,7 +1652,7 @@ class _DetalheEventoScreenState extends State<DetalheEventoScreen> {
       AppSnackBar.sucesso(context, 'Ingresso adicionado.');
       // A inclusão já reserva o estoque no servidor. Recarrega a mesma fonte
       // usada pelo botão "Atualizar" para refletir imediatamente o saldo.
-      await atualizarLotes();
+      await atualizarLotes(mostrarConfirmacao: false);
     } catch (e) {
       if (mounted) {
         if (apiService.erroDeSessao(e)) {
