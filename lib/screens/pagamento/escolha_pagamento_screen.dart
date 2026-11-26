@@ -252,9 +252,17 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   Future<void> _encerrarReservaComAviso(PrazoExpiradoTipo tipo) async {
     _reservaExpirada = true;
     final navigator = Navigator.of(context);
+    final navigatorPrincipal = Navigator.of(context, rootNavigator: true);
+    final rotaPrincipal = ModalRoute.of(navigator.context);
     final rotaAtual = ModalRoute.of(context);
     await mostrarPrazoExpirado(context, tipo: tipo);
     if (!mounted) return;
+    if (!identical(navigator, navigatorPrincipal)) {
+      // Fecha também um checkout aberto por cima do fluxo do evento.
+      navigatorPrincipal.popUntil(
+        (rota) => rota == rotaPrincipal || rota.isFirst,
+      );
+    }
     navigator.popUntil((rota) => rota == rotaAtual || rota.isFirst);
     if (mounted && rotaAtual?.isFirst != true) navigator.pop(false);
   }
@@ -438,7 +446,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       ),
     );
     if (atualizar == true && mounted) {
-      await Navigator.of(context).push(
+      await Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute<void>(
           builder: (_) => DadosPessoaisScreen(
             abertaComoRota: true,
@@ -1144,8 +1152,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         );
       }
       if (!mounted) return;
-      final dados = await Navigator.push<Map<String, dynamic>>(
+      final dados = await Navigator.of(
         context,
+        rootNavigator: true,
+      ).push<Map<String, dynamic>>(
         MaterialPageRoute(
           builder: (_) => MercadoPagoBrickScreen(
             publicKey: publicKey,
@@ -1202,8 +1212,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       }
       final perfil = await apiService.buscarMeuPerfil();
       if (!mounted) return;
-      final tokenizado = await Navigator.push<MercadoPagoCardData>(
+      final tokenizado = await Navigator.of(
         context,
+        rootNavigator: true,
+      ).push<MercadoPagoCardData>(
         MaterialPageRoute(
           builder: (_) => MercadoPagoCardScreen(
             publicKey: publicKey,
@@ -1272,8 +1284,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     if (metodo.toUpperCase() == 'PIX' && codigoPix.isNotEmpty) {
       if (!mounted) return;
       if (widget.reservaIngressoId != null) _timerReserva?.cancel();
-      final reservaEncerrada = await Navigator.push<bool>(
+      final reservaEncerrada = await Navigator.of(
         context,
+        rootNavigator: true,
+      ).push<bool>(
         MaterialPageRoute(
           builder: (_) => PixPagamentoScreen(
             loja: widget.loja,
@@ -1311,8 +1325,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       await launchUrl(Uri.parse(checkoutUrl), webOnlyWindowName: '_self');
       return;
     }
-    final resultado = await Navigator.push<bool>(
+    final resultado = await Navigator.of(
       context,
+      rootNavigator: true,
+    ).push<bool>(
       MaterialPageRoute(
         builder: (_) => AsaasCheckoutScreen(
           url: checkoutUrl,
@@ -1369,9 +1385,10 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
   void _voltarParaLojaComPagamentoConfirmado() {
     final messenger = ScaffoldMessenger.of(context);
+    final navigatorPrincipal = Navigator.of(context, rootNavigator: true);
     MainNavigationController.limparTelasInternas();
     MainNavigationController.abrirTela(DetalheLojaScreen(loja: widget.loja));
-    Navigator.of(context).popUntil((rota) => rota.isFirst);
+    navigatorPrincipal.popUntil((rota) => rota.isFirst);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (messenger.mounted) {
         AppSnackBar.sucessoNoMessenger(
@@ -1483,8 +1500,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             );
       if (!mounted) return;
       if (widget.reservaIngressoId != null) _timerReserva?.cancel();
-      final resultadoPix = await Navigator.push(
-        context,
+      final resultadoPix = await Navigator.of(context, rootNavigator: true).push(
         MaterialPageRoute(
           builder: (_) => PixPagamentoScreen(
             loja: widget.loja,
@@ -1586,8 +1602,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (kIsWeb) {
         await launchUrl(Uri.parse(checkoutUrl), webOnlyWindowName: '_self');
       } else {
-        final resultado = await Navigator.push(
-          context,
+        final resultado = await Navigator.of(context, rootNavigator: true).push(
           MaterialPageRoute(
             builder: (_) => AsaasCheckoutScreen(
               url: checkoutUrl.toString(),
@@ -2060,8 +2075,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
 
           TextButton.icon(
             onPressed: () {
-              Navigator.push(
-                context,
+              Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(
                   builder: (_) => PoliticaCompraScreen(
                     tipo: compraDeProdutos ? 'PRODUTO' : 'INGRESSO',
