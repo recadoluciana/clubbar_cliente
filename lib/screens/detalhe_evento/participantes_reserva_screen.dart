@@ -423,17 +423,6 @@ class _ParticipantesReservaScreenState
     final lote = '${item['nome_lote'] ?? ''}'.trim();
     final setor = '${item['nome_setor'] ?? ''}'.trim();
     final modalidade = '${item['nome_modalidade'] ?? ''}'.trim();
-    final nomeNormalizado = modalidade.toLowerCase();
-    final Color corModalidade;
-    if (nomeNormalizado.contains('cortesia')) {
-      corModalidade = Colors.green.shade700;
-    } else if (nomeNormalizado.contains('meia')) {
-      corModalidade = Colors.blue.shade700;
-    } else if (nomeNormalizado.contains('inteira')) {
-      corModalidade = Colors.amber.shade900;
-    } else {
-      corModalidade = Colors.black;
-    }
     final primeiraLinha = [
       if (lote.isNotEmpty) 'Lote: $lote',
       if (setor.isNotEmpty) 'Setor: $setor',
@@ -448,9 +437,9 @@ class _ParticipantesReservaScreenState
           if (primeiraLinha.isNotEmpty) primeiraLinha.join('  •  '),
           if (modalidade.isNotEmpty) 'Modalidade: $modalidade',
         ].join('\n'),
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14,
-          color: corModalidade,
+          color: Colors.black,
           fontWeight: FontWeight.w600,
         ),
       ),
