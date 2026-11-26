@@ -564,13 +564,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       CartBadgeNotifier.atualizar(quantidade);
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => PagamentoSucessoScreen(
-            tituloSucesso: 'Cortesia resgatada com sucesso',
-            descricaoSucesso: 'Acompanhe seus produtos pela sua carteira.',
-            lojaDestino: widget.loja,
-          ),
+      PagamentoSucessoScreen.abrirResgate(
+        context,
+        tela: PagamentoSucessoScreen(
+          tituloSucesso: 'Cortesia resgatada com sucesso',
+          descricaoSucesso: 'Acompanhe seus produtos pela sua carteira.',
+          lojaDestino: widget.loja,
         ),
       );
     } catch (e) {

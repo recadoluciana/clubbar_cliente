@@ -715,6 +715,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 telaInterna is AgendaEventosScreen ||
                 telaInterna is ProdutosLojaScreen ||
                 telaInterna is CortesiasDisponiveisScreen ||
+                telaInterna is PagamentoSucessoScreen ||
                 telaInterna is CarteiraScreen ||
                 telaInterna is CarteiraLojaScreen ||
                 telaInterna is CarteiraIngressosScreen;

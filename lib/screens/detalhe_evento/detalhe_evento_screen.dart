@@ -1867,6 +1867,15 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           nomeSetor: 'Modalidades selecionadas',
           modalidade: 'Compra do evento',
           beneficios: _beneficiosDaCompra(reserva),
+          onReservaConcluida: () {
+            _timerReservaSacola?.cancel();
+            if (!mounted) return;
+            // A compra confirmada não é uma reserva abandonada ao sair.
+            setState(() {
+              _compraEvento = null;
+              _segundosReservaSacola = 0;
+            });
+          },
         ),
       ),
     );

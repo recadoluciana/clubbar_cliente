@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:clubbar_cliente/models/loja.dart';
 import 'package:clubbar_cliente/screens/atendimento_cora/atendimento_cora_screen.dart';
+import 'package:clubbar_cliente/screens/carrinho/carrinho_lojas_screen.dart';
 import 'package:clubbar_cliente/screens/carrinho/carrinho_screen.dart';
 import 'package:clubbar_cliente/screens/carteira/carteira_screen.dart';
 import 'package:clubbar_cliente/screens/detalhe_evento/detalhe_evento_screen.dart';
 import 'package:clubbar_cliente/screens/detalhe_evento/participantes_reserva_screen.dart';
+import 'package:clubbar_cliente/screens/detalhe_loja/detalhe_loja_screen.dart';
 import 'package:clubbar_cliente/screens/home/home_screen.dart';
 import 'package:clubbar_cliente/screens/main/main_navigation_screen.dart';
 import 'package:clubbar_cliente/screens/pagamento/escolha_pagamento_screen.dart';
@@ -452,8 +454,17 @@ void main() {
     }
   }
 
-  for (final fluxo in ['retorno', 'cortesia', 'pix pago']) {
-    final cortesia = fluxo == 'cortesia';
+  for (final fluxo in [
+    'retorno',
+    'cortesia',
+    'cortesia Home',
+    'cortesia Carrinho',
+    'cortesia Carteira',
+    'cortesia Cora responde',
+    'cortesia Voltar para Casa',
+    'pix pago',
+  ]) {
+    final cortesia = fluxo.startsWith('cortesia');
     testWidgets('participantes continuam para $fluxo', (tester) async {
       var statusPagamento = 'PENDENTE';
       await executar(
@@ -488,9 +499,18 @@ void main() {
             {'nome': 'Participante Teste', 'cpf': '12345678909'},
           ]);
           if (cortesia) {
-            expect(find.text('Home'), findsNothing);
+            for (final item in [
+              'Home',
+              'Carrinho',
+              'Carteira',
+              'Cora responde',
+            ]) {
+              expect(find.text(item), findsOneWidget);
+            }
             expect(find.byType(PagamentoSucessoScreen), findsOneWidget);
             expect(find.text('Resgate realizado com sucesso'), findsOneWidget);
+            expect(find.text('Festival'), findsOneWidget);
+            expect(find.text('🎉'), findsOneWidget);
             expect(
               find.byType(ParticipantesReservaScreen, skipOffstage: false),
               findsNothing,
@@ -499,6 +519,47 @@ void main() {
               find.byType(MainNavigationScreen, skipOffstage: false),
               findsOneWidget,
             );
+            final destino = fluxo == 'cortesia'
+                ? 'Voltar do sistema'
+                : fluxo.substring('cortesia '.length);
+            if (destino == 'Voltar do sistema') {
+              await tester.binding.handlePopRoute();
+            } else {
+              await tester.tap(find.text(destino));
+            }
+            // Home tem animação contínua e Cora pode retornar à confirmação.
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 500));
+            await tester.pump();
+            expect(find.byType(PagamentoSucessoScreen), findsNothing);
+            expect(
+              find.byType(ParticipantesReservaScreen, skipOffstage: false),
+              findsNothing,
+            );
+            expect(
+              find.byType(MainNavigationScreen, skipOffstage: false),
+              findsOneWidget,
+            );
+            switch (destino) {
+              case 'Home':
+              case 'Voltar do sistema':
+                expect(find.byType(HomeScreen), findsOneWidget);
+              case 'Carrinho':
+                expect(find.byType(CarrinhoLojasScreen), findsOneWidget);
+              case 'Carteira':
+                expect(find.byType(CarteiraScreen), findsOneWidget);
+              case 'Cora responde':
+                expect(find.byType(AtendimentoCoraScreen), findsOneWidget);
+              case 'Voltar para Casa':
+                expect(find.byType(DetalheLojaScreen), findsOneWidget);
+                expect(
+                  tester
+                      .widget<DetalheLojaScreen>(find.byType(DetalheLojaScreen))
+                      .loja
+                      .id,
+                  5,
+                );
+            }
           } else {
             for (final item in [
               'Home',
