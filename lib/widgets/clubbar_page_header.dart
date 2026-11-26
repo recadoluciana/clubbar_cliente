@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import '../core/theme/app_colors.dart';
 
 class ClubbarPageHeader extends StatelessWidget {
   final String titulo;
@@ -83,7 +84,7 @@ class ClubbarPageHeader extends StatelessWidget {
         color: Colors.white,
         shape: avatarRetangular ? BoxShape.rectangle : BoxShape.circle,
         borderRadius: avatarRetangular ? borda : null,
-        border: Border.all(color: Colors.amber.shade200, width: 2),
+        border: Border.all(color: AppColors.marromSuave.withValues(alpha: .35), width: 2),
       ),
       child: onVoltar != null
           ? IconButton(
@@ -183,7 +184,7 @@ class ClubbarPageHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFFFD54F), Color(0xFFFFECB3), Color(0xFFF6F6F6)],
+        colors: [AppColors.cremeCard, AppColors.cremeFundo, AppColors.cremeFundo],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(22),
