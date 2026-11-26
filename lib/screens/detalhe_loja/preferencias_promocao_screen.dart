@@ -142,6 +142,7 @@ class _PreferenciasPromocaoScreenState
         ),
       ],
       titulo: 'Notificações/e-mails',
+      tituloAlinhadoEsquerda: true,
       mostrarVoltar: true,
       mostrarSessao: false,
       mostrarCarrinho: false,

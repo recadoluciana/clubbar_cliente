@@ -157,6 +157,7 @@ class _AlterarSenhaScreenState extends State<AlterarSenhaScreen> {
 
       appBar: ClubbarAppBar(
         titulo: 'Alterar senha',
+        tituloAlinhadoEsquerda: true,
         iconeTitulo: Icons.password_rounded,
         corIconeTitulo: Colors.green,
         mostrarVoltar: true,
