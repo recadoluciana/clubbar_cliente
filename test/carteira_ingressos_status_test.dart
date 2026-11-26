@@ -18,12 +18,14 @@ void main() {
           onVoltar: () {},
           itens: [
             {
+              'evento_id': 10,
               'nmproduto': 'Cortesia',
               'tipopreco': 'CORTESIA',
               'qrtokenitvenda': 'um',
               'qtitvenda': 1,
             },
             {
+              'evento_id': 10,
               'nmproduto': 'Inteira',
               'tipopreco': 'INTEIRA',
               'qrtokenitvenda': 'dois',
@@ -34,6 +36,8 @@ void main() {
       ),
     );
     await tester.pump();
+    await tester.tap(find.text('Ver ingressos'));
+    await tester.pumpAndSettle();
     for (var i = 0; i < 2; i++) {
       await tester.tap(find.text('Exibir QR Code').at(i));
       await tester.pumpAndSettle();
@@ -89,6 +93,7 @@ void main() {
           itens: [
             {
               'itvenda_id': 1,
+              'evento_id': 10,
               'nmproduto': 'Ingresso cortesia',
               'nmpreco': 'Cortesia',
               'tipopreco': 'CORTESIA',
@@ -96,6 +101,7 @@ void main() {
             },
             {
               'itvenda_id': 2,
+              'evento_id': 10,
               'nmproduto': 'Ingresso meia',
               'nmpreco': 'Meia-entrada',
               'tipopreco': 'MEIA',
@@ -103,6 +109,7 @@ void main() {
             },
             {
               'itvenda_id': 3,
+              'evento_id': 10,
               'nmproduto': 'Ingresso legado',
               'nmpreco': 'Inteira',
               'tipopreco': 'INTEIRA',
@@ -115,6 +122,8 @@ void main() {
       ),
     );
     await tester.pump();
+    await tester.tap(find.text('Ver ingressos'));
+    await tester.pumpAndSettle();
     Color corBorda(int id) {
       final cartao = tester.widget<Container>(
         find.byKey(ValueKey('ingresso-$id')),
@@ -194,10 +203,12 @@ void main() {
       await tester.pump();
       expect(
         find.text(
-          '1 ingresso disponível\nApresente o QR Code na portaria do evento',
+          '1 ingresso disponível\nSelecione um evento para ver seus ingressos.',
         ),
         findsOneWidget,
       );
+      await tester.tap(find.text('Ver ingressos'));
+      await tester.pumpAndSettle();
       final nome = find.text('Ana Beatriz de Oliveira Silva');
       final cpf = find.text('CPF: 123.456.789-09');
       final acao = find.byTooltip('Transferir participante');
@@ -247,6 +258,8 @@ void main() {
       ),
     );
     await tester.pump();
+    await tester.tap(find.text('Ver ingressos'));
+    await tester.pumpAndSettle();
     expect(find.text('Festival'), findsOneWidget);
     expect(find.text('Meia-entrada • Estudante'), findsOneWidget);
     expect(find.text('Local'), findsOneWidget);
@@ -290,6 +303,8 @@ void main() {
         ),
       );
       await tester.pump();
+      await tester.tap(find.text('Ver ingressos'));
+      await tester.pumpAndSettle();
       expect(find.text('Cortesia'), findsOneWidget);
       expect(find.text('Não informado'), findsNWidgets(3));
     },

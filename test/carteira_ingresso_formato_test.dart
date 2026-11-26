@@ -42,6 +42,9 @@ void main() {
       );
       await tester.pump();
       expect(find.text('Festival'), findsOneWidget);
+      expect(find.text('Ana Beatriz'), findsNothing);
+      await tester.tap(find.text('Ver ingressos'));
+      await tester.pumpAndSettle();
       expect(find.text('Setor: Pista'), findsOneWidget);
       expect(find.text('13/12/2026 13:00'), findsOneWidget);
       expect(find.text('06/11/2026 15:57'), findsOneWidget);
