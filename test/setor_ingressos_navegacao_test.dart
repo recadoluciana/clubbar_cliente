@@ -97,6 +97,7 @@ void main() {
       'itens': [
         {
           'reserva_ingresso_id': 30,
+          'lotepreco_id': 1,
           'quantidade': 1,
           'nome_modalidade': modalidade,
           'nome_setor': 'Pista',
@@ -152,6 +153,7 @@ void main() {
           for (var i = 0; i < (selecionado['quantidade'] as int); i++) {
             itens.add({
               'reserva_ingresso_id': 30 + itens.length,
+              'lotepreco_id': selecionado['lotepreco_id'],
               'quantidade': 1,
               'nome_modalidade': modalidade,
               'nome_setor': selecionado['lote_id'] == 1 ? 'Pista' : 'VIP',
@@ -341,7 +343,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Aumentar quantidade'));
       await tester.pump();
-      await tester.tap(find.text('Comprar 1 ingresso'));
+      await tester.tap(find.text('Comprar 2 ingressos'));
       await tester.pumpAndSettle();
       expect(tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva, prazo);
       expect(find.text('Pessoa Teste'), findsOneWidget);
@@ -611,6 +613,40 @@ void main() {
       expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
       expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo'), hasLength(1));
     }, setorUnico: true, segundosReserva: 600);
+  });
+
+  testWidgets('quantidade reservada permanece ao voltar ao evento e pode ser removida', (tester) async {
+    await executar(tester, (requests) async {
+      final aumentar = find.byTooltip('Aumentar quantidade');
+      await tester.ensureVisible(aumentar);
+      await tester.tap(aumentar);
+      await tester.pump();
+      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      final controle = find.ancestor(of: find.byTooltip('Diminuir quantidade'), matching: find.byType(Row)).first;
+      expect(find.descendant(of: controle, matching: find.text('1')), findsOneWidget);
+      await tester.tap(find.byTooltip('Diminuir quantidade'));
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: controle, matching: find.text('0')), findsOneWidget);
+      expect(find.text('Comprar ingresso (0)'), findsOneWidget);
+      expect(requests.where((r) => r.method == 'DELETE' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos/30'), hasLength(1));
+    }, setorUnico: true);
+  });
+
+  testWidgets('quantidade reservada permanece ao voltar ao setor', (tester) async {
+    await executar(tester, (_) async {
+      await selecionarEComprar(tester);
+      await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      final controle = find.ancestor(of: find.byTooltip('Diminuir quantidade'), matching: find.byType(Row)).first;
+      expect(find.descendant(of: controle, matching: find.text('1')), findsOneWidget);
+      expect(find.text('Comprar 1 ingresso'), findsOneWidget);
+      await tester.tap(find.text('Comprar 1 ingresso'));
+      await tester.pumpAndSettle();
+      expect(find.text('Participante 1'), findsOneWidget);
+    });
   });
 
   testWidgets('detalhe direto mostra total na linha do preço e quantidade', (tester) async {
