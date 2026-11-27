@@ -86,7 +86,8 @@ class _ObservadorNavegacaoEvento extends NavigatorObserver {
 
   void _atualizar(Route<dynamic>? rota) {
     final ocultar = rota?.settings.name == 'conferir-sacola' ||
-        rota?.settings.name == 'detalhe-evento';
+        rota?.settings.name == 'detalhe-evento' ||
+        rota?.settings.name == 'setor-ingressos';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_ativo) MainNavigationController.ocultarBarra.value = ocultar;
     });
@@ -201,8 +202,6 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final Map<String, dynamic>? compraEvento;
   final int Function() segundosReserva;
   final void Function(BuildContext) verificarExpiracao;
-  final int Function() quantidadeSacola;
-  final Future<void> Function()? onSacolaTap;
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
@@ -223,8 +222,6 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     this.compraEvento,
     required this.segundosReserva,
     required this.verificarExpiracao,
-    required this.quantidadeSacola,
-    this.onSacolaTap,
   });
 
   @override
@@ -308,78 +305,28 @@ class _ModalidadesIngressoScreenState
                 ],
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IconButton(
-                  tooltip: 'Conferir sacola',
-                  onPressed: widget.onSacolaTap == null
-                      ? null
-                      : () async {
-                          await widget.onSacolaTap!();
-                          if (mounted) setState(() {});
-                        },
-                  icon: const Icon(
-                    Icons.shopping_bag_outlined,
-                    color: Colors.white,
-                  ),
-                ),
-                if (widget.quantidadeSacola() > 0)
-                  Positioned(
-                    right: 2,
-                    top: 3,
-                    child: IgnorePointer(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 2,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          widget.quantidadeSacola() > 99
-                              ? '99+'
-                              : '${widget.quantidadeSacola()}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
         ],
       ),
-      bottomNavigationBar: widget.totalSelecionado() > 0
-          ? SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: FilledButton(
-                  onPressed: _processando ? null : () async {
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: FilledButton(
+            onPressed: _processando || widget.totalSelecionado() == 0
+                ? null
+                : () async {
                     setState(() => _processando = true);
-                    try { await widget.onComprarSelecionados(); }
-                    finally { if (mounted) setState(() => _processando = false); }
+                    try {
+                      await widget.onComprarSelecionados();
+                    } finally {
+                      if (mounted) setState(() => _processando = false);
+                    }
                   },
-                  style: FilledButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
-                  child: Text('Comprar ${widget.totalSelecionado()} ${widget.totalSelecionado() == 1 ? 'ingresso' : 'ingressos'}'),
-                ),
-              ),
-            )
-          : null,
+            style: FilledButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+            child: Text('Comprar ingressos (${widget.totalSelecionado()})'),
+          ),
+        ),
+      ),
       body: Column(
         children: [
           ClubbarPageHeader(
@@ -683,6 +630,11 @@ class _ModalidadesIngressoScreenState
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFFFE082)),
+      ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
         child: Column(
@@ -2067,13 +2019,14 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         ),
       ),
     );
-    if (mounted && _compraEvento != null) {
-      setState(() => _segundosReservaSacola = _tempoRestanteSacola());
+    if (mounted) {
+      // A confirmação do participante pertence à tela anterior e não deve
+      // cobrir o botão de compra ao retornar à seleção.
+      ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+      if (_compraEvento != null) {
+        setState(() => _segundosReservaSacola = _tempoRestanteSacola());
+      }
     }
-  }
-
-  Future<void> _verIngressosSacola({bool confirmar = false}) async {
-    await _abrirCompraEvento();
   }
 
   Future<void> _removerItemSacola(Map<String, dynamic> item) async {
@@ -2402,9 +2355,6 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           compraEvento: _compraEvento,
           segundosReserva: () => _segundosReservaSacola,
           verificarExpiracao: (tela) => unawaited(_verificarExpiracaoNaSelecao(tela)),
-          quantidadeSacola: () =>
-              int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0,
-          onSacolaTap: () => _verIngressosSacola(confirmar: true),
         ),
       ),
     );
@@ -2424,6 +2374,11 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFFFE082)),
+      ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () => _abrirModalidadesDoSetor(opcoes),
