@@ -16,6 +16,7 @@ import 'package:clubbar_cliente/screens/pagamento/pagamento_sucesso_screen.dart'
 import 'package:clubbar_cliente/screens/pagamento/pix_pagamento_screen.dart';
 import 'package:clubbar_cliente/services/main_navigation_controller.dart';
 import 'package:clubbar_cliente/widgets/clubbar_page_header.dart';
+import 'package:clubbar_cliente/widgets/clubbar_app_bar.dart';
 import 'package:clubbar_cliente/utils/value_formatters.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -65,6 +66,8 @@ void main() {
     String provedor = 'MERCADO_PAGO',
     String Function()? statusPagamento,
     int segundosReserva = 900,
+    int? segundosStatus,
+    bool Function()? statusFalhou,
     bool Function()? reservaExpirada,
     bool respostaExclusaoDesatualizada = false,
     bool cortesiaComPrecoIncorreto = false,
@@ -105,6 +108,9 @@ void main() {
       requests.add(request);
       final path = request.url.path;
       final Object resposta;
+      if (path == '/reservas-ingressos/30/status' && statusFalhou?.call() == true) {
+        return http.Response(jsonEncode({'detail': 'Sem conexão'}), 500);
+      }
       if (path == '/reservas-ingressos/30/cotacao-mercado-pago' && cotacaoFalhou?.call() == true) {
         return http.Response(jsonEncode({'detail': 'Erro na cotação'}), 500);
       }
@@ -152,6 +158,7 @@ void main() {
           path == '/reservas-ingressos/30/status') {
         resposta = {
           ...reserva,
+          if (segundosStatus != null) 'segundos_restantes': segundosStatus,
           if (reservaExpirada?.call() == true) ...{
             'status': 'EXPIRADA',
             'segundos_restantes': 0,
@@ -307,6 +314,61 @@ void main() {
       expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento'), hasLength(2));
       expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos'), isEmpty);
     }, respostaExclusaoDesatualizada: true);
+  });
+
+  testWidgets('idas e voltas preservam o mesmo prazo entre todas as telas', (tester) async {
+    await executar(tester, (_) async {
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      final prazo = tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva;
+      expect(prazo, isNotNull);
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.text('Continuar para pagamento'));
+        await tester.pumpAndSettle();
+        expect(tester.widget<EscolhaPagamentoScreen>(find.byType(EscolhaPagamentoScreen)).reservaExpiracao, prazo);
+        await tester.binding.handlePopRoute();
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Adicionar mais ingressos'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('Conferir sacola'));
+        await tester.pumpAndSettle();
+        expect(tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva, prazo);
+        expect(find.text('Pessoa Teste'), findsOneWidget);
+      }
+    }, segundosReserva: 840, segundosStatus: 900);
+  });
+
+  testWidgets('contador continua ao voltar sem resposta do servidor', (tester) async {
+    var falhou = false;
+    await executar(tester, (_) async {
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      falhou = true;
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      int segundosNoTopo() {
+        final texto = tester.widget<Text>(find.descendant(
+          of: find.byType(ClubbarAppBar),
+          matching: find.byWidgetPredicate((widget) => widget is Text && RegExp(r'^\d{2}:\d{2}$').hasMatch(widget.data ?? '')),
+        )).data!;
+        final partes = texto.split(':').map(int.parse).toList();
+        return partes[0] * 60 + partes[1];
+      }
+      final antes = segundosNoTopo();
+      await tester.runAsync(() => Future<void>.delayed(const Duration(seconds: 2)));
+      await tester.pump(const Duration(seconds: 1));
+      expect(segundosNoTopo(), lessThan(antes));
+    }, segundosReserva: 840, statusFalhou: () => falhou);
   });
 
   testWidgets('prazo expirado no pagamento limpa a sacola ao voltar', (tester) async {

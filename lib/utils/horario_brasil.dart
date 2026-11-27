@@ -5,6 +5,12 @@
 class HorarioBrasil {
   static const _deslocamentoUtc = Duration(hours: -3);
 
+  /// Exibe o mesmo segundo nas telas enquanto ainda há fração de tempo.
+  static int segundosRestantes(Duration restante) {
+    if (restante <= Duration.zero) return 0;
+    return (restante.inMilliseconds + 999) ~/ 1000;
+  }
+
   /// Retorna o horário atual de Brasília, independentemente do aparelho.
   static DateTime agora() => _comoDataCivil(DateTime.now().toUtc());
 

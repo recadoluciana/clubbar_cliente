@@ -17,6 +17,8 @@ import '../pagamento/pagamento_sucesso_screen.dart';
 class ParticipantesReservaScreen extends StatefulWidget {
   final Loja loja;
   final Map<String, dynamic> reserva;
+  final DateTime? prazoReserva;
+  final ValueChanged<DateTime>? onPrazoAlterado;
   final String nomeEvento;
   final String dataHoraEvento;
   final String imagemEventoUrl;
@@ -34,6 +36,8 @@ class ParticipantesReservaScreen extends StatefulWidget {
     super.key,
     required this.loja,
     required this.reserva,
+    this.prazoReserva,
+    this.onPrazoAlterado,
     required this.nomeEvento,
     required this.dataHoraEvento,
     this.imagemEventoUrl = '',
@@ -109,7 +113,7 @@ class _ParticipantesReservaScreenState
       beneficiosParticipantes.add(salvo?['beneficio_id'] as int?);
     }
     expiraEm =
-        _expiracaoDaResposta(widget.reserva) ??
+        widget.prazoReserva ?? _expiracaoDaResposta(widget.reserva) ??
         HorarioBrasil.agora().add(const Duration(minutes: 15));
     _tick();
     timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
@@ -121,6 +125,15 @@ class _ParticipantesReservaScreenState
       return HorarioBrasil.agora().add(Duration(seconds: segundos));
     }
     return HorarioBrasil.deTextoBrasil(reserva['data_expiracao']);
+  }
+
+  void _sincronizarPrazo(DateTime prazo, {bool permitirProrrogacao = false}) {
+    // O servidor envia segundos inteiros. Ignora até dois segundos de diferença
+    // de arredondamento para não perder tempo a cada ida e volta.
+    if (!permitirProrrogacao &&
+        !prazo.isBefore(expiraEm.subtract(const Duration(seconds: 2)))) return;
+    expiraEm = prazo;
+    widget.onPrazoAlterado?.call(prazo);
   }
 
   void _tick() {
@@ -164,7 +177,8 @@ class _ParticipantesReservaScreenState
       if (segundos != null &&
           segundos > 0 &&
           !{'EXPIRADA', 'CANCELADA'}.contains(situacao)) {
-        expiraEm = HorarioBrasil.agora().add(Duration(seconds: segundos));
+        _sincronizarPrazo(HorarioBrasil.agora().add(Duration(seconds: segundos)),
+            permitirProrrogacao: true);
         _tick();
         timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
         return;
@@ -323,9 +337,7 @@ class _ParticipantesReservaScreenState
         dadosParticipantes[i]['participantes'] = [_dadosConfirmados[i]];
       }
       final prazoConfirmado = _expiracaoDaResposta(reserva);
-      if (prazoConfirmado != null && prazoConfirmado.isBefore(expiraEm)) {
-        expiraEm = prazoConfirmado;
-      }
+      if (prazoConfirmado != null) _sincronizarPrazo(prazoConfirmado);
       if (reserva['gratuito'] == true || reserva['venda_id'] != null) {
         _reservaFinalizada = true;
         timer?.cancel();
@@ -351,6 +363,9 @@ class _ParticipantesReservaScreenState
             totalPagar: valorTotalComTaxa,
             reservaIngressoId: int.parse('${reserva['reserva_ingresso_id']}'),
             reservaExpiracao: expiraEm,
+            onPrazoReservaAlterado: (prazo) {
+              _sincronizarPrazo(prazo, permitirProrrogacao: true);
+            },
           ),
         ),
       );
@@ -372,14 +387,21 @@ class _ParticipantesReservaScreenState
             _reservaFinalizada = true;
             return;
           }
-          expiraEm = _expiracaoDaResposta(atual) ?? expiraEm;
+          final prazoAtual = _expiracaoDaResposta(atual);
+          if (prazoAtual != null) _sincronizarPrazo(prazoAtual);
           _tick();
           if (mounted && restante > Duration.zero) {
             timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
           }
         } catch (_) {
-          // Sem confirmação do servidor, não cancelamos uma reserva que pode
-          // ter sido prorrogada ou paga durante o checkout.
+          // Mantém o último prazo conhecido e retoma o relógio; a consulta
+          // será repetida ao vencer, sem cancelar por falha de conexão.
+          if (mounted) {
+            _tick();
+            if (restante > Duration.zero) {
+              timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+            }
+          }
         }
       }
     } catch (e) {
@@ -631,8 +653,9 @@ class _ParticipantesReservaScreenState
 
   @override
   Widget build(BuildContext context) {
-    final minutos = restante.inMinutes.toString().padLeft(2, '0');
-    final segundos = (restante.inSeconds % 60).toString().padLeft(2, '0');
+    final tempo = HorarioBrasil.segundosRestantes(restante);
+    final minutos = (tempo ~/ 60).toString().padLeft(2, '0');
+    final segundos = (tempo % 60).toString().padLeft(2, '0');
     final valorTotal = widget.onRemoverIngresso == null
         ? _valorTotalComTaxa(widget.reserva)
         : dadosParticipantes.fold<double>(0, (total, item) =>
