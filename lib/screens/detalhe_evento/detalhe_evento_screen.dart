@@ -599,6 +599,38 @@ class _ModalidadesIngressoScreenState
     );
     final totalPagar = (lote.preco + taxaUnitaria) * quantidade;
 
+    final botaoAdicionar = FilledButton.icon(
+      onPressed: !vendaDisponivel || _processando || !modalidadeDisponivel
+          ? null
+          : () async {
+              setState(() => _processando = true);
+              try {
+                await widget.onComprar(lote, quantidade);
+                if (mounted) {
+                  setState(() {});
+                }
+              } finally {
+                if (mounted) setState(() => _processando = false);
+              }
+            },
+      icon: Icon(
+        ehCortesia ? Icons.card_giftcard_outlined : Icons.add,
+        size: 17,
+      ),
+      label: Text(ehCortesia ? 'Resgatar' : 'Adicionar'),
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        backgroundColor: ehCortesia
+            ? Colors.green.shade700
+            : const Color(0xFFFFC107),
+        foregroundColor: ehCortesia ? Colors.white : Colors.black,
+        disabledBackgroundColor: Colors.grey.shade300,
+        disabledForegroundColor: Colors.grey.shade600,
+      ),
+    );
+
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
       child: Padding(
@@ -615,36 +647,44 @@ class _ModalidadesIngressoScreenState
               exigeComprovante: lote.exigeComprovante,
             ),
             const SizedBox(height: 8),
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 4,
+            Row(
               children: [
-                Text(
-                  _textoLimitePorTransacao(lote),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: ehCortesia ? Colors.black : Colors.black54,
+                Expanded(
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      Text(
+                        _textoLimitePorTransacao(lote),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: ehCortesia ? Colors.black : Colors.black54,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: corSituacao.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          textoSituacao,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: corSituacao,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: corSituacao.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    textoSituacao,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: corSituacao,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+                const SizedBox(width: 8),
+                botaoAdicionar,
               ],
             ),
             const SizedBox(height: 6),
@@ -705,39 +745,6 @@ class _ModalidadesIngressoScreenState
                         ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-                FilledButton.icon(
-                  onPressed:
-                      !vendaDisponivel || _processando || !modalidadeDisponivel
-                      ? null
-                      : () async {
-                          setState(() => _processando = true);
-                          try {
-                            await widget.onComprar(lote, quantidade);
-                            if (mounted) {
-                              setState(() {});
-                            }
-                          } finally {
-                            if (mounted) setState(() => _processando = false);
-                          }
-                        },
-                  icon: Icon(ehCortesia ? Icons.card_giftcard_outlined : Icons.add, size: 17),
-                  label: Text(ehCortesia ? 'Resgatar' : 'Adicionar'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    backgroundColor: ehCortesia
-                        ? const Color(0xFF5B9BD5)
-                        : const Color(0xFFFFC107),
-                    foregroundColor: ehCortesia ? Colors.white : Colors.black,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
                   ),
                 ),
               ],
@@ -2419,14 +2426,19 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
       onPressed: !vendaDisponivel || processandoCompra || !modalidadeDisponivel
           ? null
           : () => iniciarReserva(lote, quantidadeSelecionada: quantidade),
-      icon: Icon(ehCortesia ? Icons.card_giftcard_outlined : Icons.add, size: 17),
+      icon: Icon(
+        ehCortesia ? Icons.card_giftcard_outlined : Icons.add,
+        size: 17,
+      ),
       label: Text(ehCortesia ? 'Resgatar' : 'Adicionar'),
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        backgroundColor: const Color(0xFFFFC107),
-        foregroundColor: Colors.black,
+        backgroundColor: ehCortesia
+            ? Colors.green.shade700
+            : const Color(0xFFFFC107),
+        foregroundColor: ehCortesia ? Colors.white : Colors.black,
         disabledBackgroundColor: Colors.grey.shade300,
         disabledForegroundColor: Colors.grey.shade600,
       ),
@@ -2489,48 +2501,57 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                   ),
                 ),
               const SizedBox(height: 6),
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
+              Row(
                 children: [
-                  Text(
-                    _textoLimitePorTransacao(lote),
-                    style: const TextStyle(fontSize: 11, color: Colors.black54),
-                  ),
-                  Builder(
-                    builder: (context) {
-                      final situacao = lote.situacaoVendaEm(
-                        HorarioBrasil.agora(),
-                      );
-                      final cor = situacao == 'Disponível'
-                          ? Colors.green.shade700
-                          : Colors.red.shade700;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: cor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          situacao,
-                          style: TextStyle(
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          _textoLimitePorTransacao(lote),
+                          style: const TextStyle(
                             fontSize: 11,
-                            color: cor,
-                            fontWeight: FontWeight.w700,
+                            color: Colors.black54,
                           ),
                         ),
-                      );
-                    },
+                        Builder(
+                          builder: (context) {
+                            final situacao = lote.situacaoVendaEm(
+                              HorarioBrasil.agora(),
+                            );
+                            final cor = situacao == 'Disponível'
+                                ? Colors.green.shade700
+                                : Colors.red.shade700;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: cor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                situacao,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: cor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
+                  botaoAdicionar,
                 ],
               ),
               const SizedBox(height: 6),
-              if (ehCortesia)
-                Align(alignment: Alignment.centerRight, child: botaoAdicionar),
               if (!ehCortesia) ...[
                 Row(
                   children: [
@@ -2586,8 +2607,6 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    botaoAdicionar,
                   ],
                 ),
               ],
