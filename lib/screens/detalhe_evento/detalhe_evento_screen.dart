@@ -818,6 +818,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   bool _sacolaExpandida = false;
   bool _removendoItemSacola = false;
   Timer? _timerReservaSacola;
+  DateTime? _prazoReservaSacola;
   int _segundosReservaSacola = 0;
 
   @override
@@ -859,13 +860,19 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     if (segundos == null) return;
     _timerReservaSacola?.cancel();
     _segundosReservaSacola = segundos;
+    _prazoReservaSacola = HorarioBrasil.agora().add(Duration(seconds: segundos));
     _timerReservaSacola = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() {
-        _segundosReservaSacola = (_segundosReservaSacola - 1).clamp(0, 86400);
-      });
+      setState(() => _segundosReservaSacola = _tempoRestanteSacola());
       if (_segundosReservaSacola == 0) _timerReservaSacola?.cancel();
     });
+  }
+
+  int _tempoRestanteSacola() {
+    final prazo = _prazoReservaSacola;
+    if (prazo == null) return 0;
+    final milissegundos = prazo.difference(HorarioBrasil.agora()).inMilliseconds;
+    return ((milissegundos + 999) ~/ 1000).clamp(0, 86400);
   }
 
   Future<void> _carregarQuantidadesDaLoja() async {
@@ -1663,7 +1670,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
             );
       if (!mounted) return;
       final segundosRecebidos = int.tryParse('${compra['segundos_restantes']}');
-      final segundosAtuais = _segundosReservaSacola;
+      final segundosAtuais = _tempoRestanteSacola();
       setState(() => _compraEvento = compra);
       if (compraAtual == null) {
         _iniciarTimerReservaSacola(compra);
@@ -1806,7 +1813,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         <Map<String, dynamic>>[];
     final reserva = {
       ...compra,
-      'segundos_restantes': _segundosReservaSacola,
+      'segundos_restantes': _tempoRestanteSacola(),
       if (itens.isNotEmpty)
         'reserva_ingresso_id': itens.first['reserva_ingresso_id'],
       'itens': itens
@@ -1832,6 +1839,17 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           onParticipantesAlterados: (participantes) {
             if (_compraEvento?['compra_evento_id'] != compra['compra_evento_id']) return;
             _participantesDaSacola.addAll(participantes);
+          },
+          onReservaExpirada: () {
+            if (_compraEvento?['compra_evento_id'] != compra['compra_evento_id']) return;
+            _participantesDaSacola.clear();
+            _timerReservaSacola?.cancel();
+            if (!mounted) return;
+            setState(() {
+              _compraEvento = null;
+              _segundosReservaSacola = 0;
+            });
+            unawaited(atualizarLotes(mostrarConfirmacao: false));
           },
           onReservaConcluida: () {
             _participantesDaSacola.clear();

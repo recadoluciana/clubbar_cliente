@@ -62,6 +62,8 @@ void main() {
     bool cortesia = false,
     String provedor = 'MERCADO_PAGO',
     String Function()? statusPagamento,
+    int segundosReserva = 900,
+    bool Function()? reservaExpirada,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -75,7 +77,7 @@ void main() {
       'reserva_ingresso_id': 30,
       'cliente_id': 1,
       'quantidade': 1,
-      'segundos_restantes': 900,
+      'segundos_restantes': segundosReserva,
       'valor_total': valor,
       'status': 'PREENCHENDO',
       'itens': [
@@ -132,6 +134,10 @@ void main() {
           path == '/reservas-ingressos/30/status') {
         resposta = {
           ...reserva,
+          if (reservaExpirada?.call() == true) ...{
+            'status': 'EXPIRADA',
+            'segundos_restantes': 0,
+          },
           if (statusPagamento != null) 'status_pagamento': statusPagamento(),
         };
       } else if (path == '/clientes/me') {
@@ -245,7 +251,33 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('15:00'), findsNothing);
       expect(find.textContaining(RegExp(r'13:5[0-9]|14:00')), findsWidgets);
-    });
+    }, segundosReserva: 840);
+  });
+
+  testWidgets('prazo expirado no pagamento limpa a sacola ao voltar', (tester) async {
+    var expirou = false;
+    await executar(tester, (requests) async {
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
+      expirou = true;
+      await tester.runAsync(() => Future<void>.delayed(const Duration(seconds: 3)));
+      await tester.pump(const Duration(seconds: 2));
+      await tester.pumpAndSettle();
+      expect(find.text('O tempo para a compra expirou'), findsOneWidget);
+      await tester.tap(find.text('VOLTAR'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ParticipantesReservaScreen), findsNothing);
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento'), hasLength(2));
+    }, segundosReserva: 2, reservaExpirada: () => expirou);
   });
 
   testWidgets('salva participante na tela de conferência sem finalizar compra', (tester) async {
