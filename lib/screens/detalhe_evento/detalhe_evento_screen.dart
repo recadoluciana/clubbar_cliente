@@ -2231,9 +2231,10 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   Widget _cardSelecaoSetor(List<EventoLote> opcoes) {
     final lote = opcoes.first;
     final restantes = lote.qtDisponivel;
-    final temCortesiaDisponivel = opcoes.any(
-      (opcao) => _ehCortesia(opcao) && opcao.podeComprarEm(HorarioBrasil.agora()),
-    );
+    final agora = HorarioBrasil.agora();
+    final disponiveis = opcoes.where((opcao) => opcao.podeComprarEm(agora)).toList();
+    final temCortesiaDisponivel = disponiveis.any(_ehCortesia);
+    final precos = disponiveis.map((opcao) => _ehCortesia(opcao) ? 0.0 : opcao.preco).toList()..sort();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -2274,6 +2275,15 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                       '$restantes ${restantes == 1 ? 'restante' : 'restantes'}',
                       style: const TextStyle(fontSize: 12, color: Colors.blue),
                     ),
+                    if (precos.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        precos.first == precos.last
+                            ? 'Preço: ${ValueFormatters.moeda(precos.first)}'
+                            : 'Preços entre ${ValueFormatters.moeda(precos.first)} e ${ValueFormatters.moeda(precos.last)}',
+                        style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                      ),
+                    ],
                     if (temCortesiaDisponivel) ...[
                       const SizedBox(height: 4),
                       Row(
@@ -2330,6 +2340,14 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
               ),
             ),
           ],
+          if (temMaisDeUmSetor)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(2, 0, 2, 8),
+              child: Text(
+                'Selecione um setor',
+                style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+              ),
+            ),
           if (!temMaisDeUmSetor)
             cardLote(
               setores.single,

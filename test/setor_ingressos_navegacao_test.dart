@@ -76,6 +76,7 @@ void main() {
     void Function()? verificarSetores,
     double taxaMinima = 0,
     bool setorUnico = false,
+    bool variasModalidades = false,
     bool Function()? cotacaoFalhou,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
@@ -134,6 +135,8 @@ void main() {
               'qttotallote': 50,
               'precos': [
                 {'lotepreco_id': id, 'nmpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'Inteira' : modalidade, 'tipopreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'INTEIRA' : cortesia ? 'CORTESIA' : 'INTEIRA', 'vrpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 10 : valor, if (cortesiaEsgotada) 'qtdisponivelmodalidade': 0},
+                if (variasModalidades && id == 1) {'lotepreco_id': 101, 'nmpreco': 'Meia', 'tipopreco': 'MEIA', 'vrpreco': 5},
+                if (variasModalidades && id == 1) {'lotepreco_id': 102, 'nmpreco': 'Esgotado', 'tipopreco': 'INTEIRA', 'vrpreco': 99, 'qtdisponivelmodalidade': 0},
               ],
             },
         ];
@@ -560,6 +563,27 @@ void main() {
       await tester.pump();
       expect(find.text(ValueFormatters.moeda(25.98)), findsOneWidget);
     }, taxaMinima: 2.99);
+  });
+
+  testWidgets('setores mostram orientação e faixa de preços disponíveis', (tester) async {
+    await executar(tester, (_) async {}, variasModalidades: true,
+      verificarSetores: () {
+        final pista = find.ancestor(of: find.text('Setor: Pista'), matching: find.byType(Card)).first;
+        final vip = find.ancestor(of: find.text('Setor: VIP'), matching: find.byType(Card)).first;
+        expect(find.text('Selecione um setor'), findsOneWidget);
+        expect(find.descendant(of: pista, matching: find.text('Preços entre ' + ValueFormatters.moeda(5) + ' e ' + ValueFormatters.moeda(10))), findsOneWidget);
+        expect(find.descendant(of: vip, matching: find.text('Preço: ' + ValueFormatters.moeda(10))), findsOneWidget);
+        expect(find.textContaining('99,00'), findsNothing);
+      });
+  });
+
+  testWidgets('faixa inclui cortesia disponível com valor zero', (tester) async {
+    await executar(tester, (_) async {}, cortesia: true, variasModalidades: true,
+      verificarSetores: () {
+        final pista = find.ancestor(of: find.text('Setor: Pista'), matching: find.byType(Card)).first;
+        expect(find.descendant(of: pista, matching: find.text('Preços entre ' + ValueFormatters.moeda(0) + ' e ' + ValueFormatters.moeda(5))), findsOneWidget);
+        expect(find.descendant(of: pista, matching: find.text('Cortesia disponível')), findsOneWidget);
+      });
   });
 
   testWidgets('aviso de cortesia aparece apenas no setor disponível', (tester) async {
