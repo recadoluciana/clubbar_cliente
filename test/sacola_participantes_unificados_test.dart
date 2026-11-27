@@ -58,4 +58,32 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
     }, () => client);
   });
+  testWidgets('limite de ingressos oculta botão até remover participante', (tester) async {
+    SharedPreferences.setMockInitialValues({'cliente_id': 1});
+    final client = MockClient((request) async => http.Response('{}', 200));
+    await http.runWithClient(() async {
+      await tester.pumpWidget(MaterialApp(home: ParticipantesReservaScreen(
+        loja: Loja.fromJson({'loja_id': 5, 'organizacao_id': 1, 'nmloja': 'Casa'}),
+        nomeEvento: 'Festival', dataHoraEvento: '13/12/2026 13:00',
+        nomeLote: 'Lote', nomeSetor: 'Setor', modalidade: 'Inteira',
+        reserva: {
+          'reserva_ingresso_id': 30, 'compra_evento_id': 20, 'cliente_id': 1,
+          'segundos_restantes': 600, 'quantidade': 5, 'valor_total': 165,
+          'itens': List.generate(5, (i) => {
+            'reserva_ingresso_id': 30 + i, 'quantidade': 1, 'valor_total': 33,
+            'nome_modalidade': 'Inteira',
+          }),
+        },
+        onRemoverIngresso: (_) async {},
+      )));
+      await tester.pump();
+      expect(find.text('Adicionar mais ingressos'), findsNothing);
+      await tester.tap(find.byTooltip('Excluir ingresso').first);
+      await tester.pump();
+      expect(find.text('Adicionar mais ingressos'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }, () => client);
+  });
+
 }
