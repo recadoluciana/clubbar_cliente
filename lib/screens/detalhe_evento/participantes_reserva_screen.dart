@@ -25,6 +25,8 @@ class ParticipantesReservaScreen extends StatefulWidget {
   final String modalidade;
   final List<BeneficioIngresso> beneficios;
   final VoidCallback? onReservaConcluida;
+  final Map<String, Map<String, dynamic>> participantesSalvos;
+  final ValueChanged<Map<String, Map<String, dynamic>>>? onParticipantesAlterados;
 
   const ParticipantesReservaScreen({
     super.key,
@@ -38,6 +40,8 @@ class ParticipantesReservaScreen extends StatefulWidget {
     required this.modalidade,
     this.beneficios = const [],
     this.onReservaConcluida,
+    this.participantesSalvos = const {},
+    this.onParticipantesAlterados,
   });
 
   @override
@@ -82,12 +86,14 @@ class _ParticipantesReservaScreenState
       quantidade = dadosParticipantes.length;
     }
     for (var i = 0; i < quantidade; i++) {
-      nomes.add(TextEditingController());
-      cpfs.add(TextEditingController());
-      beneficiosParticipantes.add(null);
       if (dadosParticipantes.length <= i) {
         dadosParticipantes.add(widget.reserva);
       }
+      final reservaId = '${dadosParticipantes[i]['reserva_ingresso_id'] ?? ''}';
+      final salvo = widget.participantesSalvos[reservaId];
+      nomes.add(TextEditingController(text: salvo?['nome'] as String? ?? ''));
+      cpfs.add(TextEditingController(text: salvo?['cpf'] as String? ?? ''));
+      beneficiosParticipantes.add(salvo?['beneficio_id'] as int?);
     }
     expiraEm =
         _expiracaoDaResposta(widget.reserva) ??
@@ -171,6 +177,19 @@ class _ParticipantesReservaScreenState
   @override
   void dispose() {
     timer?.cancel();
+    if (!_reservaFinalizada && !_reservaCancelada) {
+      final participantes = <String, Map<String, dynamic>>{};
+      for (var i = 0; i < dadosParticipantes.length; i++) {
+        final reservaId = '${dadosParticipantes[i]['reserva_ingresso_id'] ?? ''}';
+        if (reservaId.isEmpty) continue;
+        participantes[reservaId] = {
+          'nome': nomes[i].text,
+          'cpf': cpfs[i].text,
+          'beneficio_id': beneficiosParticipantes[i],
+        };
+      }
+      widget.onParticipantesAlterados?.call(participantes);
+    }
     for (final c in [...nomes, ...cpfs]) {
       c.dispose();
     }
