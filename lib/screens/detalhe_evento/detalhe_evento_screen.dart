@@ -2644,7 +2644,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
+      elevation: 2,
       color: Colors.white,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: Color(0xFFFFE082)),
