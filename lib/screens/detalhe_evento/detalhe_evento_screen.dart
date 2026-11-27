@@ -86,7 +86,6 @@ class _ObservadorNavegacaoEvento extends NavigatorObserver {
 
   void _atualizar(Route<dynamic>? rota) {
     final ocultar = rota?.settings.name == 'conferir-sacola' ||
-        rota?.settings.name == 'detalhe-evento' ||
         rota?.settings.name == 'setor-ingressos';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_ativo) MainNavigationController.ocultarBarra.value = ocultar;
