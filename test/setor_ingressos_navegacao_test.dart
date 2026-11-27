@@ -258,7 +258,7 @@ void main() {
       }
       expect(find.text(modalidade), findsOneWidget);
       for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
-        expect(find.text(item), setorUnico ? findsNothing : findsOneWidget);
+        expect(find.text(item), findsNothing);
       }
       // O setor permanece dentro do shell; não cobre a navegação com outra rota.
       expect(
@@ -292,22 +292,36 @@ void main() {
   Future<void> selecionarEComprar(WidgetTester tester) async {
     await tester.tap(find.byTooltip('Aumentar quantidade'));
     await tester.pump();
-    await tester.tap(find.text('Comprar 1 ingresso'));
+    await tester.tap(find.text('Comprar ingressos (1)'));
     await tester.pumpAndSettle();
   }
+
+  testWidgets('setor mostra botão de compra no rodapé sem sacola ou navegação', (tester) async {
+    await executar(tester, (_) async {
+      expect(find.byTooltip('Conferir sacola'), findsNothing);
+      expect(find.text('Comprar ingressos (0)'), findsOneWidget);
+      final botao = find.widgetWithText(FilledButton, 'Comprar ingressos (0)');
+      expect(tester.widget<FilledButton>(botao).onPressed, isNull);
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      expect(find.text('Comprar ingressos (2)'), findsOneWidget);
+    });
+  });
 
   testWidgets('seleção começa em zero e só reserva ao comprar', (tester) async {
     await executar(tester, (requests) async {
       expect(find.text('Adicionar'), findsNothing);
       expect(find.byTooltip('Diminuir quantidade'), findsOneWidget);
       expect(tester.widget<IconButton>(find.ancestor(of: find.byTooltip('Diminuir quantidade'), matching: find.byType(IconButton)).first).onPressed, isNull);
-      expect(find.text('Comprar 1 ingresso'), findsNothing);
+      expect(find.text('Comprar ingressos (1)'), findsNothing);
       await tester.tap(find.byTooltip('Aumentar quantidade'));
       await tester.pump();
-      expect(find.text('Comprar 1 ingresso'), findsOneWidget);
+      expect(find.text('Comprar ingressos (1)'), findsOneWidget);
       expect(requests.where((r) => r.method == 'POST' && r.url.path.startsWith('/reservas-ingressos/')), isEmpty);
       expect(find.byIcon(Icons.timer_outlined), findsNothing);
-      await tester.tap(find.text('Comprar 1 ingresso'));
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       final envio = requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo').single;
       expect((jsonDecode(envio.body) as Map)['itens'], [{'lote_id': 1, 'lotepreco_id': 1, 'quantidade': 1}]);
@@ -328,8 +342,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Aumentar quantidade'));
       await tester.pump();
-      expect(find.text('Comprar 2 ingressos'), findsOneWidget);
-      await tester.tap(find.text('Comprar 2 ingressos'));
+      expect(find.text('Comprar ingressos (2)'), findsOneWidget);
+      await tester.tap(find.text('Comprar ingressos (2)'));
       await tester.pumpAndSettle();
       final envio = requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo').single;
       expect((jsonDecode(envio.body) as Map)['itens'], [
@@ -350,7 +364,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Aumentar quantidade'));
       await tester.pump();
-      await tester.tap(find.text('Comprar 2 ingressos'));
+      await tester.tap(find.text('Comprar ingressos (2)'));
       await tester.pumpAndSettle();
       expect(tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva, prazo);
       expect(find.text('Pessoa Teste'), findsOneWidget);
@@ -387,7 +401,7 @@ void main() {
       await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
       expect(find.text('Inteira'), findsOneWidget);
-      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       expect(find.text('15:00'), findsNothing);
       expect(find.textContaining(RegExp(r'13:5[0-9]|14:00')), findsWidgets);
@@ -399,14 +413,13 @@ void main() {
       await selecionarEComprar(tester);
       await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
-      final sacola = find.ancestor(of: find.byTooltip('Conferir sacola'), matching: find.byType(Stack)).first;
-      expect(find.descendant(of: sacola, matching: find.text('1')), findsOneWidget);
-      await tester.tap(find.byTooltip('Conferir sacola'));
+      expect(find.text('Comprar ingressos (1)'), findsOneWidget);
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Excluir ingresso'));
       await tester.pumpAndSettle();
       expect(find.byType(ParticipantesReservaScreen), findsNothing);
-      expect(find.descendant(of: sacola, matching: find.text('1')), findsNothing);
+      expect(find.text('Comprar ingressos (0)'), findsOneWidget);
       expect(requests.where((r) => r.method == 'DELETE' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos/30'), hasLength(1));
       await selecionarEComprar(tester);
       expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo'), hasLength(2));
@@ -429,7 +442,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.text('Adicionar mais ingressos'));
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('Conferir sacola'));
+        await tester.tap(find.text('Comprar ingressos (1)'));
         await tester.pumpAndSettle();
         expect(tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva, prazo);
         expect(find.text('Pessoa Teste'), findsOneWidget);
@@ -593,7 +606,7 @@ void main() {
       expect(requests.where((r) => r.url.path == '/reservas-ingressos/30/participantes'), isEmpty);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
       expect(find.text('Participante salvo'), findsOneWidget);
@@ -666,8 +679,8 @@ void main() {
       await tester.pumpAndSettle();
       final controle = find.ancestor(of: find.byTooltip('Diminuir quantidade'), matching: find.byType(Row)).first;
       expect(find.descendant(of: controle, matching: find.text('1')), findsOneWidget);
-      expect(find.text('Comprar 1 ingresso'), findsOneWidget);
-      await tester.tap(find.text('Comprar 1 ingresso'));
+      expect(find.text('Comprar ingressos (1)'), findsOneWidget);
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       expect(find.text('Participante 1'), findsOneWidget);
     });
@@ -679,7 +692,7 @@ void main() {
         await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
         await tester.tap(find.byTooltip('Aumentar quantidade'));
         await tester.pump();
-        await tester.tap(find.text(setorUnico ? 'Comprar ingresso (1)' : 'Comprar 1 ingresso'));
+        await tester.tap(find.text(setorUnico ? 'Comprar ingresso (1)' : 'Comprar ingressos (1)'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Adicionar mais ingressos'));
         await tester.pumpAndSettle();
@@ -921,7 +934,6 @@ void main() {
   });
 
   for (final origem in [
-    'setor',
     'pagamento',
     'pix Mercado Pago',
   ]) {
