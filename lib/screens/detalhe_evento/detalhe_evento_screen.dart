@@ -2578,55 +2578,54 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                 Row(
                   children: [
                     Expanded(
-                      child: Wrap(
-                        spacing: 5,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            ValueFormatters.moeda(lote.preco),
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
-                            ),
+                      flex: 5,
+                      child: FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: Text.rich(
+                          TextSpan(
+                            style: const TextStyle(color: Colors.black),
+                            children: [
+                              TextSpan(
+                                text: ValueFormatters.moeda(lote.preco),
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              TextSpan(
+                                text: ' (+${ValueFormatters.moeda(taxa)})',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            '(+${ValueFormatters.moeda(taxa).replaceFirst('R\$ ', '')} taxa)',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.black54,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
+                          maxLines: 1,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 6),
                     _controleQuantidadeModalidade(
                       lote: lote,
                       quantidade: quantidade,
                       disponibilidade: disponivel,
                     ),
-                  ],
-                ),
-                const Divider(height: 18),
-                Row(
-                  children: [
+                    const SizedBox(width: 6),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Subtotal',
-                            style: TextStyle(fontWeight: FontWeight.w700),
+                      flex: 3,
+                      child: FittedBox(
+                        alignment: Alignment.centerRight,
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          ValueFormatters.moeda(total),
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w800,
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            ValueFormatters.moeda(total),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ],
+                          maxLines: 1,
+                        ),
                       ),
                     ),
                   ],

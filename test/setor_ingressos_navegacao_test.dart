@@ -71,6 +71,7 @@ void main() {
     bool cortesiaEsgotada = false,
     void Function()? verificarSetores,
     double taxaMinima = 0,
+    bool setorUnico = false,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -112,7 +113,7 @@ void main() {
         };
       } else if (path == '/eventos/10/lotes') {
         resposta = [
-          for (var id = 1; id <= 2; id++)
+          for (var id = 1; id <= (setorUnico ? 1 : 2); id++)
             {
               'lote_id': id,
               'loteglobal_id': 1,
@@ -207,9 +208,11 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: MainNavigationScreen()));
       await tester.pumpAndSettle();
       verificarSetores?.call();
-      await tester.ensureVisible(find.text('Setor: Pista'));
-      await tester.tap(find.text('Setor: Pista'));
-      await tester.pumpAndSettle();
+      if (!setorUnico) {
+        await tester.ensureVisible(find.text('Setor: Pista'));
+        await tester.tap(find.text('Setor: Pista'));
+        await tester.pumpAndSettle();
+      }
       expect(find.text(modalidade), findsOneWidget);
       for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
         expect(find.text(item), findsOneWidget);
@@ -355,6 +358,26 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
     });
+  });
+
+  testWidgets('detalhe direto mostra total na linha do preço e quantidade', (tester) async {
+    await executar(tester, (_) async {
+      final unitario = find.byWidgetPredicate((widget) => widget is Text &&
+        widget.textSpan?.toPlainText().contains(ValueFormatters.moeda(10) + ' (+' + ValueFormatters.moeda(2.99) + ')') == true);
+      final aumentar = find.byTooltip('Aumentar quantidade');
+      final total = find.text(ValueFormatters.moeda(12.99));
+      await tester.ensureVisible(aumentar);
+      await tester.pump();
+      expect(unitario, findsOneWidget);
+      expect(total, findsOneWidget);
+      expect(find.text('Subtotal'), findsNothing);
+      expect(tester.getCenter(unitario).dy, closeTo(tester.getCenter(aumentar).dy, 1));
+      expect(tester.getCenter(total).dy, closeTo(tester.getCenter(aumentar).dy, 1));
+      expect(tester.widget<Text>(total).style?.fontSize, 17);
+      await tester.tap(aumentar);
+      await tester.pump();
+      expect(find.text(ValueFormatters.moeda(25.98)), findsOneWidget);
+    }, taxaMinima: 2.99, setorUnico: true);
   });
 
   testWidgets('preço, quantidade e total aparecem na mesma linha', (tester) async {
