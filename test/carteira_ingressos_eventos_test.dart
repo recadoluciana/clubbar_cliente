@@ -74,7 +74,7 @@ void main() {
 
     await tester.tap(find.text('Ver ingressos').first);
     await tester.pumpAndSettle();
-    expect(find.text('Ingressos do evento'), findsOneWidget);
+    expect(find.text('Meus ingressos'), findsOneWidget);
     expect(find.text('Festival'), findsOneWidget);
     expect(find.byKey(const ValueKey('ingresso-1')), findsOneWidget);
     expect(find.byKey(const ValueKey('ingresso-3')), findsOneWidget);

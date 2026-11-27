@@ -48,6 +48,12 @@ void main() {
       expect(find.text('Setor: Pista'), findsOneWidget);
       expect(find.text('13/12/2026 13:00'), findsOneWidget);
       expect(find.text('06/11/2026 15:57'), findsOneWidget);
+      if (largura >= 500) {
+        expect(tester.getCenter(find.text('Setor: Pista')).dy,
+            closeTo(tester.getCenter(find.text('06/11/2026 15:57')).dy, 2));
+        expect(tester.getCenter(find.text('Setor: Pista')).dx,
+            lessThan(tester.getCenter(find.text('06/11/2026 15:57')).dx));
+      }
       expect(find.text('Ana Beatriz'), findsOneWidget);
       expect(find.text('CPF: 123.456.789-09'), findsOneWidget);
       expect(find.text('Valor pago'), findsNothing);
