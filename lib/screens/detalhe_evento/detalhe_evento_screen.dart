@@ -812,7 +812,7 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
           onPressed: () => Navigator.pop(context, itens),
         ),
         actions: [
-          if (widget.segundosReserva() > 0)
+          if (itens.isNotEmpty && widget.segundosReserva() > 0)
             Padding(
               padding: const EdgeInsets.only(right: 14),
               child: Row(
@@ -881,6 +881,7 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
                                 );
                                 try {
                                   await widget.onRemover(item);
+                                  if (itens.isEmpty) _timer?.cancel();
                                 } catch (_) {
                                   if (mounted) setState(() => itens.add(item));
                                 } finally {
@@ -1971,7 +1972,12 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     );
     if (!mounted) return;
     setState(() {
-      if (itens.isEmpty) _sacolaExpandida = false;
+      if (itens.isEmpty) {
+        _sacolaExpandida = false;
+        _timerReservaSacola?.cancel();
+        _timerReservaSacola = null;
+        _segundosReservaSacola = 0;
+      }
       _compraEvento = itens.isEmpty
           ? null
           : {
@@ -2009,7 +2015,12 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
               'quantidade': quantidade,
               'valor_total': valor,
             };
-      if (itens.isEmpty) _sacolaExpandida = false;
+      if (itens.isEmpty) {
+        _sacolaExpandida = false;
+        _timerReservaSacola?.cancel();
+        _timerReservaSacola = null;
+        _segundosReservaSacola = 0;
+      }
     });
   }
 
