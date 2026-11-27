@@ -165,6 +165,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         telaInterna is CarteiraScreen ||
         telaInterna is CarteiraIngressosScreen ||
         telaInterna is CarteiraLojaScreen;
+    final carteiraPrincipal =
+        (telaInterna == null && currentIndex == 2) ||
+        (telaInterna is CarteiraScreen && telaInterna.lojaSelecionadaId == null);
     final coraAtiva = telaInterna is AtendimentoCoraScreen;
     final carteiraDaLoja =
         telaInterna is CarteiraScreen && telaInterna.lojaSelecionadaId != null;
@@ -187,7 +190,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         !coraAtiva &&
         !carteiraAberta;
     final carteiraSelecionada =
-        (currentIndex == 2 || carteiraDaLoja) && !coraAtiva;
+        (currentIndex == 2 || carteiraDaLoja || carteiraPrincipal) && !coraAtiva;
 
     return Container(
       decoration: BoxDecoration(
@@ -236,7 +239,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       : null,
                 ),
 
-              if (!carteiraAberta)
+              if (!carteiraAberta || carteiraPrincipal)
                 _itemBarraNavegacao(
                   index: 2,
                   icone: _iconeCarteiraComBadge(
