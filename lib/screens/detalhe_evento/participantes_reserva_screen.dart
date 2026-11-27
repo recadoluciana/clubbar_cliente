@@ -241,7 +241,10 @@ class _ParticipantesReservaScreenState
         participantes: participantes,
       );
       if (!mounted) return;
-      expiraEm = _expiracaoDaResposta(reserva) ?? expiraEm;
+      final prazoConfirmado = _expiracaoDaResposta(reserva);
+      if (prazoConfirmado != null && prazoConfirmado.isBefore(expiraEm)) {
+        expiraEm = prazoConfirmado;
+      }
       if (reserva['gratuito'] == true || reserva['venda_id'] != null) {
         _reservaFinalizada = true;
         timer?.cancel();

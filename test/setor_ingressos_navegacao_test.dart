@@ -273,6 +273,30 @@ void main() {
     },
   );
 
+  testWidgets('mantém o tempo restante ao abrir participantes e voltar à sacola', (tester) async {
+    await executar(tester, (_) async {
+      tester.view.physicalSize = const Size(800, 1000);
+      await tester.pump();
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 60));
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
+      await tester.tap(find.text('Continuar - Informar participante'));
+      await tester.pumpAndSettle();
+      expect(find.text('15:00'), findsNothing);
+      expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
+      await tester.tap(find.text('Continuar - Informar participante'));
+      await tester.pumpAndSettle();
+      expect(find.text('15:00'), findsNothing);
+      expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
+    });
+  });
+
   testWidgets('preserva participante ao voltar do pagamento e reabrir a sacola', (tester) async {
     await executar(tester, (requests) async {
       tester.view.physicalSize = const Size(800, 1000);
