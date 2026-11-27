@@ -40,6 +40,12 @@ class _Api extends ApiService {
   }
 
   @override
+  Future<Map<String, dynamic>> cotarReservaMercadoPago({
+    required int reservaId, required int clienteId, required String metodo,
+  }) async => {'ingressos': 5, 'conveniencia': 0, 'processamento': 0.1,
+    'total': 5.1, 'percentual_conveniencia': 0, 'minimo_aplicado': false};
+
+  @override
   Future<Map<String, dynamic>?> campanhaDoacaoVigente({
     required int lojaId,
     int? reservaIngressoId,

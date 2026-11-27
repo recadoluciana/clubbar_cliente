@@ -30,13 +30,20 @@ void main() {
           'reserva_ingresso_id': 30, 'compra_evento_id': 20, 'cliente_id': 1,
           'segundos_restantes': 900, 'quantidade': 2, 'valor_total': 66,
           'itens': [
-            {'reserva_ingresso_id': 30, 'quantidade': 1, 'valor_total': 33, 'nome_modalidade': 'Inteira'},
+            {'reserva_ingresso_id': 30, 'quantidade': 1, 'valor_total': 33, 'nome_modalidade': 'Inteira', 'nome_lote': 'Lote 1', 'nome_setor': 'Pista'},
             {'reserva_ingresso_id': 31, 'quantidade': 1, 'valor_total': 33, 'nome_modalidade': 'Inteira'},
           ],
         },
         onRemoverIngresso: (item) async => removidos.add(item['reserva_ingresso_id'] as int),
       )));
       await tester.pump();
+      final loteSetor = find.text('Lote: Lote 1  •  Setor: Pista');
+      final valor = find.textContaining('Valor:').first;
+      expect(loteSetor, findsOneWidget);
+      expect(valor, findsOneWidget);
+      expect(tester.getCenter(valor).dy, closeTo(tester.getCenter(loteSetor).dy, 1));
+      expect(tester.getCenter(valor).dx, greaterThan(tester.getCenter(loteSetor).dx));
+      expect(find.text('Adicionar mais ingressos'), findsOneWidget);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo').at(0), 'Primeira Pessoa');
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo').at(1), 'Segunda Pessoa');
       await tester.tap(find.byTooltip('Excluir ingresso').first);

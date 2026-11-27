@@ -543,17 +543,34 @@ class _ParticipantesReservaScreenState
     }
     return Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 2),
-      child: Text(
-        [
-          if (primeiraLinha.isNotEmpty) primeiraLinha.join('  •  '),
-          if (modalidade.isNotEmpty) 'Modalidade: $modalidade',
-          if (widget.onRemoverIngresso != null) 'Valor: ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
-        ].join('\n'),
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black,
-          fontWeight: FontWeight.w600,
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  primeiraLinha.join('  •  '),
+                  style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w600),
+                ),
+              ),
+              if (widget.onRemoverIngresso != null) ...[
+                const SizedBox(width: 8),
+                Text(
+                  'Valor: ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
+                  textAlign: TextAlign.right,
+                  style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ],
+          ),
+          if (modalidade.isNotEmpty)
+            Text(
+              'Modalidade: $modalidade',
+              style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w600),
+            ),
+        ],
       ),
     );
   }
@@ -863,7 +880,7 @@ class _ParticipantesReservaScreenState
                     const SizedBox(height: 8),
                     OutlinedButton(
                       onPressed: alterandoIngresso || salvando ? null : () => Navigator.of(context).pop(),
-                      child: const Text('Adicionar ingresso'),
+                      child: const Text('Adicionar mais ingressos'),
                     ),
                   ],
                   const SizedBox(height: 12),
