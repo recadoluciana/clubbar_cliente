@@ -418,6 +418,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   double get taxaClubbarTotal => taxaProdutoSplit + taxaIngressoCliente;
 
   bool get compraDeProdutos => widget.reservaIngressoId == null;
+  bool get _pixIngressoIndisponivel => !compraDeProdutos && !_usaMercadoPago;
 
   bool get entregaDisponivel => compraDeProdutos && widget.loja.permiteEntrega;
   bool get entregaSelecionada => entregaDisponivel && receberNoEndereco;
@@ -2114,7 +2115,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   SizedBox(
                     height: 56,
                     child: ElevatedButton.icon(
-                      onPressed: carregandoPagamento ? null : abrirPix,
+                      onPressed: carregandoPagamento || _pixIngressoIndisponivel ? null : abrirPix,
                       icon: _metodoPagamentoProcessando == 'PIX'
                           ? const SizedBox(
                               width: 20,
@@ -2142,6 +2143,15 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                     ),
                   ),
 
+                  if (_pixIngressoIndisponivel && !_carregandoResumoIngresso && !_erroResumoIngresso)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Pix temporariamente indisponível para ingressos neste estabelecimento.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: Colors.black54),
+                      ),
+                    ),
                   const SizedBox(height: 12),
 
                   SizedBox(

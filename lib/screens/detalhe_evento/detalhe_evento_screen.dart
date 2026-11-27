@@ -179,6 +179,10 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final double taxaMinima;
   final String Function(EventoLote) nomeModalidade;
   final Future<void> Function(EventoLote lote, int quantidade) onComprar;
+  final int Function(int lotePrecoId) quantidadeSelecionada;
+  final int Function() totalSelecionado;
+  final void Function(EventoLote lote, int quantidade) onSelecionar;
+  final Future<void> Function() onComprarSelecionados;
   final VoidCallback onEntenderTaxa;
   final Map<String, dynamic>? compraEvento;
   final int Function() segundosReserva;
@@ -195,6 +199,10 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.taxaMinima,
     required this.nomeModalidade,
     required this.onComprar,
+    required this.quantidadeSelecionada,
+    required this.totalSelecionado,
+    required this.onSelecionar,
+    required this.onComprarSelecionados,
     required this.onEntenderTaxa,
     this.compraEvento,
     required this.segundosReserva,
@@ -209,7 +217,6 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
 
 class _ModalidadesIngressoScreenState
     extends State<_ModalidadesIngressoScreen> {
-  final Map<int, int> _quantidades = {};
   bool _processando = false;
   int _itensNaSacola = 0;
   double _totalSacola = 0;
@@ -334,6 +341,23 @@ class _ModalidadesIngressoScreenState
           ),
         ],
       ),
+      bottomNavigationBar: widget.totalSelecionado() > 0
+          ? SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: FilledButton(
+                  onPressed: _processando ? null : () async {
+                    setState(() => _processando = true);
+                    try { await widget.onComprarSelecionados(); }
+                    finally { if (mounted) setState(() => _processando = false); }
+                  },
+                  style: FilledButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+                  child: Text('Comprar ${widget.totalSelecionado()} ${widget.totalSelecionado() == 1 ? 'ingresso' : 'ingressos'}'),
+                ),
+              ),
+            )
+          : null,
       body: Column(
         children: [
           ClubbarPageHeader(
@@ -577,7 +601,7 @@ class _ModalidadesIngressoScreenState
   }
 
   Widget _cardModalidade(EventoLote lote, {required bool vendaDisponivel}) {
-    final quantidade = _quantidades[lote.lotePrecoId] ?? 1;
+    final quantidade = widget.quantidadeSelecionada(lote.lotePrecoId);
     final ehCortesia = _ehCortesia(lote);
     final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
     final disponivelModalidade = lote.qtDisponivelParaCompra;
@@ -591,8 +615,9 @@ class _ModalidadesIngressoScreenState
         : textoSituacao == 'Esgotado'
         ? Colors.red.shade700
         : Colors.grey.shade700;
-    final podeDiminuir = quantidade > 1;
+    final podeDiminuir = quantidade > 0;
     final podeAumentar =
+        vendaDisponivel && modalidadeDisponivel &&
         quantidade < _limitePorTransacao(lote) &&
         quantidade < disponivelModalidade;
     final taxaUnitaria = calcularTaxaIngresso(
@@ -747,7 +772,7 @@ class _ModalidadesIngressoScreenState
                   ),
                 ),
                 const SizedBox(width: 8),
-                botaoAdicionar,
+                if (ehCortesia) botaoAdicionar,
               ],
             ),
           ],
@@ -774,9 +799,7 @@ class _ModalidadesIngressoScreenState
             tooltip: 'Diminuir quantidade',
             onPressed: !podeDiminuir
                 ? null
-                : () => setState(
-                    () => _quantidades[lote.lotePrecoId] = quantidade - 1,
-                  ),
+                : () => setState(() => widget.onSelecionar(lote, quantidade - 1)),
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.remove_rounded, size: 19),
           ),
@@ -796,9 +819,7 @@ class _ModalidadesIngressoScreenState
                       );
                       return;
                     }
-                    setState(
-                      () => _quantidades[lote.lotePrecoId] = quantidade + 1,
-                    );
+                    setState(() => widget.onSelecionar(lote, quantidade + 1));
                   },
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add_rounded, size: 19),
@@ -1728,69 +1749,71 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     }
   }
 
-  Future<void> iniciarReservaGrupo(List<EventoLote> opcoes) async {
-    final itens = opcoes
-        .map(
-          (lote) => {
-            'lote_id': lote.loteId,
-            'lotepreco_id': lote.lotePrecoId,
-            'quantidade': _quantidadesModalidades[lote.lotePrecoId] ?? 1,
-          },
-        )
-        .toList();
-    final total = itens.fold<int>(
-      0,
-      (s, item) => s + (item['quantidade'] as int),
-    );
-    if (total > 5) {
-      AppSnackBar.aviso(context, 'O limite é de 5 ingressos por compra.');
+  int get _totalSelecionado => _quantidadesModalidades.values.fold(0, (soma, valor) => soma + valor);
+
+  void _selecionarQuantidade(EventoLote lote, int quantidade) {
+    final anterior = _quantidadesModalidades[lote.lotePrecoId] ?? 0;
+    final reservados = int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0;
+    if (quantidade > anterior && reservados + _totalSelecionado >= _limiteIngressosPorTransacao) {
+      AppSnackBar.aviso(context, _mensagemLimiteIngressosPorTransacao);
       return;
     }
+    setState(() {
+      if (quantidade <= 0) {
+        _quantidadesModalidades.remove(lote.lotePrecoId);
+      } else {
+        _quantidadesModalidades[lote.lotePrecoId] = quantidade;
+      }
+    });
+  }
+
+  Future<void> _comprarSelecionados() async {
+    if (processandoCompra || _totalSelecionado == 0) return;
+    final opcoes = lotes.where((lote) => (_quantidadesModalidades[lote.lotePrecoId] ?? 0) > 0).toList();
+    if (opcoes.isEmpty || opcoes.length != _quantidadesModalidades.length ||
+        opcoes.any((lote) => _ehCortesia(lote) || !lote.podeComprarEm(HorarioBrasil.agora()) ||
+          (_quantidadesModalidades[lote.lotePrecoId] ?? 0) > lote.qtDisponivelParaCompra)) {
+      AppSnackBar.aviso(context, 'Algum ingresso selecionado não está mais disponível. Confira as quantidades.');
+      await atualizarLotes(mostrarConfirmacao: false);
+      return;
+    }
+    final itens = opcoes.map((lote) => {
+      'lote_id': lote.loteId,
+      'lotepreco_id': lote.lotePrecoId,
+      'quantidade': _quantidadesModalidades[lote.lotePrecoId]!,
+    }).toList();
     setState(() => processandoCompra = true);
     try {
       final clienteId = await _obterClienteIdLogado();
       if (clienteId == null) return;
-      final reserva = await apiService.criarReservaIngressoGrupo(
-        clienteId: clienteId,
-        itens: itens,
-      );
+      final compraAnterior = _compraEvento;
+      final compra = compraAnterior == null
+          ? await apiService.criarReservaIngressoGrupo(clienteId: clienteId, itens: itens)
+          : await apiService.adicionarGrupoCompraEvento(
+              compraEventoId: int.parse('${compraAnterior['compra_evento_id']}'),
+              clienteId: clienteId, itens: itens);
       if (!mounted) return;
-      // A reserva agrupada já pertence à sacola antes do preenchimento dos
-      // participantes. Mantemos esse estado ao retornar da tela seguinte.
-      setState(() => _compraEvento = reserva);
-      _iniciarTimerReservaSacola(reserva);
-      // A conferência é aberta exclusivamente pelo badge da sacola na
-      // topbar. Após adicionar, o usuário permanece no detalhe do evento.
-      if (!mounted) return;
-      final reservaId = int.tryParse('${reserva['reserva_ingresso_id']}');
-      final clienteIdRetorno = await authStorage.obterClienteId();
-      if (reservaId != null && clienteIdRetorno != null) {
-        try {
-          final atual = await apiService.consultarReserva(
-            reservaId: reservaId,
-            clienteId: clienteIdRetorno,
-          );
-          final status = '${atual['status'] ?? ''}'.toUpperCase();
-          if (status == 'CANCELADA' || status == 'EXPIRADA') {
-            _removerItemLocalDaSacola(reserva, reservaId);
-          } else {
-            setState(
-              () => _compraEvento = {
-                ...reserva,
-                ...atual,
-                'itens': reserva['itens'],
-              },
-            );
-            _iniciarTimerReservaSacola(_compraEvento!);
-          }
-        } catch (_) {
-          // Mantém a sacola local quando a consulta de retorno falhar.
-        }
+      setState(() {
+        _compraEvento = compra;
+        _quantidadesModalidades.clear();
+        processandoCompra = false;
+      });
+      final segundos = int.tryParse('${compra['segundos_restantes']}');
+      if (compraAnterior == null || (segundos != null && segundos < _tempoRestanteSacola() - 2)) {
+        _iniciarTimerReservaSacola(compra);
       }
-      await carregarStatusLotes();
+      await atualizarLotes(mostrarConfirmacao: false);
+      if (mounted) await _abrirCompraEvento();
     } catch (e) {
-      if (mounted)
+      if (!mounted) return;
+      if (apiService.erroDeSessao(e)) {
+        await authStorage.limparToken();
+        if (mounted) await direcionarParaLogin(Navigator.of(context, rootNavigator: true).context,
+          mensagem: 'Sua sessão terminou. Entre novamente para comprar seu ingresso.');
+      } else {
         AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+        await atualizarLotes(mostrarConfirmacao: false);
+      }
     } finally {
       if (mounted) setState(() => processandoCompra = false);
     }
@@ -2213,6 +2236,10 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           nomeModalidade: _nomeModalidade,
           onComprar: (lote, quantidade) =>
               iniciarReserva(lote, quantidadeSelecionada: quantidade),
+          quantidadeSelecionada: (id) => _quantidadesModalidades[id] ?? 0,
+          totalSelecionado: () => _totalSelecionado,
+          onSelecionar: _selecionarQuantidade,
+          onComprarSelecionados: _comprarSelecionados,
           onEntenderTaxa: _abrirExplicacaoTaxas,
           compraEvento: _compraEvento,
           segundosReserva: () => _segundosReservaSacola,
@@ -2466,7 +2493,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   }
 
   Widget _cardModalidadeDireta(EventoLote lote) {
-    final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 1;
+    final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 0;
     final ehCortesia = _ehCortesia(lote);
     final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
     final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
@@ -2594,7 +2621,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                     _controleQuantidadeModalidade(
                       lote: lote,
                       quantidade: quantidade,
-                      disponibilidade: disponivel,
+                      disponibilidade: vendaDisponivel ? disponivel : 0,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -2663,7 +2690,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  botaoAdicionar,
+                  if (ehCortesia) botaoAdicionar,
                 ],
               ),
             ],
@@ -2690,11 +2717,8 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         children: [
           IconButton(
             tooltip: 'Diminuir quantidade',
-            onPressed: quantidade > 1
-                ? () => setState(
-                    () => _quantidadesModalidades[lote.lotePrecoId] =
-                        quantidade - 1,
-                  )
+            onPressed: quantidade > 0
+                ? () => _selecionarQuantidade(lote, quantidade - 1)
                 : null,
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.remove_rounded, size: 19),
@@ -2707,10 +2731,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
             tooltip: 'Aumentar quantidade',
             onPressed: !podeAumentar
                 ? null
-                : () => setState(
-                    () => _quantidadesModalidades[lote.lotePrecoId] =
-                        quantidade + 1,
-                  ),
+                : () => _selecionarQuantidade(lote, quantidade + 1),
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add_rounded, size: 19),
           ),
@@ -3021,6 +3042,19 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           ),
         ],
       ),
+      bottomNavigationBar: _totalSelecionado > 0
+          ? SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: FilledButton(
+                  onPressed: processandoCompra ? null : _comprarSelecionados,
+                  style: FilledButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
+                  child: Text('Comprar $_totalSelecionado ${_totalSelecionado == 1 ? 'ingresso' : 'ingressos'}'),
+                ),
+              ),
+            )
+          : null,
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null
