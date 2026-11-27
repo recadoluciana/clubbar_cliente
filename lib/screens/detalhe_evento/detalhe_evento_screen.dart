@@ -115,6 +115,7 @@ class _ObservadorNavegacaoEvento extends NavigatorObserver {
 
 class _NavegacaoEventoState extends State<DetalheEventoScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  final _detalheKey = GlobalKey<_DetalheEventoScreenState>();
   final _observador = _ObservadorNavegacaoEvento();
 
   @override
@@ -128,9 +129,17 @@ class _NavegacaoEventoState extends State<DetalheEventoScreen> {
     if (navigator != null && navigator.canPop()) {
       navigator.pop();
     } else {
-      (widget.onVoltar ?? MainNavigationController.fecharTelaInterna)();
+      final detalhe = _detalheKey.currentState;
+      if (detalhe != null) {
+        unawaited(detalhe._confirmarSaida());
+      } else {
+        _sairDoEvento();
+      }
     }
   }
+
+  void _sairDoEvento() =>
+      (widget.onVoltar ?? MainNavigationController.fecharTelaInterna)();
 
   @override
   Widget build(BuildContext context) {
@@ -146,9 +155,10 @@ class _NavegacaoEventoState extends State<DetalheEventoScreen> {
         onGenerateRoute: (_) => MaterialPageRoute<void>(
           settings: const RouteSettings(name: 'detalhe-evento'),
           builder: (_) => _DetalheEventoConteudo(
+            key: _detalheKey,
             eventoId: widget.eventoId,
             loja: widget.loja,
-            onVoltar: _voltar,
+            onVoltar: _sairDoEvento,
           ),
         ),
       ),
@@ -162,6 +172,7 @@ class _DetalheEventoConteudo extends StatefulWidget {
   final VoidCallback onVoltar;
 
   const _DetalheEventoConteudo({
+    super.key,
     required this.eventoId,
     required this.loja,
     required this.onVoltar,
@@ -865,6 +876,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   final Map<String, Map<String, dynamic>> _participantesDaSacola = {};
   bool _sacolaExpandida = false;
   bool _removendoItemSacola = false;
+  bool _confirmandoSaida = false;
   Timer? _timerReservaSacola;
   DateTime? _prazoReservaSacola;
   int _segundosReservaSacola = 0;
@@ -889,19 +901,56 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     super.dispose();
   }
 
-  Future<void> _cancelarReservaAoSair() async {
+  Future<bool> _cancelarReservaAoSair({bool silencioso = true}) async {
     final compra = _compraEvento;
-    final reservaId = int.tryParse('${compra?['reserva_ingresso_id']}');
+    if (compra == null) return true;
+    final itens = compra['itens'];
+    final primeiro = itens is List && itens.isNotEmpty && itens.first is Map
+        ? itens.first as Map : null;
+    final reservaId = int.tryParse('${primeiro?['reserva_ingresso_id'] ?? compra['reserva_ingresso_id']}');
     final clienteId = await authStorage.obterClienteId();
-    if (reservaId == null || clienteId == null) return;
+    if (reservaId == null || clienteId == null) {
+      if (!silencioso && mounted) AppSnackBar.erro(context, 'Não foi possível identificar a reserva. Tente novamente.');
+      return false;
+    }
     try {
-      await apiService.cancelarReservaIngresso(
-        reservaId: reservaId,
-        clienteId: clienteId,
+      await apiService.cancelarReservaIngresso(reservaId: reservaId, clienteId: clienteId);
+      return true;
+    } catch (e) {
+      if (!silencioso && mounted) AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+      return false;
+    }
+  }
+
+  Future<void> _confirmarSaida() async {
+    if (_confirmandoSaida || processandoCompra || _removendoItemSacola) return;
+    if (_compraEvento == null && _totalSelecionado == 0) {
+      widget.onVoltar();
+      return;
+    }
+    _confirmandoSaida = true;
+    try {
+      final sair = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: const Text('Deseja sair desta tela?'),
+          content: const Text('A sua compra será cancelada.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('Continuar compra')),
+            FilledButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('Sair e cancelar')),
+          ],
+        ),
       );
-    } catch (_) {
-      // A expiração automática continua sendo o fallback caso o app seja
-      // encerrado antes de a requisição de cancelamento terminar.
+      if (sair != true || !mounted) return;
+      final cancelada = await _cancelarReservaAoSair(silencioso: false);
+      if (!mounted || !cancelada) return;
+      _timerReservaSacola?.cancel();
+      _compraEvento = null;
+      _quantidadesModalidades.clear();
+      _participantesDaSacola.clear();
+      widget.onVoltar();
+    } finally {
+      _confirmandoSaida = false;
     }
   }
 
@@ -3079,13 +3128,13 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Evento - ${(ev?.nomeLoja.trim().isNotEmpty ?? false) ? ev!.nomeLoja : widget.loja.nome}',
+        titulo: 'Detalhe do evento - ${(ev?.nomeLoja.trim().isNotEmpty ?? false) ? ev!.nomeLoja : widget.loja.nome}',
         iconeTitulo: Icons.confirmation_number_rounded,
         corIconeTitulo: Colors.blue,
         tituloAlinhadoEsquerda: true,
         mostrarVoltar: true,
         mostrarSessao: false,
-        onVoltar: widget.onVoltar,
+        onVoltar: () => unawaited(_confirmarSaida()),
         actions: [
           if (_compraEvento != null && _segundosReservaSacola > 0)
             Padding(
