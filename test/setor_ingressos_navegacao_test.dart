@@ -80,6 +80,7 @@ void main() {
     bool Function()? cotacaoFalhou,
     int? segundosPix,
     bool cancelamentoFalhou = false,
+    bool Function()? participantesFalhou,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -112,6 +113,9 @@ void main() {
       requests.add(request);
       final path = request.url.path;
       final Object resposta;
+      if (path == '/reservas-ingressos/30/participantes' && participantesFalhou?.call() == true) {
+        return http.Response(jsonEncode({'detail': 'Não foi possível salvar os participantes.'}), 503);
+      }
       if (path == '/reservas-ingressos/30' && request.method == 'DELETE' && cancelamentoFalhou) {
         return http.Response(jsonEncode({'detail': 'Não foi possível cancelar a reserva.'}), 409);
       }
@@ -586,44 +590,54 @@ void main() {
     }, provedor: 'ASAAS');
   });
 
-  testWidgets('salva participante na tela de conferência sem finalizar compra', (tester) async {
+  testWidgets('preserva participante ao voltar e salva ao continuar', (tester) async {
     await executar(tester, (requests) async {
       tester.view.physicalSize = const Size(800, 1000);
       await tester.pump();
       await selecionarEComprar(tester);
       expect(find.text('Conferir ingressos'), findsOneWidget);
-      expect(find.text('Participante 1'), findsOneWidget);
-      expect(find.text('Home'), findsNothing);
+      expect(find.text('Salvar participante'), findsNothing);
+      expect(find.text('Participante não salvo'), findsNothing);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
-      expect(find.text('Participante não salvo'), findsOneWidget);
-      await tester.tap(find.text('Salvar participante'));
-      await tester.pumpAndSettle();
-      expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
-      expect(find.text('Participante salvo'), findsOneWidget);
-      expect(find.byType(EscolhaPagamentoScreen), findsNothing);
-      expect(requests.where((r) => r.method == 'PUT' && r.url.path == '/reservas-ingressos/30/participante'), hasLength(1));
       expect(requests.where((r) => r.url.path == '/reservas-ingressos/30/participantes'), isEmpty);
-      await tester.binding.handlePopRoute();
+      await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
-      expect(find.text('Participante salvo'), findsOneWidget);
-      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Alterado');
-      await tester.pump();
-      expect(find.text('Alterações não salvas'), findsOneWidget);
-      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
-      await tester.pump();
-      expect(find.text('Participante salvo'), findsOneWidget);
       expect(tester.widget<TextField>(find.widgetWithText(TextField, 'CPF')).controller!.text.replaceAll(RegExp(r'\D'), ''), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
       await tester.pumpAndSettle();
+      final envio = requests.where((r) => r.method == 'PUT' && r.url.path == '/reservas-ingressos/30/participantes').single;
+      expect((jsonDecode(envio.body) as Map)['participantes'], [
+        {'nome': 'Participante Teste', 'cpf': '12345678909'},
+      ]);
       expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
     });
+  });
+
+  testWidgets('erro ao salvar participantes impede pagamento e permite tentar novamente', (tester) async {
+    var falhou = true;
+    await executar(tester, (requests) async {
+      await selecionarEComprar(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+      expect(find.byType(EscolhaPagamentoScreen), findsNothing);
+      expect(find.text('Participante Teste'), findsOneWidget);
+      expect(requests.where((r) => r.method == 'PUT' && r.url.path == '/reservas-ingressos/30/participantes'), hasLength(1));
+      falhou = false;
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
+      expect(requests.where((r) => r.method == 'PUT' && r.url.path == '/reservas-ingressos/30/participantes'), hasLength(2));
+    }, participantesFalhou: () => falhou);
   });
 
   testWidgets('evento mostra compra no rodapé e permite reabrir reserva', (tester) async {
