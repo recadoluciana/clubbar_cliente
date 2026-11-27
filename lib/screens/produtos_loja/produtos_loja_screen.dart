@@ -643,6 +643,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         titulo: 'Cardápio - ${widget.loja.nome}',
         iconeTitulo: Icons.local_drink_rounded,
         corIconeTitulo: Colors.amber,
+        tituloAlinhadoEsquerda: true,
         mostrarVoltar: true,
         mostrarSessao: false,
         mostrarIconeSessao: false,
