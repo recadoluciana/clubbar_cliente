@@ -67,6 +67,7 @@ class _PixPagamentoScreenState extends State<PixPagamentoScreen> {
     super.initState();
     _expiraEm = obterExpiracaoPix(
       widget.pagamento,
+      respeitarPrazoInformado: widget.mercadoPago && widget.reservaIngressoId != null,
       duracaoMaxima: widget.mercadoPago
           ? const Duration(minutes: 30)
           : _compraDeIngresso

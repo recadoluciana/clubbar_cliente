@@ -78,6 +78,7 @@ void main() {
     bool setorUnico = false,
     bool variasModalidades = false,
     bool Function()? cotacaoFalhou,
+    int? segundosPix,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -203,6 +204,8 @@ void main() {
           path == '/reservas-ingressos/30/pix') {
         resposta = {
           'pagamento_id': 'pix-teste',
+          if (segundosPix != null) 'segundos_restantes': segundosPix,
+          if (segundosPix != null) 'pix_expiration_date': DateTime.now().toUtc().add(Duration(seconds: segundosPix)).toIso8601String(),
           'pix_copia_cola': 'codigo-teste',
           'valor_total': valor,
           'expiration_date': '2099-12-13T13:00:00-03:00',
@@ -500,6 +503,23 @@ void main() {
     });
   });
 
+  testWidgets('Pix mantém reserva após vencer o prazo original da compra', (tester) async {
+    await executar(tester, (_) async {
+      await selecionarEComprar(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Pagamento PIX'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PixPagamentoScreen), findsOneWidget);
+      await tester.runAsync(() => Future<void>.delayed(const Duration(seconds: 3)));
+      await tester.pump(const Duration(seconds: 2));
+      expect(find.byType(PixPagamentoScreen), findsOneWidget);
+      expect(find.text('O tempo para a compra expirou'), findsNothing);
+    }, segundosReserva: 2, segundosPix: 1800);
+  });
+
   testWidgets('cartão abre diretamente após exibir a cotação', (tester) async {
     await executar(tester, (_) async {
       tester.view.physicalSize = const Size(800, 1200);
@@ -606,7 +626,7 @@ void main() {
       await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
       expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.shopping_bag_outlined)), findsNothing);
-      expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.timer_outlined)), findsNothing);
+      expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.timer_outlined)), findsOneWidget);
       expect(find.text('Comprar ingresso (1)'), findsOneWidget);
       await tester.tap(find.text('Comprar ingresso (1)'));
       await tester.pumpAndSettle();
@@ -648,6 +668,29 @@ void main() {
       expect(find.text('Participante 1'), findsOneWidget);
     });
   });
+
+  for (final setorUnico in [true, false]) {
+    testWidgets('avisa expiração na seleção ${setorUnico ? 'do evento' : 'do setor'}', (tester) async {
+      await executar(tester, (_) async {
+        await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
+        await tester.tap(find.byTooltip('Aumentar quantidade'));
+        await tester.pump();
+        await tester.tap(find.text(setorUnico ? 'Comprar ingresso (1)' : 'Comprar 1 ingresso'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Adicionar mais ingressos'));
+        await tester.pumpAndSettle();
+        expect(find.byIcon(Icons.timer_outlined), findsWidgets);
+        await tester.runAsync(() => Future<void>.delayed(const Duration(seconds: 3)));
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pumpAndSettle();
+        expect(find.text('O tempo para a compra expirou'), findsOneWidget);
+        await tester.tap(find.text('VOLTAR'));
+        await tester.pumpAndSettle();
+        final controle = find.ancestor(of: find.byTooltip('Diminuir quantidade'), matching: find.byType(Row)).first;
+        expect(find.descendant(of: controle, matching: find.text('0')), findsOneWidget);
+      }, setorUnico: setorUnico, segundosReserva: 2, reservaExpirada: () => true);
+    });
+  }
 
   testWidgets('detalhe direto mostra total na linha do preço e quantidade', (tester) async {
     await executar(tester, (_) async {

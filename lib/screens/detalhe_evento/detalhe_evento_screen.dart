@@ -18,6 +18,7 @@ import '../../services/main_navigation_controller.dart';
 import '../../utils/date_formatters.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../widgets/clubbar_page_header.dart';
+import '../../widgets/prazo_expirado_dialog.dart';
 
 import 'package:share_plus/share_plus.dart';
 
@@ -188,6 +189,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final VoidCallback onEntenderTaxa;
   final Map<String, dynamic>? compraEvento;
   final int Function() segundosReserva;
+  final void Function(BuildContext) verificarExpiracao;
   final int Function() quantidadeSacola;
   final Future<void> Function()? onSacolaTap;
 
@@ -209,6 +211,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.onEntenderTaxa,
     this.compraEvento,
     required this.segundosReserva,
+    required this.verificarExpiracao,
     required this.quantidadeSacola,
     this.onSacolaTap,
   });
@@ -231,7 +234,12 @@ class _ModalidadesIngressoScreenState
   void initState() {
     super.initState();
     _timerTopbar = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
+      if (mounted) {
+        setState(() {});
+        if (widget.segundosReserva() <= 0 && ModalRoute.of(context)?.isCurrent == true) {
+          widget.verificarExpiracao(context);
+        }
+      }
     });
     final compra = widget.compraEvento;
     _itensNaSacola = int.tryParse('${compra?['quantidade'] ?? 0}') ?? 0;
@@ -860,6 +868,8 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   Timer? _timerReservaSacola;
   DateTime? _prazoReservaSacola;
   int _segundosReservaSacola = 0;
+  bool _verificandoExpiracaoSelecao = false;
+  DateTime? _proximaVerificacaoExpiracao;
 
   @override
   void initState() {
@@ -908,16 +918,61 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     if (mounted) setState(() {});
     _timerReservaSacola = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() {
-        _segundosReservaSacola = _tempoRestanteSacola();
-        if (_segundosReservaSacola == 0) {
-          _compraEvento = null;
-          _quantidadesModalidades.clear();
-          _participantesDaSacola.clear();
-        }
-      });
-      if (_segundosReservaSacola == 0) _timerReservaSacola?.cancel();
+      setState(() => _segundosReservaSacola = _tempoRestanteSacola());
+      if (_segundosReservaSacola == 0 && ModalRoute.of(context)?.isCurrent == true) {
+        unawaited(_verificarExpiracaoNaSelecao(context));
+      }
     });
+  }
+
+  Future<void> _verificarExpiracaoNaSelecao(BuildContext tela) async {
+    final compra = _compraEvento;
+    if (compra == null || _segundosReservaSacola > 0 || _verificandoExpiracaoSelecao ||
+        (ModalRoute.of(tela)?.isCurrent != true) ||
+        (_proximaVerificacaoExpiracao != null && DateTime.now().isBefore(_proximaVerificacaoExpiracao!))) return;
+    final reservaId = int.tryParse('${compra['reserva_ingresso_id']}');
+    if (reservaId == null) return;
+    _verificandoExpiracaoSelecao = true;
+    try {
+      final clienteId = await authStorage.obterClienteId();
+      if (clienteId == null) throw StateError('Cliente não identificado');
+      final atual = await apiService.consultarReserva(reservaId: reservaId, clienteId: clienteId);
+      if (!mounted || !tela.mounted || ModalRoute.of(tela)?.isCurrent != true ||
+          _compraEvento?['compra_evento_id'] != compra['compra_evento_id']) return;
+      final situacao = '${atual['status'] ?? ''}'.toUpperCase();
+      final pagamento = '${atual['status_pagamento'] ?? ''}'.toUpperCase();
+      final segundos = int.tryParse('${atual['segundos_restantes']}');
+      if (pagamento == 'PAGO') {
+        _timerReservaSacola?.cancel();
+        setState(() { _compraEvento = null; _quantidadesModalidades.clear(); });
+        AppSnackBar.sucesso(tela, 'Pagamento confirmado. Confira seus ingressos na carteira.');
+        return;
+      }
+      if (segundos != null && segundos > 0 && !{'EXPIRADA', 'CANCELADA'}.contains(situacao)) {
+        _proximaVerificacaoExpiracao = null;
+        _definirPrazoSacola(HorarioBrasil.agora().add(Duration(seconds: segundos)));
+        return;
+      }
+      if (segundos == null && !{'EXPIRADA', 'CANCELADA'}.contains(situacao)) {
+        throw StateError('Prazo indisponível');
+      }
+      _timerReservaSacola?.cancel();
+      setState(() {
+        _compraEvento = null;
+        _quantidadesModalidades.clear();
+        _participantesDaSacola.clear();
+        _segundosReservaSacola = 0;
+      });
+      await mostrarPrazoExpirado(tela, tipo: PrazoExpiradoTipo.reserva);
+      if (mounted) unawaited(atualizarLotes(mostrarConfirmacao: false));
+    } catch (_) {
+      if (mounted && tela.mounted) {
+        _proximaVerificacaoExpiracao = DateTime.now().add(const Duration(seconds: 10));
+        AppSnackBar.aviso(tela, 'Não foi possível verificar a reserva. Confira sua conexão e tente novamente.');
+      }
+    } finally {
+      _verificandoExpiracaoSelecao = false;
+    }
   }
 
   int _tempoRestanteSacola() {
@@ -2297,6 +2352,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           onEntenderTaxa: _abrirExplicacaoTaxas,
           compraEvento: _compraEvento,
           segundosReserva: () => _segundosReservaSacola,
+          verificarExpiracao: (tela) => unawaited(_verificarExpiracaoNaSelecao(tela)),
           quantidadeSacola: () =>
               int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0,
           onSacolaTap: () => _verIngressosSacola(confirmar: true),
@@ -3030,6 +3086,20 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
+        actions: [
+          if (_compraEvento != null && _segundosReservaSacola > 0)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
+                const SizedBox(width: 4),
+                Text(
+                  '${(_segundosReservaSacola ~/ 60).toString().padLeft(2, '0')}:${(_segundosReservaSacola % 60).toString().padLeft(2, '0')}',
+                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w800, fontSize: 16),
+                ),
+              ]),
+            ),
+        ],
       ),
       bottomNavigationBar: SafeArea(
         top: false,
