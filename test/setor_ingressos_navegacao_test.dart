@@ -11,6 +11,7 @@ import 'package:clubbar_cliente/screens/detalhe_loja/detalhe_loja_screen.dart';
 import 'package:clubbar_cliente/screens/home/home_screen.dart';
 import 'package:clubbar_cliente/screens/main/main_navigation_screen.dart';
 import 'package:clubbar_cliente/screens/pagamento/escolha_pagamento_screen.dart';
+import 'package:clubbar_cliente/screens/pagamento/mercado_pago_card_screen.dart';
 import 'package:clubbar_cliente/screens/pagamento/pagamento_sucesso_screen.dart';
 import 'package:clubbar_cliente/screens/pagamento/pix_pagamento_screen.dart';
 import 'package:clubbar_cliente/services/main_navigation_controller.dart';
@@ -72,6 +73,7 @@ void main() {
     void Function()? verificarSetores,
     double taxaMinima = 0,
     bool setorUnico = false,
+    bool Function()? cotacaoFalhou,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -103,6 +105,9 @@ void main() {
       requests.add(request);
       final path = request.url.path;
       final Object resposta;
+      if (path == '/reservas-ingressos/30/cotacao-mercado-pago' && cotacaoFalhou?.call() == true) {
+        return http.Response(jsonEncode({'detail': 'Erro na cotação'}), 500);
+      }
       if (path == '/eventos/10') {
         resposta = {
           'evento_id': 10,
@@ -160,8 +165,8 @@ void main() {
           'ingressos': valor,
           'conveniencia': 0,
           'percentual_conveniencia': 0,
-          'processamento': 0,
-          'total': valor,
+          'processamento': 0.2,
+          'total': valor + 0.2,
         };
       } else if (path == '/reservas-ingressos/30/mercado-pago' ||
           path == '/reservas-ingressos/30/pix') {
@@ -172,7 +177,7 @@ void main() {
           'expiration_date': '2099-12-13T13:00:00-03:00',
         };
       } else if (path == '/pagamentos/lojas/5/provedor') {
-        resposta = {'provedor_pagamento': provedor};
+        resposta = {'provedor_pagamento': provedor, 'mercado_pago_public_key': 'TEST-key'};
       } else if (path == '/campanhas-doacao/vigente') {
         resposta = {'campanha': null};
       } else if (path.endsWith('/quantidade-vendida')) {
@@ -274,7 +279,7 @@ void main() {
       expect(find.text('Participante 1'), findsOneWidget);
       expect(find.text('Home'), findsNothing);
       expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
-      await tester.tap(find.text('Adicionar ingresso'));
+      await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
       expect(find.text('Inteira'), findsOneWidget);
       await tester.tap(find.byTooltip('Conferir sacola'));
@@ -328,6 +333,73 @@ void main() {
       await tester.pumpAndSettle();
       expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento'), hasLength(2));
     }, segundosReserva: 2, reservaExpirada: () => expirou);
+  });
+
+  testWidgets('resumo oficial é exibido antes do Pix sem confirmação extra', (tester) async {
+    await executar(tester, (requests) async {
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.text('Taxa de conveniência (0%)'), findsOneWidget);
+      expect(find.text('Taxa de processamento (2%)'), findsOneWidget);
+      expect(find.text('R\$ 0,20'), findsOneWidget);
+      expect(find.text('Total a pagar'), findsOneWidget);
+      expect(find.text('R\$ 10,20'), findsOneWidget);
+      expect(find.text('Entenda as taxas'), findsOneWidget);
+      await tester.tap(find.text('Pagamento PIX'));
+      await tester.pumpAndSettle();
+      expect(find.text('Confirme o valor'), findsNothing);
+      final envio = requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/30/mercado-pago').single;
+      expect((jsonDecode(envio.body) as Map)['valor_total_confirmado'], 10.2);
+      expect(find.byType(PixPagamentoScreen), findsOneWidget);
+    });
+  });
+
+  testWidgets('cartão abre diretamente após exibir a cotação', (tester) async {
+    await executar(tester, (_) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      await tester.pump();
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.text('R\$ 10,20'), findsOneWidget);
+      await tester.tapAt(tester.getTopLeft(find.widgetWithText(ElevatedButton, 'Pagamento com cartão de crédito')) + const Offset(20, 12));
+      await tester.pumpAndSettle();
+      expect(find.text('Confirme o valor'), findsNothing);
+      expect(find.byType(MercadoPagoCardScreen), findsOneWidget);
+    });
+  });
+
+  testWidgets('erro na cotação bloqueia pagamento e permite nova tentativa', (tester) async {
+    var falhou = true;
+    await executar(tester, (requests) async {
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.text('Não foi possível carregar o resumo da compra.'), findsOneWidget);
+      expect(tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Pagamento PIX')).onPressed, isNull);
+      expect(requests.where((r) => r.url.path == '/reservas-ingressos/30/mercado-pago'), isEmpty);
+      falhou = false;
+      await tester.tap(find.text('Tentar novamente'));
+      await tester.pumpAndSettle();
+      expect(find.text('R\$ 10,20'), findsOneWidget);
+      expect(tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Pagamento PIX')).onPressed, isNotNull);
+    }, cotacaoFalhou: () => falhou);
   });
 
   testWidgets('salva participante na tela de conferência sem finalizar compra', (tester) async {
@@ -600,9 +672,6 @@ void main() {
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 500));
             await tester.pump();
-            if (provedor == 'MERCADO_PAGO') {
-              await tester.tap(find.text('Continuar'));
-            }
             await tester.pumpAndSettle();
             expect(find.byType(PixPagamentoScreen), findsOneWidget);
             for (final item in [
@@ -812,8 +881,7 @@ void main() {
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 500));
             await tester.pump();
-            expect(find.text('Confirme o valor'), findsOneWidget);
-            await tester.tap(find.text('Continuar'));
+            expect(find.text('Confirme o valor'), findsNothing);
             await tester.pumpAndSettle();
             expect(find.byType(PixPagamentoScreen), findsOneWidget);
             for (final item in [

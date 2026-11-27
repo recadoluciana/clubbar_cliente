@@ -84,10 +84,16 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
   Duration _tempoReservaRestante = Duration.zero;
   bool _reservaExpirada = false;
   bool _verificandoReserva = false;
+  bool _carregandoResumoIngresso = false;
+  bool _erroResumoIngresso = false;
+  String? _provedorResumoIngresso;
+  Map<String, dynamic>? _cotacaoIngresso;
 
   bool get carregandoPagamento =>
       _metodoPagamentoProcessando != null ||
       _verificandoReserva ||
+      _carregandoResumoIngresso ||
+      _erroResumoIngresso ||
       (_reservaExpiracaoAtual != null &&
           _tempoReservaRestante <= Duration.zero);
   bool get _usaMercadoPago => _provedorPagamento == 'MERCADO_PAGO';
@@ -154,7 +160,11 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       _carregarCashback();
     }
     _carregarCampanhaDoacao();
-    _carregarProvedorPagamento();
+    if (widget.reservaIngressoId != null) {
+      _carregarResumoIngresso();
+    } else {
+      _carregarProvedorPagamento();
+    }
   }
 
   @override
@@ -333,6 +343,61 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       if (obrigatorio) rethrow;
       // Segurança por compatibilidade: se a consulta falhar, preserva Asaas.
     }
+  }
+
+  Future<void> _carregarResumoIngresso() async {
+    if (!mounted || widget.reservaIngressoId == null) return;
+    setState(() {
+      _carregandoResumoIngresso = true;
+      _erroResumoIngresso = false;
+      _cotacaoIngresso = null;
+      _provedorResumoIngresso = null;
+    });
+    try {
+      await _carregarProvedorPagamento(obrigatorio: true);
+      if (!mounted) return;
+      Map<String, dynamic>? cotacao;
+      if (_usaMercadoPago) {
+        final clienteId = await authStorage.obterClienteId();
+        if (clienteId == null || clienteId <= 0) {
+          throw Exception('Cliente não identificado');
+        }
+        cotacao = await apiService.cotarReservaMercadoPago(
+          reservaId: widget.reservaIngressoId!,
+          clienteId: clienteId,
+          metodo: 'PIX',
+        );
+        for (final campo in ['ingressos', 'conveniencia', 'processamento', 'total', 'percentual_conveniencia']) {
+          if (cotacao[campo] is! num) throw Exception('Cotação incompleta');
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _cotacaoIngresso = cotacao;
+        _provedorResumoIngresso = _provedorPagamento;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _erroResumoIngresso = true);
+    } finally {
+      if (mounted) setState(() => _carregandoResumoIngresso = false);
+    }
+  }
+
+  String get _tituloTaxaConveniencia {
+    final cotacao = _cotacaoIngresso;
+    if (cotacao == null) return 'Taxa de conveniência';
+    if (cotacao['minimo_aplicado'] == true) {
+      return 'Taxa de conveniência (mínimo aplicado)';
+    }
+    final percentual = (cotacao['percentual_conveniencia'] as num).toDouble();
+    final texto = percentual.toStringAsFixed(percentual == percentual.truncateToDouble() ? 0 : 2).replaceAll('.', ',');
+    return 'Taxa de conveniência ($texto%)';
+  }
+
+  Future<void> _validarProvedorDoResumo() async {
+    if (widget.reservaIngressoId == null || _provedorResumoIngresso == _provedorPagamento) return;
+    await _carregarResumoIngresso();
+    throw Exception('O resumo da compra foi atualizado. Confira os valores antes de continuar.');
   }
 
   double get percentualTaxaProduto => widget.loja.vrtaxaprod;
@@ -1072,77 +1137,17 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     return endereco;
   }
 
-  Future<double?> _confirmarValorIngressoMercadoPago(
-    String metodo,
-    int clienteId,
-  ) async {
-    final cotacao = await apiService.cotarReservaMercadoPago(
-      reservaId: widget.reservaIngressoId!,
-      clienteId: clienteId,
-      metodo: metodo,
-    );
-    final ingressos = (cotacao['ingressos'] as num).toDouble();
-    final conveniencia = (cotacao['conveniencia'] as num).toDouble();
-    final percentual = (cotacao['percentual_conveniencia'] as num).toDouble();
-    final minimoAplicado = cotacao['minimo_aplicado'] == true;
-    final percentualTexto = percentual
-        .toStringAsFixed(percentual == percentual.truncateToDouble() ? 0 : 2)
-        .replaceAll('.', ',');
-    final processamento = (cotacao['processamento'] as num).toDouble();
-    final total = (cotacao['total'] as num).toDouble();
-    if (!mounted) return null;
-    final aceitou = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirme o valor'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Ingressos: ${_moeda(ingressos)}'),
-              const SizedBox(height: 8),
-              Text(
-                'Taxa de conveniência${minimoAplicado ? ' (mínimo aplicado)' : ' ($percentualTexto%)'}: ${_moeda(conveniencia)}',
-              ),
-              const SizedBox(height: 8),
-              Text('Taxa de processamento (2%): ${_moeda(processamento)}'),
-              const SizedBox(height: 12),
-              Text(
-                'Total a pagar: ${_moeda(total)}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              TextButton(
-                onPressed: () => mostrarExplicacaoTaxas(context),
-                child: const Text('Entenda as taxas'),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Continuar'),
-          ),
-        ],
-      ),
-    );
-    return aceitou == true ? total : null;
-  }
-
   Future<void> _abrirCheckoutMercadoPago({
     required String metodo,
     required int clienteId,
     Map<String, String>? entrega,
   }) async {
     final valorConfirmado = widget.reservaIngressoId != null
-        ? await _confirmarValorIngressoMercadoPago(metodo, clienteId)
+        ? (_cotacaoIngresso?['total'] as num?)?.toDouble()
         : null;
-    if (widget.reservaIngressoId != null && valorConfirmado == null) return;
+    if (widget.reservaIngressoId != null && valorConfirmado == null) {
+      throw Exception('Não foi possível confirmar o resumo da compra. Tente novamente.');
+    }
     final valorCheckout = valorConfirmado ?? totalPagar;
     if (metodo.toUpperCase() == 'CREDIT_CARD' && kIsWeb) {
       final publicKey = _mercadoPagoPublicKey;
@@ -1464,6 +1469,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       // antes de criar a cobrança para nunca abrir o checkout anterior por
       // causa da consulta assíncrona iniciada no carregamento da tela.
       await _carregarProvedorPagamento(obrigatorio: true);
+      await _validarProvedorDoResumo();
       final clienteId = await authStorage.obterClienteId();
       if (clienteId == null || clienteId == 0) {
         throw Exception('Cliente não identificado');
@@ -1547,6 +1553,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
     try {
       // Veja a observação equivalente no fluxo PIX acima.
       await _carregarProvedorPagamento(obrigatorio: true);
+      await _validarProvedorDoResumo();
       final clienteId = await authStorage.obterClienteId();
 
       if (clienteId == null || clienteId == 0) {
@@ -1893,29 +1900,42 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
                   ),
                   const SizedBox(height: 16),
                   _linhaCashback(),
+                ] else if (_carregandoResumoIngresso) ...[
+                  const Center(child: CircularProgressIndicator()),
+                ] else if (_erroResumoIngresso) ...[
+                  const Text('Não foi possível carregar o resumo da compra.'),
+                  TextButton(onPressed: _carregarResumoIngresso, child: const Text('Tentar novamente')),
                 ] else ...[
                   _linhaResumoComIcone(
                     icon: Icons.confirmation_number_outlined,
                     titulo: 'Ingressos',
-                    valor: widget.totalIngressos,
+                    valor: (_cotacaoIngresso?['ingressos'] as num?)?.toDouble() ?? widget.totalIngressos,
                   ),
                   const SizedBox(height: 10),
-                  _linhaResumo('Taxa de conveniência', taxaIngressoCliente),
+                  _linhaResumo(_tituloTaxaConveniencia,
+                    (_cotacaoIngresso?['conveniencia'] as num?)?.toDouble() ?? taxaIngressoCliente),
+                  if (_cotacaoIngresso != null) ...[
+                    const SizedBox(height: 10),
+                    _linhaResumo('Taxa de processamento (2%)',
+                      (_cotacaoIngresso!['processamento'] as num).toDouble()),
+                  ],
                 ],
-                const Divider(height: 28),
-                _linhaResumo(
-                  compraDeProdutos ? 'Total a pagar' : 'Subtotal',
-                  totalPagar,
-                  destaque: true,
-                ),
-                if (!compraDeProdutos && _usaMercadoPago)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
-                    child: Text(
-                      'A taxa de processamento e o total serão mostrados após a escolha do pagamento.',
-                      style: TextStyle(fontSize: 12),
-                    ),
+                if (compraDeProdutos || (!_carregandoResumoIngresso && !_erroResumoIngresso)) ...[
+                  const Divider(height: 28),
+                  _linhaResumo(
+                    'Total a pagar',
+                    (_cotacaoIngresso?['total'] as num?)?.toDouble() ?? totalPagar,
+                    destaque: true,
                   ),
+                  if (!compraDeProdutos)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: () => mostrarExplicacaoTaxas(context),
+                        child: const Text('Entenda as taxas'),
+                      ),
+                    ),
+                ],
               ],
             ),
           ),
