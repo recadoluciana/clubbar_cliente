@@ -50,10 +50,6 @@ bool _ehModalidadeMeiaEntrada(EventoLote lote) =>
 int _limitePorTransacao(EventoLote lote) =>
     _ehCortesia(lote) ? 2 : _limiteIngressosPorTransacao;
 
-String _textoLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
-    ? 'Limite de 1 ingresso por CPF'
-    : '5 ingressos por compra';
-
 String _mensagemLimitePorTransacao(EventoLote lote) => _ehCortesia(lote)
     ? 'Cortesia limitada a 1 ingresso por CPF neste evento.'
     : _mensagemLimiteIngressosPorTransacao;
@@ -315,7 +311,15 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
                 const Text('Não há ingressos disponíveis no momento.')
               else ...[
                 Row(children: [
-                  const Expanded(child: Text('Selecione um setor', style: TextStyle(color: Colors.grey))),
+                  const Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Selecione um setor', style: TextStyle(color: Colors.black)),
+                      SizedBox(height: 4),
+                      Text('Máximo de 5 ingressos por compra, considerando todos os setores.',
+                        style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    ],
+                  )),
                   TextButton.icon(
                     onPressed: () async { await widget.onAtualizar(); if (mounted) setState(() {}); },
                     icon: const Icon(Icons.refresh, size: 18), label: const Text('Atualizar'),
@@ -557,13 +561,16 @@ class _ModalidadesIngressoScreenState
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
+                Row(children: [
+                  const Expanded(child: Text(
+                    'Máximo de 5 ingressos por compra, considerando todos os setores.',
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  )),
+                  TextButton.icon(
                     onPressed: () async { await widget.onAtualizar(); if (mounted) setState(() {}); },
                     icon: const Icon(Icons.refresh, size: 18), label: const Text('Atualizar'),
                   ),
-                ),
+                ]),
                 if (descricaoSetor.isNotEmpty && !descricaoPadrao) ...[
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -924,13 +931,11 @@ class _ModalidadesIngressoScreenState
                     spacing: 8,
                     runSpacing: 4,
                     children: [
-                      Text(
-                        _textoLimitePorTransacao(lote),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: ehCortesia ? Colors.black : Colors.black54,
+                      if (ehCortesia)
+                        const Text(
+                          'Limite de 1 ingresso por CPF',
+                          style: TextStyle(fontSize: 11, color: Colors.black),
                         ),
-                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
