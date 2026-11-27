@@ -15,6 +15,7 @@ import 'package:clubbar_cliente/screens/pagamento/pagamento_sucesso_screen.dart'
 import 'package:clubbar_cliente/screens/pagamento/pix_pagamento_screen.dart';
 import 'package:clubbar_cliente/services/main_navigation_controller.dart';
 import 'package:clubbar_cliente/widgets/clubbar_page_header.dart';
+import 'package:clubbar_cliente/utils/value_formatters.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -69,6 +70,7 @@ void main() {
     bool cortesiaApenasPrimeiroSetor = false,
     bool cortesiaEsgotada = false,
     void Function()? verificarSetores,
+    double taxaMinima = 0,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -198,6 +200,7 @@ void main() {
             'loja_id': 5,
             'organizacao_id': 1,
             'nmloja': 'Casa',
+            'vrtaxaminimaingresso': taxaMinima,
           }),
         ),
       );
@@ -352,6 +355,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
     });
+  });
+
+  testWidgets('preço, quantidade e total aparecem na mesma linha', (tester) async {
+    await executar(tester, (_) async {
+      final unitario = find.byWidgetPredicate((widget) => widget is Text &&
+        widget.textSpan?.toPlainText().contains(ValueFormatters.moeda(10) + ' (+' + ValueFormatters.moeda(2.99) + ')') == true);
+      final aumentar = find.byTooltip('Aumentar quantidade');
+      final totalInicial = find.text(ValueFormatters.moeda(12.99));
+      expect(unitario, findsOneWidget);
+      expect(totalInicial, findsOneWidget);
+      expect(find.text('Subtotal'), findsNothing);
+      expect(tester.getCenter(unitario).dy, closeTo(tester.getCenter(aumentar).dy, 1));
+      expect(tester.getCenter(totalInicial).dy, closeTo(tester.getCenter(aumentar).dy, 1));
+      expect(tester.getCenter(unitario).dx, lessThan(tester.getCenter(aumentar).dx));
+      expect(tester.getCenter(totalInicial).dx, greaterThan(tester.getCenter(aumentar).dx));
+      await tester.tap(aumentar);
+      await tester.pump();
+      expect(find.text(ValueFormatters.moeda(25.98)), findsOneWidget);
+    }, taxaMinima: 2.99);
   });
 
   testWidgets('aviso de cortesia aparece apenas no setor disponível', (tester) async {

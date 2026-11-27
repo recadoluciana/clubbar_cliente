@@ -693,60 +693,56 @@ class _ModalidadesIngressoScreenState
               Row(
                 children: [
                   Expanded(
-                    child: Text.rich(
-                      TextSpan(
-                        style: const TextStyle(color: Colors.black),
-                        children: [
-                          TextSpan(
-                            text: ValueFormatters.moeda(lote.preco),
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w800,
+                    flex: 5,
+                    child: FittedBox(
+                      alignment: Alignment.centerLeft,
+                      fit: BoxFit.scaleDown,
+                      child: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(color: Colors.black),
+                          children: [
+                            TextSpan(
+                              text: ValueFormatters.moeda(lote.preco),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                          TextSpan(
-                            text:
-                                ' (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.normal,
-                              color: Colors.black54,
+                            TextSpan(
+                              text:
+                                  ' (+${ValueFormatters.moeda(taxaUnitaria)})',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.black54,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        maxLines: 1,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  if (!ehCortesia)
-                    _controleQuantidade(
-                      lote: lote,
-                      quantidade: quantidade,
-                      podeDiminuir: podeDiminuir,
-                      podeAumentar: podeAumentar,
-                    ),
-                ],
-              ),
-              const Divider(height: 18),
-              Row(
-                children: [
+                  const SizedBox(width: 6),
+                  _controleQuantidade(
+                    lote: lote,
+                    quantidade: quantidade,
+                    podeDiminuir: podeDiminuir,
+                    podeAumentar: podeAumentar,
+                  ),
+                  const SizedBox(width: 6),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Subtotal',
-                          style: TextStyle(fontWeight: FontWeight.w700),
+                    flex: 3,
+                    child: FittedBox(
+                      alignment: Alignment.centerRight,
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        ValueFormatters.moeda(totalPagar),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          ValueFormatters.moeda(totalPagar),
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ],
+                        maxLines: 1,
+                      ),
                     ),
                   ),
                 ],
