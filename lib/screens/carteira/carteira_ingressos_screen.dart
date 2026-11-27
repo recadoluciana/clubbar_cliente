@@ -1021,50 +1021,43 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  'Setor: ${setor.isEmpty ? 'Não informado' : setor}',
-                                  style: const TextStyle(fontSize: 12),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 4,
+                                      child: Text(
+                                        'Setor: ${setor.isEmpty ? 'Não informado' : setor}',
+                                        style: const TextStyle(fontSize: 12),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      flex: 6,
+                                      child: FittedBox(
+                                        alignment: Alignment.centerLeft,
+                                        fit: BoxFit.scaleDown,
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.receipt_long_outlined, size: 14, color: Colors.grey.shade600),
+                                            const SizedBox(width: 5),
+                                            Text('Comprado em', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                                            const SizedBox(width: 4),
+                                            Text(dataCompra.isEmpty ? 'Não informado' : dataCompra,
+                                              style: TextStyle(fontSize: 11, color: Colors.grey.shade700)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(
-                          Icons.receipt_long_outlined,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 5),
-                        Expanded(
-                          child: Wrap(
-                            spacing: 4,
-                            children: [
-                              Text(
-                                'Comprado em',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                              Text(
-                                dataCompra.isEmpty
-                                    ? 'Não informado'
-                                    : dataCompra,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
@@ -1276,7 +1269,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Ingressos do evento',
+        titulo: 'Meus ingressos',
         iconeTitulo: Icons.confirmation_number_outlined,
         corIconeTitulo: Colors.amber,
         mostrarVoltar: true,
