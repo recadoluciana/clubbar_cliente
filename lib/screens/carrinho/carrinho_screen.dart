@@ -24,6 +24,7 @@ class ItemCarrinhoAgrupado {
   final String nome;
   final String observacao;
   final String fotoUrl;
+  final double valorEconomia;
   final double precoOriginal;
   final double precoFinal;
   final bool descontoAtivo;
@@ -46,6 +47,7 @@ class ItemCarrinhoAgrupado {
     required this.nome,
     required this.observacao,
     required this.fotoUrl,
+    this.valorEconomia = 0,
     required this.precoOriginal,
     required this.precoFinal,
     required this.descontoAtivo,
@@ -121,6 +123,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           nome: atual.nome,
           observacao: atual.observacao,
           fotoUrl: atual.fotoUrl,
+          valorEconomia: atual.valorEconomia + item.valorEconomia,
           precoOriginal: atual.precoOriginal,
           precoFinal: atual.precoFinal,
           descontoAtivo: atual.descontoAtivo,
@@ -144,6 +147,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           nome: item.nome,
           observacao: obs,
           fotoUrl: item.fotoUrl,
+          valorEconomia: item.valorEconomia,
           precoOriginal: item.precoOriginal,
           precoFinal: item.precoFinal,
           descontoAtivo: item.descontoAtivo,
@@ -748,6 +752,18 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (item.valorEconomia > 0) ...[
+                      const SizedBox(height: 6),
+                      ClipPath(
+                        clipper: _EtiquetaDescontoClipper(),
+                        child: Container(
+                          color: Colors.red.shade700,
+                          padding: const EdgeInsets.fromLTRB(10, 5, 17, 5),
+                          child: Text('Economizou ${ValueFormatters.moeda(item.valorEconomia)}',
+                            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     if (item.nmparticipante.isNotEmpty) ...[
                       Container(
@@ -980,7 +996,6 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                         if (vazio)
                           _estadoVazio()
                         else ...[
-                          ...itensAgrupados.map(_itemCarrinho),
                           Padding(
                             padding: const EdgeInsets.only(top: 2, bottom: 10),
                             child: Text(
@@ -993,6 +1008,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                               ),
                             ),
                           ),
+                          ...itensAgrupados.map(_itemCarrinho),
                           _resumoTotal(),
                         ],
                       ],
@@ -1023,4 +1039,19 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
             ),
     );
   }
+}
+
+
+class _EtiquetaDescontoClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) => Path()
+    ..moveTo(0, 0)
+    ..lineTo(size.width - 9, 0)
+    ..lineTo(size.width, size.height / 2)
+    ..lineTo(size.width - 9, size.height)
+    ..lineTo(0, size.height)
+    ..close();
+
+  @override
+  bool shouldReclip(_EtiquetaDescontoClipper oldClipper) => false;
 }
