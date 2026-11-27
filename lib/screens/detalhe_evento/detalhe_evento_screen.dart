@@ -3334,13 +3334,6 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                                 },
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            TextButton.icon(
-                              onPressed: _abrirExplicacaoTaxas,
-                              icon: const Icon(Icons.info_outline, size: 17),
-                              label: const Text('Entenda nossas taxas'),
-                              style: _estiloLinksEvento(),
-                            ),
                           ],
                         ],
                       ),
