@@ -341,12 +341,21 @@ class _ModalidadesIngressoScreenState
                 ? 'Escolha a modalidade'
                 : widget.nomeEvento,
             subtitulo: widget.dataHoraEvento,
-            subtituloWidget: Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 8,
-              runSpacing: 4,
+            subtituloWidget: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (nomeSetor.isNotEmpty)
+                Text(
+                  widget.dataHoraEvento == 'Data não informada'
+                      ? widget.dataHoraEvento
+                      : 'Data: ${widget.dataHoraEvento}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (nomeSetor.isNotEmpty) ...[
+                  const SizedBox(height: 4),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -368,14 +377,7 @@ class _ModalidadesIngressoScreenState
                       ),
                     ],
                   ),
-                Text(
-                  widget.dataHoraEvento,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                ],
               ],
             ),
             icone: Icons.confirmation_number_rounded,
@@ -2187,9 +2189,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           opcoes: opcoes,
           nomeLoja: widget.loja.nome,
           nomeEvento: detalhe?.titulo ?? opcoes.first.nome,
-          dataHoraEvento: DateFormatters.dataHoraSimples(
+          dataHoraEvento: DateFormatters.dataCompleta(
             detalhe?.dataInicio ?? '',
-          ),
+          ).replaceFirst(', às ', ' às '),
           imagemEventoUrl: detalhe?.bannerUrl ?? '',
           taxaPercentual: widget.loja.vrtaxaing,
           taxaMinima: widget.loja.vrtaxaminimaingresso,

@@ -233,6 +233,19 @@ void main() {
     expect(tester.takeException(), isNull);
   }
 
+  testWidgets('cabeçalho do setor mostra data entre evento e setor', (tester) async {
+    await executar(tester, (_) async {
+      final nome = find.text('Festival');
+      final data = find.text('Data: domingo, 13/12/2099 às 13h00');
+      final setor = find.text('Setor: Pista');
+      expect(nome, findsOneWidget);
+      expect(data, findsOneWidget);
+      expect(setor, findsOneWidget);
+      expect(tester.getCenter(nome).dy, lessThan(tester.getCenter(data).dy));
+      expect(tester.getCenter(data).dy, lessThan(tester.getCenter(setor).dy));
+    });
+  });
+
   testWidgets('Voltar do setor mantém o detalhe montado', (tester) async {
     await executar(tester, (requests) async {
       await tester.binding.handlePopRoute();
