@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 class MainNavigationController {
   static final ValueNotifier<Widget?> telaInterna = ValueNotifier(null);
   static final ValueNotifier<int> abaIndex = ValueNotifier(0);
+  static final ValueNotifier<bool> ocultarBarra = ValueNotifier(false);
   static final List<Widget> _historico = [];
 
   static void abrirTela(Widget tela) {

@@ -748,9 +748,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 },
                 child: telaInterna ?? _buildPage(),
               ),
-              bottomNavigationBar: manterNavegacaoVisivel
-                  ? _barraNavegacao(telaInterna)
-                  : null,
+              bottomNavigationBar: ValueListenableBuilder<bool>(
+                valueListenable: MainNavigationController.ocultarBarra,
+                builder: (context, ocultarBarra, _) =>
+                    manterNavegacaoVisivel && !ocultarBarra
+                    ? _barraNavegacao(telaInterna)
+                    : const SizedBox.shrink(),
+              ),
             );
           },
         );
