@@ -28,6 +28,8 @@ import '../../utils/taxa_ingresso.dart';
 import '../../utils/app_snackbar.dart';
 import '../../utils/login_redirect.dart';
 import '../../utils/horario_brasil.dart';
+import '../../utils/cpf_utils.dart';
+import '../pagamento/pagamento_sucesso_screen.dart';
 import '../produtos_loja/produtos_loja_screen.dart';
 import 'participantes_reserva_screen.dart';
 import '../pagamento/politica_compra_screen.dart';
@@ -671,12 +673,13 @@ class _ModalidadesIngressoScreenState
                   ),
                 ),
                 const SizedBox(width: 8),
-                _controleQuantidade(
-                  lote: lote,
-                  quantidade: quantidade,
-                  podeDiminuir: podeDiminuir,
-                  podeAumentar: podeAumentar,
-                ),
+                if (!ehCortesia)
+                  _controleQuantidade(
+                    lote: lote,
+                    quantidade: quantidade,
+                    podeDiminuir: podeDiminuir,
+                    podeAumentar: podeAumentar,
+                  ),
               ],
             ),
             const Divider(height: 18),
@@ -717,8 +720,8 @@ class _ModalidadesIngressoScreenState
                             if (mounted) setState(() => _processando = false);
                           }
                         },
-                  icon: const Icon(Icons.add, size: 17),
-                  label: const Text('Adicionar'),
+                  icon: Icon(ehCortesia ? Icons.card_giftcard_outlined : Icons.add, size: 17),
+                  label: Text(ehCortesia ? 'Resgatar' : 'Adicionar'),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -1431,11 +1434,99 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     return clienteId;
   }
 
+  Future<void> _resgatarCortesia(EventoLote lote) async {
+    if (processandoCompra || !mounted) return;
+    final clienteId = await _obterClienteIdLogado();
+    if (clienteId == null || !mounted) return;
+    var nome = '';
+    var cpf = '';
+    var enviando = false;
+    String? erro;
+    final resgatada = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, atualizarDialogo) => PopScope(
+          canPop: !enviando,
+          child: AlertDialog(
+            title: const Text('Resgatar cortesia'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Informe os dados do participante. Cada CPF pode resgatar uma cortesia neste evento.'),
+                  const SizedBox(height: 16),
+                  TextField(onChanged: (valor) => nome = valor, textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(labelText: 'Nome completo')),
+                  const SizedBox(height: 12),
+                  TextField(onChanged: (valor) => cpf = valor, keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'CPF')),
+                  if (erro != null) ...[
+                    const SizedBox(height: 12),
+                    Text(erro!, style: TextStyle(color: Theme.of(dialogContext).colorScheme.error)),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: enviando ? null : () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Cancelar')),
+              FilledButton(
+                onPressed: enviando ? null : () async {
+                  final nomeInformado = nome.trim();
+                  final cpfInformado = CpfUtils.somenteNumeros(cpf);
+                  if (nomeInformado.length < 3 || !CpfUtils.validar(cpfInformado)) {
+                    atualizarDialogo(() => erro = 'Confira o nome e o CPF do participante.');
+                    return;
+                  }
+                  atualizarDialogo(() { enviando = true; erro = null; });
+                  try {
+                    final resposta = await apiService.resgatarCortesiaDireta(
+                      clienteId: clienteId, loteId: lote.loteId,
+                      lotePrecoId: lote.lotePrecoId, nome: nomeInformado, cpf: cpfInformado,
+                    );
+                    if (resposta['gratuito'] != true && resposta['venda_id'] == null) {
+                      throw Exception('Não foi possível confirmar o resgate.');
+                    }
+                    if (dialogContext.mounted) Navigator.of(dialogContext).pop(true);
+                  } catch (e) {
+                    if (dialogContext.mounted) atualizarDialogo(() {
+                      erro = apiService.mensagemErroAmigavel(e);
+                      enviando = false;
+                    });
+                  }
+                },
+                child: Text(enviando ? 'Resgatando...' : 'Resgatar cortesia'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (resgatada != true || !mounted) return;
+    CarteiraBadgeNotifier.atualizar();
+    await atualizarLotes(mostrarConfirmacao: false);
+    if (!mounted) return;
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (_) => PagamentoSucessoScreen(
+        lojaDestino: widget.loja,
+        tituloAppBar: evento?.titulo ?? 'Evento',
+        tituloSucesso: 'Resgate realizado com sucesso',
+        descricaoSucesso: 'Seu ingresso está disponível na Carteira.',
+      ),
+    ));
+  }
+
   Future<void> iniciarReserva(
     EventoLote lote, {
     int? quantidadeSelecionada,
   }) async {
     if (processandoCompra) return;
+    if (_ehCortesia(lote)) {
+      await _resgatarCortesia(lote);
+      return;
+    }
     if (lote.qtDisponivelParaCompra <= 0) {
       await carregarStatusLotes();
       if (mounted) {
@@ -2304,8 +2395,8 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
       onPressed: !vendaDisponivel || processandoCompra || !modalidadeDisponivel
           ? null
           : () => iniciarReserva(lote, quantidadeSelecionada: quantidade),
-      icon: const Icon(Icons.add, size: 17),
-      label: const Text('Adicionar'),
+      icon: Icon(ehCortesia ? Icons.card_giftcard_outlined : Icons.add, size: 17),
+      label: Text(ehCortesia ? 'Resgatar' : 'Adicionar'),
       style: FilledButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         minimumSize: Size.zero,
