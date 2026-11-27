@@ -37,12 +37,13 @@ void main() {
         onRemoverIngresso: (item) async => removidos.add(item['reserva_ingresso_id'] as int),
       )));
       await tester.pump();
-      final loteSetor = find.text('Lote: Lote 1  •  Setor: Pista');
-      final valor = find.textContaining('Valor:').first;
-      expect(loteSetor, findsOneWidget);
-      expect(valor, findsOneWidget);
-      expect(tester.getCenter(valor).dy, closeTo(tester.getCenter(loteSetor).dy, 1));
-      expect(tester.getCenter(valor).dx, greaterThan(tester.getCenter(loteSetor).dx));
+      final setor = find.text('Setor: Pista');
+      final modalidade = find.text('Modalidade: Inteira');
+      expect(setor, findsOneWidget);
+      expect(modalidade, findsNWidgets(2));
+      expect(tester.widget<Text>(setor).style?.fontWeight, isNot(FontWeight.bold));
+      expect(find.textContaining('Lote:'), findsNothing);
+      expect(find.textContaining('Valor:'), findsNothing);
       expect(find.text('Adicionar mais ingressos'), findsOneWidget);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo').at(0), 'Primeira Pessoa');
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo').at(1), 'Segunda Pessoa');

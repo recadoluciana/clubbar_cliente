@@ -1024,37 +1024,48 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final podeComprar = vendasHabilitadas && !produtosEmAlteracao.contains(chave);
     final pacoteId = int.tryParse('${campanhaPacote?['campanha_id']}');
     final percentualId = int.tryParse('${campanhaPercentual?['campanha_id']}');
-    Widget promocao(String descricao, VoidCallback? adicionar, {bool comQuantidade = false}) => Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE57373),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(descricao, textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
-          if (comQuantidade)
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: _controleQuantidadeProduto(produto,
-                fundo: const Color(0xFFE57373), cor: Colors.white),
-            ),
-          TextButton.icon(
-            onPressed: adicionar,
-            icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
-            label: const Text('Adicionar'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white, disabledForegroundColor: Colors.white54,
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              minimumSize: const Size(0, 32),
-            ),
-          ),
-        ],
-      ),
-    );
+    Widget promocao(String descricao, VoidCallback? adicionar, {bool comQuantidade = false}) {
+      final botao = TextButton.icon(
+        onPressed: adicionar,
+        icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
+        label: const Text('Adicionar', maxLines: 1, softWrap: false),
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white, disabledForegroundColor: Colors.white54,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          minimumSize: const Size(0, 32),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+      );
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE57373),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(descricao, textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
+            if (comQuantidade)
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _controleQuantidadeProduto(produto,
+                      fundo: const Color(0xFFE57373), cor: Colors.white),
+                    botao,
+                  ],
+                ),
+              )
+            else
+              botao,
+          ],
+        ),
+      );
+    }
 
     return IntrinsicHeight(
       child: Row(
@@ -1099,10 +1110,11 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     onPressed: !podeComprar ? null : () => adicionarProdutoAoCarrinho(
                       produto, quantidade: quantidadesSelecionadas[chave] ?? 1),
                     icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
-                    label: const Text('Adicionar'),
+                    label: const Text('Adicionar', maxLines: 1, softWrap: false),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 6),
                       minimumSize: const Size(0, 32),
+                      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],
