@@ -180,6 +180,7 @@ class _DetalheEventoConteudo extends StatefulWidget {
 
 class _TelaSelecaoIngressos extends StatefulWidget {
   final List<EventoLote> Function() lotes;
+  final bool somenteCortesia;
   final String nomeEvento;
   final String dataEvento;
   final String imagemEvento;
@@ -192,7 +193,7 @@ class _TelaSelecaoIngressos extends StatefulWidget {
   final Widget Function(List<EventoLote>, VoidCallback, bool) construirModalidades;
 
   const _TelaSelecaoIngressos({
-    required this.lotes, required this.nomeEvento, required this.dataEvento,
+    required this.lotes, required this.somenteCortesia, required this.nomeEvento, required this.dataEvento,
     required this.imagemEvento, required this.segundosReserva,
     required this.verificarExpiracao, required this.totalSelecionado,
     required this.onComprar, required this.onAtualizar, required this.construirSetor,
@@ -207,10 +208,12 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
   Set<int>? _idsSelecionados;
   Timer? _timer;
   bool _comprando = false;
+  late bool _somenteCortesia;
 
   @override
   void initState() {
     super.initState();
+    _somenteCortesia = widget.somenteCortesia;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() {});
@@ -228,7 +231,7 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
 
   @override
   Widget build(BuildContext context) {
-    final lotes = widget.lotes();
+    final lotes = widget.lotes().where((lote) => _ehCortesia(lote) == _somenteCortesia).toList();
     final nomesSetores = lotes.map((lote) => lote.nomeSetor.trim().toLowerCase()).toSet();
     final setorUnico = nomesSetores.length == 1;
     final mostrandoModalidades = setorUnico || _idsSelecionados != null;
@@ -236,7 +239,9 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
         ? lotes
         : lotes.where((lote) => _idsSelecionados?.contains(lote.lotePrecoId) == true).toList();
     void voltar() {
-      if (!setorUnico && _idsSelecionados != null) {
+      if (_somenteCortesia && !widget.somenteCortesia) {
+        setState(() { _somenteCortesia = false; _idsSelecionados = null; });
+      } else if (!setorUnico && _idsSelecionados != null) {
         setState(() => _idsSelecionados = null);
       } else {
         Navigator.of(context).pop();
@@ -244,11 +249,9 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
     }
 
     return PopScope(
-      canPop: setorUnico || _idsSelecionados == null,
+      canPop: !(_somenteCortesia && !widget.somenteCortesia) && (setorUnico || _idsSelecionados == null),
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && !setorUnico && _idsSelecionados != null) {
-          setState(() => _idsSelecionados = null);
-        }
+        if (!didPop) voltar();
       },
       child: mostrandoModalidades && opcoes.isNotEmpty
           ? widget.construirModalidades(opcoes, voltar, setorUnico)
@@ -265,7 +268,7 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Comprar ingressos', iconeTitulo: Icons.confirmation_number_rounded,
+        titulo: _somenteCortesia ? 'Resgatar cortesia' : 'Comprar ingressos', iconeTitulo: Icons.confirmation_number_rounded,
         corIconeTitulo: Colors.blue, tituloAlinhadoEsquerda: true,
         mostrarVoltar: true, mostrarSessao: false,
         actions: [
@@ -281,7 +284,7 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
             ),
         ],
       ),
-      bottomNavigationBar: DecoratedBox(
+      bottomNavigationBar: _somenteCortesia ? null : DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -334,6 +337,14 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
                     icon: const Icon(Icons.refresh, size: 18), label: const Text('Atualizar'),
                   ),
                 ]),
+                if (!_somenteCortesia && widget.lotes().any((lote) => _ehCortesia(lote) && lote.podeComprarEm(HorarioBrasil.agora()))) ...[
+                  Align(alignment: Alignment.centerLeft, child: TextButton.icon(
+                    onPressed: () => setState(() { _somenteCortesia = true; _idsSelecionados = null; }),
+                    icon: const Icon(Icons.card_giftcard_outlined),
+                    label: const Text('Resgatar cortesia'),
+                    style: TextButton.styleFrom(foregroundColor: Colors.green.shade700),
+                  )),
+                ],
                 const SizedBox(height: 8),
                 for (final opcoesLote in porLote.values) ...[
                   Padding(
@@ -341,7 +352,11 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
                     child: Text(opcoesLote.first.nome, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                   ),
                   ..._setores(opcoesLote).map((opcoes) => widget.construirSetor(
-                    opcoes, () => setState(() => _idsSelecionados = opcoes.map((item) => item.lotePrecoId).toSet()),
+                    _somenteCortesia ? opcoes : widget.lotes().where((item) =>
+                      (item.loteGlobalId == 0 ? item.loteId : item.loteGlobalId) ==
+                        (opcoes.first.loteGlobalId == 0 ? opcoes.first.loteId : opcoes.first.loteGlobalId) &&
+                      item.nomeSetor.trim().toLowerCase() == opcoes.first.nomeSetor.trim().toLowerCase()).toList(),
+                    () => setState(() => _idsSelecionados = opcoes.map((item) => item.lotePrecoId).toSet()),
                   )),
                 ],
               ],
@@ -363,6 +378,7 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
 
 class _ModalidadesIngressoScreen extends StatefulWidget {
   final List<EventoLote> opcoes;
+  final bool somenteCortesia;
   final String nomeEvento;
   final String dataHoraEvento;
   final String imagemEventoUrl;
@@ -385,6 +401,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
 
   const _ModalidadesIngressoScreen({
     required this.opcoes,
+    required this.somenteCortesia,
     required this.nomeEvento,
     required this.dataHoraEvento,
     required this.imagemEventoUrl,
@@ -463,7 +480,7 @@ class _ModalidadesIngressoScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Comprar ingressos',
+        titulo: widget.somenteCortesia ? 'Resgatar cortesia' : 'Comprar ingressos',
         iconeTitulo: Icons.confirmation_number_rounded,
         corIconeTitulo: Colors.blue,
         tituloAlinhadoEsquerda: true,
@@ -492,7 +509,7 @@ class _ModalidadesIngressoScreenState
             ),
         ],
       ),
-      bottomNavigationBar: DecoratedBox(
+      bottomNavigationBar: widget.somenteCortesia ? null : DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -580,9 +597,9 @@ class _ModalidadesIngressoScreenState
               padding: const EdgeInsets.all(16),
               children: [
                 Row(children: [
-                  const Expanded(child: Text(
-                    'Máximo de 5 ingressos por compra, considerando todos os setores.',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  Expanded(child: Text(
+                    widget.somenteCortesia ? 'Informe os dados do participante para resgatar.' : 'Máximo de 5 ingressos por compra, considerando todos os setores.',
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
                   )),
                   TextButton.icon(
                     onPressed: () async { await widget.onAtualizar(); if (mounted) setState(() {}); },
@@ -634,7 +651,7 @@ class _ModalidadesIngressoScreenState
                     ),
                   _cardModalidade(widget.opcoes[i], vendaDisponivel: widget.opcoes[i].podeComprarEm(HorarioBrasil.agora())),
                 ],
-                Align(
+                if (!widget.somenteCortesia) Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton.icon(
                     onPressed: widget.onEntenderTaxa,
@@ -2527,12 +2544,13 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         : lote.nomeModalidade;
   }
 
-  Future<void> _abrirSelecaoIngressos() async {
+  Future<void> _abrirSelecaoIngressos({bool somenteCortesia = false}) async {
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         settings: const RouteSettings(name: 'setor-ingressos'),
         builder: (_) => _TelaSelecaoIngressos(
           lotes: () => lotes,
+          somenteCortesia: somenteCortesia,
           nomeEvento: evento?.titulo ?? 'Evento',
           dataEvento: DateFormatters.dataCompleta(evento?.dataInicio ?? '').replaceFirst(', às ', ' às '),
           imagemEvento: evento?.bannerUrl ?? '',
@@ -2544,6 +2562,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           construirSetor: (opcoes, selecionar) => _cardSelecaoSetor(opcoes, onSelecionar: selecionar),
           construirModalidades: (opcoes, voltar, setorUnico) => _ModalidadesIngressoScreen(
             opcoes: opcoes,
+            somenteCortesia: opcoes.every(_ehCortesia),
             nomeEvento: evento?.titulo ?? 'Evento',
             dataHoraEvento: DateFormatters.dataCompleta(evento?.dataInicio ?? '').replaceFirst(', às ', ' às '),
             imagemEventoUrl: evento?.bannerUrl ?? '',
@@ -2576,7 +2595,8 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     final agora = HorarioBrasil.agora();
     final disponiveis = opcoes.where((opcao) => opcao.podeComprarEm(agora)).toList();
     final temCortesiaDisponivel = disponiveis.any(_ehCortesia);
-    final precos = disponiveis.map((opcao) => _ehCortesia(opcao) ? 0.0 : opcao.preco).toList()..sort();
+    final pagos = disponiveis.where((opcao) => !_ehCortesia(opcao)).toList();
+    final precos = (pagos.isEmpty ? disponiveis : pagos).map((opcao) => _ehCortesia(opcao) ? 0.0 : opcao.preco).toList()..sort();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -2945,17 +2965,27 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                               ),
                             ),
                           ),
+                          if (lotes.any(_ehCortesia))
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: SizedBox(width: double.infinity, child: FilledButton.icon(
+                                onPressed: () => _abrirSelecaoIngressos(somenteCortesia: true),
+                                icon: const Icon(Icons.card_giftcard_outlined, size: 18),
+                                label: const Text('Resgatar cortesia'),
+                                style: FilledButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
+                              )),
+                            ),
                           const SizedBox(height: 6),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              if (lotes.isNotEmpty)
+                              if (lotes.any((lote) => !_ehCortesia(lote)))
                                 Flexible(
                                   child: SizedBox(
                                     width: double.infinity,
                                     height: 38,
                                     child: FilledButton.icon(
-                                      onPressed: _abrirSelecaoIngressos,
+                                      onPressed: () => _abrirSelecaoIngressos(),
                                       style: FilledButton.styleFrom(
                                         backgroundColor: Colors.blue,
                                         foregroundColor: Colors.white,
@@ -2985,8 +3015,8 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                                     ),
                                   ),
                                 ),
-                              if (lotes.isEmpty) const Spacer(),
-                              if (lotes.isNotEmpty) const SizedBox(width: 10),
+                              if (!lotes.any((lote) => !_ehCortesia(lote))) const Spacer(),
+                              if (lotes.any((lote) => !_ehCortesia(lote))) const SizedBox(width: 10),
                               Flexible(
                                 child: SizedBox(
                                   width: double.infinity,
