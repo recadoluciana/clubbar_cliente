@@ -61,6 +61,8 @@ void main() {
         if (tipo == 'PACOTE') {
           expect(find.widgetWithText(TextButton, 'Adicionar'), findsNWidgets(2));
           expect(tester.getSize(vermelho.first).height, tester.getSize(amarelo.first).height);
+          final textosAdicionar = find.text('Adicionar');
+          expect(tester.getSize(textosAdicionar.first), tester.getSize(textosAdicionar.last));
           await tester.tap(find.widgetWithText(TextButton, 'Adicionar').first);
           await tester.pumpAndSettle();
           expect(enviados.last['campanha_id'], 42);
@@ -76,6 +78,10 @@ void main() {
         } else {
           expect(find.widgetWithText(TextButton, 'Adicionar'), findsOneWidget);
           expect(amarelo, findsNothing);
+          expect(tester.getCenter(find.byTooltip('Aumentar quantidade')).dy,
+            closeTo(tester.getCenter(find.text('Adicionar')).dy, 1));
+          expect(tester.getCenter(find.byTooltip('Aumentar quantidade')).dx,
+            lessThan(tester.getCenter(find.text('Adicionar')).dx));
           await tester.tap(find.byTooltip('Aumentar quantidade'));
           await tester.pump();
           await tester.tap(find.widgetWithText(TextButton, 'Adicionar'));

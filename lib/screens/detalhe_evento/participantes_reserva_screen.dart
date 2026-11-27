@@ -505,45 +505,18 @@ class _ParticipantesReservaScreenState
     final item = indice < dadosParticipantes.length
         ? dadosParticipantes[indice]
         : widget.reserva;
-    final lote = '${item['nome_lote'] ?? ''}'.trim();
     final setor = '${item['nome_setor'] ?? ''}'.trim();
     final modalidade = '${item['nome_modalidade'] ?? ''}'.trim();
-    final primeiraLinha = [
-      if (lote.isNotEmpty) 'Lote: $lote',
-      if (setor.isNotEmpty) 'Setor: $setor',
-    ];
-    if (primeiraLinha.isEmpty && modalidade.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (setor.isEmpty && modalidade.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 6, bottom: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  primeiraLinha.join('  •  '),
-                  style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w600),
-                ),
-              ),
-              if (widget.onRemoverIngresso != null) ...[
-                const SizedBox(width: 8),
-                Text(
-                  'Valor: ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
-                  textAlign: TextAlign.right,
-                  style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ],
-          ),
+          if (setor.isNotEmpty)
+            Text('Setor: $setor', style: const TextStyle(fontSize: 14, color: Colors.black)),
           if (modalidade.isNotEmpty)
-            Text(
-              'Modalidade: $modalidade',
-              style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w600),
-            ),
+            Text('Modalidade: $modalidade', style: const TextStyle(fontSize: 14, color: Colors.black)),
         ],
       ),
     );
@@ -799,8 +772,14 @@ class _ParticipantesReservaScreenState
                 ],
               ),
             ),
-            Padding(
+            Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F5),
+                boxShadow: [
+                  BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, -3)),
+                ],
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
