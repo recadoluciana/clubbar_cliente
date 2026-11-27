@@ -854,6 +854,26 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                               color: Colors.black,
                                             ),
                                           )
+                                        : temPromocaoPercentual
+                                        ? Text.rich(
+                                            TextSpan(
+                                              style: const TextStyle(color: Colors.grey, fontSize: 10),
+                                              children: [
+                                                const TextSpan(text: 'de '),
+                                                TextSpan(
+                                                  text: ValueFormatters.moeda(precoAtual),
+                                                  style: const TextStyle(decoration: TextDecoration.lineThrough),
+                                                ),
+                                                const TextSpan(text: ' por '),
+                                                TextSpan(
+                                                  text: ValueFormatters.moeda(precoPromocional),
+                                                  style: TextStyle(color: Colors.red.shade700, fontSize: 16, fontWeight: FontWeight.w900),
+                                                ),
+                                              ],
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          )
                                         : temDesconto
                                         ? Text.rich(
                                             TextSpan(
@@ -969,8 +989,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     campanhaPercentual: campanhaPercentual,
                     quantidadePacote: quantidadePacote,
                     valorPacote: valorPacote,
-                    percentualPromocao: percentualPromocao,
-                    precoPromocional: precoPromocional,
                     temPacote: temPacote,
                     temPromocaoPercentual: temPromocaoPercentual,
                   ),
@@ -1015,8 +1033,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     required Map<String, dynamic>? campanhaPercentual,
     required int quantidadePacote,
     required double valorPacote,
-    required double percentualPromocao,
-    required double precoPromocional,
     required bool temPacote,
     required bool temPromocaoPercentual,
   }) {
@@ -1024,105 +1040,76 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final podeComprar = vendasHabilitadas && !produtosEmAlteracao.contains(chave);
     final pacoteId = int.tryParse('${campanhaPacote?['campanha_id']}');
     final percentualId = int.tryParse('${campanhaPercentual?['campanha_id']}');
-    Widget promocao(String descricao, VoidCallback? adicionar, {bool comQuantidade = false}) {
-      final botao = TextButton.icon(
-        onPressed: adicionar,
-        icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
-        label: const Text('Adicionar', maxLines: 1, softWrap: false),
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.white, disabledForegroundColor: Colors.white54,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          minimumSize: const Size(0, 32),
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-        ),
-      );
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE57373),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(descricao, textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
-            if (comQuantidade)
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _controleQuantidadeProduto(produto,
-                      fundo: const Color(0xFFE57373), cor: Colors.white),
-                    botao,
-                  ],
-                ),
-              )
-            else
-              botao,
-          ],
-        ),
-      );
-    }
 
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    Widget adicionar(VoidCallback? acao, Color cor, {String texto = 'Adicionar'}) => TextButton.icon(
+      onPressed: acao,
+      icon: const Icon(Icons.add_shopping_cart_rounded, size: 15),
+      label: Text(texto, maxLines: 1, softWrap: false),
+      style: TextButton.styleFrom(
+        foregroundColor: cor,
+        disabledForegroundColor: cor.withValues(alpha: 0.5),
+        padding: const EdgeInsets.symmetric(horizontal: 3),
+        minimumSize: const Size(0, 32),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      ),
+    );
+
+    Widget faixa({required Color fundo, required Widget conteudo}) => SizedBox(
+      height: 40,
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: fundo, borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: FittedBox(fit: BoxFit.scaleDown, child: conteudo),
+        ),
+      ),
+    );
+
+    Widget pacote() => faixa(
+      fundo: const Color(0xFFE57373),
+      conteudo: adicionar(
+        !podeComprar || pacoteId == null ? null : () => adicionarProdutoAoCarrinho(
+          produto, quantidade: 1, campanhaId: pacoteId),
+        Colors.white,
+        texto: '$quantidadePacote por ${ValueFormatters.moeda(valorPacote)} · Adicionar',
+      ),
+    );
+
+    Widget quantidadeComAdicionar({required Color fundo, required Color cor, required VoidCallback? acao}) => faixa(
+      fundo: fundo,
+      conteudo: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (temPacote && !temPromocaoPercentual)
-            Expanded(
-              child: promocao('Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
-                !podeComprar || pacoteId == null ? null : () => adicionarProdutoAoCarrinho(
-                  produto, quantidade: 1, campanhaId: pacoteId)),
-            ),
-          if (temPromocaoPercentual)
-            Expanded(
-              child: Column(
-                children: [
-                  if (temPacote) ...[
-                    promocao('Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
-                      !podeComprar || pacoteId == null ? null : () => adicionarProdutoAoCarrinho(
-                        produto, quantidade: 1, campanhaId: pacoteId)),
-                    const SizedBox(height: 8),
-                  ],
-                  promocao('Promoção: ${percentualPromocao.toStringAsFixed(percentualPromocao.truncateToDouble() == percentualPromocao ? 0 : 2)}% OFF · ${ValueFormatters.moeda(precoPromocional)}/un',
-                    !podeComprar || percentualId == null ? null : () => adicionarProdutoAoCarrinho(
-                      produto, quantidade: quantidadesSelecionadas[chave] ?? 1, campanhaId: percentualId),
-                    comQuantidade: true),
-                ],
-              ),
-            ),
-          if (!temPromocaoPercentual) const SizedBox(width: 8),
-          if (!temPromocaoPercentual) Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFD166),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FittedBox(fit: BoxFit.scaleDown, child: _controleQuantidadeProduto(produto, fundo: const Color(0xFFFFD166))),
-                  TextButton.icon(
-                    onPressed: !podeComprar ? null : () => adicionarProdutoAoCarrinho(
-                      produto, quantidade: quantidadesSelecionadas[chave] ?? 1),
-                    icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
-                    label: const Text('Adicionar', maxLines: 1, softWrap: false),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 6),
-                      minimumSize: const Size(0, 32),
-                      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          _controleQuantidadeProduto(produto, fundo: fundo, cor: cor, compacto: true),
+          adicionar(acao, cor),
         ],
       ),
+    );
+
+    if (temPromocaoPercentual) {
+      return Column(
+        children: [
+          if (temPacote) ...[pacote(), const SizedBox(height: 8)],
+          quantidadeComAdicionar(
+            fundo: const Color(0xFFE57373), cor: Colors.white,
+            acao: !podeComprar || percentualId == null ? null : () => adicionarProdutoAoCarrinho(
+              produto, quantidade: quantidadesSelecionadas[chave] ?? 1, campanhaId: percentualId),
+          ),
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: pacote()),
+        const SizedBox(width: 8),
+        Expanded(child: quantidadeComAdicionar(
+          fundo: const Color(0xFFFFD166), cor: Colors.black,
+          acao: !podeComprar ? null : () => adicionarProdutoAoCarrinho(
+            produto, quantidade: quantidadesSelecionadas[chave] ?? 1),
+        )),
+      ],
     );
   }
 
@@ -1348,7 +1335,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
-  Widget _controleQuantidadeProduto(Produto produto, {Color? fundo, Color? cor}) {
+  Widget _controleQuantidadeProduto(Produto produto, {Color? fundo, Color? cor, bool compacto = false}) {
     final chaveItem = _chaveItemCardapio(produto);
     final quantidade = quantidadesSelecionadas[chaveItem] ?? 1;
     final alterando = produtosEmAlteracao.contains(chaveItem);
@@ -1363,6 +1350,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         children: [
           IconButton(
             tooltip: 'Diminuir quantidade',
+            constraints: compacto ? const BoxConstraints(minWidth: 32, minHeight: 36) : null,
+            padding: compacto ? EdgeInsets.zero : null,
             color: cor,
             disabledColor: cor?.withValues(alpha: 0.5),
             onPressed: vendasHabilitadas && !alterando && quantidade > 1
@@ -1394,6 +1383,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           ),
           IconButton(
             tooltip: 'Aumentar quantidade',
+            constraints: compacto ? const BoxConstraints(minWidth: 32, minHeight: 36) : null,
+            padding: compacto ? EdgeInsets.zero : null,
             color: cor,
             disabledColor: cor?.withValues(alpha: 0.5),
             onPressed: vendasHabilitadas && !alterando

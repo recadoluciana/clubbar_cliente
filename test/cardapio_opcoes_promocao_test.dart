@@ -50,20 +50,20 @@ void main() {
           loja: Loja.fromJson({'loja_id': 2, 'organizacao_id': 1, 'nmloja': 'Teste'}))));
         await tester.pumpAndSettle();
         expect(find.text('Produto teste'), findsOneWidget);
-        expect(find.text(tipo == 'PACOTE' ? 'Promoção: 3 por ${ValueFormatters.moeda(24)}' : 'Promoção: 10% OFF · ${ValueFormatters.moeda(8.1)}/un'), findsOneWidget);
-        expect(find.text(ValueFormatters.moeda(9)), findsOneWidget);
-        final vermelho = find.byWidgetPredicate((widget) => widget is Container &&
+        final vermelho = find.byWidgetPredicate((widget) => widget is DecoratedBox &&
           widget.decoration is BoxDecoration &&
           (widget.decoration as BoxDecoration).color == const Color(0xFFE57373));
-        final amarelo = find.byWidgetPredicate((widget) => widget is Container &&
+        final amarelo = find.byWidgetPredicate((widget) => widget is DecoratedBox &&
           widget.decoration is BoxDecoration &&
           (widget.decoration as BoxDecoration).color == const Color(0xFFFFD166));
+        expect(tester.getSize(vermelho.first).height, 40);
+        expect(find.textContaining('Promoção:'), findsNothing);
+        final botaoVermelho = find.descendant(of: vermelho.first, matching: find.byType(TextButton));
         if (tipo == 'PACOTE') {
-          expect(find.widgetWithText(TextButton, 'Adicionar'), findsNWidgets(2));
-          expect(tester.getSize(vermelho.first).height, tester.getSize(amarelo.first).height);
-          final textosAdicionar = find.text('Adicionar');
-          expect(tester.getSize(textosAdicionar.first), tester.getSize(textosAdicionar.last));
-          await tester.tap(find.widgetWithText(TextButton, 'Adicionar').first);
+          expect(find.textContaining('3 por ${ValueFormatters.moeda(24)}'), findsOneWidget);
+          expect(find.text(ValueFormatters.moeda(9)), findsOneWidget);
+          expect(tester.getSize(amarelo.first).height, 40);
+          await tester.tap(botaoVermelho);
           await tester.pumpAndSettle();
           expect(enviados.last['campanha_id'], 42);
           expect(enviados.last['qt'], 1);
@@ -71,20 +71,22 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.byTooltip('Aumentar quantidade'));
           await tester.pump();
-          await tester.tap(find.widgetWithText(TextButton, 'Adicionar').last);
+          await tester.tap(find.descendant(of: amarelo.first, matching: find.byType(TextButton)));
           await tester.pumpAndSettle();
           expect(enviados.last['campanha_id'], isNull);
           expect(enviados.last['qt'], 2);
         } else {
-          expect(find.widgetWithText(TextButton, 'Adicionar'), findsOneWidget);
           expect(amarelo, findsNothing);
+          final preco = find.byWidgetPredicate((widget) => widget is Text &&
+            widget.textSpan?.toPlainText().contains(ValueFormatters.moeda(9)) == true &&
+            widget.textSpan?.toPlainText().contains(ValueFormatters.moeda(8.1)) == true);
+          expect(preco, findsOneWidget);
+          expect(find.text('Adicionar'), findsOneWidget);
           expect(tester.getCenter(find.byTooltip('Aumentar quantidade')).dy,
             closeTo(tester.getCenter(find.text('Adicionar')).dy, 1));
-          expect(tester.getCenter(find.byTooltip('Aumentar quantidade')).dx,
-            lessThan(tester.getCenter(find.text('Adicionar')).dx));
           await tester.tap(find.byTooltip('Aumentar quantidade'));
           await tester.pump();
-          await tester.tap(find.widgetWithText(TextButton, 'Adicionar'));
+          await tester.tap(botaoVermelho);
           await tester.pumpAndSettle();
           expect(enviados.last['campanha_id'], 42);
           expect(enviados.last['qt'], 2);
