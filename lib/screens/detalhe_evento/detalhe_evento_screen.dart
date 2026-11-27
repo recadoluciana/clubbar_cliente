@@ -181,8 +181,9 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
   final String Function(EventoLote) nomeModalidade;
   final Future<void> Function(EventoLote lote, int quantidade) onComprar;
   final int Function(int lotePrecoId) quantidadeSelecionada;
+  final int Function(int lotePrecoId) quantidadePendente;
   final int Function() totalSelecionado;
-  final void Function(EventoLote lote, int quantidade) onSelecionar;
+  final Future<void> Function(EventoLote lote, int quantidade) onSelecionar;
   final Future<void> Function() onComprarSelecionados;
   final VoidCallback onEntenderTaxa;
   final Map<String, dynamic>? compraEvento;
@@ -201,6 +202,7 @@ class _ModalidadesIngressoScreen extends StatefulWidget {
     required this.nomeModalidade,
     required this.onComprar,
     required this.quantidadeSelecionada,
+    required this.quantidadePendente,
     required this.totalSelecionado,
     required this.onSelecionar,
     required this.onComprarSelecionados,
@@ -620,7 +622,7 @@ class _ModalidadesIngressoScreenState
     final podeAumentar =
         vendaDisponivel && modalidadeDisponivel &&
         quantidade < _limitePorTransacao(lote) &&
-        quantidade < disponivelModalidade;
+        widget.quantidadePendente(lote.lotePrecoId) < disponivelModalidade;
     final taxaUnitaria = calcularTaxaIngresso(
       lote.preco,
       widget.taxaPercentual,
@@ -800,7 +802,10 @@ class _ModalidadesIngressoScreenState
             tooltip: 'Diminuir quantidade',
             onPressed: !podeDiminuir
                 ? null
-                : () => setState(() => widget.onSelecionar(lote, quantidade - 1)),
+                : () async {
+                    await widget.onSelecionar(lote, quantidade - 1);
+                    if (mounted) setState(() {});
+                  },
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.remove_rounded, size: 19),
           ),
@@ -820,7 +825,9 @@ class _ModalidadesIngressoScreenState
                       );
                       return;
                     }
-                    setState(() => widget.onSelecionar(lote, quantidade + 1));
+                    widget.onSelecionar(lote, quantidade + 1).then((_) {
+                      if (mounted) setState(() {});
+                    });
                   },
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.add_rounded, size: 19),
@@ -901,7 +908,14 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     if (mounted) setState(() {});
     _timerReservaSacola = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() => _segundosReservaSacola = _tempoRestanteSacola());
+      setState(() {
+        _segundosReservaSacola = _tempoRestanteSacola();
+        if (_segundosReservaSacola == 0) {
+          _compraEvento = null;
+          _quantidadesModalidades.clear();
+          _participantesDaSacola.clear();
+        }
+      });
       if (_segundosReservaSacola == 0) _timerReservaSacola?.cancel();
     });
   }
@@ -1752,24 +1766,60 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
 
   int get _totalSelecionado => _quantidadesModalidades.values.fold(0, (soma, valor) => soma + valor);
 
-  void _selecionarQuantidade(EventoLote lote, int quantidade) {
-    final anterior = _quantidadesModalidades[lote.lotePrecoId] ?? 0;
-    final reservados = int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0;
-    if (quantidade > anterior && reservados + _totalSelecionado >= _limiteIngressosPorTransacao) {
+  List<Map<String, dynamic>> _itensReservadosDaModalidade(int lotePrecoId) {
+    final itens = _compraEvento?['itens'];
+    if (itens is! List) return [];
+    return itens.whereType<Map>()
+        .where((item) => int.tryParse('${item['lotepreco_id']}') == lotePrecoId)
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+  }
+
+  int _quantidadeReservada(int lotePrecoId) =>
+      _itensReservadosDaModalidade(lotePrecoId).fold(
+        0, (soma, item) => soma + (int.tryParse('${item['quantidade'] ?? 1}') ?? 1),
+      );
+
+  int _quantidadeExibida(int lotePrecoId) =>
+      _quantidadeReservada(lotePrecoId) + (_quantidadesModalidades[lotePrecoId] ?? 0);
+
+  Future<void> _selecionarQuantidade(EventoLote lote, int quantidade) async {
+    if (_removendoItemSacola || processandoCompra) return;
+    final reservados = _quantidadeReservada(lote.lotePrecoId);
+    final anterior = _quantidadeExibida(lote.lotePrecoId);
+    final totalReservado = int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0;
+    if (quantidade > anterior && totalReservado + _totalSelecionado >= _limiteIngressosPorTransacao) {
       AppSnackBar.aviso(context, _mensagemLimiteIngressosPorTransacao);
       return;
     }
+    if (quantidade < reservados) {
+      final itens = _itensReservadosDaModalidade(lote.lotePrecoId);
+      if (itens.isNotEmpty) {
+        try {
+          await _removerItemSacola(itens.last);
+          if (mounted) await atualizarLotes(mostrarConfirmacao: false);
+        } catch (_) {
+          // A exclusão já apresenta a mensagem de erro ao usuário.
+        }
+      }
+      return;
+    }
     setState(() {
-      if (quantidade <= 0) {
+      final pendentes = quantidade - reservados;
+      if (pendentes <= 0) {
         _quantidadesModalidades.remove(lote.lotePrecoId);
       } else {
-        _quantidadesModalidades[lote.lotePrecoId] = quantidade;
+        _quantidadesModalidades[lote.lotePrecoId] = pendentes;
       }
     });
   }
 
   Future<void> _comprarSelecionados() async {
-    if (processandoCompra || _totalSelecionado == 0) return;
+    if (processandoCompra) return;
+    if (_totalSelecionado == 0) {
+      if (_compraEvento != null) await _abrirCompraEvento();
+      return;
+    }
     final opcoes = lotes.where((lote) => (_quantidadesModalidades[lote.lotePrecoId] ?? 0) > 0).toList();
     if (opcoes.isEmpty || opcoes.length != _quantidadesModalidades.length ||
         opcoes.any((lote) => _ehCortesia(lote) || !lote.podeComprarEm(HorarioBrasil.agora()) ||
@@ -1894,6 +1944,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
             if (!mounted) return;
             setState(() {
               _compraEvento = null;
+              _quantidadesModalidades.clear();
               _segundosReservaSacola = 0;
             });
             unawaited(atualizarLotes(mostrarConfirmacao: false));
@@ -1905,6 +1956,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
             // A compra confirmada não é uma reserva abandonada ao sair.
             setState(() {
               _compraEvento = null;
+              _quantidadesModalidades.clear();
               _segundosReservaSacola = 0;
             });
           },
@@ -2237,8 +2289,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           nomeModalidade: _nomeModalidade,
           onComprar: (lote, quantidade) =>
               iniciarReserva(lote, quantidadeSelecionada: quantidade),
-          quantidadeSelecionada: (id) => _quantidadesModalidades[id] ?? 0,
-          totalSelecionado: () => _totalSelecionado,
+          quantidadeSelecionada: _quantidadeExibida,
+          quantidadePendente: (id) => _quantidadesModalidades[id] ?? 0,
+          totalSelecionado: () => _totalSelecionado + (int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0),
           onSelecionar: _selecionarQuantidade,
           onComprarSelecionados: _comprarSelecionados,
           onEntenderTaxa: _abrirExplicacaoTaxas,
@@ -2494,7 +2547,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   }
 
   Widget _cardModalidadeDireta(EventoLote lote) {
-    final quantidade = _quantidadesModalidades[lote.lotePrecoId] ?? 0;
+    final quantidade = _quantidadeExibida(lote.lotePrecoId);
     final ehCortesia = _ehCortesia(lote);
     final ehMeiaEntrada = _ehModalidadeMeiaEntrada(lote);
     final vendaDisponivel = lote.podeComprarEm(HorarioBrasil.agora());
@@ -2531,6 +2584,11 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xFFFFE082)),
+      ),
       child: SizedBox(
         width: double.infinity,
         child: Padding(
@@ -2707,7 +2765,8 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     required int disponibilidade,
   }) {
     final podeAumentar =
-        quantidade < disponibilidade && quantidade < _limitePorTransacao(lote);
+        (_quantidadesModalidades[lote.lotePrecoId] ?? 0) < disponibilidade &&
+        quantidade < _limitePorTransacao(lote);
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -2986,7 +3045,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
               backgroundColor: Colors.amber,
               foregroundColor: Colors.black,
             ),
-            child: Text('Comprar ingresso (${_totalSelecionado > 0 ? _totalSelecionado : quantidadeSacola})'),
+            child: Text('Comprar ingresso (${_totalSelecionado + quantidadeSacola})'),
           ),
         ),
       ),
