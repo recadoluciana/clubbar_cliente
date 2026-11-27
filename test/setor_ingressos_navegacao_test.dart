@@ -362,6 +362,8 @@ void main() {
 
   testWidgets('detalhe direto mostra total na linha do preço e quantidade', (tester) async {
     await executar(tester, (_) async {
+      tester.view.physicalSize = const Size(800, 1000);
+      await tester.pump();
       final unitario = find.byWidgetPredicate((widget) => widget is Text &&
         widget.textSpan?.toPlainText().contains(ValueFormatters.moeda(10) + ' (+' + ValueFormatters.moeda(2.99) + ')') == true);
       final aumentar = find.byTooltip('Aumentar quantidade');
@@ -374,6 +376,12 @@ void main() {
       expect(tester.getCenter(unitario).dy, closeTo(tester.getCenter(aumentar).dy, 1));
       expect(tester.getCenter(total).dy, closeTo(tester.getCenter(aumentar).dy, 1));
       expect(tester.widget<Text>(total).style?.fontSize, 17);
+      final limite = find.text('5 ingressos por compra');
+      final disponivel = find.text('Disponível');
+      final adicionar = find.widgetWithText(FilledButton, 'Adicionar');
+      expect(tester.getCenter(limite).dy, greaterThan(tester.getCenter(unitario).dy));
+      expect(tester.getCenter(disponivel).dy, closeTo(tester.getCenter(limite).dy, 1));
+      expect(tester.getCenter(adicionar).dy, closeTo(tester.getCenter(limite).dy, 1));
       await tester.tap(aumentar);
       await tester.pump();
       expect(find.text(ValueFormatters.moeda(25.98)), findsOneWidget);
@@ -382,6 +390,8 @@ void main() {
 
   testWidgets('preço, quantidade e total aparecem na mesma linha', (tester) async {
     await executar(tester, (_) async {
+      tester.view.physicalSize = const Size(800, 1000);
+      await tester.pump();
       final unitario = find.byWidgetPredicate((widget) => widget is Text &&
         widget.textSpan?.toPlainText().contains(ValueFormatters.moeda(10) + ' (+' + ValueFormatters.moeda(2.99) + ')') == true);
       final aumentar = find.byTooltip('Aumentar quantidade');
@@ -393,6 +403,12 @@ void main() {
       expect(tester.getCenter(totalInicial).dy, closeTo(tester.getCenter(aumentar).dy, 1));
       expect(tester.getCenter(unitario).dx, lessThan(tester.getCenter(aumentar).dx));
       expect(tester.getCenter(totalInicial).dx, greaterThan(tester.getCenter(aumentar).dx));
+      final limite = find.text('5 ingressos por compra');
+      final disponivel = find.text('Disponível');
+      final adicionar = find.widgetWithText(FilledButton, 'Adicionar');
+      expect(tester.getCenter(limite).dy, greaterThan(tester.getCenter(unitario).dy));
+      expect(tester.getCenter(disponivel).dy, closeTo(tester.getCenter(limite).dy, 1));
+      expect(tester.getCenter(adicionar).dy, closeTo(tester.getCenter(limite).dy, 1));
       await tester.tap(aumentar);
       await tester.pump();
       expect(find.text(ValueFormatters.moeda(25.98)), findsOneWidget);

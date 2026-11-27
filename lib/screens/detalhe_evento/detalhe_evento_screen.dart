@@ -647,47 +647,6 @@ class _ModalidadesIngressoScreenState
               mostrarQuemTemDireito: ehMeiaEntrada,
               exigeComprovante: lote.exigeComprovante,
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      Text(
-                        _textoLimitePorTransacao(lote),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: ehCortesia ? Colors.black : Colors.black54,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: corSituacao.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          textoSituacao,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: corSituacao,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                botaoAdicionar,
-              ],
-            ),
             if (!ehCortesia) ...[
               const SizedBox(height: 6),
               Row(
@@ -748,6 +707,47 @@ class _ModalidadesIngressoScreenState
                 ],
               ),
             ],
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      Text(
+                        _textoLimitePorTransacao(lote),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: ehCortesia ? Colors.black : Colors.black54,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: corSituacao.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          textoSituacao,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: corSituacao,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                botaoAdicionar,
+              ],
+            ),
           ],
         ),
       ),
@@ -2523,57 +2523,6 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                   ),
                 ),
               const SizedBox(height: 6),
-              Row(
-                children: [
-                  Expanded(
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          _textoLimitePorTransacao(lote),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        Builder(
-                          builder: (context) {
-                            final situacao = lote.situacaoVendaEm(
-                              HorarioBrasil.agora(),
-                            );
-                            final cor = situacao == 'Disponível'
-                                ? Colors.green.shade700
-                                : Colors.red.shade700;
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
-                              decoration: BoxDecoration(
-                                color: cor.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                situacao,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: cor,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  botaoAdicionar,
-                ],
-              ),
-              const SizedBox(height: 6),
               if (!ehCortesia) ...[
                 Row(
                   children: [
@@ -2631,6 +2580,57 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                   ],
                 ),
               ],
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          _textoLimitePorTransacao(lote),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        Builder(
+                          builder: (context) {
+                            final situacao = lote.situacaoVendaEm(
+                              HorarioBrasil.agora(),
+                            );
+                            final cor = situacao == 'Disponível'
+                                ? Colors.green.shade700
+                                : Colors.red.shade700;
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: cor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                situacao,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: cor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  botaoAdicionar,
+                ],
+              ),
             ],
           ),
         ),
