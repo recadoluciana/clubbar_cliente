@@ -2218,6 +2218,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   Widget _cardSelecaoSetor(List<EventoLote> opcoes) {
     final lote = opcoes.first;
     final restantes = lote.qtDisponivel;
+    final temCortesiaDisponivel = opcoes.any(
+      (opcao) => _ehCortesia(opcao) && opcao.podeComprarEm(HorarioBrasil.agora()),
+    );
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -2258,6 +2261,26 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                       '$restantes ${restantes == 1 ? 'restante' : 'restantes'}',
                       style: const TextStyle(fontSize: 12, color: Colors.blue),
                     ),
+                    if (temCortesiaDisponivel) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.card_giftcard_outlined,
+                              size: 16, color: Colors.green.shade700),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Cortesia disponível',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.green.shade700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
