@@ -259,9 +259,11 @@ void main() {
       expect(find.text('Home'), findsNothing);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      expect(find.text('Participante não salvo'), findsOneWidget);
       await tester.tap(find.text('Salvar participante'));
       await tester.pumpAndSettle();
       expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+      expect(find.text('Participante salvo'), findsOneWidget);
       expect(find.byType(EscolhaPagamentoScreen), findsNothing);
       expect(requests.where((r) => r.method == 'PUT' && r.url.path == '/reservas-ingressos/30/participante'), hasLength(1));
       expect(requests.where((r) => r.url.path == '/reservas-ingressos/30/participantes'), isEmpty);
@@ -270,6 +272,13 @@ void main() {
       await tester.tap(find.byTooltip('Conferir sacola'));
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
+      expect(find.text('Participante salvo'), findsOneWidget);
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Alterado');
+      await tester.pump();
+      expect(find.text('Alterações não salvas'), findsOneWidget);
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
+      await tester.pump();
+      expect(find.text('Participante salvo'), findsOneWidget);
       expect(tester.widget<TextField>(find.widgetWithText(TextField, 'CPF')).controller!.text.replaceAll(RegExp(r'\D'), ''), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
       await tester.pumpAndSettle();

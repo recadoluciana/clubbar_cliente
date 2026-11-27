@@ -58,6 +58,7 @@ class _ParticipantesReservaScreenState
   final List<TextEditingController> cpfs = [];
   final List<int?> beneficiosParticipantes = [];
   final List<Map<String, dynamic>> dadosParticipantes = [];
+  final List<Map<String, dynamic>?> _dadosConfirmados = [];
   Timer? timer;
   late DateTime expiraEm;
   Duration restante = Duration.zero;
@@ -97,6 +98,10 @@ class _ParticipantesReservaScreenState
       final doServidor = participantes is List && participantes.isNotEmpty && participantes.first is Map
           ? Map<String, dynamic>.from(participantes.first as Map) : null;
       final salvo = widget.participantesSalvos[reservaId] ?? doServidor;
+      final confirmados = salvo?['_confirmados'];
+      _dadosConfirmados.add(confirmados is Map
+          ? Map<String, dynamic>.from(confirmados)
+          : doServidor);
       nomes.add(TextEditingController(text: salvo?['nome'] as String? ?? ''));
       cpfs.add(TextEditingController(text: salvo?['cpf'] as String? ?? ''));
       beneficiosParticipantes.add(salvo?['beneficio_id'] as int?);
@@ -192,6 +197,7 @@ class _ParticipantesReservaScreenState
           'nome': nomes[i].text,
           'cpf': cpfs[i].text,
           'beneficio_id': beneficiosParticipantes[i],
+          '_confirmados': _dadosConfirmados[i],
         };
       }
       widget.onParticipantesAlterados?.call(participantes);
@@ -200,6 +206,14 @@ class _ParticipantesReservaScreenState
       c.dispose();
     }
     super.dispose();
+  }
+
+  bool _participanteSalvo(int indice) {
+    final confirmado = _dadosConfirmados[indice];
+    return confirmado != null &&
+        '${confirmado['nome'] ?? ''}'.trim() == nomes[indice].text.trim() &&
+        CpfUtils.somenteNumeros('${confirmado['cpf'] ?? ''}') == CpfUtils.somenteNumeros(cpfs[indice].text) &&
+        confirmado['beneficio_id'] == beneficiosParticipantes[indice];
   }
 
   Future<void> _salvarParticipante(int indice) async {
@@ -223,8 +237,9 @@ class _ParticipantesReservaScreenState
       });
       if (!mounted) return;
       final dados = {'nome': nome, 'cpf': cpf, 'beneficio_id': beneficio};
+      _dadosConfirmados[indice] = Map<String, dynamic>.from(dados);
       dadosParticipantes[indice]['participantes'] = [dados];
-      widget.onParticipantesAlterados?.call({'$id': dados});
+      widget.onParticipantesAlterados?.call({'$id': {...dados, '_confirmados': _dadosConfirmados[indice]}});
       AppSnackBar.sucesso(context, 'Participante salvo.');
     } catch (e) {
       if (mounted) AppSnackBar.erro(context, api.mensagemErroAmigavel(e));
@@ -244,6 +259,7 @@ class _ParticipantesReservaScreenState
         nomes.removeAt(indice).dispose();
         cpfs.removeAt(indice).dispose();
         beneficiosParticipantes.removeAt(indice);
+        _dadosConfirmados.removeAt(indice);
       });
       if (dadosParticipantes.isEmpty && mounted) Navigator.of(context).pop();
     } catch (_) {
@@ -298,6 +314,10 @@ class _ParticipantesReservaScreenState
         participantes: participantes,
       );
       if (!mounted) return;
+      for (var i = 0; i < participantes.length; i++) {
+        _dadosConfirmados[i] = Map<String, dynamic>.from(participantes[i]);
+        dadosParticipantes[i]['participantes'] = [_dadosConfirmados[i]];
+      }
       final prazoConfirmado = _expiracaoDaResposta(reserva);
       if (prazoConfirmado != null && prazoConfirmado.isBefore(expiraEm)) {
         expiraEm = prazoConfirmado;
@@ -748,11 +768,13 @@ class _ParticipantesReservaScreenState
                           const SizedBox(height: 8),
                           TextField(
                             controller: nomes[i],
+                            onChanged: (_) => setState(() {}),
                             decoration: _campoParticipante('Nome completo'),
                           ),
                           const SizedBox(height: 8),
                           TextField(
                             controller: cpfs[i],
+                            onChanged: (_) => setState(() {}),
                             keyboardType: TextInputType.number,
                             decoration: _campoParticipante('CPF'),
                           ),
@@ -776,6 +798,22 @@ class _ParticipantesReservaScreenState
                           ],
                           if (widget.onRemoverIngresso != null) ...[
                             const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                _participanteSalvo(i)
+                                    ? 'Participante salvo'
+                                    : _dadosConfirmados[i] == null
+                                        ? 'Participante não salvo'
+                                        : 'Alterações não salvas',
+                                style: TextStyle(
+                                  color: _participanteSalvo(i) ? Colors.green.shade700 : Colors.brown.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
                             Align(
                               alignment: Alignment.centerRight,
                               child: OutlinedButton.icon(
