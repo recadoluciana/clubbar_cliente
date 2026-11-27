@@ -116,6 +116,8 @@ void main() {
               ],
             },
         ];
+      } else if (path == '/reservas-ingressos/resgate-cortesia') {
+        resposta = {'gratuito': true, 'venda_id': 40};
       } else if (path == '/reservas-ingressos/compra-evento') {
         resposta = reserva;
       } else if (path == '/reservas-ingressos/30/participante') {
@@ -287,6 +289,56 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
     });
+  });
+
+  testWidgets('cortesia abre popup e resgata um CPF sem usar sacola', (tester) async {
+    await executar(tester, (requests) async {
+      expect(find.text('Resgatar'), findsOneWidget);
+      await tester.tap(find.text('Resgatar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Resgatar cortesia'), findsWidgets);
+      await tester.tap(find.widgetWithText(FilledButton, 'Resgatar cortesia'));
+      await tester.pump();
+      expect(find.text('Confira o nome e o CPF do participante.'), findsOneWidget);
+      expect(requests.where((r) => r.url.path == '/reservas-ingressos/resgate-cortesia'), isEmpty);
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.widgetWithText(FilledButton, 'Resgatar cortesia'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump();
+      final envio = requests.where((r) => r.url.path == '/reservas-ingressos/resgate-cortesia').single;
+      final corpo = jsonDecode(envio.body) as Map<String, dynamic>;
+      expect(corpo['quantidade'], 1);
+      expect(corpo['participante']['cpf'], '12345678909');
+      expect(requests.where((r) => r.url.path == '/reservas-ingressos/compra-evento'), isEmpty);
+      expect(find.text('Resgate realizado com sucesso'), findsOneWidget);
+    }, cortesia: true);
+  });
+
+  testWidgets('permite resgatar novamente com outro CPF', (tester) async {
+    await executar(tester, (requests) async {
+      Future<void> resgatar(String nome, String cpf) async {
+        await tester.tap(find.text('Resgatar'));
+        await tester.pumpAndSettle();
+        await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), nome);
+        await tester.enterText(find.widgetWithText(TextField, 'CPF'), cpf);
+        await tester.tap(find.widgetWithText(FilledButton, 'Resgatar cortesia'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        expect(find.text('Resgate realizado com sucesso'), findsOneWidget);
+      }
+      await resgatar('Pessoa Um', '12345678909');
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await resgatar('Pessoa Dois', '52998224725');
+      final envios = requests.where((r) => r.url.path == '/reservas-ingressos/resgate-cortesia').toList();
+      expect(envios, hasLength(2));
+      expect(jsonDecode(envios[0].body)['participante']['cpf'], '12345678909');
+      expect(jsonDecode(envios[1].body)['participante']['cpf'], '52998224725');
+      expect(requests.where((r) => r.url.path == '/reservas-ingressos/compra-evento'), isEmpty);
+    }, cortesia: true);
   });
 
   for (final origem in [
@@ -468,12 +520,6 @@ void main() {
 
   for (final fluxo in [
     'retorno',
-    'cortesia',
-    'cortesia Home',
-    'cortesia Carrinho',
-    'cortesia Carteira',
-    'cortesia Cora responde',
-    'cortesia Voltar para Casa',
     'pix pago',
   ]) {
     final cortesia = fluxo.startsWith('cortesia');
