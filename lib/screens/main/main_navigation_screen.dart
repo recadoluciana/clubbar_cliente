@@ -156,6 +156,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   Widget _barraNavegacao(Widget? telaInterna) {
+    final carrinhoAberto =
+        (telaInterna == null && currentIndex == 1) ||
+        telaInterna is CarrinhoLojasScreen ||
+        telaInterna is CarrinhoScreen;
     final carteiraAberta =
         (telaInterna == null && currentIndex == 2) ||
         telaInterna is CarteiraScreen ||
@@ -212,24 +216,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 estaSelecionado: homeSelecionada,
               ),
 
-              _itemBarraNavegacao(
-                index: 1,
-                icone: _iconeCarrinhoComBadge(
-                  selecionado: carrinhoSelecionado,
-                  usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
+              if (!carrinhoAberto)
+                _itemBarraNavegacao(
+                  index: 1,
+                  icone: _iconeCarrinhoComBadge(
+                    selecionado: carrinhoSelecionado,
+                    usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
+                  ),
+                  texto: 'Carrinho',
+                  estaSelecionado: carrinhoSelecionado,
+                  onTap: telaInterna is DetalheLojaScreen
+                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                      : telaInterna is AgendaEventosScreen
+                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                      : telaInterna is ProdutosLojaScreen
+                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                      : telaInterna is DetalheEventoScreen
+                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                      : null,
                 ),
-                texto: 'Carrinho',
-                estaSelecionado: carrinhoSelecionado,
-                onTap: telaInterna is DetalheLojaScreen
-                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                    : telaInterna is AgendaEventosScreen
-                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                    : telaInterna is ProdutosLojaScreen
-                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                    : telaInterna is DetalheEventoScreen
-                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                    : null,
-              ),
 
               if (!carteiraAberta)
                 _itemBarraNavegacao(
