@@ -17,6 +17,7 @@ class ItemCarrinhoAgrupado {
   final int produtoId;
   final int? cardapioItemId;
   final int? campanhaId;
+  final int? beneficioResgateId;
   final String? tipoCampanha;
   final int? quantidadePacote;
   final double? valorPacote;
@@ -38,6 +39,7 @@ class ItemCarrinhoAgrupado {
     required this.produtoId,
     this.cardapioItemId,
     this.campanhaId,
+    this.beneficioResgateId,
     this.tipoCampanha,
     this.quantidadePacote,
     this.valorPacote,
@@ -100,7 +102,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
       final chave =
           '${item.produtoId}__${item.cardapioItemId ?? 'sem-cardapio'}__'
-          '${item.campanhaId ?? 'sem-campanha'}__'
+          '${item.campanhaId ?? 'sem-campanha'}__${item.beneficioResgateId ?? 'sem-premio'}__'
           '${obs.toLowerCase()}__'
           '${nome.toLowerCase()}__${cpf.toLowerCase()}';
 
@@ -112,6 +114,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           produtoId: atual.produtoId,
           cardapioItemId: atual.cardapioItemId,
           campanhaId: atual.campanhaId,
+          beneficioResgateId: atual.beneficioResgateId,
           tipoCampanha: atual.tipoCampanha,
           quantidadePacote: atual.quantidadePacote,
           valorPacote: atual.valorPacote,
@@ -134,6 +137,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           produtoId: item.produtoId,
           cardapioItemId: item.cardapioItemId,
           campanhaId: item.campanhaId,
+          beneficioResgateId: item.beneficioResgateId,
           tipoCampanha: item.tipoCampanha,
           quantidadePacote: item.quantidadePacote,
           valorPacote: item.valorPacote,
@@ -320,6 +324,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         produtoId: item.produtoId,
         cardapioItemId: item.cardapioItemId,
         campanhaId: item.campanhaId,
+        beneficioResgateId: item.beneficioResgateId,
         observacao: item.observacao,
       );
 
@@ -405,6 +410,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           produtoId: item.produtoId,
           cardapioItemId: item.cardapioItemId,
           campanhaId: item.campanhaId,
+          beneficioResgateId: item.beneficioResgateId,
           observacao: item.observacao,
         );
       }
@@ -430,7 +436,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   Widget _controleQuantidade(ItemCarrinhoAgrupado item) {
     final ehCortesia = item.precoFinal <= 0;
     final ehPacote = item.tipoCampanha == 'PACOTE';
-    final permiteAumentar = item.idtipoproduto != 'I' && !ehCortesia;
+    final permiteAumentar = item.idtipoproduto != 'I' && !ehCortesia && item.beneficioResgateId == null;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -465,6 +471,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                     ? (ehPacote
                           ? 'Adicionar outro pacote'
                           : 'Aumentar quantidade')
+                    : item.beneficioResgateId != null
+                    ? 'Desconto da roleta válido para uma unidade'
                     : ehCortesia
                     ? 'Cortesia limitada a 1 unidade por transação'
                     : 'Adicione outro ingresso pela agenda',
