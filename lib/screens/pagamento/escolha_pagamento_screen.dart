@@ -1834,6 +1834,27 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
         titulo: 'Pagamento - ${widget.loja.nome}',
+        actions: [
+          if (widget.reservaIngressoId != null && _reservaExpiracaoAtual != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
+                  const SizedBox(width: 4),
+                  Text(
+                    _tempoReservaFormatado,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,

@@ -5,6 +5,7 @@ import 'package:clubbar_cliente/screens/pagamento/escolha_pagamento_screen.dart'
 import 'package:clubbar_cliente/services/api_service.dart';
 import 'package:clubbar_cliente/services/auth_storage.dart';
 import 'package:clubbar_cliente/utils/horario_brasil.dart';
+import 'package:clubbar_cliente/widgets/clubbar_app_bar.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -224,6 +225,16 @@ void main() {
       ),
       findsOneWidget,
     );
+    final topbar = find.byType(ClubbarAppBar);
+    expect(
+      find.descendant(
+        of: topbar,
+        matching: find.byWidgetPredicate((widget) => widget is Text &&
+          RegExp(r'^(30:00|29:59)$').hasMatch(widget.data ?? '')),
+      ),
+      findsOneWidget,
+    );
+    expect(find.descendant(of: topbar, matching: find.byIcon(Icons.timer_outlined)), findsOneWidget);
     expect(find.textContaining('Sua reserva expirou'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
