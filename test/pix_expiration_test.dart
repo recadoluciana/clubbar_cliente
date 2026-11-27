@@ -21,6 +21,16 @@ void main() {
     expect(expiracao.toUtc(), DateTime.utc(2026, 9, 23, 12, 5));
   });
 
+  test('ingresso usa o prazo real do Pix mesmo se ultrapassar 30 minutos', () {
+    final expiracao = obterExpiracaoPix(
+      {'pix_expiration_date': '2026-09-23T12:35:00Z', 'expiration_date': '2026-09-23T12:10:00Z'},
+      agora: agora,
+      duracaoMaxima: const Duration(minutes: 30),
+      respeitarPrazoInformado: true,
+    );
+    expect(expiracao.toUtc(), DateTime.utc(2026, 9, 23, 12, 35));
+  });
+
   test('usa cinco minutos quando a API não informa validade', () {
     final expiracao = obterExpiracaoPix({}, agora: agora);
     expect(expiracao.toUtc(), DateTime.utc(2026, 9, 23, 12, 5));

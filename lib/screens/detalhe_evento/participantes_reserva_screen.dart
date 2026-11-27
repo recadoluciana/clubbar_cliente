@@ -140,7 +140,7 @@ class _ParticipantesReservaScreenState
     final valor = expiraEm.difference(HorarioBrasil.agora());
     if (!mounted) return;
     setState(() => restante = valor.isNegative ? Duration.zero : valor);
-    if (valor <= Duration.zero) {
+    if (valor <= Duration.zero && ModalRoute.of(context)?.isCurrent == true) {
       timer?.cancel();
       unawaited(_verificarExpiracao());
     }
