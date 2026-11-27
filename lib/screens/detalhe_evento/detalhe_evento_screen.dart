@@ -954,6 +954,11 @@ class _ModalidadesIngressoScreenState
                           ),
                         ),
                       ),
+                      if (textoSituacao == 'Disponível')
+                        Text(
+                          '$disponivelModalidade ${disponivelModalidade == 1 ? 'ingresso restante' : 'ingressos restantes'}',
+                          style: const TextStyle(fontSize: 11, color: Colors.black54),
+                        ),
                     ],
                   ),
                 ),
@@ -1029,7 +1034,6 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   bool carregando = true;
   bool atualizandoLotes = false;
   bool processandoCompra = false;
-  bool _descricaoExpandida = false;
   String? erro;
 
   EventoDetalhe? evento;
@@ -3280,62 +3284,14 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: Colors.grey.shade300),
                               ),
-                              child: LayoutBuilder(
-                                builder: (context, constraints) {
-                                  final estilo = TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.grey.shade800,
-                                    height: 1.5,
-                                  );
-                                  final medida = TextPainter(
-                                    text: TextSpan(
-                                      text: ev.descricao,
-                                      style: estilo,
-                                    ),
-                                    maxLines: 3,
-                                    textDirection: Directionality.of(context),
-                                    textScaler: MediaQuery.textScalerOf(
-                                      context,
-                                    ),
-                                  )..layout(maxWidth: constraints.maxWidth);
-                                  final temMaisTexto = medida.didExceedMaxLines;
-                                  medida.dispose();
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        ev.descricao,
-                                        textAlign: TextAlign.justify,
-                                        maxLines: _descricaoExpandida
-                                            ? null
-                                            : 3,
-                                        overflow: _descricaoExpandida
-                                            ? null
-                                            : TextOverflow.ellipsis,
-                                        style: estilo,
-                                      ),
-                                      if (temMaisTexto)
-                                        TextButton.icon(
-                                          onPressed: () => setState(
-                                            () => _descricaoExpandida =
-                                                !_descricaoExpandida,
-                                          ),
-                                          icon: Icon(
-                                            _descricaoExpandida
-                                                ? Icons.expand_less
-                                                : Icons.expand_more,
-                                          ),
-                                          label: Text(
-                                            _descricaoExpandida
-                                                ? 'Ver menos'
-                                                : 'Ver mais',
-                                          ),
-                                          style: _estiloLinksEvento(),
-                                        ),
-                                    ],
-                                  );
-                                },
+                              child: Text(
+                                ev.descricao,
+                                textAlign: TextAlign.justify,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey.shade800,
+                                  height: 1.5,
+                                ),
                               ),
                             ),
                           ],

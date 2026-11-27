@@ -803,7 +803,7 @@ class _ParticipantesReservaScreenState
                       minimumSize: const Size.fromHeight(54),
                     ),
                   ),
-                  if (widget.onRemoverIngresso != null) ...[
+                  if (widget.onRemoverIngresso != null && dadosParticipantes.length < 5) ...[
                     const SizedBox(height: 8),
                     OutlinedButton(
                       onPressed: alterandoIngresso || salvando ? null : () => Navigator.of(context).pop(),
