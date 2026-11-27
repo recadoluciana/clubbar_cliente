@@ -41,6 +41,7 @@ class EscolhaPagamentoScreen extends StatefulWidget {
   final VoidCallback? onVoltar;
   final int? reservaIngressoId;
   final DateTime? reservaExpiracao;
+  final ValueChanged<DateTime>? onPrazoReservaAlterado;
   final ApiService? apiService;
   final AuthStorage? authStorage;
 
@@ -54,6 +55,7 @@ class EscolhaPagamentoScreen extends StatefulWidget {
     this.onVoltar,
     this.reservaIngressoId,
     this.reservaExpiracao,
+    this.onPrazoReservaAlterado,
     this.apiService,
     this.authStorage,
   });
@@ -103,8 +105,9 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
       : null;
 
   String get _tempoReservaFormatado {
-    final minutos = _tempoReservaRestante.inMinutes;
-    final segundos = _tempoReservaRestante.inSeconds.remainder(60);
+    final tempo = HorarioBrasil.segundosRestantes(_tempoReservaRestante);
+    final minutos = tempo ~/ 60;
+    final segundos = tempo % 60;
     return '${minutos.toString().padLeft(2, '0')}:'
         '${segundos.toString().padLeft(2, '0')}';
   }
@@ -196,6 +199,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
         : HorarioBrasil.deTextoUtc(resposta['data_expiracao']);
     if (novaExpiracao != null) {
       setState(() => _reservaExpiracaoAtual = novaExpiracao);
+      widget.onPrazoReservaAlterado?.call(novaExpiracao);
       _atualizarTempoReserva();
     }
   }
@@ -232,6 +236,7 @@ class _EscolhaPagamentoScreenState extends State<EscolhaPagamentoScreen> {
             Duration(seconds: segundos),
           );
         });
+        widget.onPrazoReservaAlterado?.call(_reservaExpiracaoAtual!);
         _atualizarTempoReserva();
         _timerReserva = Timer.periodic(
           const Duration(seconds: 1),

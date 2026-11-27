@@ -869,9 +869,14 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   void _iniciarTimerReservaSacola(Map<String, dynamic> compra) {
     final segundos = int.tryParse('${compra['segundos_restantes']}');
     if (segundos == null) return;
+    _definirPrazoSacola(HorarioBrasil.agora().add(Duration(seconds: segundos)));
+  }
+
+  void _definirPrazoSacola(DateTime prazo) {
     _timerReservaSacola?.cancel();
-    _segundosReservaSacola = segundos;
-    _prazoReservaSacola = HorarioBrasil.agora().add(Duration(seconds: segundos));
+    _prazoReservaSacola = prazo;
+    _segundosReservaSacola = _tempoRestanteSacola();
+    if (mounted) setState(() {});
     _timerReservaSacola = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() => _segundosReservaSacola = _tempoRestanteSacola());
@@ -882,8 +887,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   int _tempoRestanteSacola() {
     final prazo = _prazoReservaSacola;
     if (prazo == null) return 0;
-    final milissegundos = prazo.difference(HorarioBrasil.agora()).inMilliseconds;
-    return ((milissegundos + 999) ~/ 1000).clamp(0, 86400);
+    return HorarioBrasil.segundosRestantes(
+      prazo.difference(HorarioBrasil.agora()),
+    ).clamp(0, 86400);
   }
 
   Future<void> _carregarQuantidadesDaLoja() async {
@@ -1838,6 +1844,12 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         builder: (_) => ParticipantesReservaScreen(
           loja: widget.loja,
           reserva: reserva,
+          prazoReserva: _prazoReservaSacola,
+          onPrazoAlterado: (prazo) {
+            if (_compraEvento?['compra_evento_id'] == compra['compra_evento_id']) {
+              _definirPrazoSacola(prazo);
+            }
+          },
           nomeEvento: evento?.titulo ?? 'Evento',
           dataHoraEvento: DateFormatters.dataCompleta(evento?.dataInicio ?? ''),
           imagemEventoUrl: evento?.bannerUrl ?? '',
@@ -1875,6 +1887,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         ),
       ),
     );
+    if (mounted && _compraEvento != null) {
+      setState(() => _segundosReservaSacola = _tempoRestanteSacola());
+    }
   }
 
   Future<void> _verIngressosSacola({bool confirmar = false}) async {
