@@ -79,6 +79,7 @@ void main() {
     bool variasModalidades = false,
     bool Function()? cotacaoFalhou,
     int? segundosPix,
+    bool cancelamentoFalhou = false,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -111,6 +112,9 @@ void main() {
       requests.add(request);
       final path = request.url.path;
       final Object resposta;
+      if (path == '/reservas-ingressos/30' && request.method == 'DELETE' && cancelamentoFalhou) {
+        return http.Response(jsonEncode({'detail': 'Não foi possível cancelar a reserva.'}), 409);
+      }
       if (path == '/reservas-ingressos/30/status' && statusFalhou?.call() == true) {
         return http.Response(jsonEncode({'detail': 'Sem conexão'}), 500);
       }
@@ -691,6 +695,65 @@ void main() {
       }, setorUnico: setorUnico, segundosReserva: 2, reservaExpirada: () => true);
     });
   }
+
+  testWidgets('voltar confirma saída e só cancela reserva após confirmação', (tester) async {
+    await executar(tester, (requests) async {
+      await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back).first);
+      await tester.pumpAndSettle();
+      expect(find.text('Deseja sair desta tela?'), findsOneWidget);
+      expect(find.text('A sua compra será cancelada.'), findsOneWidget);
+      await tester.tap(find.text('Continuar compra'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DetalheEventoScreen), findsOneWidget);
+      expect(requests.where((r) => r.method == 'DELETE' && r.url.path == '/reservas-ingressos/30'), isEmpty);
+      await tester.tap(find.byIcon(Icons.arrow_back).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sair e cancelar'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(requests.where((r) => r.method == 'DELETE' && r.url.path == '/reservas-ingressos/30'), hasLength(1));
+      expect(find.byType(DetalheEventoScreen), findsNothing);
+    }, setorUnico: true);
+  });
+
+  testWidgets('voltar do aparelho avisa sobre ingresso selecionado', (tester) async {
+    await executar(tester, (_) async {
+      await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Deseja sair desta tela?'), findsOneWidget);
+      await tester.tap(find.text('Continuar compra'));
+      await tester.pumpAndSettle();
+      expect(find.text('Comprar ingresso (1)'), findsOneWidget);
+    }, setorUnico: true);
+  });
+
+  testWidgets('falha ao cancelar mantém a pessoa no evento', (tester) async {
+    await executar(tester, (_) async {
+      await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back).first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sair e cancelar'));
+      await tester.pumpAndSettle();
+      expect(find.byType(DetalheEventoScreen), findsOneWidget);
+      expect(find.text('Não foi possível cancelar a reserva.'), findsOneWidget);
+    }, setorUnico: true, cancelamentoFalhou: true);
+  });
 
   testWidgets('detalhe direto mostra total na linha do preço e quantidade', (tester) async {
     await executar(tester, (_) async {
