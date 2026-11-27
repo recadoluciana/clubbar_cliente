@@ -2648,8 +2648,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
       color: Colors.white,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: Color(0xFFFFE082)),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: SizedBox(
         width: double.infinity,

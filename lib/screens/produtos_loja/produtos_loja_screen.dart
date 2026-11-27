@@ -1024,7 +1024,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final podeComprar = vendasHabilitadas && !produtosEmAlteracao.contains(chave);
     final pacoteId = int.tryParse('${campanhaPacote?['campanha_id']}');
     final percentualId = int.tryParse('${campanhaPercentual?['campanha_id']}');
-    Widget promocao(String descricao, VoidCallback? adicionar) => Container(
+    Widget promocao(String descricao, VoidCallback? adicionar, {bool comQuantidade = false}) => Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
       decoration: BoxDecoration(
@@ -1036,6 +1036,12 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         children: [
           Text(descricao, textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
+          if (comQuantidade)
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _controleQuantidadeProduto(produto,
+                fundo: const Color(0xFFE57373), cor: Colors.white),
+            ),
           TextButton.icon(
             onPressed: adicionar,
             icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
@@ -1054,23 +1060,31 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              children: [
-                if (temPacote)
-                  promocao('Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
-                    !podeComprar || pacoteId == null ? null : () => adicionarProdutoAoCarrinho(
-                      produto, quantidade: 1, campanhaId: pacoteId)),
-                if (temPacote && temPromocaoPercentual) const SizedBox(height: 8),
-                if (temPromocaoPercentual)
+          if (temPacote && !temPromocaoPercentual)
+            Expanded(
+              child: promocao('Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                !podeComprar || pacoteId == null ? null : () => adicionarProdutoAoCarrinho(
+                  produto, quantidade: 1, campanhaId: pacoteId)),
+            ),
+          if (temPromocaoPercentual)
+            Expanded(
+              child: Column(
+                children: [
+                  if (temPacote) ...[
+                    promocao('Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                      !podeComprar || pacoteId == null ? null : () => adicionarProdutoAoCarrinho(
+                        produto, quantidade: 1, campanhaId: pacoteId)),
+                    const SizedBox(height: 8),
+                  ],
                   promocao('Promoção: ${percentualPromocao.toStringAsFixed(percentualPromocao.truncateToDouble() == percentualPromocao ? 0 : 2)}% OFF · ${ValueFormatters.moeda(precoPromocional)}/un',
                     !podeComprar || percentualId == null ? null : () => adicionarProdutoAoCarrinho(
-                      produto, quantidade: quantidadesSelecionadas[chave] ?? 1, campanhaId: percentualId)),
-              ],
+                      produto, quantidade: quantidadesSelecionadas[chave] ?? 1, campanhaId: percentualId),
+                    comQuantidade: true),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
+          if (!temPromocaoPercentual) const SizedBox(width: 8),
+          if (!temPromocaoPercentual) Expanded(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
               decoration: BoxDecoration(
@@ -1080,7 +1094,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  FittedBox(fit: BoxFit.scaleDown, child: _controleQuantidadeProduto(produto)),
+                  FittedBox(fit: BoxFit.scaleDown, child: _controleQuantidadeProduto(produto, fundo: const Color(0xFFFFD166))),
                   TextButton.icon(
                     onPressed: !podeComprar ? null : () => adicionarProdutoAoCarrinho(
                       produto, quantidade: quantidadesSelecionadas[chave] ?? 1),
@@ -1322,14 +1336,14 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
-  Widget _controleQuantidadeProduto(Produto produto) {
+  Widget _controleQuantidadeProduto(Produto produto, {Color? fundo, Color? cor}) {
     final chaveItem = _chaveItemCardapio(produto);
     final quantidade = quantidadesSelecionadas[chaveItem] ?? 1;
     final alterando = produtosEmAlteracao.contains(chaveItem);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: fundo ?? Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -1337,6 +1351,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
         children: [
           IconButton(
             tooltip: 'Diminuir quantidade',
+            color: cor,
+            disabledColor: cor?.withValues(alpha: 0.5),
             onPressed: vendasHabilitadas && !alterando && quantidade > 1
                 ? () => setState(
                     () => quantidadesSelecionadas[chaveItem] = quantidade - 1,
@@ -1356,15 +1372,18 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     )
                   : Text(
                       '$quantidade',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
+                        color: cor,
                       ),
                     ),
             ),
           ),
           IconButton(
             tooltip: 'Aumentar quantidade',
+            color: cor,
+            disabledColor: cor?.withValues(alpha: 0.5),
             onPressed: vendasHabilitadas && !alterando
                 ? () => setState(
                     () => quantidadesSelecionadas[chaveItem] = quantidade + 1,
