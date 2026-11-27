@@ -25,6 +25,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
   final String modalidade;
   final List<BeneficioIngresso> beneficios;
   final VoidCallback? onReservaConcluida;
+  final Future<void> Function(Map<String, dynamic>)? onRemoverIngresso;
   final Map<String, Map<String, dynamic>> participantesSalvos;
   final ValueChanged<Map<String, Map<String, dynamic>>>? onParticipantesAlterados;
 
@@ -40,6 +41,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
     required this.modalidade,
     this.beneficios = const [],
     this.onReservaConcluida,
+    this.onRemoverIngresso,
     this.participantesSalvos = const {},
     this.onParticipantesAlterados,
   });
@@ -60,6 +62,7 @@ class _ParticipantesReservaScreenState
   late DateTime expiraEm;
   Duration restante = Duration.zero;
   bool salvando = false;
+  bool alterandoIngresso = false;
   bool _reservaFinalizada = false;
   bool _reservaCancelada = false;
   bool _verificandoExpiracao = false;
@@ -90,7 +93,10 @@ class _ParticipantesReservaScreenState
         dadosParticipantes.add(widget.reserva);
       }
       final reservaId = '${dadosParticipantes[i]['reserva_ingresso_id'] ?? ''}';
-      final salvo = widget.participantesSalvos[reservaId];
+      final participantes = dadosParticipantes[i]['participantes'];
+      final doServidor = participantes is List && participantes.isNotEmpty && participantes.first is Map
+          ? Map<String, dynamic>.from(participantes.first as Map) : null;
+      final salvo = widget.participantesSalvos[reservaId] ?? doServidor;
       nomes.add(TextEditingController(text: salvo?['nome'] as String? ?? ''));
       cpfs.add(TextEditingController(text: salvo?['cpf'] as String? ?? ''));
       beneficiosParticipantes.add(salvo?['beneficio_id'] as int?);
@@ -124,7 +130,7 @@ class _ParticipantesReservaScreenState
     if (_verificandoExpiracao || _reservaFinalizada) return;
     if (mounted) setState(() => _verificandoExpiracao = true);
     try {
-      final reservaId = int.parse('${widget.reserva['reserva_ingresso_id']}');
+      final reservaId = int.parse('${dadosParticipantes.first['reserva_ingresso_id']}');
       final clienteId = int.parse('${widget.reserva['cliente_id']}');
       final atual = await api.consultarReserva(
         reservaId: reservaId,
@@ -196,6 +202,57 @@ class _ParticipantesReservaScreenState
     super.dispose();
   }
 
+  Future<void> _salvarParticipante(int indice) async {
+    if (alterandoIngresso || salvando || restante <= Duration.zero) return;
+    final nome = nomes[indice].text.trim();
+    final cpf = cpfs[indice].text.trim();
+    final beneficio = beneficiosParticipantes[indice];
+    if (nome.length < 3 || !CpfUtils.validar(cpf)) {
+      AppSnackBar.erro(context, 'Confira nome e CPF do participante ${indice + 1}.');
+      return;
+    }
+    if (_beneficiosDoParticipante(indice).isNotEmpty && beneficio == null) {
+      AppSnackBar.erro(context, 'Escolha o benefício do participante ${indice + 1}.');
+      return;
+    }
+    setState(() => alterandoIngresso = true);
+    try {
+      final id = int.parse('${dadosParticipantes[indice]['reserva_ingresso_id']}');
+      await api.salvarParticipanteIndividual(reservaId: id, participante: {
+        'nome': nome, 'cpf': CpfUtils.somenteNumeros(cpf), 'beneficio_id': beneficio,
+      });
+      if (!mounted) return;
+      final dados = {'nome': nome, 'cpf': cpf, 'beneficio_id': beneficio};
+      dadosParticipantes[indice]['participantes'] = [dados];
+      widget.onParticipantesAlterados?.call({'$id': dados});
+      AppSnackBar.sucesso(context, 'Participante salvo.');
+    } catch (e) {
+      if (mounted) AppSnackBar.erro(context, api.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) setState(() => alterandoIngresso = false);
+    }
+  }
+
+  Future<void> _removerIngresso(int indice) async {
+    if (alterandoIngresso || salvando || widget.onRemoverIngresso == null) return;
+    setState(() => alterandoIngresso = true);
+    try {
+      await widget.onRemoverIngresso!(dadosParticipantes[indice]);
+      if (!mounted) return;
+      setState(() {
+        dadosParticipantes.removeAt(indice);
+        nomes.removeAt(indice).dispose();
+        cpfs.removeAt(indice).dispose();
+        beneficiosParticipantes.removeAt(indice);
+      });
+      if (dadosParticipantes.isEmpty && mounted) Navigator.of(context).pop();
+    } catch (_) {
+      // O fluxo da sacola informa o erro ao usuário.
+    } finally {
+      if (mounted) setState(() => alterandoIngresso = false);
+    }
+  }
+
   Future<void> continuar() async {
     if (_verificandoExpiracao || restante <= Duration.zero) return;
     final participantes = <Map<String, dynamic>>[];
@@ -237,7 +294,7 @@ class _ParticipantesReservaScreenState
     setState(() => salvando = true);
     try {
       final reserva = await api.salvarParticipantesReserva(
-        reservaId: int.parse('${widget.reserva['reserva_ingresso_id']}'),
+        reservaId: int.parse('${dadosParticipantes.first['reserva_ingresso_id']}'),
         participantes: participantes,
       );
       if (!mounted) return;
@@ -281,7 +338,7 @@ class _ParticipantesReservaScreenState
       if (mounted && !_reservaFinalizada) {
         try {
           final atual = await api.consultarReserva(
-            reservaId: int.parse('${widget.reserva['reserva_ingresso_id']}'),
+            reservaId: int.parse('${dadosParticipantes.first['reserva_ingresso_id']}'),
             clienteId: int.parse('${widget.reserva['cliente_id']}'),
           );
           if (!mounted) return;
@@ -465,6 +522,7 @@ class _ParticipantesReservaScreenState
         [
           if (primeiraLinha.isNotEmpty) primeiraLinha.join('  •  '),
           if (modalidade.isNotEmpty) 'Modalidade: $modalidade',
+          if (widget.onRemoverIngresso != null) 'Valor: ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
         ].join('\n'),
         style: const TextStyle(
           fontSize: 14,
@@ -533,7 +591,10 @@ class _ParticipantesReservaScreenState
   Widget build(BuildContext context) {
     final minutos = restante.inMinutes.toString().padLeft(2, '0');
     final segundos = (restante.inSeconds % 60).toString().padLeft(2, '0');
-    final valorTotal = _valorTotalComTaxa(widget.reserva);
+    final valorTotal = widget.onRemoverIngresso == null
+        ? _valorTotalComTaxa(widget.reserva)
+        : dadosParticipantes.fold<double>(0, (total, item) =>
+            total + (double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0));
     final ehCortesia = valorTotal <= 0;
     return PopScope(
       // Voltar à sacola preserva a reserva. O cancelamento
@@ -541,7 +602,10 @@ class _ParticipantesReservaScreenState
       onPopInvokedWithResult: (_, _) {},
       child: Scaffold(
         appBar: ClubbarAppBar(
-          titulo: widget.loja.nome,
+          titulo: widget.onRemoverIngresso == null ? widget.loja.nome : 'Conferir sacola',
+          iconeTitulo: widget.onRemoverIngresso == null ? null : Icons.shopping_bag_outlined,
+          corIconeTitulo: Colors.amber,
+          tituloAlinhadoEsquerda: widget.onRemoverIngresso != null,
           mostrarVoltar: true,
           mostrarSessao: false,
           actions: [
@@ -612,7 +676,7 @@ class _ParticipantesReservaScreenState
                         ),
                       ],
                     ),
-                    if (valorTotal != 0) ...[
+                    if (valorTotal != 0 || widget.onRemoverIngresso != null) ...[
                       const Divider(height: 20),
                       Row(
                         children: [
@@ -668,10 +732,16 @@ class _ParticipantesReservaScreenState
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              Text(
+                              Expanded(child: Text(
                                 'Participante ${i + 1}',
                                 style: const TextStyle(fontWeight: FontWeight.w800),
-                              ),
+                              )),
+                              if (widget.onRemoverIngresso != null)
+                                IconButton(
+                                  tooltip: 'Excluir ingresso',
+                                  onPressed: alterandoIngresso || salvando ? null : () => _removerIngresso(i),
+                                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                ),
                             ],
                           ),
                           _dadosIngresso(i),
@@ -704,6 +774,17 @@ class _ParticipantesReservaScreenState
                                   setState(() => beneficiosParticipantes[i] = valor),
                             ),
                           ],
+                          if (widget.onRemoverIngresso != null) ...[
+                            const SizedBox(height: 8),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: OutlinedButton.icon(
+                                onPressed: alterandoIngresso || salvando ? null : () => _salvarParticipante(i),
+                                icon: const Icon(Icons.save_outlined, size: 18),
+                                label: const Text('Salvar participante'),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -718,7 +799,7 @@ class _ParticipantesReservaScreenState
                 children: [
                   ElevatedButton.icon(
                     onPressed:
-                        salvando || _verificandoExpiracao || restante <= Duration.zero
+                        salvando || alterandoIngresso || _verificandoExpiracao || restante <= Duration.zero
                         ? null
                         : continuar,
                     icon: Icon(
@@ -735,6 +816,13 @@ class _ParticipantesReservaScreenState
                       minimumSize: const Size.fromHeight(54),
                     ),
                   ),
+                  if (widget.onRemoverIngresso != null) ...[
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: alterandoIngresso || salvando ? null : () => Navigator.of(context).pop(),
+                      child: const Text('Adicionar ingresso'),
+                    ),
+                  ],
                   const SizedBox(height: 12),
                   _contador(minutos, segundos),
                   const SizedBox(height: 12),

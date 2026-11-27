@@ -118,6 +118,8 @@ void main() {
         ];
       } else if (path == '/reservas-ingressos/compra-evento') {
         resposta = reserva;
+      } else if (path == '/reservas-ingressos/30/participante') {
+        resposta = {'ok': true};
       } else if (path == '/reservas-ingressos/30/participantes') {
         resposta = {
           ...reserva,
@@ -221,59 +223,7 @@ void main() {
     });
   });
 
-  testWidgets(
-    'sacola e participantes preservam a reserva ao voltar ao evento',
-    (tester) async {
-      await executar(tester, (requests) async {
-        // A fonte de teste Ahem é mais larga que a usada pelo aplicativo.
-        tester.view.physicalSize = const Size(800, 1000);
-        await tester.pump();
-        await tester.tap(find.text('Adicionar'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('Conferir sacola'));
-        await tester.pumpAndSettle();
-        expect(find.text('Conferir sacola'), findsOneWidget);
-        expect(find.text('1x Inteira'), findsOneWidget);
-        for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
-          expect(find.text(item), findsNothing);
-        }
-        await tester.tap(find.text('Continuar - Informar participante'));
-        await tester.pumpAndSettle();
-        expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
-        expect(find.text('Participante 1'), findsOneWidget);
-        for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
-          expect(find.text(item), findsOneWidget);
-        }
-        await tester.binding.handlePopRoute();
-        await tester.pumpAndSettle();
-        expect(find.text('Conferir sacola'), findsOneWidget);
-        expect(find.text('Home'), findsNothing);
-        await tester.tap(find.byIcon(Icons.arrow_back));
-        await tester.pumpAndSettle();
-        expect(find.text('Inteira'), findsOneWidget);
-        expect(find.text('Home'), findsOneWidget);
-        await tester.tap(find.byIcon(Icons.arrow_back));
-        await tester.pumpAndSettle();
-        expect(find.text('Comprar ingresso'), findsOneWidget);
-        await tester.tap(find.byTooltip('Continuar para participantes'));
-        await tester.pumpAndSettle();
-        expect(find.text('1x Inteira'), findsOneWidget);
-        expect(find.text('Home'), findsNothing);
-        await tester.binding.handlePopRoute();
-        await tester.pumpAndSettle();
-        expect(find.text('Comprar ingresso'), findsOneWidget);
-        expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
-        expect(
-          requests.where(
-            (r) => r.url.path == '/reservas-ingressos/compra-evento',
-          ),
-          hasLength(1),
-        );
-      });
-    },
-  );
-
-  testWidgets('mantém o tempo restante ao abrir participantes e voltar à sacola', (tester) async {
+  testWidgets('tela única mantém o prazo ao voltar e reabrir', (tester) async {
     await executar(tester, (_) async {
       tester.view.physicalSize = const Size(800, 1000);
       await tester.pump();
@@ -282,22 +232,21 @@ void main() {
       await tester.pump(const Duration(seconds: 60));
       await tester.tap(find.byTooltip('Conferir sacola'));
       await tester.pumpAndSettle();
+      expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+      expect(find.text('Participante 1'), findsOneWidget);
+      expect(find.text('Home'), findsNothing);
       expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
-      await tester.tap(find.text('Continuar - Informar participante'));
+      await tester.tap(find.text('Adicionar ingresso'));
+      await tester.pumpAndSettle();
+      expect(find.text('Inteira'), findsOneWidget);
+      await tester.tap(find.byTooltip('Conferir sacola'));
       await tester.pumpAndSettle();
       expect(find.text('15:00'), findsNothing);
-      expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-      expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
-      await tester.tap(find.text('Continuar - Informar participante'));
-      await tester.pumpAndSettle();
-      expect(find.text('15:00'), findsNothing);
-      expect(find.textContaining(RegExp(r'13:5[5-9]|14:00')), findsWidgets);
+      expect(find.textContaining(RegExp(r'13:5[0-9]|14:00')), findsWidgets);
     });
   });
 
-  testWidgets('preserva participante ao voltar do pagamento e reabrir a sacola', (tester) async {
+  testWidgets('salva participante na tela de conferência sem finalizar compra', (tester) async {
     await executar(tester, (requests) async {
       tester.view.physicalSize = const Size(800, 1000);
       await tester.pump();
@@ -305,30 +254,34 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Conferir sacola'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Continuar - Informar participante'));
-      await tester.pumpAndSettle();
+      expect(find.text('Conferir sacola'), findsOneWidget);
+      expect(find.text('Participante 1'), findsOneWidget);
+      expect(find.text('Home'), findsNothing);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Salvar participante'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+      expect(find.byType(EscolhaPagamentoScreen), findsNothing);
+      expect(requests.where((r) => r.method == 'PUT' && r.url.path == '/reservas-ingressos/30/participante'), hasLength(1));
+      expect(requests.where((r) => r.url.path == '/reservas-ingressos/30/participantes'), isEmpty);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      expect(find.text('Participante Teste'), findsOneWidget);
+      expect(tester.widget<TextField>(find.widgetWithText(TextField, 'CPF')).controller!.text.replaceAll(RegExp(r'\D'), ''), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
       await tester.pumpAndSettle();
       expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
-      await tester.binding.handlePopRoute();
-      await tester.pumpAndSettle();
-      expect(find.text('Conferir sacola'), findsOneWidget);
-      await tester.tap(find.text('Continuar - Informar participante'));
-      await tester.pumpAndSettle();
-      expect(find.text('Participante Teste'), findsOneWidget);
-      expect(tester.widget<TextField>(find.widgetWithText(TextField, 'CPF')).controller!.text.replaceAll(RegExp(r'\D'), ''), '12345678909');
-      expect(requests.where((r) => r.method == 'PUT' && r.url.path.endsWith('/participantes')), hasLength(1));
     });
   });
 
   for (final origem in [
     'setor',
-    'participantes',
     'pagamento',
     'pix Mercado Pago',
     'pix Asaas',
@@ -363,8 +316,6 @@ void main() {
           if (origem == 'participantes' || origem == 'pagamento' || pix) {
             tester.view.physicalSize = const Size(800, 1000);
             await tester.pump();
-            await tester.tap(find.text('Continuar - Informar participante'));
-            await tester.pumpAndSettle();
             expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
             for (final item in [
               'Home',
@@ -372,7 +323,7 @@ void main() {
               'Carteira',
               'Cora responde',
             ]) {
-              expect(find.text(item), findsOneWidget);
+              expect(find.text(item), findsNothing);
             }
             expect(
               Navigator.of(
@@ -528,8 +479,6 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.byTooltip('Conferir sacola'));
           await tester.pumpAndSettle();
-          await tester.tap(find.text('Continuar - Informar participante'));
-          await tester.pumpAndSettle();
           await tester.enterText(
             find.widgetWithText(TextField, 'Nome completo'),
             'Participante Teste',
@@ -682,12 +631,12 @@ void main() {
             await tester.tap(find.byIcon(Icons.arrow_back));
             await tester.pumpAndSettle();
             expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
-            expect(find.text('Home'), findsOneWidget);
+            expect(find.text('Home'), findsNothing);
             expect(find.text('Participante Teste'), findsOneWidget);
             expect(find.text('12345678909'), findsOneWidget);
             await tester.tap(find.byIcon(Icons.arrow_back));
             await tester.pumpAndSettle();
-            expect(find.text('Conferir sacola'), findsOneWidget);
+            expect(find.text('Conferir sacola'), findsNothing);
           }
           expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
         },
