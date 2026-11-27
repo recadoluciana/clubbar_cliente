@@ -795,203 +795,6 @@ class _ModalidadesIngressoScreenState
   }
 }
 
-class _ConferenciaSacolaScreen extends StatefulWidget {
-  final String nomeEvento;
-  final String dataEvento;
-  final String imagemEvento;
-  final List<Map<String, dynamic>> itens;
-  final Future<void> Function(Map<String, dynamic> item) onRemover;
-  final Future<void> Function(List<Map<String, dynamic>> itens)
-  onInformarParticipante;
-  final int Function() segundosReserva;
-
-  const _ConferenciaSacolaScreen({
-    required this.nomeEvento,
-    required this.dataEvento,
-    required this.imagemEvento,
-    required this.itens,
-    required this.onRemover,
-    required this.onInformarParticipante,
-    required this.segundosReserva,
-  });
-
-  @override
-  State<_ConferenciaSacolaScreen> createState() =>
-      _ConferenciaSacolaScreenState();
-}
-
-class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
-  late List<Map<String, dynamic>> itens;
-  bool removendo = false;
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    itens = widget.itens.map(Map<String, dynamic>.from).toList();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final total = itens.fold<double>(
-      0,
-      (soma, item) =>
-          soma +
-          (double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ??
-              0),
-    );
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: false,
-        titleSpacing: 8,
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.shopping_bag_outlined, color: Colors.amber, size: 22),
-            SizedBox(width: 8),
-            Flexible(
-              child: Text('Conferir sacola', overflow: TextOverflow.ellipsis),
-            ),
-          ],
-        ),
-        leading: IconButton(
-          tooltip: 'Voltar',
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context, itens),
-        ),
-        actions: [
-          if (itens.isNotEmpty && widget.segundosReserva() > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 14),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${(widget.segundosReserva() ~/ 60).toString().padLeft(2, '0')}:${(widget.segundosReserva() % 60).toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ClubbarPageHeader(
-            titulo: widget.nomeEvento,
-            subtitulo: widget.dataEvento,
-            imagemAvatarUrl: widget.imagemEvento,
-            icone: Icons.event_outlined,
-            avatarRetangular: true,
-            larguraAvatar: 56,
-            maxLinhasTitulo: 2,
-          ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              'Ingressos adicionados',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                ...itens.map(
-                  (item) => Card(
-                    child: ListTile(
-                      title: Text(
-                        '${item['quantidade'] ?? 1}x ${item['nome_modalidade'] ?? 'Ingresso'}',
-                      ),
-                      subtitle: Text(
-                        '${item['nome_setor'] ?? 'Setor'} · ${ValueFormatters.moeda(double.tryParse('${item['valor_total'] ?? item['subtotal'] ?? 0}') ?? 0)}',
-                      ),
-                      trailing: IconButton(
-                        tooltip: 'Excluir ingresso',
-                        icon: const Icon(Icons.delete_outline, color: Colors.red),
-                        onPressed: removendo
-                            ? null
-                            : () async {
-                                setState(() => removendo = true);
-                                setState(
-                                  () => itens.removeWhere(
-                                    (outro) =>
-                                        '${outro['reserva_ingresso_id']}' ==
-                                        '${item['reserva_ingresso_id']}',
-                                  ),
-                                );
-                                try {
-                                  await widget.onRemover(item);
-                                  if (itens.isEmpty) _timer?.cancel();
-                                } catch (_) {
-                                  if (mounted) setState(() => itens.add(item));
-                                } finally {
-                                  if (mounted) setState(() => removendo = false);
-                                }
-                              },
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Total: ${ValueFormatters.moeda(total)}',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 20),
-                FilledButton(
-                  onPressed: itens.isEmpty
-                      ? null
-                      : () => widget.onInformarParticipante(itens),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFC107),
-                    foregroundColor: Colors.black,
-                  ),
-                  child: const Text('Continuar - Informar participante'),
-                ),
-                const SizedBox(height: 10),
-                OutlinedButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFF3CD),
-                    foregroundColor: const Color(0xFF806000),
-                    side: const BorderSide(color: Color(0xFFFFC107)),
-                  ),
-                  child: const Text('Adicionar ingresso'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   final apiService = ApiService();
   final authStorage = AuthStorage();
@@ -1922,7 +1725,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     };
     await Navigator.of(context).push(
       MaterialPageRoute(
-        settings: const RouteSettings(name: 'participantes-reserva'),
+        settings: const RouteSettings(name: 'conferir-sacola'),
         builder: (_) => ParticipantesReservaScreen(
           loja: widget.loja,
           reserva: reserva,
@@ -1933,6 +1736,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           nomeSetor: 'Modalidades selecionadas',
           modalidade: 'Compra do evento',
           beneficios: _beneficiosDaCompra(reserva),
+          onRemoverIngresso: _removerItemSacola,
           participantesSalvos: _participantesDaSacola,
           onParticipantesAlterados: (participantes) {
             if (_compraEvento?['compra_evento_id'] != compra['compra_evento_id']) return;
@@ -1954,40 +1758,22 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   }
 
   Future<void> _verIngressosSacola({bool confirmar = false}) async {
-    final compra = _compraEvento;
-    final itens = compra?['itens'] is List
-        ? (compra!['itens'] as List).whereType<Map>().toList()
-        : const <Map>[];
-    if (itens.isEmpty || !mounted) return;
-    final retorno = await Navigator.of(context).push<dynamic>(
-      MaterialPageRoute(
-        settings: const RouteSettings(name: 'conferir-sacola'),
-        builder: (_) => _ConferenciaSacolaScreen(
-          nomeEvento: evento?.titulo ?? 'Evento',
-          dataEvento: DateFormatters.dataCompleta(evento?.dataInicio ?? ''),
-          imagemEvento: evento?.bannerUrl ?? '',
-          itens: itens.map(Map<String, dynamic>.from).toList(),
-          onRemover: _removerItemSacola,
-          onInformarParticipante: (itens) => _abrirCompraEvento(itens),
-          segundosReserva: () => _segundosReservaSacola,
-        ),
-      ),
-    );
-    if (retorno is List) {
-      _atualizarSacolaComItens(
-        compra!,
-        retorno.whereType<Map>().map(Map<String, dynamic>.from).toList(),
-      );
-    }
+    await _abrirCompraEvento();
   }
 
   Future<void> _removerItemSacola(Map<String, dynamic> item) async {
     final compra = _compraEvento;
-    if (compra == null || _removendoItemSacola) return;
+    if (compra == null || _removendoItemSacola) {
+      throw StateError('Não foi possível excluir o ingresso.');
+    }
     final compraId = int.tryParse('${compra['compra_evento_id']}');
     final reservaId = int.tryParse('${item['reserva_ingresso_id']}');
     final clienteId = await authStorage.obterClienteId();
-    if (compraId == null || reservaId == null || clienteId == null) return;
+    if (!mounted) throw StateError('Tela não está mais disponível.');
+    if (compraId == null || reservaId == null || clienteId == null) {
+      AppSnackBar.erro(context, 'Não foi possível identificar o ingresso.');
+      throw StateError('Não foi possível identificar o ingresso.');
+    }
     setState(() => _removendoItemSacola = true);
     try {
       final resposta = await apiService.removerIngressoCompraEvento(

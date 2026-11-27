@@ -622,6 +622,21 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<Map<String, dynamic>> salvarParticipanteIndividual({
+    required int reservaId,
+    required Map<String, dynamic> participante,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/reservas-ingressos/$reservaId/participante'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode(participante),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return Map<String, dynamic>.from(jsonDecode(response.body));
+  }
+
   Future<Map<String, dynamic>> salvarParticipantesReserva({
     required int reservaId,
     required List<Map<String, dynamic>> participantes,
