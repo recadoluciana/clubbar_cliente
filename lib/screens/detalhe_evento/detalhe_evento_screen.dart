@@ -84,7 +84,8 @@ class _ObservadorNavegacaoEvento extends NavigatorObserver {
   }
 
   void _atualizar(Route<dynamic>? rota) {
-    final ocultar = rota?.settings.name == 'conferir-sacola';
+    final ocultar = rota?.settings.name == 'conferir-sacola' ||
+        rota?.settings.name == 'detalhe-evento';
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_ativo) MainNavigationController.ocultarBarra.value = ocultar;
     });
@@ -2970,91 +2971,25 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
-        actions: [
-          if (_segundosReservaSacola > 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.timer_outlined, color: Colors.red, size: 18),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${(_segundosReservaSacola ~/ 60).toString().padLeft(2, '0')}:${(_segundosReservaSacola % 60).toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                IconButton(
-                  tooltip: quantidadeSacola > 0
-                      ? 'Continuar para participantes'
-                      : 'Nenhum ingresso adicionado',
-                  onPressed: itensSacola.isEmpty || processandoCompra
-                      ? null
-                      : () => _verIngressosSacola(confirmar: true),
-                  icon: const Icon(
-                    Icons.shopping_bag_outlined,
-                    color: Colors.white,
-                  ),
-                ),
-                if (quantidadeSacola > 0)
-                  Positioned(
-                    right: 2,
-                    top: 3,
-                    child: IgnorePointer(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 2,
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          quantidadeSacola > 99 ? '99+' : '$quantidadeSacola',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
       ),
-      bottomNavigationBar: _totalSelecionado > 0
-          ? SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: FilledButton(
-                  onPressed: processandoCompra ? null : _comprarSelecionados,
-                  style: FilledButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
-                  child: Text('Comprar $_totalSelecionado ${_totalSelecionado == 1 ? 'ingresso' : 'ingressos'}'),
-                ),
-              ),
-            )
-          : null,
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: FilledButton(
+            onPressed: processandoCompra || (_totalSelecionado == 0 && quantidadeSacola == 0)
+                ? null
+                : _totalSelecionado > 0
+                    ? _comprarSelecionados
+                    : () => _abrirCompraEvento(),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.amber,
+              foregroundColor: Colors.black,
+            ),
+            child: Text('Comprar ingresso (${_totalSelecionado > 0 ? _totalSelecionado : quantidadeSacola})'),
+          ),
+        ),
+      ),
       body: carregando
           ? const Center(child: CircularProgressIndicator())
           : erro != null || ev == null

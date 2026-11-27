@@ -249,7 +249,7 @@ void main() {
       }
       expect(find.text(modalidade), findsOneWidget);
       for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
-        expect(find.text(item), findsOneWidget);
+        expect(find.text(item), setorUnico ? findsNothing : findsOneWidget);
       }
       // O setor permanece dentro do shell; não cobre a navegação com outra rota.
       expect(
@@ -585,6 +585,32 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
     });
+  });
+
+  testWidgets('evento mostra compra no rodapé e permite reabrir reserva', (tester) async {
+    await executar(tester, (requests) async {
+      await tester.pump();
+      expect(MainNavigationController.ocultarBarra.value, isTrue);
+      expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.shopping_bag_outlined)), findsNothing);
+      expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.timer_outlined)), findsNothing);
+      expect(find.text('Comprar ingresso (0)'), findsOneWidget);
+      await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      expect(find.text('Comprar ingresso (1)'), findsOneWidget);
+      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+      await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.shopping_bag_outlined)), findsNothing);
+      expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.timer_outlined)), findsNothing);
+      expect(find.text('Comprar ingresso (1)'), findsOneWidget);
+      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo'), hasLength(1));
+    }, setorUnico: true, segundosReserva: 600);
   });
 
   testWidgets('detalhe direto mostra total na linha do preço e quantidade', (tester) async {
