@@ -39,7 +39,8 @@ const int _limiteIngressosPorTransacao = 5;
 const String _mensagemLimiteIngressosPorTransacao =
     'Máximo de 5 ingressos por compra. Caso necessite de mais ingressos realize duas ou mais compras.';
 
-bool _ehCortesia(EventoLote lote) => lote.preco <= 0;
+bool _ehCortesia(EventoLote lote) =>
+    lote.tipoIngresso.trim().toUpperCase() == 'CORTESIA' || lote.preco <= 0;
 
 bool _ehModalidadeMeiaEntrada(EventoLote lote) =>
     lote.aplicaCotaLegal ||
@@ -687,68 +688,70 @@ class _ModalidadesIngressoScreenState
                 botaoAdicionar,
               ],
             ),
-            const SizedBox(height: 6),
-            Row(
-              children: [
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      style: const TextStyle(color: Colors.black),
-                      children: [
-                        TextSpan(
-                          text: ValueFormatters.moeda(lote.preco),
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
+            if (!ehCortesia) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        style: const TextStyle(color: Colors.black),
+                        children: [
+                          TextSpan(
+                            text: ValueFormatters.moeda(lote.preco),
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
+                          TextSpan(
+                            text:
+                                ' (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  if (!ehCortesia)
+                    _controleQuantidade(
+                      lote: lote,
+                      quantidade: quantidade,
+                      podeDiminuir: podeDiminuir,
+                      podeAumentar: podeAumentar,
+                    ),
+                ],
+              ),
+              const Divider(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Subtotal',
+                          style: TextStyle(fontWeight: FontWeight.w700),
                         ),
-                        TextSpan(
-                          text:
-                              ' (+${ValueFormatters.moeda(taxaUnitaria).replaceFirst('R\$ ', '')} taxa)',
+                        const SizedBox(height: 2),
+                        Text(
+                          ValueFormatters.moeda(totalPagar),
                           style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.black54,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                if (!ehCortesia)
-                  _controleQuantidade(
-                    lote: lote,
-                    quantidade: quantidade,
-                    podeDiminuir: podeDiminuir,
-                    podeAumentar: podeAumentar,
-                  ),
-              ],
-            ),
-            const Divider(height: 18),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Subtotal',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        ValueFormatters.moeda(totalPagar),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
         ),
       ),

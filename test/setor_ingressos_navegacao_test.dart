@@ -65,6 +65,7 @@ void main() {
     int segundosReserva = 900,
     bool Function()? reservaExpirada,
     bool respostaExclusaoDesatualizada = false,
+    bool cortesiaComPrecoIncorreto = false,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -72,7 +73,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
     final requests = <http.Request>[];
     final modalidade = cortesia ? 'Cortesia' : 'Inteira';
-    final valor = cortesia ? 0 : 10;
+    final valor = cortesia ? (cortesiaComPrecoIncorreto ? 3 : 0) : 10;
     final reserva = {
       'compra_evento_id': 20,
       'reserva_ingresso_id': 30,
@@ -115,7 +116,7 @@ void main() {
               'nmsetor': id == 1 ? 'Pista' : 'VIP',
               'qttotallote': 50,
               'precos': [
-                {'lotepreco_id': id, 'nmpreco': modalidade, 'vrpreco': valor},
+                {'lotepreco_id': id, 'nmpreco': modalidade, 'tipopreco': cortesia ? 'CORTESIA' : 'INTEIRA', 'vrpreco': valor},
               ],
             },
         ];
@@ -372,6 +373,25 @@ void main() {
       expect(requests.where((r) => r.url.path == '/reservas-ingressos/compra-evento'), isEmpty);
       expect(find.text('Resgate realizado com sucesso'), findsOneWidget);
     }, cortesia: true);
+  });
+
+  testWidgets('cortesia com preço incorreto abre resgate sem sacola', (tester) async {
+    await executar(tester, (requests) async {
+      expect(find.text('Limite de 1 ingresso por CPF'), findsOneWidget);
+      expect(find.text('Subtotal'), findsNothing);
+      expect(find.text('Resgatar'), findsOneWidget);
+      await tester.tap(find.text('Resgatar'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.widgetWithText(FilledButton, 'Resgatar cortesia'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
+      await tester.pump();
+      expect(requests.where((r) => r.url.path == '/reservas-ingressos/resgate-cortesia'), hasLength(1));
+      expect(requests.where((r) => r.url.path == '/reservas-ingressos/compra-evento'), isEmpty);
+      expect(find.text('Resgate realizado com sucesso'), findsOneWidget);
+    }, cortesia: true, cortesiaComPrecoIncorreto: true);
   });
 
   testWidgets('permite resgatar novamente com outro CPF', (tester) async {
