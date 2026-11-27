@@ -419,6 +419,7 @@ class _AgendaEventosScreenState extends State<AgendaEventosScreen> {
         titulo: 'Agenda - ${widget.loja.nome}',
         iconeTitulo: Icons.confirmation_number_rounded,
         corIconeTitulo: Colors.blue,
+        tituloAlinhadoEsquerda: true,
         mostrarVoltar: true,
         mostrarSessao: false,
         actions: [

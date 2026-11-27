@@ -945,8 +945,10 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: 'Carrinho - ${widget.loja.nome}',
+        titulo: 'Meu Carrinho - ${widget.loja.nome}',
         iconeTitulo: Icons.shopping_cart_outlined,
+        corIconeTitulo: Colors.amber,
+        tituloAlinhadoEsquerda: true,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.abertaNaNavegacaoPrincipal

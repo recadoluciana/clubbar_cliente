@@ -2882,9 +2882,10 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: (ev?.nomeLoja.trim().isNotEmpty ?? false)
-            ? ev!.nomeLoja
-            : widget.loja.nome,
+        titulo: 'Evento - ${(ev?.nomeLoja.trim().isNotEmpty ?? false) ? ev!.nomeLoja : widget.loja.nome}',
+        iconeTitulo: Icons.confirmation_number_rounded,
+        corIconeTitulo: Colors.blue,
+        tituloAlinhadoEsquerda: true,
         mostrarVoltar: true,
         mostrarSessao: false,
         onVoltar: widget.onVoltar,
