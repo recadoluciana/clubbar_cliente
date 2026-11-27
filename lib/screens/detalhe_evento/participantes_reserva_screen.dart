@@ -25,6 +25,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
   final String modalidade;
   final List<BeneficioIngresso> beneficios;
   final VoidCallback? onReservaConcluida;
+  final VoidCallback? onReservaExpirada;
   final Future<void> Function(Map<String, dynamic>)? onRemoverIngresso;
   final Map<String, Map<String, dynamic>> participantesSalvos;
   final ValueChanged<Map<String, Map<String, dynamic>>>? onParticipantesAlterados;
@@ -41,6 +42,7 @@ class ParticipantesReservaScreen extends StatefulWidget {
     required this.modalidade,
     this.beneficios = const [],
     this.onReservaConcluida,
+    this.onReservaExpirada,
     this.onRemoverIngresso,
     this.participantesSalvos = const {},
     this.onParticipantesAlterados,
@@ -153,6 +155,7 @@ class _ParticipantesReservaScreenState
       if (pagamento == 'ESTORNADO' || pagamento == 'REFUNDED') {
         _reservaCancelada = true;
         await mostrarPrazoExpirado(context, tipo: PrazoExpiradoTipo.estorno);
+        widget.onReservaExpirada?.call();
         if (mounted) Navigator.pop(context);
         return;
       }
@@ -171,6 +174,7 @@ class _ParticipantesReservaScreenState
       }
       _reservaCancelada = true;
       await mostrarPrazoExpirado(context, tipo: PrazoExpiradoTipo.reserva);
+      widget.onReservaExpirada?.call();
       if (mounted) Navigator.pop(context);
     } catch (_) {
       if (mounted) {
@@ -352,6 +356,7 @@ class _ParticipantesReservaScreenState
       );
       if (mounted && reservaEncerrada == false) {
         _reservaCancelada = true;
+        widget.onReservaExpirada?.call();
         Navigator.pop(context);
         return;
       }
