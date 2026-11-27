@@ -273,6 +273,35 @@ void main() {
     },
   );
 
+  testWidgets('preserva participante ao voltar do pagamento e reabrir a sacola', (tester) async {
+    await executar(tester, (requests) async {
+      tester.view.physicalSize = const Size(800, 1000);
+      await tester.pump();
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Continuar - Informar participante'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.byType(EscolhaPagamentoScreen), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Participante Teste'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Conferir sacola'), findsOneWidget);
+      await tester.tap(find.text('Continuar - Informar participante'));
+      await tester.pumpAndSettle();
+      expect(find.text('Participante Teste'), findsOneWidget);
+      expect(tester.widget<TextField>(find.widgetWithText(TextField, 'CPF')).controller!.text.replaceAll(RegExp(r'\D'), ''), '12345678909');
+      expect(requests.where((r) => r.method == 'PUT' && r.url.path.endsWith('/participantes')), hasLength(1));
+    });
+  });
+
   for (final origem in [
     'setor',
     'participantes',

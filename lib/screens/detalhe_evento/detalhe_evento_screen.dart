@@ -1008,6 +1008,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   List<EventoLote> lotes = [];
   final Map<int, int> _quantidadesModalidades = {};
   Map<String, dynamic>? _compraEvento;
+  final Map<String, Map<String, dynamic>> _participantesDaSacola = {};
   bool _sacolaExpandida = false;
   bool _removendoItemSacola = false;
   Timer? _timerReservaSacola;
@@ -1925,7 +1926,13 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           nomeSetor: 'Modalidades selecionadas',
           modalidade: 'Compra do evento',
           beneficios: _beneficiosDaCompra(reserva),
+          participantesSalvos: _participantesDaSacola,
+          onParticipantesAlterados: (participantes) {
+            if (_compraEvento?['compra_evento_id'] != compra['compra_evento_id']) return;
+            _participantesDaSacola.addAll(participantes);
+          },
           onReservaConcluida: () {
+            _participantesDaSacola.clear();
             _timerReservaSacola?.cancel();
             if (!mounted) return;
             // A compra confirmada não é uma reserva abandonada ao sair.
@@ -1981,6 +1988,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         reservaId: reservaId,
         clienteId: clienteId,
       );
+      _participantesDaSacola.remove('$reservaId');
       final itensServidor = (resposta['itens'] as List?)
           ?.whereType<Map>()
           .map((outro) => Map<String, dynamic>.from(outro))
@@ -1995,6 +2003,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
       if (mensagem.toLowerCase().contains('item da compra não encontrado')) {
         // O checkout pode ter encerrado a reserva no servidor enquanto a
         // tela ainda mantinha uma cópia antiga da sacola.
+        _participantesDaSacola.remove('$reservaId');
         _removerItemLocalDaSacola(compra, reservaId);
       } else if (mounted) {
         AppSnackBar.erro(context, mensagem);
