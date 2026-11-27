@@ -529,6 +529,25 @@ class ApiService {
     return Map<String, dynamic>.from(jsonDecode(response.body));
   }
 
+  Future<void> dispensarPremioRoleta({
+    required int campanhaId,
+    required int resgateId,
+    required int clienteId,
+  }) async {
+    final token = await AuthStorage().obterToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/premios/$resgateId/dispensar'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'cliente_id': clienteId}),
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+  }
+
   Future<Map<String, dynamic>> resgatarCortesiaDaCampanha({
     required int campanhaId,
     required int clienteId,

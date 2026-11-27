@@ -396,9 +396,18 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           percentual: percentual,
         ),
       );
+      if (usarDesconto != true) {
+        await apiService.dispensarPremioRoleta(
+          campanhaId: int.parse('${campanha['campanha_id']}'),
+          resgateId: int.parse('${premio['resgate_id']}'),
+          clienteId: clienteId!,
+        );
+        if (mounted) await carregarDados();
+        return;
+      }
       if (!mounted) return;
       await carregarDados();
-      if (!mounted || usarDesconto != true) return;
+      if (!mounted) return;
       await adicionarProdutoAoCarrinho(
         produto,
         quantidade: 1,
@@ -1616,7 +1625,7 @@ class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
             const SizedBox(height: 7),
             Text(
               _concluida
-                  ? 'Use agora em ${widget.produtoNome}. O prêmio expira em 20 minutos.'
+                  ? 'Use o desconto em ${widget.produtoNome} ou descarte o prêmio.'
                   : 'Aguarde o resultado do seu sorteio.',
               textAlign: TextAlign.center,
             ),
@@ -1626,7 +1635,7 @@ class _RoletaPremioDialogState extends State<_RoletaPremioDialog>
       actions: [
         TextButton(
           onPressed: _concluida ? () => Navigator.pop(context, false) : null,
-          child: const Text('Agora não'),
+          child: const Text('Descartar prêmio'),
         ),
         ElevatedButton(
           onPressed: _concluida ? () => Navigator.pop(context, true) : null,
