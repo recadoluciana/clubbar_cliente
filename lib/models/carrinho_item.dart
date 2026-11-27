@@ -14,6 +14,7 @@ class ItemCarrinho {
   final String fotoUrl;
   final int quantidade;
 
+  final double valorEconomia;
   final double precoOriginal;
   final double precoFinal;
   final bool descontoAtivo;
@@ -36,6 +37,7 @@ class ItemCarrinho {
     required this.observacao,
     required this.fotoUrl,
     required this.quantidade,
+    this.valorEconomia = 0,
     required this.precoOriginal,
     required this.precoFinal,
     required this.descontoAtivo,
@@ -68,6 +70,7 @@ class ItemCarrinho {
       observacao: (json['observacao'] ?? json['dsobsitcar'] ?? '').toString(),
       fotoUrl: _buildUrl((json['urlfotoproduto'] ?? '').toString()),
       quantidade: _toInt(json['qt'], fallback: 1),
+      valorEconomia: _toDouble(json['valor_economia']),
       precoOriginal: _toDouble(json['vrprecoprod']),
       precoFinal: _toDouble(json['vrprecofinal'] ?? json['vrprecoprod']),
       descontoAtivo: json['descontoativo'] == true,

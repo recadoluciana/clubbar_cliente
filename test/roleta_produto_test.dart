@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:clubbar_cliente/models/loja.dart';
+import 'package:clubbar_cliente/utils/value_formatters.dart';
 import 'package:clubbar_cliente/screens/carrinho/carrinho_screen.dart';
 import 'package:clubbar_cliente/screens/produtos_loja/produtos_loja_screen.dart';
 import 'package:flutter/services.dart';
@@ -70,7 +71,7 @@ void main() {
       if (request.url.path == '/carrinho/itens') {
         data = {'carrinho_id': 10, 'itens': [
           {'itcarrinho_id': 1, 'produto_id': 10, 'cardapioitem_id': 11,
-           'beneficio_resgate_id': 77, 'nmproduto': 'Produto teste', 'qt': 1,
+           'beneficio_resgate_id': 77, 'valor_economia': 2.2, 'nmproduto': 'Produto teste', 'qt': 1,
            'vrprecoprod': 7.2, 'vrprecofinal': 7.2, 'idtipoproduto': 'P'},
           {'itcarrinho_id': 2, 'produto_id': 10, 'cardapioitem_id': 11,
            'nmproduto': 'Produto teste', 'qt': 1, 'vrprecoprod': 9,
@@ -84,6 +85,8 @@ void main() {
         loja: Loja.fromJson({'loja_id': 2, 'organizacao_id': 1, 'nmloja': 'Teste'}))));
       await tester.pumpAndSettle();
       expect(find.text('Produto teste'), findsNWidgets(2));
+      expect(find.text('Economizou '+ValueFormatters.moeda(2.2)), findsOneWidget);
+      expect(tester.getTopLeft(find.text('2 itens no carrinho')).dy, lessThan(tester.getTopLeft(find.text('Produto teste').first).dy));
       final premio = find.byTooltip('Desconto da roleta válido para uma unidade');
       expect(premio, findsOneWidget);
       expect(tester.widget<IconButton>(find.ancestor(of: premio, matching: find.byType(IconButton)).first).onPressed, isNull);
