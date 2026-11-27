@@ -244,7 +244,10 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           : exibirHome
           ? TextButton.icon(
               onPressed: MainNavigationController.irParaHome,
-              style: TextButton.styleFrom(foregroundColor: Colors.white),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+              ),
               icon: const Icon(
                 Icons.home_rounded,
                 color: Colors.amber,
@@ -252,6 +255,8 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
               label: const Text(
                 'Home',
+                maxLines: 1,
+                softWrap: false,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
               ),
             )
