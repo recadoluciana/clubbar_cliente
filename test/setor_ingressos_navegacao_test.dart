@@ -142,6 +142,25 @@ void main() {
         ];
       } else if (path == '/reservas-ingressos/resgate-cortesia') {
         resposta = {'gratuito': true, 'venda_id': 40};
+      } else if (path == '/reservas-ingressos/grupo' || path == '/reservas-ingressos/compra-evento/20/ingressos-grupo') {
+        final corpo = jsonDecode(request.body) as Map<String, dynamic>;
+        final selecionados = (corpo['itens'] as List).cast<Map>();
+        final itens = <Map<String, dynamic>>[
+          if (path.endsWith('ingressos-grupo')) ...((reserva['itens'] as List).cast<Map<String, dynamic>>()),
+        ];
+        for (final selecionado in selecionados) {
+          for (var i = 0; i < (selecionado['quantidade'] as int); i++) {
+            itens.add({
+              'reserva_ingresso_id': 30 + itens.length,
+              'quantidade': 1,
+              'nome_modalidade': modalidade,
+              'nome_setor': selecionado['lote_id'] == 1 ? 'Pista' : 'VIP',
+              'valor_unitario': valor,
+              'valor_total': valor,
+            });
+          }
+        }
+        resposta = {...reserva, 'itens': itens, 'quantidade': itens.length, 'valor_total': valor * itens.length};
       } else if (path == '/reservas-ingressos/compra-evento') {
         resposta = reserva;
       } else if (path == '/reservas-ingressos/compra-evento/20/ingressos/30' && request.method == 'DELETE') {
@@ -261,6 +280,76 @@ void main() {
     });
   });
 
+  Future<void> selecionarEComprar(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Aumentar quantidade'));
+    await tester.pump();
+    await tester.tap(find.text('Comprar 1 ingresso'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('seleção começa em zero e só reserva ao comprar', (tester) async {
+    await executar(tester, (requests) async {
+      expect(find.text('Adicionar'), findsNothing);
+      expect(find.byTooltip('Diminuir quantidade'), findsOneWidget);
+      expect(tester.widget<IconButton>(find.ancestor(of: find.byTooltip('Diminuir quantidade'), matching: find.byType(IconButton)).first).onPressed, isNull);
+      expect(find.text('Comprar 1 ingresso'), findsNothing);
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      expect(find.text('Comprar 1 ingresso'), findsOneWidget);
+      expect(requests.where((r) => r.method == 'POST' && r.url.path.startsWith('/reservas-ingressos/')), isEmpty);
+      expect(find.byIcon(Icons.timer_outlined), findsNothing);
+      await tester.tap(find.text('Comprar 1 ingresso'));
+      await tester.pumpAndSettle();
+      final envio = requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo').single;
+      expect((jsonDecode(envio.body) as Map)['itens'], [{'lote_id': 1, 'lotepreco_id': 1, 'quantidade': 1}]);
+      expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
+      expect(find.byIcon(Icons.timer_outlined), findsWidgets);
+    }, segundosReserva: 600);
+  });
+
+  testWidgets('seleção atravessa setores e compra todos juntos', (tester) async {
+    await executar(tester, (requests) async {
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo'), isEmpty);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Setor: VIP'));
+      await tester.tap(find.text('Setor: VIP'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      expect(find.text('Comprar 2 ingressos'), findsOneWidget);
+      await tester.tap(find.text('Comprar 2 ingressos'));
+      await tester.pumpAndSettle();
+      final envio = requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo').single;
+      expect((jsonDecode(envio.body) as Map)['itens'], [
+        {'lote_id': 1, 'lotepreco_id': 1, 'quantidade': 1},
+        {'lote_id': 2, 'lotepreco_id': 2, 'quantidade': 1},
+      ]);
+      expect(find.text('Participante 1'), findsOneWidget);
+      expect(find.text('Participante 2'), findsOneWidget);
+    });
+  });
+
+  testWidgets('adicionar mais preserva prazo e participante já informado', (tester) async {
+    await executar(tester, (requests) async {
+      await selecionarEComprar(tester);
+      final prazo = tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva;
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      await tester.tap(find.text('Comprar 1 ingresso'));
+      await tester.pumpAndSettle();
+      expect(tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva, prazo);
+      expect(find.text('Pessoa Teste'), findsOneWidget);
+      expect(find.text('Participante 2'), findsOneWidget);
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos-grupo'), hasLength(1));
+    });
+  });
+
   testWidgets('Voltar do setor mantém o detalhe montado', (tester) async {
     await executar(tester, (requests) async {
       await tester.binding.handlePopRoute();
@@ -280,11 +369,8 @@ void main() {
     await executar(tester, (_) async {
       tester.view.physicalSize = const Size(800, 1000);
       await tester.pump();
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       await tester.pump(const Duration(seconds: 60));
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
       expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
       expect(find.text('Participante 1'), findsOneWidget);
       expect(find.text('Home'), findsNothing);
@@ -301,7 +387,8 @@ void main() {
 
   testWidgets('excluir último ingresso esvazia a sacola no primeiro clique', (tester) async {
     await executar(tester, (requests) async {
-      await tester.tap(find.text('Adicionar'));
+      await selecionarEComprar(tester);
+      await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
       final sacola = find.ancestor(of: find.byTooltip('Conferir sacola'), matching: find.byType(Stack)).first;
       expect(find.descendant(of: sacola, matching: find.text('1')), findsOneWidget);
@@ -312,19 +399,15 @@ void main() {
       expect(find.byType(ParticipantesReservaScreen), findsNothing);
       expect(find.descendant(of: sacola, matching: find.text('1')), findsNothing);
       expect(requests.where((r) => r.method == 'DELETE' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos/30'), hasLength(1));
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento'), hasLength(2));
+      await selecionarEComprar(tester);
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo'), hasLength(2));
       expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos'), isEmpty);
     }, respostaExclusaoDesatualizada: true);
   });
 
   testWidgets('idas e voltas preservam o mesmo prazo entre todas as telas', (tester) async {
     await executar(tester, (_) async {
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       final prazo = tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva;
       expect(prazo, isNotNull);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
@@ -348,10 +431,7 @@ void main() {
   testWidgets('contador continua ao voltar sem resposta do servidor', (tester) async {
     var falhou = false;
     await executar(tester, (_) async {
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
@@ -377,10 +457,7 @@ void main() {
   testWidgets('prazo expirado no pagamento limpa a sacola ao voltar', (tester) async {
     var expirou = false;
     await executar(tester, (requests) async {
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
@@ -394,18 +471,14 @@ void main() {
       await tester.tap(find.text('VOLTAR'));
       await tester.pumpAndSettle();
       expect(find.byType(ParticipantesReservaScreen), findsNothing);
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento'), hasLength(2));
+      await selecionarEComprar(tester);
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo'), hasLength(2));
     }, segundosReserva: 2, reservaExpirada: () => expirou);
   });
 
   testWidgets('resumo oficial é exibido antes do Pix sem confirmação extra', (tester) async {
     await executar(tester, (requests) async {
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
@@ -429,10 +502,7 @@ void main() {
     await executar(tester, (_) async {
       tester.view.physicalSize = const Size(800, 1200);
       await tester.pump();
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
@@ -448,10 +518,7 @@ void main() {
   testWidgets('erro na cotação bloqueia pagamento e permite nova tentativa', (tester) async {
     var falhou = true;
     await executar(tester, (requests) async {
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
       await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
       await tester.tap(find.text('Continuar para pagamento'));
@@ -467,14 +534,24 @@ void main() {
     }, cotacaoFalhou: () => falhou);
   });
 
+  testWidgets('Pix Asaas para ingresso fica indisponível e cartão permanece', (tester) async {
+    await executar(tester, (_) async {
+      await selecionarEComprar(tester);
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.enterText(find.widgetWithText(TextField, 'CPF'), '12345678909');
+      await tester.tap(find.text('Continuar para pagamento'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pix temporariamente indisponível para ingressos neste estabelecimento.'), findsOneWidget);
+      expect(tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Pagamento PIX')).onPressed, isNull);
+      expect(tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Pagamento com cartão de crédito')).onPressed, isNotNull);
+    }, provedor: 'ASAAS');
+  });
+
   testWidgets('salva participante na tela de conferência sem finalizar compra', (tester) async {
     await executar(tester, (requests) async {
       tester.view.physicalSize = const Size(800, 1000);
       await tester.pump();
-      await tester.tap(find.text('Adicionar'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Conferir sacola'));
-      await tester.pumpAndSettle();
+      await selecionarEComprar(tester);
       expect(find.text('Conferir sacola'), findsOneWidget);
       expect(find.text('Participante 1'), findsOneWidget);
       expect(find.text('Home'), findsNothing);
@@ -519,6 +596,7 @@ void main() {
       final aumentar = find.byTooltip('Aumentar quantidade');
       final total = find.text(ValueFormatters.moeda(12.99));
       await tester.ensureVisible(aumentar);
+      await tester.tap(aumentar);
       await tester.pump();
       expect(unitario, findsOneWidget);
       expect(total, findsOneWidget);
@@ -528,7 +606,7 @@ void main() {
       expect(tester.widget<Text>(total).style?.fontSize, 17);
       final limite = find.text('5 ingressos por compra');
       final disponivel = find.text('Disponível');
-      final adicionar = find.widgetWithText(FilledButton, 'Adicionar');
+      final adicionar = find.text('Disponível');
       expect(tester.getCenter(limite).dy, greaterThan(tester.getCenter(unitario).dy));
       expect(tester.getCenter(disponivel).dy, closeTo(tester.getCenter(limite).dy, 1));
       expect(tester.getCenter(adicionar).dy, closeTo(tester.getCenter(limite).dy, 1));
@@ -546,6 +624,8 @@ void main() {
         widget.textSpan?.toPlainText().contains(ValueFormatters.moeda(10) + ' (+' + ValueFormatters.moeda(2.99) + ')') == true);
       final aumentar = find.byTooltip('Aumentar quantidade');
       final totalInicial = find.text(ValueFormatters.moeda(12.99));
+      await tester.tap(aumentar);
+      await tester.pump();
       expect(unitario, findsOneWidget);
       expect(totalInicial, findsOneWidget);
       expect(find.text('Subtotal'), findsNothing);
@@ -555,7 +635,7 @@ void main() {
       expect(tester.getCenter(totalInicial).dx, greaterThan(tester.getCenter(aumentar).dx));
       final limite = find.text('5 ingressos por compra');
       final disponivel = find.text('Disponível');
-      final adicionar = find.widgetWithText(FilledButton, 'Adicionar');
+      final adicionar = find.text('Disponível');
       expect(tester.getCenter(limite).dy, greaterThan(tester.getCenter(unitario).dy));
       expect(tester.getCenter(disponivel).dy, closeTo(tester.getCenter(limite).dy, 1));
       expect(tester.getCenter(adicionar).dy, closeTo(tester.getCenter(limite).dy, 1));
@@ -676,7 +756,6 @@ void main() {
     'setor',
     'pagamento',
     'pix Mercado Pago',
-    'pix Asaas',
   ]) {
     final pix = origem.startsWith('pix');
     final provedor = origem == 'pix Asaas' ? 'ASAAS' : 'MERCADO_PAGO';
@@ -684,10 +763,7 @@ void main() {
       testWidgets('$origem navega diretamente para $destino', (tester) async {
         await executar(tester, (_) async {
           if (origem != 'setor') {
-            await tester.tap(find.text('Adicionar'));
-            await tester.pumpAndSettle();
-            await tester.tap(find.byTooltip('Conferir sacola'));
-            await tester.pumpAndSettle();
+            await selecionarEComprar(tester);
             expect(find.text('Conferir sacola'), findsOneWidget);
             for (final item in [
               'Home',
@@ -858,10 +934,7 @@ void main() {
         (requests) async {
           tester.view.physicalSize = const Size(800, 1000);
           await tester.pump();
-          await tester.tap(find.text('Adicionar'));
-          await tester.pumpAndSettle();
-          await tester.tap(find.byTooltip('Conferir sacola'));
-          await tester.pumpAndSettle();
+          await selecionarEComprar(tester);
           await tester.enterText(
             find.widgetWithText(TextField, 'Nome completo'),
             'Participante Teste',
