@@ -73,9 +73,12 @@ void main() {
     bool cortesiaComPrecoIncorreto = false,
     bool cortesiaApenasPrimeiroSetor = false,
     bool cortesiaEsgotada = false,
+    String? horarioCortesia,
     void Function()? verificarSetores,
+    void Function()? verificarDetalhes,
     double taxaMinima = 0,
     bool setorUnico = false,
+    bool multiplosLotesMesmoSetor = false,
     bool variasModalidades = false,
     bool Function()? cotacaoFalhou,
     int? segundosPix,
@@ -135,14 +138,15 @@ void main() {
         };
       } else if (path == '/eventos/10/lotes') {
         resposta = [
-          for (var id = 1; id <= (setorUnico ? 1 : 2); id++)
+          for (var id = 1; id <= (setorUnico && !multiplosLotesMesmoSetor ? 1 : 2); id++)
             {
               'lote_id': id,
-              'loteglobal_id': 1,
+              'loteglobal_id': multiplosLotesMesmoSetor ? id : 1,
               'evento_id': 10,
-              'nmlote': 'Lote 1',
-              'nmsetor': id == 1 ? 'Pista' : 'VIP',
+              'nmlote': multiplosLotesMesmoSetor ? 'Lote $id' : 'Lote 1',
+              'nmsetor': multiplosLotesMesmoSetor || id == 1 ? 'Pista' : 'VIP',
               'qttotallote': 50,
+              if (horarioCortesia != null) 'horariolimiteentradacortesia': horarioCortesia,
               'precos': [
                 {'lotepreco_id': id, 'nmpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'Inteira' : modalidade, 'tipopreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'INTEIRA' : cortesia ? 'CORTESIA' : 'INTEIRA', 'vrpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 10 : valor, if (cortesiaEsgotada) 'qtdisponivelmodalidade': 0},
                 if (variasModalidades && id == 1) {'lotepreco_id': 101, 'nmpreco': 'Meia', 'tipopreco': 'MEIA', 'vrpreco': 5},
@@ -254,20 +258,23 @@ void main() {
       );
       await tester.pumpWidget(const MaterialApp(home: MainNavigationScreen()));
       await tester.pumpAndSettle();
+      verificarDetalhes?.call();
+      await tester.tap(find.text('Comprar ingresso'));
+      await tester.pumpAndSettle();
       verificarSetores?.call();
       if (!setorUnico) {
         await tester.ensureVisible(find.text('Setor: Pista'));
         await tester.tap(find.text('Setor: Pista'));
         await tester.pumpAndSettle();
       }
-      expect(find.text(modalidade), findsOneWidget);
+      expect(find.text(modalidade), multiplosLotesMesmoSetor ? findsNWidgets(2) : findsOneWidget);
       for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
         expect(find.text(item), findsNothing);
       }
       // O setor permanece dentro do shell; não cobre a navegação com outra rota.
       expect(
         Navigator.of(
-          tester.element(find.text(modalidade)),
+          tester.element(find.text(modalidade).first),
           rootNavigator: true,
         ).canPop(),
         isFalse,
@@ -279,6 +286,92 @@ void main() {
     MainNavigationController.irParaHome();
     expect(tester.takeException(), isNull);
   }
+
+  Future<void> selecionarEComprar(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Aumentar quantidade'));
+    await tester.pump();
+    await tester.tap(find.text('Comprar ingressos (1)'));
+    await tester.pumpAndSettle();
+  }
+
+  for (final setorUnico in [true, false]) {
+    testWidgets('detalhes limpos e seleção adaptada: setor único $setorUnico', (tester) async {
+      await executar(tester, (_) async {
+        expect(find.text('Inteira'), findsOneWidget);
+        expect(find.text('Comprar ingressos'), findsWidgets);
+      }, setorUnico: setorUnico, verificarDetalhes: () {
+        expect(find.text('Detalhes do evento'), findsOneWidget);
+        expect(find.text('Casa'), findsOneWidget);
+        expect(find.text('Setor: Pista'), findsNothing);
+        expect(find.text('Inteira'), findsNothing);
+        expect(find.text('Lote 1'), findsNothing);
+      }, verificarSetores: setorUnico ? null : () {
+        expect(find.text('Selecione um setor'), findsOneWidget);
+        expect(find.text('Setor: Pista'), findsOneWidget);
+        expect(find.text('Setor: VIP'), findsOneWidget);
+        expect(find.text('Inteira'), findsNothing);
+      });
+    });
+  }
+
+  testWidgets('um setor com vários lotes abre as modalidades com seus lotes', (tester) async {
+    await executar(tester, (_) async {
+      expect(find.text('Selecione um setor'), findsNothing);
+      expect(find.text('Lote 1'), findsOneWidget);
+      expect(find.text('Lote 2'), findsOneWidget);
+      expect(find.text('Inteira'), findsNWidgets(2));
+    }, setorUnico: true, multiplosLotesMesmoSetor: true);
+  });
+
+  testWidgets('selecionar setor troca o layout sem abrir outra rota', (tester) async {
+    Route<dynamic>? rotaDaCompra;
+    await executar(tester, (_) async {
+      final rotaModalidades = ModalRoute.of(tester.element(find.text('Inteira')));
+      expect(rotaModalidades, same(rotaDaCompra));
+    }, verificarSetores: () {
+      rotaDaCompra = ModalRoute.of(tester.element(find.text('Selecione um setor')));
+    });
+  });
+
+  testWidgets('adicionar outro setor preserva participante e prazo', (tester) async {
+    await executar(tester, (requests) async {
+      await selecionarEComprar(tester);
+      final prazo = tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva;
+      await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Pessoa Teste');
+      await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Setor: VIP'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Aumentar quantidade'));
+      await tester.pump();
+      await tester.tap(find.text('Comprar ingressos (2)'));
+      await tester.pumpAndSettle();
+      expect(find.text('Pessoa Teste'), findsOneWidget);
+      expect(find.text('Participante 2'), findsOneWidget);
+      expect(tester.widget<ParticipantesReservaScreen>(find.byType(ParticipantesReservaScreen)).prazoReserva, prazo);
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos-grupo'), hasLength(1));
+    });
+  });
+
+  testWidgets('atualiza disponibilidade na tela de compra', (tester) async {
+    await executar(tester, (requests) async {
+      final antes = requests.where((r) => r.url.path == '/eventos/10/lotes').length;
+      await tester.tap(find.text('Atualizar'));
+      await tester.pumpAndSettle();
+      expect(requests.where((r) => r.url.path == '/eventos/10/lotes').length, greaterThan(antes));
+      expect(find.text('Inteira'), findsOneWidget);
+    }, setorUnico: true);
+  });
+
+  testWidgets('cortesia mantém horário de entrada e aviso de esgotamento', (tester) async {
+    await executar(tester, (_) async {
+      expect(find.text('Válido para entrada até as 23:00 horas.'), findsOneWidget);
+      expect(find.text('Cortesias esgotadas'), findsOneWidget);
+      expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Resgatar')).onPressed, isNull);
+    }, setorUnico: true, cortesia: true, cortesiaEsgotada: true, horarioCortesia: '23:00');
+  });
 
   testWidgets('cabeçalho do setor mostra data entre evento e setor', (tester) async {
     await executar(tester, (_) async {
@@ -292,13 +385,6 @@ void main() {
       expect(tester.getCenter(data).dy, lessThan(tester.getCenter(setor).dy));
     });
   });
-
-  Future<void> selecionarEComprar(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('Aumentar quantidade'));
-    await tester.pump();
-    await tester.tap(find.text('Comprar ingressos (1)'));
-    await tester.pumpAndSettle();
-  }
 
   testWidgets('setor mostra botão de compra no rodapé sem sacola ou navegação', (tester) async {
     await executar(tester, (_) async {
@@ -381,8 +467,11 @@ void main() {
     await executar(tester, (requests) async {
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Comprar ingresso'), findsOneWidget);
+      expect(find.text('Selecione um setor'), findsOneWidget);
       expect(find.text('Setor: VIP'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.text('Comprar ingresso'), findsOneWidget);
       expect(requests.where((r) => r.url.path == '/eventos/10'), hasLength(1));
       expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
       expect(
@@ -646,20 +735,20 @@ void main() {
       expect(MainNavigationController.ocultarBarra.value, isTrue);
       expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.shopping_bag_outlined)), findsNothing);
       expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.timer_outlined)), findsNothing);
-      expect(find.text('Comprar ingresso (0)'), findsOneWidget);
+      expect(find.text('Comprar ingressos (0)'), findsOneWidget);
       await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
       await tester.tap(find.byTooltip('Aumentar quantidade'));
       await tester.pump();
-      expect(find.text('Comprar ingresso (1)'), findsOneWidget);
-      await tester.tap(find.text('Comprar ingresso (1)'));
+      expect(find.text('Comprar ingressos (1)'), findsOneWidget);
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
       await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
       expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.shopping_bag_outlined)), findsNothing);
       expect(find.descendant(of: find.byType(ClubbarAppBar), matching: find.byIcon(Icons.timer_outlined)), findsOneWidget);
-      expect(find.text('Comprar ingresso (1)'), findsOneWidget);
-      await tester.tap(find.text('Comprar ingresso (1)'));
+      expect(find.text('Comprar ingressos (1)'), findsOneWidget);
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       expect(find.byType(ParticipantesReservaScreen), findsOneWidget);
       expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/grupo'), hasLength(1));
@@ -672,7 +761,7 @@ void main() {
       await tester.ensureVisible(aumentar);
       await tester.tap(aumentar);
       await tester.pump();
-      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Adicionar mais ingressos'));
       await tester.pumpAndSettle();
@@ -681,7 +770,7 @@ void main() {
       await tester.tap(find.byTooltip('Diminuir quantidade'));
       await tester.pumpAndSettle();
       expect(find.descendant(of: controle, matching: find.text('0')), findsOneWidget);
-      expect(find.text('Comprar ingresso (0)'), findsOneWidget);
+      expect(find.text('Comprar ingressos (0)'), findsOneWidget);
       expect(requests.where((r) => r.method == 'DELETE' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos/30'), hasLength(1));
     }, setorUnico: true);
   });
@@ -706,10 +795,14 @@ void main() {
         await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
         await tester.tap(find.byTooltip('Aumentar quantidade'));
         await tester.pump();
-        await tester.tap(find.text(setorUnico ? 'Comprar ingresso (1)' : 'Comprar ingressos (1)'));
+        await tester.tap(find.text('Comprar ingressos (1)'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Adicionar mais ingressos'));
         await tester.pumpAndSettle();
+        if (setorUnico) {
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+        }
         expect(find.byIcon(Icons.timer_outlined), findsWidgets);
         await tester.runAsync(() => Future<void>.delayed(const Duration(seconds: 3)));
         await tester.pump(const Duration(seconds: 2));
@@ -717,6 +810,10 @@ void main() {
         expect(find.text('O tempo para a compra expirou'), findsOneWidget);
         await tester.tap(find.text('VOLTAR'));
         await tester.pumpAndSettle();
+        if (setorUnico) {
+          await tester.tap(find.text('Comprar ingresso'));
+          await tester.pumpAndSettle();
+        }
         final controle = find.ancestor(of: find.byTooltip('Diminuir quantidade'), matching: find.byType(Row)).first;
         expect(find.descendant(of: controle, matching: find.text('0')), findsOneWidget);
       }, setorUnico: setorUnico, segundosReserva: 2, reservaExpirada: () => true);
@@ -728,9 +825,11 @@ void main() {
       await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
       await tester.tap(find.byTooltip('Aumentar quantidade'));
       await tester.pump();
-      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back).first);
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_back).first);
       await tester.pumpAndSettle();
@@ -757,10 +856,12 @@ void main() {
       await tester.pump();
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
       expect(find.text('Deseja sair desta tela?'), findsOneWidget);
       await tester.tap(find.text('Continuar compra'));
       await tester.pumpAndSettle();
-      expect(find.text('Comprar ingresso (1)'), findsOneWidget);
+      expect(find.text('Comprar ingresso'), findsOneWidget);
     }, setorUnico: true);
   });
 
@@ -769,9 +870,11 @@ void main() {
       await tester.ensureVisible(find.byTooltip('Aumentar quantidade'));
       await tester.tap(find.byTooltip('Aumentar quantidade'));
       await tester.pump();
-      await tester.tap(find.text('Comprar ingresso (1)'));
+      await tester.tap(find.text('Comprar ingressos (1)'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Adicionar mais ingressos'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byIcon(Icons.arrow_back).first);
       await tester.pumpAndSettle();
       await tester.tap(find.byIcon(Icons.arrow_back).first);
       await tester.pumpAndSettle();
