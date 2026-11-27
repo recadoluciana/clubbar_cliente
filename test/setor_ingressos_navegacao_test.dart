@@ -149,6 +149,7 @@ void main() {
               if (horarioCortesia != null) 'horariolimiteentradacortesia': horarioCortesia,
               'precos': [
                 {'lotepreco_id': id, 'nmpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'Inteira' : modalidade, 'tipopreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'INTEIRA' : cortesia ? 'CORTESIA' : 'INTEIRA', 'vrpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 10 : valor, if (cortesiaEsgotada) 'qtdisponivelmodalidade': 0},
+                if (cortesia && verificarSetores != null) {'lotepreco_id': 1000 + id, 'nmpreco': 'Inteira adicional', 'tipopreco': 'INTEIRA', 'vrpreco': 10},
                 if (variasModalidades && id == 1) {'lotepreco_id': 101, 'nmpreco': 'Meia', 'tipopreco': 'MEIA', 'vrpreco': 5},
                 if (variasModalidades && id == 1) {'lotepreco_id': 102, 'nmpreco': 'Esgotado', 'tipopreco': 'INTEIRA', 'vrpreco': 99, 'qtdisponivelmodalidade': 0},
               ],
@@ -259,7 +260,8 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: MainNavigationScreen()));
       await tester.pumpAndSettle();
       verificarDetalhes?.call();
-      await tester.tap(find.text('Comprar ingresso'));
+      final apenasCortesia = cortesia && verificarSetores == null;
+      await tester.tap(find.text(apenasCortesia ? 'Resgatar cortesia' : 'Comprar ingresso'));
       await tester.pumpAndSettle();
       verificarSetores?.call();
       if (!setorUnico) {
@@ -267,14 +269,14 @@ void main() {
         await tester.tap(find.text('Setor: Pista'));
         await tester.pumpAndSettle();
       }
-      expect(find.text(modalidade), multiplosLotesMesmoSetor ? findsNWidgets(2) : findsOneWidget);
+      expect(find.text(cortesia && verificarSetores != null ? 'Inteira adicional' : modalidade), multiplosLotesMesmoSetor ? findsNWidgets(2) : findsOneWidget);
       for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
         expect(find.text(item), findsNothing);
       }
       // O setor permanece dentro do shell; não cobre a navegação com outra rota.
       expect(
         Navigator.of(
-          tester.element(find.text(modalidade).first),
+          tester.element(find.text(cortesia && verificarSetores != null ? 'Inteira adicional' : modalidade).first),
           rootNavigator: true,
         ).canPop(),
         isFalse,
@@ -949,11 +951,28 @@ void main() {
       });
   });
 
+  testWidgets('compra e cortesia têm telas separadas', (tester) async {
+    await executar(tester, (_) async {
+      expect(find.text('Cortesia'), findsNothing);
+      expect(find.text('Inteira adicional'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, 'Resgatar cortesia'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Setor: Pista'));
+      await tester.pumpAndSettle();
+      expect(find.text('Cortesia'), findsOneWidget);
+      expect(find.text('Inteira adicional'), findsNothing);
+      expect(find.textContaining('Comprar ingressos ('), findsNothing);
+      expect(find.text('Resgatar'), findsOneWidget);
+    }, cortesia: true, variasModalidades: true, verificarSetores: () {});
+  });
+
   testWidgets('faixa inclui cortesia disponível com valor zero', (tester) async {
     await executar(tester, (_) async {}, cortesia: true, variasModalidades: true,
       verificarSetores: () {
         final pista = find.ancestor(of: find.text('Setor: Pista'), matching: find.byType(Card)).first;
-        expect(find.descendant(of: pista, matching: find.text('Preços entre ' + ValueFormatters.moeda(0) + ' e ' + ValueFormatters.moeda(5))), findsOneWidget);
+        expect(find.descendant(of: pista, matching: find.text('Preços entre ' + ValueFormatters.moeda(5) + ' e ' + ValueFormatters.moeda(10))), findsOneWidget);
         expect(find.descendant(of: pista, matching: find.text('Cortesia disponível')), findsOneWidget);
       });
   });
