@@ -66,6 +66,9 @@ void main() {
     bool Function()? reservaExpirada,
     bool respostaExclusaoDesatualizada = false,
     bool cortesiaComPrecoIncorreto = false,
+    bool cortesiaApenasPrimeiroSetor = false,
+    bool cortesiaEsgotada = false,
+    void Function()? verificarSetores,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -116,7 +119,7 @@ void main() {
               'nmsetor': id == 1 ? 'Pista' : 'VIP',
               'qttotallote': 50,
               'precos': [
-                {'lotepreco_id': id, 'nmpreco': modalidade, 'tipopreco': cortesia ? 'CORTESIA' : 'INTEIRA', 'vrpreco': valor},
+                {'lotepreco_id': id, 'nmpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'Inteira' : modalidade, 'tipopreco': cortesiaApenasPrimeiroSetor && id == 2 ? 'INTEIRA' : cortesia ? 'CORTESIA' : 'INTEIRA', 'vrpreco': cortesiaApenasPrimeiroSetor && id == 2 ? 10 : valor, if (cortesiaEsgotada) 'qtdisponivelmodalidade': 0},
               ],
             },
         ];
@@ -200,6 +203,7 @@ void main() {
       );
       await tester.pumpWidget(const MaterialApp(home: MainNavigationScreen()));
       await tester.pumpAndSettle();
+      verificarSetores?.call();
       await tester.ensureVisible(find.text('Setor: Pista'));
       await tester.tap(find.text('Setor: Pista'));
       await tester.pumpAndSettle();
@@ -348,6 +352,23 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Participante Teste'), findsOneWidget);
     });
+  });
+
+  testWidgets('aviso de cortesia aparece apenas no setor disponível', (tester) async {
+    await executar(tester, (_) async {}, cortesia: true,
+      cortesiaApenasPrimeiroSetor: true,
+      verificarSetores: () {
+        final setorPista = find.ancestor(of: find.text('Setor: Pista'), matching: find.byType(Card)).first;
+        final setorVip = find.ancestor(of: find.text('Setor: VIP'), matching: find.byType(Card)).first;
+        expect(find.descendant(of: setorPista, matching: find.text('Cortesia disponível')), findsOneWidget);
+        expect(find.descendant(of: setorVip, matching: find.text('Cortesia disponível')), findsNothing);
+      });
+  });
+
+  testWidgets('não exibe aviso de cortesia esgotada', (tester) async {
+    await executar(tester, (_) async {}, cortesia: true,
+      cortesiaEsgotada: true,
+      verificarSetores: () => expect(find.text('Cortesia disponível'), findsNothing));
   });
 
   testWidgets('cortesia abre popup e resgata um CPF sem usar sacola', (tester) async {
