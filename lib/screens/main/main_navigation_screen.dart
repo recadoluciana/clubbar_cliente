@@ -160,6 +160,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         (telaInterna == null && currentIndex == 1) ||
         telaInterna is CarrinhoLojasScreen ||
         telaInterna is CarrinhoScreen;
+    final carrinhoPrincipal =
+        (telaInterna == null && currentIndex == 1) ||
+        telaInterna is CarrinhoLojasScreen;
     final carteiraAberta =
         (telaInterna == null && currentIndex == 2) ||
         telaInterna is CarteiraScreen ||
@@ -186,7 +189,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         !carteiraAberta &&
         !carrinhoDaLoja;
     final carrinhoSelecionado =
-        (currentIndex == 1 || carrinhoDaLoja) &&
+        (currentIndex == 1 || carrinhoDaLoja || carrinhoPrincipal) &&
         !coraAtiva &&
         !carteiraAberta;
     final carteiraSelecionada =
@@ -219,7 +222,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 estaSelecionado: homeSelecionada,
               ),
 
-              if (!carrinhoAberto)
+              if (!carrinhoAberto || carrinhoPrincipal)
                 _itemBarraNavegacao(
                   index: 1,
                   icone: _iconeCarrinhoComBadge(
