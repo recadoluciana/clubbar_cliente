@@ -52,19 +52,37 @@ void main() {
         expect(find.text('Produto teste'), findsOneWidget);
         expect(find.text(tipo == 'PACOTE' ? 'Promoção: 3 por ${ValueFormatters.moeda(24)}' : 'Promoção: 10% OFF · ${ValueFormatters.moeda(8.1)}/un'), findsOneWidget);
         expect(find.text(ValueFormatters.moeda(9)), findsOneWidget);
-        expect(find.widgetWithText(TextButton, 'Adicionar'), findsNWidgets(2));
-        await tester.tap(find.widgetWithText(TextButton, 'Adicionar').first);
-        await tester.pumpAndSettle();
-        expect(enviados.last['campanha_id'], 42);
-        expect(enviados.last['qt'], 1);
-        ScaffoldMessenger.of(tester.element(find.text('Produto teste'))).hideCurrentSnackBar();
-        await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('Aumentar quantidade'));
-        await tester.pump();
-        await tester.tap(find.widgetWithText(TextButton, 'Adicionar').last);
-        await tester.pumpAndSettle();
-        expect(enviados.last['campanha_id'], isNull);
-        expect(enviados.last['qt'], 2);
+        final vermelho = find.byWidgetPredicate((widget) => widget is Container &&
+          widget.decoration is BoxDecoration &&
+          (widget.decoration as BoxDecoration).color == const Color(0xFFE57373));
+        final amarelo = find.byWidgetPredicate((widget) => widget is Container &&
+          widget.decoration is BoxDecoration &&
+          (widget.decoration as BoxDecoration).color == const Color(0xFFFFD166));
+        if (tipo == 'PACOTE') {
+          expect(find.widgetWithText(TextButton, 'Adicionar'), findsNWidgets(2));
+          expect(tester.getSize(vermelho.first).height, tester.getSize(amarelo.first).height);
+          await tester.tap(find.widgetWithText(TextButton, 'Adicionar').first);
+          await tester.pumpAndSettle();
+          expect(enviados.last['campanha_id'], 42);
+          expect(enviados.last['qt'], 1);
+          ScaffoldMessenger.of(tester.element(find.text('Produto teste'))).hideCurrentSnackBar();
+          await tester.pumpAndSettle();
+          await tester.tap(find.byTooltip('Aumentar quantidade'));
+          await tester.pump();
+          await tester.tap(find.widgetWithText(TextButton, 'Adicionar').last);
+          await tester.pumpAndSettle();
+          expect(enviados.last['campanha_id'], isNull);
+          expect(enviados.last['qt'], 2);
+        } else {
+          expect(find.widgetWithText(TextButton, 'Adicionar'), findsOneWidget);
+          expect(amarelo, findsNothing);
+          await tester.tap(find.byTooltip('Aumentar quantidade'));
+          await tester.pump();
+          await tester.tap(find.widgetWithText(TextButton, 'Adicionar'));
+          await tester.pumpAndSettle();
+          expect(enviados.last['campanha_id'], 42);
+          expect(enviados.last['qt'], 2);
+        }
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
       }, () => cliente);
