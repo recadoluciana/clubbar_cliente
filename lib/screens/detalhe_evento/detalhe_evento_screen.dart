@@ -1768,8 +1768,14 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
               item: item,
             );
       if (!mounted) return;
+      final segundosRecebidos = int.tryParse('${compra['segundos_restantes']}');
+      final segundosAtuais = _segundosReservaSacola;
       setState(() => _compraEvento = compra);
-      _iniciarTimerReservaSacola(compra);
+      if (compraAtual == null) {
+        _iniciarTimerReservaSacola(compra);
+      } else if (segundosRecebidos != null && segundosRecebidos < segundosAtuais) {
+        _iniciarTimerReservaSacola(compra);
+      }
       AppSnackBar.sucesso(context, 'Ingresso adicionado.');
       // A inclusão já reserva o estoque no servidor. Recarrega a mesma fonte
       // usada pelo botão "Atualizar" para refletir imediatamente o saldo.
@@ -1906,6 +1912,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         <Map<String, dynamic>>[];
     final reserva = {
       ...compra,
+      'segundos_restantes': _segundosReservaSacola,
       if (itens.isNotEmpty)
         'reserva_ingresso_id': itens.first['reserva_ingresso_id'],
       'itens': itens
