@@ -281,7 +281,15 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
             ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFF9E6), Color(0xFFFFE7A3)],
+          ),
+        ),
+        child: SafeArea(
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -294,6 +302,7 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
             style: FilledButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
             child: Text('Comprar ingressos (${widget.totalSelecionado()})'),
           ),
+        ),
         ),
       ),
       body: Column(children: [
@@ -483,7 +492,15 @@ class _ModalidadesIngressoScreenState
             ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFF9E6), Color(0xFFFFE7A3)],
+          ),
+        ),
+        child: SafeArea(
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -501,6 +518,7 @@ class _ModalidadesIngressoScreenState
             style: FilledButton.styleFrom(backgroundColor: Colors.amber, foregroundColor: Colors.black),
             child: Text('Comprar ingressos (${widget.totalSelecionado()})'),
           ),
+        ),
         ),
       ),
       body: Column(
@@ -773,7 +791,7 @@ class _ModalidadesIngressoScreenState
         : situacao;
     final corSituacao = textoSituacao == 'Disponível'
         ? Colors.green.shade700
-        : textoSituacao == 'Esgotado'
+        : textoSituacao == 'Esgotado' || textoSituacao == 'Vendas encerradas'
         ? Colors.red.shade700
         : Colors.grey.shade700;
     final podeDiminuir = quantidade > 0;
