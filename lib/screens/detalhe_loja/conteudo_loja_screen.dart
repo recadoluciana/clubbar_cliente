@@ -161,25 +161,119 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
     ].where((texto) => texto.isNotEmpty).join(' • ');
   }
 
-  String _subtituloContato(Loja loja) {
-    final instagram = loja.instagram.trim().isEmpty
-        ? 'Não informado'
-        : loja.instagram.trim();
-    final email = loja.emailContato.trim().isEmpty
-        ? 'Não informado'
-        : loja.emailContato.trim();
-    final endereco = _enderecoCompleto(loja);
-    final whatsapp = loja.whatsapp.trim().isEmpty
-        ? 'Não informado'
-        : _telefoneFormatado(loja.whatsapp);
+  Widget _informacaoContato({
+    required String titulo,
+    required String valor,
+    required IconData icone,
+    required Color cor,
+  }) {
+    final informado = valor.trim().isNotEmpty;
+    final corDestaque = informado ? cor : Colors.grey.shade600;
 
-    return [
-      'Instagram: $instagram',
-      'E-mail: $email',
-      'Endereço: ${endereco.isEmpty ? 'Não informado' : endereco}',
-      'WhatsApp: $whatsapp',
-    ].join('\n');
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: .85),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: corDestaque.withValues(alpha: .08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icone, size: 18, color: corDestaque),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  informado ? valor.trim() : 'Não informado',
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.3,
+                    fontWeight: informado ? FontWeight.w600 : FontWeight.w400,
+                    color: informado ? Colors.black87 : Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
+  Widget _contatosLoja(Loja loja) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        const espaco = 10.0;
+        final largura = constraints.maxWidth;
+        final duasColunas = largura >= 400;
+        final larguraContato = duasColunas ? (largura - espaco) / 2 : largura;
+        final larguraDetalhe = largura >= 720 ? larguraContato : largura;
+
+        return Wrap(
+          spacing: espaco,
+          runSpacing: espaco,
+          children: [
+            SizedBox(
+              width: larguraContato,
+              child: _informacaoContato(
+                titulo: 'WhatsApp',
+                valor: _telefoneFormatado(loja.whatsapp),
+                icone: Icons.chat_bubble_outline_rounded,
+                cor: Colors.green.shade700,
+              ),
+            ),
+            SizedBox(
+              width: larguraContato,
+              child: _informacaoContato(
+                titulo: 'Instagram',
+                valor: loja.instagram,
+                icone: Icons.camera_alt_outlined,
+                cor: Colors.blue.shade700,
+              ),
+            ),
+            SizedBox(
+              width: larguraDetalhe,
+              child: _informacaoContato(
+                titulo: 'E-mail',
+                valor: loja.emailContato,
+                icone: Icons.mail_outline_rounded,
+                cor: Colors.blue.shade700,
+              ),
+            ),
+            SizedBox(
+              width: larguraDetalhe,
+              child: _informacaoContato(
+                titulo: 'Endereço',
+                valor: _enderecoCompleto(loja),
+                icone: Icons.location_on_outlined,
+                cor: Colors.blue.shade700,
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -200,10 +294,12 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
         children: [
           ClubbarPageHeader(
             titulo: 'Conteúdo do estabelecimento',
-            subtitulo: _subtituloContato(loja),
+            subtitulo: '',
             imagemAvatarUrl: loja.imagemUrl,
             icone: Icons.storefront_rounded,
-            maxLinhasSubtitulo: 5,
+            tamanhoAvatar: 52,
+            maxLinhasTitulo: 2,
+            conteudoInferior: _contatosLoja(loja),
           ),
           Expanded(
             child: _carregando

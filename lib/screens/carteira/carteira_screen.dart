@@ -339,7 +339,6 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
     final totalProdutos = int.tryParse('${loja['total_produtos'] ?? 0}') ?? 0;
 
     final totalIngressos = int.tryParse('${loja['total_ingressos'] ?? 0}') ?? 0;
-    final totalFichas = totalProdutos + totalIngressos;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -359,32 +358,14 @@ class _CarteiraScreenState extends State<CarteiraScreen> {
                   const SizedBox(width: 14),
 
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          nome,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-
-                        const SizedBox(height: 5),
-
-                        Text(
-                          'Você possui $totalFichas fichas, sendo '
-                          '$totalProdutos de produtos e $totalIngressos de ingressos;\n'
-                          'Selecione a opção abaixo:',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      nome,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ],
