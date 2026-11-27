@@ -64,6 +64,7 @@ void main() {
     String Function()? statusPagamento,
     int segundosReserva = 900,
     bool Function()? reservaExpirada,
+    bool respostaExclusaoDesatualizada = false,
   }) async {
     tester.view.physicalSize = const Size(500, 1000);
     tester.view.devicePixelRatio = 1;
@@ -122,6 +123,11 @@ void main() {
         resposta = {'gratuito': true, 'venda_id': 40};
       } else if (path == '/reservas-ingressos/compra-evento') {
         resposta = reserva;
+      } else if (path == '/reservas-ingressos/compra-evento/20/ingressos/30' && request.method == 'DELETE') {
+        // Simula também a resposta antiga que incluía o item recém-removido.
+        resposta = respostaExclusaoDesatualizada
+            ? {...reserva, 'ok': true}
+            : {'ok': true, 'quantidade': 0, 'valor_total': 0, 'itens': []};
       } else if (path == '/reservas-ingressos/30/participante') {
         resposta = {'ok': true};
       } else if (path == '/reservas-ingressos/30/participantes') {
@@ -252,6 +258,26 @@ void main() {
       expect(find.text('15:00'), findsNothing);
       expect(find.textContaining(RegExp(r'13:5[0-9]|14:00')), findsWidgets);
     }, segundosReserva: 840);
+  });
+
+  testWidgets('excluir último ingresso esvazia a sacola no primeiro clique', (tester) async {
+    await executar(tester, (requests) async {
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      final sacola = find.ancestor(of: find.byTooltip('Conferir sacola'), matching: find.byType(Stack)).first;
+      expect(find.descendant(of: sacola, matching: find.text('1')), findsOneWidget);
+      await tester.tap(find.byTooltip('Conferir sacola'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Excluir ingresso'));
+      await tester.pumpAndSettle();
+      expect(find.byType(ParticipantesReservaScreen), findsNothing);
+      expect(find.descendant(of: sacola, matching: find.text('1')), findsNothing);
+      expect(requests.where((r) => r.method == 'DELETE' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos/30'), hasLength(1));
+      await tester.tap(find.text('Adicionar'));
+      await tester.pumpAndSettle();
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento'), hasLength(2));
+      expect(requests.where((r) => r.method == 'POST' && r.url.path == '/reservas-ingressos/compra-evento/20/ingressos'), isEmpty);
+    }, respostaExclusaoDesatualizada: true);
   });
 
   testWidgets('prazo expirado no pagamento limpa a sacola ao voltar', (tester) async {

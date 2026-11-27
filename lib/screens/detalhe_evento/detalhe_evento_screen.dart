@@ -287,7 +287,10 @@ class _ModalidadesIngressoScreenState
                   tooltip: 'Conferir sacola',
                   onPressed: widget.onSacolaTap == null
                       ? null
-                      : () => widget.onSacolaTap!(),
+                      : () async {
+                          await widget.onSacolaTap!();
+                          if (mounted) setState(() {});
+                        },
                   icon: const Icon(
                     Icons.shopping_bag_outlined,
                     color: Colors.white,
@@ -1893,6 +1896,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
       _participantesDaSacola.remove('$reservaId');
       final itensServidor = (resposta['itens'] as List?)
           ?.whereType<Map>()
+          // Nunca restaura o ingresso que acabou de ser excluído, mesmo se
+          // a resposta de uma versão antiga da API ainda o incluir.
+          .where((outro) => '${outro['reserva_ingresso_id']}' != '$reservaId')
           .map((outro) => Map<String, dynamic>.from(outro))
           .toList();
       if (itensServidor != null) {
