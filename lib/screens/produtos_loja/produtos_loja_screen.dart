@@ -854,40 +854,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                               color: Colors.black,
                                             ),
                                           )
-                                        : temPromocaoPercentual
-                                        ? Text.rich(
-                                            TextSpan(
-                                              style: const TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 10,
-                                              ),
-                                              children: [
-                                                const TextSpan(text: 'de '),
-                                                TextSpan(
-                                                  text: ValueFormatters.moeda(
-                                                    precoAtual,
-                                                  ),
-                                                  style: const TextStyle(
-                                                    decoration: TextDecoration
-                                                        .lineThrough,
-                                                  ),
-                                                ),
-                                                const TextSpan(text: ' por '),
-                                                TextSpan(
-                                                  text: ValueFormatters.moeda(
-                                                    precoPromocional,
-                                                  ),
-                                                  style: TextStyle(
-                                                    color: Colors.red.shade700,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w900,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          )
                                         : temDesconto
                                         ? Text.rich(
                                             TextSpan(
@@ -932,15 +898,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                             ),
                                           ),
                                   ),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      _controleQuantidadeProduto(produto),
-                                      const SizedBox(height: 5),
-                                      _botaoAdicionarProduto(produto),
-                                    ],
-                                  ),
+                                  if (!temPacote && !temPromocaoPercentual)
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        _controleQuantidadeProduto(produto),
+                                        const SizedBox(height: 5),
+                                        _botaoAdicionarProduto(produto),
+                                      ],
+                                    ),
                                 ],
                               ),
 
@@ -985,28 +952,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                   ),
                                 ),
                               ],
-                              if (temPromocaoPercentual) ...[
-                                const SizedBox(height: 3),
-                                Text(
-                                  'Promoção: ${percentualPromocao.toStringAsFixed(percentualPromocao.truncateToDouble() == percentualPromocao ? 0 : 2)}% OFF',
-                                  style: TextStyle(
-                                    color: Colors.red.shade700,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                              if (temPacote) ...[
-                                const SizedBox(height: 3),
-                                Text(
-                                  'Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
-                                  style: TextStyle(
-                                    color: Colors.red.shade700,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
                             ],
                           ),
                         ),
@@ -1015,7 +960,22 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   ),
                 ),
               ),
-              if (temPacote || temPromocaoPercentual || ehCortesia)
+              if (temPacote || temPromocaoPercentual)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  child: _opcoesDeCompra(
+                    produto: produto,
+                    campanhaPacote: campanhaPacote,
+                    campanhaPercentual: campanhaPercentual,
+                    quantidadePacote: quantidadePacote,
+                    valorPacote: valorPacote,
+                    percentualPromocao: percentualPromocao,
+                    precoPromocional: precoPromocional,
+                    temPacote: temPacote,
+                    temPromocaoPercentual: temPromocaoPercentual,
+                  ),
+                ),
+              if (ehCortesia)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                   child: DecoratedBox(
@@ -1032,8 +992,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                         campanhaPercentual: campanhaPercentual,
                         quantidadePacote: quantidadePacote,
                         valorPacote: valorPacote,
-                        temPacote: temPacote,
-                        temPromocaoPercentual: temPromocaoPercentual,
+                        temPacote: false,
+                        temPromocaoPercentual: false,
                         ehCortesia: ehCortesia,
                         cortesiaDisponivel: cortesiaDisponivel,
                         resgatandoCortesia: resgatandoCortesia,
@@ -1045,6 +1005,97 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _opcoesDeCompra({
+    required Produto produto,
+    required Map<String, dynamic>? campanhaPacote,
+    required Map<String, dynamic>? campanhaPercentual,
+    required int quantidadePacote,
+    required double valorPacote,
+    required double percentualPromocao,
+    required double precoPromocional,
+    required bool temPacote,
+    required bool temPromocaoPercentual,
+  }) {
+    final chave = _chaveItemCardapio(produto);
+    final podeComprar = vendasHabilitadas && !produtosEmAlteracao.contains(chave);
+    final pacoteId = int.tryParse('${campanhaPacote?['campanha_id']}');
+    final percentualId = int.tryParse('${campanhaPercentual?['campanha_id']}');
+    Widget promocao(String descricao, VoidCallback? adicionar) => Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE57373),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(descricao, textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w800)),
+          TextButton.icon(
+            onPressed: adicionar,
+            icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
+            label: const Text('Adicionar'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white, disabledForegroundColor: Colors.white54,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              minimumSize: const Size(0, 32),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                if (temPacote)
+                  promocao('Promoção: $quantidadePacote por ${ValueFormatters.moeda(valorPacote)}',
+                    !podeComprar || pacoteId == null ? null : () => adicionarProdutoAoCarrinho(
+                      produto, quantidade: 1, campanhaId: pacoteId)),
+                if (temPacote && temPromocaoPercentual) const SizedBox(height: 8),
+                if (temPromocaoPercentual)
+                  promocao('Promoção: ${percentualPromocao.toStringAsFixed(percentualPromocao.truncateToDouble() == percentualPromocao ? 0 : 2)}% OFF · ${ValueFormatters.moeda(precoPromocional)}/un',
+                    !podeComprar || percentualId == null ? null : () => adicionarProdutoAoCarrinho(
+                      produto, quantidade: quantidadesSelecionadas[chave] ?? 1, campanhaId: percentualId)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD166),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FittedBox(fit: BoxFit.scaleDown, child: _controleQuantidadeProduto(produto)),
+                  TextButton.icon(
+                    onPressed: !podeComprar ? null : () => adicionarProdutoAoCarrinho(
+                      produto, quantidade: quantidadesSelecionadas[chave] ?? 1),
+                    icon: const Icon(Icons.add_shopping_cart_rounded, size: 17),
+                    label: const Text('Adicionar'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 6),
+                      minimumSize: const Size(0, 32),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
