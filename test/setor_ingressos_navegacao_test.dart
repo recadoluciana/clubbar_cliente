@@ -574,7 +574,7 @@ void main() {
       tester.view.physicalSize = const Size(800, 1000);
       await tester.pump();
       await selecionarEComprar(tester);
-      expect(find.text('Conferir sacola'), findsOneWidget);
+      expect(find.text('Conferir ingressos'), findsOneWidget);
       expect(find.text('Participante 1'), findsOneWidget);
       expect(find.text('Home'), findsNothing);
       await tester.enterText(find.widgetWithText(TextField, 'Nome completo'), 'Participante Teste');
@@ -869,7 +869,7 @@ void main() {
         await executar(tester, (_) async {
           if (origem != 'setor') {
             await selecionarEComprar(tester);
-            expect(find.text('Conferir sacola'), findsOneWidget);
+            expect(find.text('Conferir ingressos'), findsOneWidget);
             for (final item in [
               'Home',
               'Carrinho',
@@ -880,7 +880,7 @@ void main() {
             }
             expect(
               Navigator.of(
-                tester.element(find.text('Conferir sacola')),
+                tester.element(find.text('Conferir ingressos')),
                 rootNavigator: true,
               ).canPop(),
               isFalse,
@@ -995,7 +995,7 @@ void main() {
           await tester.pump(const Duration(milliseconds: 500));
           await tester.pump();
           expect(find.text('Setor: Pista'), findsNothing);
-          expect(find.text('Conferir sacola'), findsNothing);
+          expect(find.text('Conferir ingressos'), findsNothing);
           expect(find.byType(ParticipantesReservaScreen), findsNothing);
           expect(find.byType(EscolhaPagamentoScreen), findsNothing);
           expect(find.byType(PixPagamentoScreen), findsNothing);
@@ -1196,7 +1196,7 @@ void main() {
             expect(find.text('12345678909'), findsOneWidget);
             await tester.tap(find.byIcon(Icons.arrow_back));
             await tester.pumpAndSettle();
-            expect(find.text('Conferir sacola'), findsNothing);
+            expect(find.text('Conferir ingressos'), findsNothing);
           }
           expect(requests.where((r) => r.method == 'DELETE'), isEmpty);
         },

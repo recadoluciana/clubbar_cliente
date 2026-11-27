@@ -667,9 +667,9 @@ class _ParticipantesReservaScreenState
       onPopInvokedWithResult: (_, _) {},
       child: Scaffold(
         appBar: ClubbarAppBar(
-          titulo: widget.onRemoverIngresso == null ? widget.loja.nome : 'Conferir sacola',
-          iconeTitulo: widget.onRemoverIngresso == null ? null : Icons.shopping_bag_outlined,
-          corIconeTitulo: Colors.amber,
+          titulo: widget.onRemoverIngresso == null ? widget.loja.nome : 'Conferir ingressos',
+          iconeTitulo: widget.onRemoverIngresso == null ? null : Icons.confirmation_number_rounded,
+          corIconeTitulo: Colors.blue,
           tituloAlinhadoEsquerda: widget.onRemoverIngresso != null,
           mostrarVoltar: true,
           mostrarSessao: false,
