@@ -235,7 +235,7 @@ void main() {
         expect(find.text('Conferir sacola'), findsOneWidget);
         expect(find.text('1x Inteira'), findsOneWidget);
         for (final item in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
-          expect(find.text(item), findsOneWidget);
+          expect(find.text(item), findsNothing);
         }
         await tester.tap(find.text('Continuar - Informar participante'));
         await tester.pumpAndSettle();
@@ -247,7 +247,7 @@ void main() {
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(find.text('Conferir sacola'), findsOneWidget);
-        expect(find.text('Home'), findsOneWidget);
+        expect(find.text('Home'), findsNothing);
         await tester.tap(find.byIcon(Icons.arrow_back));
         await tester.pumpAndSettle();
         expect(find.text('Inteira'), findsOneWidget);
@@ -258,7 +258,7 @@ void main() {
         await tester.tap(find.byTooltip('Continuar para participantes'));
         await tester.pumpAndSettle();
         expect(find.text('1x Inteira'), findsOneWidget);
-        expect(find.text('Home'), findsOneWidget);
+        expect(find.text('Home'), findsNothing);
         await tester.binding.handlePopRoute();
         await tester.pumpAndSettle();
         expect(find.text('Comprar ingresso'), findsOneWidget);
@@ -275,7 +275,6 @@ void main() {
 
   for (final origem in [
     'setor',
-    'sacola',
     'participantes',
     'pagamento',
     'pix Mercado Pago',
@@ -298,7 +297,7 @@ void main() {
               'Carteira',
               'Cora responde',
             ]) {
-              expect(find.text(item), findsOneWidget);
+              expect(find.text(item), findsNothing);
             }
             expect(
               Navigator.of(

@@ -70,8 +70,53 @@ class DetalheEventoScreen extends StatefulWidget {
   State<DetalheEventoScreen> createState() => _NavegacaoEventoState();
 }
 
+class _ObservadorNavegacaoEvento extends NavigatorObserver {
+  bool _ativo = true;
+
+  void encerrar() {
+    _ativo = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      MainNavigationController.ocultarBarra.value = false;
+    });
+  }
+
+  void _atualizar(Route<dynamic>? rota) {
+    final ocultar = rota?.settings.name == 'conferir-sacola';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_ativo) MainNavigationController.ocultarBarra.value = ocultar;
+    });
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _atualizar(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _atualizar(previousRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _atualizar(previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    _atualizar(newRoute);
+  }
+}
+
 class _NavegacaoEventoState extends State<DetalheEventoScreen> {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  final _observador = _ObservadorNavegacaoEvento();
+
+  @override
+  void dispose() {
+    _observador.encerrar();
+    super.dispose();
+  }
 
   void _voltar() {
     final navigator = _navigatorKey.currentState;
@@ -92,6 +137,7 @@ class _NavegacaoEventoState extends State<DetalheEventoScreen> {
       },
       child: Navigator(
         key: _navigatorKey,
+        observers: [_observador],
         onGenerateRoute: (_) => MaterialPageRoute<void>(
           settings: const RouteSettings(name: 'detalhe-evento'),
           builder: (_) => _DetalheEventoConteudo(
@@ -805,7 +851,18 @@ class _ConferenciaSacolaScreenState extends State<_ConferenciaSacolaScreen> {
     );
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Conferir sacola'),
+        centerTitle: false,
+        titleSpacing: 8,
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.shopping_bag_outlined, color: Colors.amber, size: 22),
+            SizedBox(width: 8),
+            Flexible(
+              child: Text('Conferir sacola', overflow: TextOverflow.ellipsis),
+            ),
+          ],
+        ),
         leading: IconButton(
           tooltip: 'Voltar',
           icon: const Icon(Icons.arrow_back),
