@@ -748,18 +748,33 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    _informacaoIngresso(
-                      icone: Icons.event_outlined,
-                      titulo: 'Horário evento',
-                      valor: horario,
-                      corIcone: Colors.blue.shade700,
-                    ),
-                    const SizedBox(height: 6),
-                    _informacaoIngresso(
-                      icone: Icons.place_outlined,
-                      titulo: 'Local',
-                      valor: local,
-                      corIcone: Colors.blue.shade700,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        children: [
+                          _informacaoIngresso(
+                            icone: Icons.event_outlined,
+                            titulo: 'Horário evento',
+                            valor: horario,
+                            corIcone: Colors.blue.shade700,
+                          ),
+                          const SizedBox(height: 10),
+                          _informacaoIngresso(
+                            icone: Icons.place_outlined,
+                            titulo: 'Local',
+                            valor: local,
+                            corIcone: Colors.blue.shade700,
+                          ),
+                        ],
+                      ),
                     ),
                     if (onAbrir != null) ...[
                       const SizedBox(height: 12),
@@ -932,7 +947,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         Tooltip(
                           message: 'Transferir participante',
                           child: SizedBox(
-                            width: constraints.maxWidth < 320 ? 44 : 96,
+                            width: constraints.maxWidth < 320 ? 80 : 96,
                             child: OutlinedButton(
                               onPressed: () =>
                                   _abrirDialogAlterarParticipante(item),
@@ -950,25 +965,18 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: constraints.maxWidth < 320
-                                  ? const Icon(
-                                      Icons.swap_horiz_rounded,
-                                      size: 20,
-                                    )
-                                  : const Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.swap_horiz_rounded,
-                                          size: 18,
-                                        ),
-                                        Text(
-                                          'Transferir participante',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(fontSize: 11),
-                                        ),
-                                      ],
-                                    ),
+                              child: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.swap_horiz_rounded, size: 18),
+                                  Text(
+                                    'Transferir\nparticipante',
+                                    semanticsLabel: 'Transferir participante',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 11),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -1198,51 +1206,43 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     required String valor,
     Color? corIcone,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Icon(icone, size: 18, color: corIcone ?? Colors.grey.shade700),
-          const SizedBox(width: 7),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titulo,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
+    return Row(
+      children: [
+        Icon(icone, size: 18, color: corIcone ?? Colors.grey.shade700),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                titulo,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 2),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 3,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      valor,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                      ),
+              ),
+              const SizedBox(height: 2),
+              Wrap(
+                spacing: 6,
+                runSpacing: 3,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    valor,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1287,11 +1287,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _eventoCard(
-            ingressos,
-            eventoOriginal: evento,
-            larguraTotal: true,
-          ),
+          _eventoCard(ingressos, eventoOriginal: evento, larguraTotal: true),
           if (ingressos.isNotEmpty)
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
