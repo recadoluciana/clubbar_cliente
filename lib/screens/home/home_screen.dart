@@ -310,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: loja.aberto24x7 ? Colors.green.shade700 : cor.shade50,
+            color: cor.shade50,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -318,7 +318,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: loja.aberto24x7 ? Colors.white : cor.shade700,
+              color: cor.shade700,
               fontSize: 11,
               fontWeight: loja.aberto24x7 ? FontWeight.w800 : FontWeight.w600,
             ),
