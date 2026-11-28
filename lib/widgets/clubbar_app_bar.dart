@@ -67,22 +67,21 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image(
+              image: AssetImage('assets/images/corujao.png'),
+              width: 36,
+              height: 36,
+              fit: BoxFit.contain,
+            ),
+            SizedBox(width: 4),
+            Image(
               image: ExactAssetImage('assets/images/logo1.png', scale: 10),
               width: 124,
               height: 36,
               fit: BoxFit.none,
               semanticLabel: 'Clubbar',
             ),
-            SizedBox(width: 4),
-            Image(
-              image: AssetImage('assets/images/corujao.png'),
-              width: 36,
-              height: 36,
-              fit: BoxFit.contain,
-            ),
           ],
         ),
-        mostrarIconeSessao: false,
       );
 
   // 🔥 AQUI ESTÁ O SEGREDO
@@ -148,7 +147,9 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
           if (!mostrarPerfil) return const SizedBox.shrink();
           final nome = ConstrainedBox(
             constraints: BoxConstraints(
-              maxWidth: mostrarHome && MediaQuery.sizeOf(context).width < 420
+              maxWidth: logoAlinhadaEsquerda
+                  ? (MediaQuery.sizeOf(context).width - 220).clamp(60.0, 180.0)
+                  : mostrarHome && MediaQuery.sizeOf(context).width < 420
                   ? 64
                   : 80,
             ),
