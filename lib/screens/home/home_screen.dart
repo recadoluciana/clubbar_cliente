@@ -298,7 +298,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             : aberto
             ? Colors.green
             : Colors.red;
-        final texto = aberto == null
+        final texto = loja.aberto24x7
+            ? 'Aberto 24 horas (seg-dom)'
+            : aberto == null
             ? snapshot.connectionState == ConnectionState.waiting
                   ? 'Consultando horário'
                   : 'Horário indisponível'
@@ -308,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: cor.shade50,
+            color: loja.aberto24x7 ? Colors.green.shade700 : cor.shade50,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -316,9 +318,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: cor.shade700,
+              color: loja.aberto24x7 ? Colors.white : cor.shade700,
               fontSize: 11,
-              fontWeight: FontWeight.w600,
+              fontWeight: loja.aberto24x7 ? FontWeight.w800 : FontWeight.w600,
             ),
           ),
         );
@@ -1436,38 +1438,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             ],
                                           ),
                                           const SizedBox(height: 3),
-                                          Row(
+                                          Wrap(
+                                            spacing: 8,
+                                            runSpacing: 4,
+                                            crossAxisAlignment: WrapCrossAlignment.center,
                                             children: [
                                               if (loja.nrtelloja
                                                   .trim()
-                                                  .isNotEmpty) ...[
-                                                const Icon(
-                                                  Icons.phone_outlined,
-                                                  size: 14,
-                                                ),
-                                                const SizedBox(width: 5),
-                                                Flexible(
-                                                  child: Text(
-                                                    _telefoneFormatado(
-                                                      loja.nrtelloja,
+                                                  .isNotEmpty)
+                                                Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.phone_outlined,
+                                                      size: 14,
                                                     ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                    style: TextStyle(
-                                                      color:
-                                                          Colors.grey.shade700,
-                                                      fontSize: 11,
+                                                    const SizedBox(width: 5),
+                                                    Text(
+                                                      _telefoneFormatado(loja.nrtelloja),
+                                                      style: TextStyle(
+                                                        color: Colors.grey.shade700,
+                                                        fontSize: 11,
+                                                      ),
                                                     ),
-                                                  ),
+                                                  ],
                                                 ),
-                                                const SizedBox(width: 8),
-                                              ],
-                                              Flexible(
-                                                child: _statusFuncionamento(
-                                                  loja,
-                                                ),
-                                              ),
+                                              _statusFuncionamento(loja),
                                             ],
                                           ),
                                         ],
