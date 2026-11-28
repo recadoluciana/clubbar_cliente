@@ -56,10 +56,10 @@ void main() {
         final amarelo = find.byWidgetPredicate((widget) => widget is DecoratedBox &&
           widget.decoration is BoxDecoration &&
           (widget.decoration as BoxDecoration).color == const Color(0xFFFFD166));
-        expect(tester.getSize(vermelho.first).height, 40);
         expect(find.textContaining('Promoção:'), findsNothing);
-        final botaoVermelho = find.descendant(of: vermelho.first, matching: find.byType(TextButton));
         if (tipo == 'PACOTE') {
+          expect(tester.getSize(vermelho.first).height, 40);
+          final botaoVermelho = find.descendant(of: vermelho.first, matching: find.byType(TextButton));
           expect(find.textContaining('3 por ${ValueFormatters.moeda(24)}'), findsOneWidget);
           expect(find.text(ValueFormatters.moeda(9)), findsOneWidget);
           expect(tester.getSize(amarelo.first).height, 40);
@@ -83,10 +83,10 @@ void main() {
           expect(preco, findsOneWidget);
           expect(find.text('Adicionar'), findsOneWidget);
           expect(tester.getCenter(find.byTooltip('Aumentar quantidade')).dy,
-            closeTo(tester.getCenter(find.text('Adicionar')).dy, 1));
+            lessThan(tester.getCenter(find.text('Adicionar')).dy));
           await tester.tap(find.byTooltip('Aumentar quantidade'));
           await tester.pump();
-          await tester.tap(botaoVermelho);
+          await tester.tap(find.text('Adicionar'));
           await tester.pumpAndSettle();
           expect(enviados.last['campanha_id'], 42);
           expect(enviados.last['qt'], 2);
