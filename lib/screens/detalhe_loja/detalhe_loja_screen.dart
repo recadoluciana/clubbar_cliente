@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -137,7 +138,7 @@ class _DetalheLojaScreenState extends State<DetalheLojaScreen> {
     }
   }
 
-  Future<void> _compartilharLoja() async {
+  Future<void> _compartilharLoja(BuildContext botaoContext) async {
     final cidadeEstado = loja.sgEstado.isNotEmpty
         ? '${loja.cidade} - ${loja.sgEstado}'
         : loja.cidade;
@@ -159,23 +160,104 @@ $cidadeEstado
 ${AppConfig.appWebUrl}/?loja_id=${loja.id}
 ''';
 
-    try {
-      await Share.share(texto, subject: 'Conheça ${loja.nome} no Clubbar');
-    } catch (_) {
-      // Alguns navegadores de computador não disponibilizam a folha nativa de
-      // compartilhamento. Neles, copiar o conteúdo mantém a ação utilizável.
-      try {
-        await Clipboard.setData(ClipboardData(text: texto));
-        if (!mounted) return;
-        AppSnackBar.sucesso(
-          context,
-          'O link da loja foi copiado. Cole-o no WhatsApp, e-mail ou onde preferir.',
-        );
-      } catch (_) {
-        if (!mounted) return;
-        AppSnackBar.erro(context, 'Não foi possível compartilhar esta loja.');
-      }
-    }
+    final convite = texto.trim();
+    final caixa = botaoContext.findRenderObject();
+    final origem = caixa is RenderBox && caixa.hasSize
+        ? caixa.localToGlobal(Offset.zero) & caixa.size
+        : null;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            const Expanded(child: Text('Compartilhar estabelecimento')),
+            IconButton(
+              tooltip: 'Fechar',
+              onPressed: () => Navigator.pop(dialogContext),
+              icon: const Icon(Icons.close_rounded),
+            ),
+          ],
+        ),
+        content: const Text('Escolha como deseja enviar o convite.'),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton.icon(
+                  onPressed: () async {
+                    try {
+                      await Clipboard.setData(ClipboardData(text: convite));
+                      if (!dialogContext.mounted || !mounted) return;
+                      Navigator.pop(dialogContext);
+                      AppSnackBar.sucesso(
+                        context,
+                        'Convite copiado. Agora é só colar onde desejar.',
+                      );
+                    } catch (_) {
+                      if (mounted) {
+                        AppSnackBar.erro(context, 'Não foi possível copiar o convite.');
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.copy),
+                  label: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('Copiar convite', maxLines: 1),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () async {
+                    try {
+                      final abriu = await launchUrl(
+                        Uri.https('wa.me', '/', {'text': convite}),
+                        mode: LaunchMode.externalApplication,
+                      );
+                      if (!dialogContext.mounted || !mounted) return;
+                      if (abriu) {
+                        Navigator.pop(dialogContext);
+                      } else {
+                        AppSnackBar.erro(context, 'Não foi possível abrir o WhatsApp. Você pode copiar o convite.');
+                      }
+                    } catch (_) {
+                      if (mounted) {
+                        AppSnackBar.erro(context, 'Não foi possível abrir o WhatsApp. Você pode copiar o convite.');
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.send),
+                  label: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('Compartilhar WhatsApp', maxLines: 1),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (!kIsWeb)
+            TextButton.icon(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                try {
+                  await Share.share(
+                    convite,
+                    subject: 'Conheça ${loja.nome} no Clubbar',
+                    sharePositionOrigin: origem,
+                  );
+                } catch (_) {
+                  if (mounted) {
+                    AppSnackBar.erro(context, 'Não foi possível compartilhar esta loja.');
+                  }
+                }
+              },
+              icon: const Icon(Icons.ios_share_rounded),
+              label: const Text('Mais opções'),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _imagemRede({
@@ -231,6 +313,7 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
               ),
             ),
             Positioned(
+              left: 20,
               bottom: 0,
               child: Container(
                 width: 98,
@@ -252,6 +335,26 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     url: loja.imagemUrl,
                     fit: BoxFit.cover,
                     fallbackIcon: Icons.local_bar_rounded,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 20,
+              bottom: 24,
+              child: Builder(
+                builder: (botaoContext) => ElevatedButton.icon(
+                  onPressed: () => _compartilharLoja(botaoContext),
+                  icon: const Icon(Icons.ios_share, size: 18),
+                  label: const Text('Compartilhar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.blue,
+                    elevation: 4,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                    ),
                   ),
                 ),
               ),
@@ -509,12 +612,6 @@ ${AppConfig.appWebUrl}/?loja_id=${loja.id}
                     const Icon(Icons.location_on_outlined),
                     const SizedBox(width: 8),
                     Expanded(child: Text(_enderecoCompleto())),
-                    IconButton(
-                      tooltip: 'Compartilhar ${loja.nome}',
-                      onPressed: _compartilharLoja,
-                      color: Colors.blue.shade700,
-                      icon: const Icon(Icons.ios_share_rounded, size: 28),
-                    ),
                   ],
                 ),
 
