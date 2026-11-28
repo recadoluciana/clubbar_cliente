@@ -189,7 +189,7 @@ class _TelaSelecaoIngressos extends StatefulWidget {
   final int Function() totalSelecionado;
   final Future<void> Function() onComprar;
   final Future<void> Function() onAtualizar;
-  final Widget Function(List<EventoLote>, VoidCallback) construirSetor;
+  final Widget Function(List<EventoLote>, VoidCallback, bool) construirSetor;
   final Widget Function(List<EventoLote>, VoidCallback, bool) construirModalidades;
 
   const _TelaSelecaoIngressos({
@@ -357,6 +357,7 @@ class _TelaSelecaoIngressosState extends State<_TelaSelecaoIngressos> {
                         (opcoes.first.loteGlobalId == 0 ? opcoes.first.loteId : opcoes.first.loteGlobalId) &&
                       item.nomeSetor.trim().toLowerCase() == opcoes.first.nomeSetor.trim().toLowerCase()).toList(),
                     () => setState(() => _idsSelecionados = opcoes.map((item) => item.lotePrecoId).toSet()),
+                    _somenteCortesia,
                   )),
                 ],
               ],
@@ -2560,7 +2561,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
           totalSelecionado: () => _totalSelecionado + (int.tryParse('${_compraEvento?['quantidade'] ?? 0}') ?? 0),
           onComprar: _comprarSelecionados,
           onAtualizar: atualizarLotes,
-          construirSetor: (opcoes, selecionar) => _cardSelecaoSetor(opcoes, onSelecionar: selecionar),
+          construirSetor: (opcoes, selecionar, somenteCortesia) => _cardSelecaoSetor(opcoes, onSelecionar: selecionar, somenteCortesia: somenteCortesia),
           construirModalidades: (opcoes, voltar, setorUnico) => _ModalidadesIngressoScreen(
             opcoes: opcoes,
             somenteCortesia: opcoes.every(_ehCortesia),
@@ -2590,7 +2591,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
     if (mounted) await carregarStatusLotes();
   }
 
-  Widget _cardSelecaoSetor(List<EventoLote> opcoes, {required VoidCallback onSelecionar}) {
+  Widget _cardSelecaoSetor(List<EventoLote> opcoes, {required VoidCallback onSelecionar, required bool somenteCortesia}) {
     final lote = opcoes.first;
     final restantes = lote.qtDisponivel;
     final agora = HorarioBrasil.agora();
@@ -2643,7 +2644,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                       '$restantes ${restantes == 1 ? 'restante' : 'restantes'}',
                       style: const TextStyle(fontSize: 12, color: Colors.blue),
                     ),
-                    if (precos.isNotEmpty) ...[
+                    if (!somenteCortesia && precos.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         precos.first == precos.last
@@ -2652,7 +2653,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                         style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
                       ),
                     ],
-                    if (temCortesiaDisponivel) ...[
+                    if (!somenteCortesia && temCortesiaDisponivel) ...[
                       const SizedBox(height: 4),
                       Row(
                         children: [
