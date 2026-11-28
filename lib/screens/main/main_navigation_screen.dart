@@ -157,20 +157,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Widget _barraNavegacao(Widget? telaInterna) {
     final carrinhoAberto =
-        (telaInterna == null && currentIndex == 1) ||
-        telaInterna is CarrinhoLojasScreen ||
-        telaInterna is CarrinhoScreen;
-    final carrinhoPrincipal =
-        (telaInterna == null && currentIndex == 1) ||
-        telaInterna is CarrinhoLojasScreen;
+        telaInterna is CarrinhoLojasScreen || telaInterna is CarrinhoScreen;
     final carteiraAberta =
-        (telaInterna == null && currentIndex == 2) ||
         telaInterna is CarteiraScreen ||
         telaInterna is CarteiraIngressosScreen ||
         telaInterna is CarteiraLojaScreen;
-    final carteiraPrincipal =
-        (telaInterna == null && currentIndex == 2) ||
-        (telaInterna is CarteiraScreen && telaInterna.lojaSelecionadaId == null);
     final coraAtiva = telaInterna is AtendimentoCoraScreen;
     final carteiraDaLoja =
         telaInterna is CarteiraScreen && telaInterna.lojaSelecionadaId != null;
@@ -182,18 +173,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         telaInterna is DetalheEventoScreen ||
         carteiraDaLoja ||
         carrinhoDaLoja;
-    final homeSelecionada =
-        currentIndex == 0 &&
-        !coraAtiva &&
-        !carteiraDaLoja &&
-        !carteiraAberta &&
-        !carrinhoDaLoja;
-    final carrinhoSelecionado =
-        (currentIndex == 1 || carrinhoDaLoja || carrinhoPrincipal) &&
-        !coraAtiva &&
-        !carteiraAberta;
-    final carteiraSelecionada =
-        (currentIndex == 2 || carteiraDaLoja || carteiraPrincipal) && !coraAtiva;
+    final abaSelecionada = coraAtiva
+        ? 3
+        : carteiraAberta
+        ? 2
+        : carrinhoAberto
+        ? 1
+        : currentIndex;
+    final homeSelecionada = abaSelecionada == 0;
+    final carrinhoSelecionado = abaSelecionada == 1;
+    final carteiraSelecionada = abaSelecionada == 2;
 
     return Container(
       decoration: BoxDecoration(
@@ -222,45 +211,43 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 estaSelecionado: homeSelecionada,
               ),
 
-              if (!carrinhoAberto || carrinhoPrincipal)
-                _itemBarraNavegacao(
-                  index: 1,
-                  icone: _iconeCarrinhoComBadge(
-                    selecionado: carrinhoSelecionado,
-                    usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
-                  ),
-                  texto: 'Carrinho',
-                  estaSelecionado: carrinhoSelecionado,
-                  onTap: telaInterna is DetalheLojaScreen
-                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                      : telaInterna is AgendaEventosScreen
-                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                      : telaInterna is ProdutosLojaScreen
-                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                      : telaInterna is DetalheEventoScreen
-                      ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
-                      : null,
+              _itemBarraNavegacao(
+                index: 1,
+                icone: _iconeCarrinhoComBadge(
+                  selecionado: carrinhoSelecionado,
+                  usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
                 ),
+                texto: 'Carrinho',
+                estaSelecionado: carrinhoSelecionado,
+                onTap: telaInterna is DetalheLojaScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : telaInterna is AgendaEventosScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : telaInterna is ProdutosLojaScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : telaInterna is DetalheEventoScreen
+                    ? () => _abrirCarrinhoDaLoja(telaInterna.loja)
+                    : null,
+              ),
 
-              if (!carteiraAberta || carteiraPrincipal)
-                _itemBarraNavegacao(
-                  index: 2,
-                  icone: _iconeCarteiraComBadge(
-                    selecionado: carteiraSelecionada,
-                    usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
-                  ),
-                  texto: 'Carteira',
-                  estaSelecionado: carteiraSelecionada,
-                  onTap: telaInterna is DetalheLojaScreen
-                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                      : telaInterna is AgendaEventosScreen
-                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                      : telaInterna is ProdutosLojaScreen
-                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                      : telaInterna is DetalheEventoScreen
-                      ? () => _abrirCarteiraDaLoja(telaInterna.loja)
-                      : null,
+              _itemBarraNavegacao(
+                index: 2,
+                icone: _iconeCarteiraComBadge(
+                  selecionado: carteiraSelecionada,
+                  usarQuantidadeDaLoja: exibirQuantidadeDaLoja,
                 ),
+                texto: 'Carteira',
+                estaSelecionado: carteiraSelecionada,
+                onTap: telaInterna is DetalheLojaScreen
+                    ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                    : telaInterna is AgendaEventosScreen
+                    ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                    : telaInterna is ProdutosLojaScreen
+                    ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                    : telaInterna is DetalheEventoScreen
+                    ? () => _abrirCarteiraDaLoja(telaInterna.loja)
+                    : null,
+              ),
 
               Expanded(
                 child: ApiStatusIndicator(

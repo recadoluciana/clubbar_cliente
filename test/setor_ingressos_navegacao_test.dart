@@ -5,6 +5,7 @@ import 'package:clubbar_cliente/screens/atendimento_cora/atendimento_cora_screen
 import 'package:clubbar_cliente/screens/carrinho/carrinho_lojas_screen.dart';
 import 'package:clubbar_cliente/screens/carrinho/carrinho_screen.dart';
 import 'package:clubbar_cliente/screens/carteira/carteira_screen.dart';
+import 'package:clubbar_cliente/screens/carteira/carteira_ingressos_screen.dart';
 import 'package:clubbar_cliente/screens/detalhe_evento/detalhe_evento_screen.dart';
 import 'package:clubbar_cliente/screens/detalhe_evento/participantes_reserva_screen.dart';
 import 'package:clubbar_cliente/screens/detalhe_loja/detalhe_loja_screen.dart';
@@ -57,6 +58,41 @@ void main() {
       );
     }
     MainNavigationController.irParaHome();
+  });
+
+  testWidgets('carteira de ingressos mantém os quatro destinos na barra', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    MainNavigationController.abrirTela(CarteiraIngressosScreen(
+      nomeLoja: 'Produtora',
+      logoLoja: '',
+      nomeCliente: 'Cliente',
+      itens: const [],
+      onAtualizar: null,
+      onVoltar: MainNavigationController.fecharTelaInterna,
+    ));
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const MaterialApp(home: MainNavigationScreen()));
+      await tester.pumpAndSettle();
+      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold).first);
+      final barra = find.byWidget(scaffold.bottomNavigationBar!);
+      for (final opcao in ['Home', 'Carrinho', 'Carteira', 'Cora responde']) {
+        final atalho = find.descendant(of: barra, matching: find.text(opcao));
+        expect(atalho.hitTestable(), findsOneWidget);
+      }
+      expect(
+        find.descendant(of: barra, matching: find.byIcon(Icons.account_balance_wallet)),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Carteira'));
+      await tester.pumpAndSettle();
+      expect(find.byType(CarteiraScreen), findsOneWidget);
+      await tester.pumpWidget(const SizedBox.shrink());
+    }, () => MockClient((_) async => http.Response('{}', 200)));
   });
 
   Future<void> executar(
