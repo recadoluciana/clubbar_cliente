@@ -669,6 +669,7 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
     Map<String, dynamic>? eventoOriginal,
     VoidCallback? onAbrir,
     bool larguraTotal = false,
+    bool mostrarInformacoesEvento = true,
   }) {
     final evento = ingressos.isEmpty ? eventoOriginal! : ingressos.first;
     final nome = _primeiroTexto(evento, const [
@@ -695,7 +696,9 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           child: Material(
-            color: Colors.amber.shade50,
+            color: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            elevation: 2,
             clipBehavior: Clip.antiAlias,
             shape: RoundedRectangleBorder(
               borderRadius: larguraTotal
@@ -747,35 +750,37 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
+                    if (mostrarInformacoesEvento) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          children: [
+                            _informacaoIngresso(
+                              icone: Icons.event_outlined,
+                              titulo: 'Horário evento',
+                              valor: horario,
+                              corIcone: Colors.blue.shade700,
+                            ),
+                            const SizedBox(height: 10),
+                            _informacaoIngresso(
+                              icone: Icons.place_outlined,
+                              titulo: 'Local',
+                              valor: local,
+                              corIcone: Colors.blue.shade700,
+                            ),
+                          ],
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Column(
-                        children: [
-                          _informacaoIngresso(
-                            icone: Icons.event_outlined,
-                            titulo: 'Horário evento',
-                            valor: horario,
-                            corIcone: Colors.blue.shade700,
-                          ),
-                          const SizedBox(height: 10),
-                          _informacaoIngresso(
-                            icone: Icons.place_outlined,
-                            titulo: 'Local',
-                            valor: local,
-                            corIcone: Colors.blue.shade700,
-                          ),
-                        ],
-                      ),
-                    ),
+                      ],
                     if (onAbrir != null) ...[
                       const SizedBox(height: 12),
                       Row(
@@ -1280,7 +1285,12 @@ class _CarteiraIngressosScreenState extends State<CarteiraIngressosScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _eventoCard(ingressos, eventoOriginal: evento, larguraTotal: true),
+          _eventoCard(
+            ingressos,
+            eventoOriginal: evento,
+            larguraTotal: true,
+            mostrarInformacoesEvento: false,
+          ),
           if (ingressos.isNotEmpty)
             const Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
