@@ -62,3 +62,4 @@ build/web/
 # OUTROS
 # =========================
 *.lock
+!pubspec.lock

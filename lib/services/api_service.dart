@@ -443,6 +443,29 @@ class ApiService {
     }
   }
 
+  Future<int> girarEAdicionarProduto({
+    required int campanhaId,
+    required int clienteId,
+    required int lojaId,
+    required int produtoId,
+    required int cardapioItemId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/girar-e-adicionar'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'loja_id': lojaId,
+        'produto_id': produtoId,
+        'cardapioitem_id': cardapioItemId,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(_extrairMensagemHttp(response));
+    }
+    return jsonDecode(response.body)['percentual_desconto'] as int;
+  }
+
   Future<void> adicionarAoCarrinho({
     required int clienteId,
     required int organizacaoId,

@@ -47,6 +47,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   final Map<int, Map<String, dynamic>> _promocoesPercentuaisPorProduto = {};
   final Map<int, Map<String, dynamic>> _cortesiasPorProduto = {};
   final Map<int, Map<String, dynamic>> _pacotesPorProduto = {};
+  final Map<int, int> _campanhasRoleta = {};
 
   final TextEditingController _buscaController = TextEditingController();
   String termoBusca = '';
@@ -72,7 +73,8 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final preco = produto.descontoativo
         ? produto.vrprecofinal
         : produto.vrprecoprod;
-    return (produto.descontoativo && preco > 0) ||
+    return (_campanhasRoleta.containsKey(produto.produtoId) && preco > 0) ||
+        (produto.descontoativo && preco > 0) ||
         (percentual > 0 && percentual < 100) ||
         (quantidade >= 2 && valor > 0) ||
         cortesiaAtiva ||
@@ -143,6 +145,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
       _promocoesPercentuaisPorProduto.clear();
       _cortesiasPorProduto.clear();
       _pacotesPorProduto.clear();
+      _campanhasRoleta.clear();
       final ofertas = await apiService.beneficiosProdutosAtivos(
         lojaId: widget.loja.id,
         clienteId: clienteId,
@@ -156,6 +159,9 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
           _cortesiasPorProduto[produtoId] = oferta;
         } else if (oferta['tipo'] == 'PACOTE') {
           _pacotesPorProduto[produtoId] = oferta;
+        } else if (oferta['tipo'] == 'ROLETA') {
+          final campanhaId = int.tryParse('${oferta['campanha_id']}');
+          if (campanhaId != null) _campanhasRoleta[produtoId] = campanhaId;
         }
       }
       final categoriasComProdutos = produtos
@@ -242,6 +248,32 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
 
       if (!mounted) return;
       CartBadgeNotifier.atualizarItensDaLojaSelecionada(0);
+    }
+  }
+
+  Future<void> _girarEAdicionar(Produto produto, int campanhaId) async {
+    final cliente = clienteId;
+    if (cliente == null || cliente == 0) {
+      await direcionarParaLogin(context, mensagem: 'Entre para girar a roleta.');
+      return;
+    }
+    final cardapioItemId = produto.cardapioItemId;
+    if (cardapioItemId == null || produtosEmAlteracao.contains(cardapioItemId)) return;
+    setState(() => produtosEmAlteracao.add(cardapioItemId));
+    try {
+      final percentual = await apiService.girarEAdicionarProduto(
+        campanhaId: campanhaId, clienteId: cliente, lojaId: widget.loja.id,
+        produtoId: produto.produtoId, cardapioItemId: cardapioItemId,
+      );
+      if (!mounted) return;
+      AppSnackBar.sucesso(context, percentual == 0
+          ? '1 unidade de ${produto.nmproduto} adicionada sem desconto.'
+          : '1 unidade de ${produto.nmproduto} adicionada com $percentual% de desconto.');
+      await carregarQuantidadeCarrinho();
+    } catch (e) {
+      if (mounted) AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
+    } finally {
+      if (mounted) setState(() => produtosEmAlteracao.remove(cardapioItemId));
     }
   }
 
@@ -760,6 +792,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
   }
 
   Widget _cardProdutoLista(Produto produto) {
+    final campanhaRoletaId = _campanhasRoleta[produto.produtoId];
     final temDesconto = produto.descontoativo;
 
     final precoAtual = temDesconto ? produto.vrprecofinal : produto.vrprecoprod;
@@ -931,6 +964,15 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 ],
                               ),
 
+                              if (!ehCortesia && produto.cardapioItemId != null &&
+                                  campanhaRoletaId != null)
+                                TextButton.icon(
+                                  onPressed: vendasHabilitadas && !resgatandoCortesia
+                                      ? () => _girarEAdicionar(produto, campanhaRoletaId)
+                                      : null,
+                                  icon: const Icon(Icons.casino_outlined),
+                                  label: const Text('Girar e adicionar 1'),
+                                ),
                               if (produto.dsproduto.trim().isNotEmpty) ...[
                                 const SizedBox(height: 4),
                                 Text(

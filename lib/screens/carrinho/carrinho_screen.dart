@@ -85,6 +85,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   int? clienteId;
   int? carrinhoId;
   bool alterandoQuantidade = false;
+  bool abrindoPagamento = false;
   bool resgatandoCortesia = false;
   List<ItemCarrinho> itensCarrinho = [];
 
@@ -506,6 +507,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
   }
 
   Future<void> abrirEscolhaPagamento() async {
+    if (abrindoPagamento || alterandoQuantidade || resgatandoCortesia) return;
     if (itensCarrinho.isEmpty) {
       AppSnackBar.aviso(context, 'Seu carrinho está vazio.');
       return;
@@ -525,13 +527,14 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       await _resgatarCortesia();
       return;
     }
+    setState(() => abrindoPagamento = true);
     try {
       final totalProdutos = itensCarrinho.fold<double>(0, (soma, item) => soma + item.precoFinal * item.quantidade);
       final lojaAtualizada = await apiService.buscarDadosLoja(widget.loja.id);
 
       if (!mounted) return;
 
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (_) => EscolhaPagamentoScreen(
@@ -547,6 +550,8 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
         context,
         apiService.mensagemErroAmigavel(e),
       );
+    } finally {
+      if (mounted) setState(() => abrindoPagamento = false);
     }
   }
 
@@ -931,7 +936,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
     return SizedBox(
       height: 42,
       child: ElevatedButton(
-        onPressed: resgatandoCortesia ? null : abrirEscolhaPagamento,
+        onPressed: abrindoPagamento || alterandoQuantidade || resgatandoCortesia
+            ? null
+            : abrirEscolhaPagamento,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
           foregroundColor: Colors.white,
@@ -978,7 +985,9 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
           ? const Center(child: CircularProgressIndicator())
           : erro != null
           ? _erroWidget()
-          : Column(
+          : IgnorePointer(
+              ignoring: abrindoPagamento || resgatandoCortesia,
+              child: Column(
               children: [
                 Expanded(
                   child: RefreshIndicator(
@@ -1010,6 +1019,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                   ),
                 ),
               ],
+              ),
             ),
 
       bottomNavigationBar: carregando || erro != null || vazio

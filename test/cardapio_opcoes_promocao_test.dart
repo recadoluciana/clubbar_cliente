@@ -10,7 +10,7 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  for (final tipo in ['PACOTE', 'PERCENTUAL']) {
+  for (final tipo in ['PACOTE', 'PERCENTUAL', 'ROLETA']) {
     testWidgets('opções de $tipo enviam campanha apenas para promoção', (tester) async {
       tester.view.physicalSize = const Size(320, 900);
       tester.view.devicePixelRatio = 1;
@@ -20,6 +20,7 @@ void main() {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
         const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'), (_) async => 'token');
       final enviados = <Map<String, dynamic>>[];
+      final giros = <Map<String, dynamic>>[];
       final cliente = MockClient((request) async {
         final path = request.url.path;
         Object data = <String, dynamic>{};
@@ -42,6 +43,9 @@ void main() {
           data = {'qt_total': 0};
         } else if (path == '/carrinho/adicionar') {
           enviados.add(Map<String, dynamic>.from(jsonDecode(request.body)));
+        } else if (path == '/beneficios-produtos/42/girar-e-adicionar') {
+          giros.add(Map<String, dynamic>.from(jsonDecode(request.body)));
+          data = {'percentual_desconto': 10};
         }
         return http.Response(jsonEncode(data), 200, headers: {'content-type': 'application/json'});
       });
@@ -50,6 +54,18 @@ void main() {
           loja: Loja.fromJson({'loja_id': 2, 'organizacao_id': 1, 'nmloja': 'Teste'}))));
         await tester.pumpAndSettle();
         expect(find.text('Produto teste'), findsOneWidget);
+        if (tipo == 'ROLETA') {
+          final girar = find.text('Girar e adicionar 1');
+          for (var i = 0; i < 2; i++) {
+            await tester.tap(girar);
+            await tester.pumpAndSettle();
+          }
+          const produto = {'cliente_id': 1, 'loja_id': 2, 'produto_id': 10, 'cardapioitem_id': 11};
+          expect(giros, [produto, produto]);
+          expect(enviados, isEmpty);
+          await tester.pumpWidget(const SizedBox.shrink());
+          return;
+        }
         final vermelho = find.byWidgetPredicate((widget) => widget is DecoratedBox &&
           widget.decoration is BoxDecoration &&
           (widget.decoration as BoxDecoration).color == const Color(0xFFE57373));
