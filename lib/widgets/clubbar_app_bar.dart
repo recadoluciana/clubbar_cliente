@@ -26,8 +26,9 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool mostrarPerfil;
   final bool mostrarIconeSessao;
   final bool logoAlinhadaEsquerda;
+  final Widget? logoEsquerda;
   final bool mostrarLogo;
-  final bool mostrarCorujaAoLadoDoTitulo;
+  final bool mostrarCorujaNoFinal;
   final bool mostrarLogoPequenaEsquerdaComTitulo;
   final bool tituloAlinhadoEsquerda;
 
@@ -51,11 +52,27 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.mostrarPerfil = true,
     this.mostrarIconeSessao = true,
     this.logoAlinhadaEsquerda = false,
+    this.logoEsquerda,
     this.mostrarLogo = true,
-    this.mostrarCorujaAoLadoDoTitulo = false,
+    this.mostrarCorujaNoFinal = false,
     this.mostrarLogoPequenaEsquerdaComTitulo = false,
     this.tituloAlinhadoEsquerda = false,
   });
+
+  const ClubbarAppBar.inicio({Key? key})
+    : this(
+        key: key,
+        logoAlinhadaEsquerda: true,
+        logoEsquerda: const Image(
+          // Mostra a marca central da arte original, que tem margens pretas.
+          image: ExactAssetImage('assets/images/logo1.png', scale: 10),
+          width: 124,
+          height: 36,
+          fit: BoxFit.none,
+          semanticLabel: 'Clubbar',
+        ),
+        mostrarCorujaNoFinal: true,
+      );
 
   // 🔥 AQUI ESTÁ O SEGREDO
   @override
@@ -310,7 +327,11 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                     ],
                   )
           : logoAlinhadaEsquerda
-          ? _logoClubbar()
+          ? FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: logoEsquerda ?? _logoClubbar(),
+            )
           : null,
 
       flexibleSpace: temTitulo || logoAlinhadaEsquerda || !mostrarLogo
@@ -333,18 +354,6 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
 
       actions: [
-        if (mostrarCorujaAoLadoDoTitulo)
-          SizedBox(
-            width: kToolbarHeight,
-            child: Center(
-              child: Image.asset(
-                'assets/images/corujao.png',
-                width: 28,
-                height: 28,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
         ...actions,
         if (mostrarCarrinho && carrinhoAntesDaSessao) _acaoCarrinho(),
         if (mostrarSessao) _botaoSessao(context),
@@ -362,6 +371,17 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+          ),
+        if (mostrarCorujaNoFinal)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 12),
+            child: Image.asset(
+              'assets/images/corujao.png',
+              width: 36,
+              height: 36,
+              fit: BoxFit.contain,
+              excludeFromSemantics: true,
             ),
           ),
       ],
