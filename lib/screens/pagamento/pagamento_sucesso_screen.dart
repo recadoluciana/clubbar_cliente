@@ -11,6 +11,7 @@ import '../../services/main_navigation_controller.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../detalhe_loja/detalhe_loja_screen.dart';
 import '../main/main_navigation_screen.dart';
+import '../produtos_loja/produtos_loja_screen.dart';
 
 class PagamentoSucessoScreen extends StatefulWidget {
   final bool sucesso;
@@ -19,6 +20,7 @@ class PagamentoSucessoScreen extends StatefulWidget {
   final String? descricaoSucesso;
   final String tituloAppBar;
   final Loja? lojaDestino;
+  final bool oferecerCardapio;
 
   const PagamentoSucessoScreen({
     super.key,
@@ -28,6 +30,7 @@ class PagamentoSucessoScreen extends StatefulWidget {
     this.descricaoSucesso,
     this.tituloAppBar = 'Pagamento',
     this.lojaDestino,
+    this.oferecerCardapio = false,
   });
 
   static void abrirResgate(
@@ -110,6 +113,21 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
     );
   }
 
+  void _abrirCardapio() {
+    final loja = widget.lojaDestino;
+    if (loja == null) return;
+    final naNavegacaoPrincipal =
+        context.findAncestorWidgetOfExactType<MainNavigationScreen>() != null;
+    MainNavigationController.limparTelasInternas();
+    MainNavigationController.abrirTela(DetalheLojaScreen(loja: loja));
+    MainNavigationController.abrirTela(ProdutosLojaScreen(loja: loja));
+    if (naNavegacaoPrincipal) return;
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final sucesso = widget.sucesso;
@@ -131,7 +149,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (sucesso) ...[
+                  if (sucesso && !widget.oferecerCardapio) ...[
                     ScaleTransition(
                       scale: Tween<double>(begin: .85, end: 1).animate(
                         CurvedAnimation(
@@ -164,20 +182,43 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 92,
-                          height: 92,
-                          decoration: BoxDecoration(
-                            color: (sucesso ? Colors.green : Colors.red)
-                                .withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
+                        if (widget.oferecerCardapio && sucesso)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('🎉', style: TextStyle(fontSize: 52)),
+                              Container(
+                                width: 76,
+                                height: 76,
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.12),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 56,
+                                ),
+                              ),
+                            ],
+                          )
+                        else
+                          Container(
+                            width: 92,
+                            height: 92,
+                            decoration: BoxDecoration(
+                              color: (sucesso ? Colors.green : Colors.red)
+                                  .withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              sucesso
+                                  ? Icons.check_circle
+                                  : Icons.error_outline,
+                              color: sucesso ? Colors.green : Colors.red,
+                              size: 64,
+                            ),
                           ),
-                          child: Icon(
-                            sucesso ? Icons.check_circle : Icons.error_outline,
-                            color: sucesso ? Colors.green : Colors.red,
-                            size: 64,
-                          ),
-                        ),
 
                         const SizedBox(height: 20),
 
@@ -243,34 +284,76 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
 
                         const SizedBox(height: 26),
 
-                        SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton.icon(
-                            onPressed: _voltarAoApp,
-                            icon: Icon(
-                              widget.lojaDestino == null
-                                  ? Icons.home
-                                  : Icons.storefront_outlined,
+                        if (sucesso &&
+                            widget.oferecerCardapio &&
+                            widget.lojaDestino != null) ...[
+                          const Text(
+                            'Deseja conhecer nossa lista de produtos à venda para este evento/bar?',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
                             ),
-                            label: Text(
-                              widget.lojaDestino == null
-                                  ? 'Ir para Home'
-                                  : 'Voltar para ${widget.lojaDestino!.nome}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: ElevatedButton(
+                              onPressed: _abrirCardapio,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
+                              child: const Text(
+                                'Sim, ver cardápio',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: TextButton(
+                              onPressed: _voltarAoApp,
+                              child: const Text('Não, voltar para a loja'),
+                            ),
+                          ),
+                        ] else
+                          SizedBox(
+                            width: double.infinity,
+                            height: 54,
+                            child: ElevatedButton.icon(
+                              onPressed: _voltarAoApp,
+                              icon: Icon(
+                                widget.lojaDestino == null
+                                    ? Icons.home
+                                    : Icons.storefront_outlined,
+                              ),
+                              label: Text(
+                                widget.lojaDestino == null
+                                    ? 'Ir para Home'
+                                    : 'Voltar para ${widget.lojaDestino!.nome}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
