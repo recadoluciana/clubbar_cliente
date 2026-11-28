@@ -49,9 +49,11 @@ void main() {
           ),
         );
         expect(marca.left, closeTo(16, 1));
-        expect(marca.right, lessThan(sessao.left));
-        expect(sessao.right, lessThan(coruja.left));
-        expect(coruja.right, closeTo(largura - 12, 1));
+        expect(marca.right, lessThan(coruja.left));
+        expect(coruja.right, lessThan(sessao.left));
+        if (logado) {
+          expect(find.byIcon(Icons.person_rounded), findsNothing);
+        }
       }
     });
   }

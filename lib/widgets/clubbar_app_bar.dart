@@ -63,15 +63,26 @@ class ClubbarAppBar extends StatelessWidget implements PreferredSizeWidget {
     : this(
         key: key,
         logoAlinhadaEsquerda: true,
-        logoEsquerda: const Image(
-          // Mostra a marca central da arte original, que tem margens pretas.
-          image: ExactAssetImage('assets/images/logo1.png', scale: 10),
-          width: 124,
-          height: 36,
-          fit: BoxFit.none,
-          semanticLabel: 'Clubbar',
+        logoEsquerda: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image(
+              image: ExactAssetImage('assets/images/logo1.png', scale: 10),
+              width: 124,
+              height: 36,
+              fit: BoxFit.none,
+              semanticLabel: 'Clubbar',
+            ),
+            SizedBox(width: 4),
+            Image(
+              image: AssetImage('assets/images/corujao.png'),
+              width: 36,
+              height: 36,
+              fit: BoxFit.contain,
+            ),
+          ],
         ),
-        mostrarCorujaNoFinal: true,
+        mostrarIconeSessao: false,
       );
 
   // 🔥 AQUI ESTÁ O SEGREDO
