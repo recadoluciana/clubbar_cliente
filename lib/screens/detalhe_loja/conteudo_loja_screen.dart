@@ -286,20 +286,20 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
       appBar: ClubbarAppBar(
-        titulo: loja.nome,
+        titulo: 'Conteúdo do estabelecimento',
+        tituloAlinhadoEsquerda: true,
         mostrarVoltar: true,
         mostrarSessao: false,
       ),
       body: Column(
         children: [
           ClubbarPageHeader(
-            titulo: 'Conteúdo do estabelecimento',
+            titulo: loja.nome,
             subtitulo: '',
             imagemAvatarUrl: loja.imagemUrl,
             icone: Icons.storefront_rounded,
             tamanhoAvatar: 52,
             maxLinhasTitulo: 2,
-            conteudoInferior: _contatosLoja(loja),
           ),
           Expanded(
             child: _carregando
@@ -326,6 +326,7 @@ class _ConteudoLojaScreenState extends State<ConteudoLojaScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
+                        _contatosLoja(loja),
                         if (vazio)
                           _card(
                             child: const Column(
