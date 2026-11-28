@@ -131,6 +131,9 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
   @override
   Widget build(BuildContext context) {
     final sucesso = widget.sucesso;
+    final oferecerCardapio = sucesso &&
+        widget.lojaDestino != null &&
+        (widget.oferecerCardapio || widget.tituloAppBar == 'Pagamento');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6F6),
@@ -149,7 +152,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (sucesso && !widget.oferecerCardapio) ...[
+                  if (sucesso && !oferecerCardapio) ...[
                     ScaleTransition(
                       scale: Tween<double>(begin: .85, end: 1).animate(
                         CurvedAnimation(
@@ -182,7 +185,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (widget.oferecerCardapio && sucesso)
+                        if (oferecerCardapio)
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -284,9 +287,7 @@ class _PagamentoSucessoScreenState extends State<PagamentoSucessoScreen>
 
                         const SizedBox(height: 26),
 
-                        if (sucesso &&
-                            widget.oferecerCardapio &&
-                            widget.lojaDestino != null) ...[
+                        if (oferecerCardapio) ...[
                           const Text(
                             'Deseja conhecer nossa lista de produtos à venda para este evento/bar?',
                             textAlign: TextAlign.center,
