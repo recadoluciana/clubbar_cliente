@@ -1868,6 +1868,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         tituloAppBar: evento?.titulo ?? 'Evento',
         tituloSucesso: 'Resgate realizado com sucesso',
         descricaoSucesso: 'Seu ingresso está disponível na Carteira.',
+        oferecerCardapio: true,
       ),
     ));
   }
