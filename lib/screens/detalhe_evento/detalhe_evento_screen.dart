@@ -3000,7 +3000,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                                   ? () => _abrirSelecaoIngressos(somenteCortesia: true)
                                   : null,
                               icon: const Icon(Icons.card_giftcard_outlined),
-                              label: const Text('Resgate agora a sua cortesia'),
+                              label: const Text('Resgate sua cortesia'),
                               style: FilledButton.styleFrom(
                                 backgroundColor: Colors.green.shade700,
                                 foregroundColor: Colors.white,
@@ -3017,7 +3017,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                                   ? () => _abrirSelecaoIngressos()
                                   : null,
                               icon: const Icon(Icons.confirmation_number_outlined),
-                              label: const Text('Compre agora o seu ingresso'),
+                              label: const Text('Compre seu ingresso'),
                               style: FilledButton.styleFrom(
                                 backgroundColor: Colors.blue,
                                 foregroundColor: Colors.white,
@@ -3034,7 +3034,7 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                                       )
                                   : null,
                               icon: const Icon(Icons.shopping_bag_outlined),
-                              label: const Text('Compre produtos para consumir no local'),
+                              label: const Text('Compre produtos para consumir'),
                               style: FilledButton.styleFrom(
                                 backgroundColor: Colors.amber,
                                 foregroundColor: Colors.black,
