@@ -970,14 +970,20 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                             ),
                                           ),
                                   ),
-                                  if (!temPacote && !temPromocaoPercentual)
+                                  if (!temPacote || temPromocaoPercentual)
                                     Column(
                                       mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment: CrossAxisAlignment.end,
                                       children: [
                                         _controleQuantidadeProduto(produto),
                                         const SizedBox(height: 5),
-                                        _botaoAdicionarProduto(produto),
+                                        _botaoAdicionarProduto(
+                                          produto,
+                                          promocao: temPromocaoPercentual,
+                                          campanhaId: int.tryParse(
+                                            '${campanhaPercentual?['campanha_id']}',
+                                          ),
+                                        ),
                                       ],
                                     ),
                                 ],
@@ -1044,7 +1050,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                     label: const Text('Girar'),
                   ),
                 ),
-              if (temPacote || temPromocaoPercentual)
+              if (temPacote)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                   child: _opcoesDeCompra(
@@ -1103,7 +1109,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final chave = _chaveItemCardapio(produto);
     final podeComprar = vendasHabilitadas && !produtosEmAlteracao.contains(chave);
     final pacoteId = int.tryParse('${campanhaPacote?['campanha_id']}');
-    final percentualId = int.tryParse('${campanhaPercentual?['campanha_id']}');
 
     Widget adicionar(VoidCallback? acao, Color cor, {String texto = 'Adicionar'}) => TextButton.icon(
       onPressed: acao,
@@ -1153,16 +1158,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
 
     if (temPromocaoPercentual) {
-      return Column(
-        children: [
-          if (temPacote) ...[pacote(), const SizedBox(height: 8)],
-          quantidadeComAdicionar(
-            fundo: const Color(0xFFE57373), cor: Colors.white,
-            acao: !podeComprar || percentualId == null ? null : () => adicionarProdutoAoCarrinho(
-              produto, quantidade: quantidadesSelecionadas[chave] ?? 1, campanhaId: percentualId),
-          ),
-        ],
-      );
+      return pacote();
     }
     return Row(
       children: [
@@ -1194,10 +1190,16 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     );
   }
 
-  Widget _botaoAdicionarProduto(Produto produto) {
+  Widget _botaoAdicionarProduto(
+    Produto produto, {
+    bool promocao = false,
+    int? campanhaId,
+  }) {
     final chave = _chaveItemCardapio(produto);
     final podeComprar =
-        vendasHabilitadas && !produtosEmAlteracao.contains(chave);
+        vendasHabilitadas &&
+        !produtosEmAlteracao.contains(chave) &&
+        (!promocao || campanhaId != null);
     return SizedBox(
       height: 34,
       child: ElevatedButton.icon(
@@ -1206,12 +1208,13 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
             : () => adicionarProdutoAoCarrinho(
                 produto,
                 quantidade: quantidadesSelecionadas[chave] ?? 1,
+                campanhaId: campanhaId,
               ),
         icon: const Icon(Icons.add_shopping_cart_rounded, size: 16),
         label: const Text('Adicionar'),
         style: _estiloBotaoProduto(
-          fundo: const Color(0xFFFFD166),
-          texto: Colors.black,
+          fundo: promocao ? const Color(0xFFE57373) : const Color(0xFFFFD166),
+          texto: promocao ? Colors.white : Colors.black,
           tamanhoFonte: 11,
         ),
       ),
