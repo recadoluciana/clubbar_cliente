@@ -48,11 +48,15 @@ void main() {
             matching: find.image(const AssetImage('assets/images/corujao.png')),
           ),
         );
-        expect(marca.left, closeTo(16, 1));
-        expect(marca.right, lessThan(coruja.left));
-        expect(coruja.right, lessThan(sessao.left));
+        expect(coruja.left, closeTo(16, 1));
+        expect(coruja.right, lessThan(marca.left));
+        expect(marca.right, lessThan(sessao.left));
         if (logado) {
-          expect(find.byIcon(Icons.person_rounded), findsNothing);
+          final icone = tester.widget<Icon>(find.byIcon(Icons.person_rounded));
+          expect(icone.color, Colors.amber);
+          expect(tester.getRect(find.byIcon(Icons.person_rounded)).right,
+              lessThan(sessao.left));
+          if (largura == 500) expect(sessao.width, greaterThan(80));
         }
       }
     });
