@@ -1070,6 +1070,8 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
   bool carregando = true;
   bool atualizandoLotes = false;
   bool processandoCompra = false;
+  bool _produtosDisponiveis = false;
+  int _consultaProdutos = 0;
   String? erro;
 
   EventoDetalhe? evento;
@@ -1441,7 +1443,9 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
       carregando = true;
       erro = null;
       _statusLotes.clear();
+      _produtosDisponiveis = false;
     });
+    unawaited(_verificarProdutosDisponiveis());
 
     try {
       final resultados = await Future.wait([
@@ -1465,6 +1469,26 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
         erro = e.toString().replaceFirst('Exception: ', '');
         carregando = false;
       });
+    }
+  }
+
+  Future<void> _verificarProdutosDisponiveis() async {
+    final consulta = ++_consultaProdutos;
+    try {
+      final cardapio = await apiService.buscarCardapioPublicado(widget.loja.id);
+      final categorias = cardapio['categorias'] as List? ?? const [];
+      final disponivel = cardapio['vendas_habilitadas'] != false &&
+          categorias.whereType<Map>().any((categoria) =>
+              (categoria['itens'] as List? ?? const []).whereType<Map>().any(
+                (item) => '${item['sitproduto'] ?? ''}'.toUpperCase() == 'ATIVO',
+              ));
+      if (mounted && consulta == _consultaProdutos) {
+        setState(() => _produtosDisponiveis = disponivel);
+      }
+    } catch (_) {
+      if (mounted && consulta == _consultaProdutos) {
+        setState(() => _produtosDisponiveis = false);
+      }
     }
   }
 
@@ -2967,109 +2991,55 @@ class _DetalheEventoScreenState extends State<_DetalheEventoConteudo> {
                               ),
                             ),
                           ),
-                          if (lotes.any(_ehCortesia))
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: SizedBox(width: double.infinity, child: FilledButton.icon(
-                                onPressed: () => _abrirSelecaoIngressos(somenteCortesia: true),
-                                icon: const Icon(Icons.card_giftcard_outlined, size: 18),
-                                label: const Text('Resgatar cortesia'),
-                                style: FilledButton.styleFrom(backgroundColor: Colors.green.shade700, foregroundColor: Colors.white),
-                              )),
-                            ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              if (lotes.any((lote) => !_ehCortesia(lote)))
-                                Flexible(
-                                  child: SizedBox(
-                                    width: double.infinity,
-                                    height: 38,
-                                    child: FilledButton.icon(
-                                      onPressed: () => _abrirSelecaoIngressos(),
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 6,
-                                        ),
-                                        minimumSize: const Size(0, 38),
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                      icon: const Icon(
-                                        Icons.confirmation_number_outlined,
-                                        size: 16,
-                                      ),
-                                      label: const FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          'Comprar ingresso',
-                                          maxLines: 1,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              if (!lotes.any((lote) => !_ehCortesia(lote))) const Spacer(),
-                              if (lotes.any((lote) => !_ehCortesia(lote))) const SizedBox(width: 10),
-                              Flexible(
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  height: 38,
-                                  child: FilledButton.icon(
-                                    onPressed: () {
-                                      MainNavigationController.abrirTela(
-                                        ProdutosLojaScreen(loja: widget.loja),
-                                      );
-                                    },
-                                    style: FilledButton.styleFrom(
-                                      backgroundColor: Colors.amber,
-                                      foregroundColor: Colors.black,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      minimumSize: const Size(0, 38),
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    icon: const Icon(
-                                      Icons.shopping_bag_outlined,
-                                      size: 16,
-                                    ),
-                                    label: const FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'Cardápio',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w700,
-                                            ),
-                                          ),
-                                          Text(
-                                            'Comprar produto',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w800,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: lotes.any((lote) =>
+                                      _ehCortesia(lote) &&
+                                      lote.podeComprarEm(HorarioBrasil.agora()))
+                                  ? () => _abrirSelecaoIngressos(somenteCortesia: true)
+                                  : null,
+                              icon: const Icon(Icons.card_giftcard_outlined),
+                              label: const Text('Resgate agora a sua cortesia'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.green.shade700,
+                                foregroundColor: Colors.white,
                               ),
-                            ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: lotes.any((lote) =>
+                                      !_ehCortesia(lote) &&
+                                      lote.podeComprarEm(HorarioBrasil.agora()))
+                                  ? () => _abrirSelecaoIngressos()
+                                  : null,
+                              icon: const Icon(Icons.confirmation_number_outlined),
+                              label: const Text('Compre agora o seu ingresso'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: _produtosDisponiveis
+                                  ? () => MainNavigationController.abrirTela(
+                                        ProdutosLojaScreen(loja: widget.loja),
+                                      )
+                                  : null,
+                              icon: const Icon(Icons.shopping_bag_outlined),
+                              label: const Text('Compre produtos para consumir no local'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.black,
+                              ),
+                            ),
                           ),
                           const SizedBox(height: 6),
                           Text(
