@@ -476,7 +476,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
                           ? 'Adicionar outro pacote'
                           : 'Aumentar quantidade')
                     : item.beneficioResgateId != null
-                    ? 'Desconto da roleta válido para uma unidade'
+                    ? 'Benefício válido para uma unidade'
                     : ehCortesia
                     ? 'Cortesia limitada a 1 unidade por transação'
                     : 'Adicione outro ingresso pela agenda',
@@ -521,18 +521,12 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
       return;
     }
 
-    double totalProdutos = 0;
-
-    for (final item in itensCarrinho) {
-      totalProdutos += item.precoFinal * item.quantidade;
-    }
-
-    if (totalProdutos <= 0) {
+    if (total <= 0) {
       await _resgatarCortesia();
       return;
     }
-
     try {
+      final totalProdutos = itensCarrinho.fold<double>(0, (soma, item) => soma + item.precoFinal * item.quantidade);
       final lojaAtualizada = await apiService.buscarDadosLoja(widget.loja.id);
 
       if (!mounted) return;
@@ -551,7 +545,7 @@ class _CarrinhoScreenState extends State<CarrinhoScreen> {
 
       AppSnackBar.erro(
         context,
-        'Erro ao buscar dados da loja: ${apiService.mensagemErroAmigavel(e)}',
+        apiService.mensagemErroAmigavel(e),
       );
     }
   }
