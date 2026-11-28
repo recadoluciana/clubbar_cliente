@@ -16,6 +16,8 @@ import '../models/evento_lote.dart';
 
 import 'package:clubbar_cliente/config/app_config.dart';
 
+typedef ResultadoGiro = ({int resgateId, int percentual});
+
 class ApiService {
   static final String baseUrl = AppConfig.apiBaseUrl;
 
@@ -443,7 +445,7 @@ class ApiService {
     }
   }
 
-  Future<int> girarEAdicionarProduto({
+  Future<ResultadoGiro> sortearProduto({
     required int campanhaId,
     required int clienteId,
     required int lojaId,
@@ -451,7 +453,7 @@ class ApiService {
     required int cardapioItemId,
   }) async {
     final response = await http.post(
-      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/girar-e-adicionar'),
+      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/sortear'),
       headers: await _headersAutenticado(),
       body: jsonEncode({
         'cliente_id': clienteId,
@@ -463,7 +465,44 @@ class ApiService {
     if (response.statusCode != 200) {
       throw Exception(_extrairMensagemHttp(response));
     }
-    return jsonDecode(response.body)['percentual_desconto'] as int;
+    final dados = jsonDecode(response.body);
+    final percentual = dados['percentual_desconto'];
+    if (percentual is! int || !const [0, 10, 20].contains(percentual)) {
+      throw const FormatException('Resultado da roleta inválido.');
+    }
+    return (resgateId: dados['resgate_id'] as int, percentual: percentual);
+  }
+
+  Future<void> confirmarGiro({
+    required int campanhaId,
+    required int resgateId,
+    required int clienteId,
+    required int lojaId,
+    required int produtoId,
+    required int cardapioItemId,
+    required int precoCentavos,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/premios/$resgateId/confirmar'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({
+        'cliente_id': clienteId,
+        'loja_id': lojaId,
+        'produto_id': produtoId,
+        'cardapioitem_id': cardapioItemId,
+        'preco_confirmado': (precoCentavos / 100).toStringAsFixed(2),
+      }),
+    );
+    if (response.statusCode != 200) throw Exception(_extrairMensagemHttp(response));
+  }
+
+  Future<void> dispensarGiro(int campanhaId, int resgateId, int clienteId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/beneficios-produtos/$campanhaId/premios/$resgateId/dispensar'),
+      headers: await _headersAutenticado(),
+      body: jsonEncode({'cliente_id': clienteId}),
+    );
+    if (response.statusCode != 200) throw Exception(_extrairMensagemHttp(response));
   }
 
   Future<void> adicionarAoCarrinho({

@@ -13,6 +13,7 @@ import '../../utils/login_redirect.dart';
 import '../../widgets/clubbar_app_bar.dart';
 import '../../services/main_navigation_controller.dart';
 import 'produto_compartilhado_screen.dart';
+import 'roleta_produto_dialog.dart';
 import '../../utils/categoria_icon_utils.dart';
 import '../../widgets/clubbar_contact_links.dart';
 
@@ -251,7 +252,7 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     }
   }
 
-  Future<void> _girarEAdicionar(Produto produto, int campanhaId) async {
+  Future<void> _abrirRoleta(Produto produto, int campanhaId) async {
     final cliente = clienteId;
     if (cliente == null || cliente == 0) {
       await direcionarParaLogin(context, mensagem: 'Entre para girar a roleta.');
@@ -260,15 +261,33 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
     final cardapioItemId = produto.cardapioItemId;
     if (cardapioItemId == null || produtosEmAlteracao.contains(cardapioItemId)) return;
     setState(() => produtosEmAlteracao.add(cardapioItemId));
+    Future<ResultadoGiro>? sorteio;
     try {
-      final percentual = await apiService.girarEAdicionarProduto(
-        campanhaId: campanhaId, clienteId: cliente, lojaId: widget.loja.id,
-        produtoId: produto.produtoId, cardapioItemId: cardapioItemId,
+      final confirmado = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => RoletaProdutoDialog(
+          produto: produto.nmproduto,
+          precoBase: produto.descontoativo ? produto.vrprecofinal : produto.vrprecoprod,
+          sortear: () => sorteio ??= apiService.sortearProduto(
+            campanhaId: campanhaId, clienteId: cliente, lojaId: widget.loja.id,
+            produtoId: produto.produtoId, cardapioItemId: cardapioItemId,
+          ),
+          confirmar: (resgateId, precoCentavos) => apiService.confirmarGiro(
+            campanhaId: campanhaId, resgateId: resgateId, clienteId: cliente,
+            lojaId: widget.loja.id, produtoId: produto.produtoId,
+            cardapioItemId: cardapioItemId, precoCentavos: precoCentavos,
+          ),
+          mensagemErro: apiService.mensagemErroAmigavel,
+        ),
       );
+      if (confirmado != true) {
+        final giro = await sorteio;
+        if (giro != null) await apiService.dispensarGiro(campanhaId, giro.resgateId, cliente);
+        return;
+      }
       if (!mounted) return;
-      AppSnackBar.sucesso(context, percentual == 0
-          ? '1 unidade de ${produto.nmproduto} adicionada sem desconto.'
-          : '1 unidade de ${produto.nmproduto} adicionada com $percentual% de desconto.');
+      AppSnackBar.sucesso(context, '1 unidade de ${produto.nmproduto} adicionada.');
       await carregarQuantidadeCarrinho();
     } catch (e) {
       if (mounted) AppSnackBar.erro(context, apiService.mensagemErroAmigavel(e));
@@ -964,15 +983,6 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                                 ],
                               ),
 
-                              if (!ehCortesia && produto.cardapioItemId != null &&
-                                  campanhaRoletaId != null)
-                                TextButton.icon(
-                                  onPressed: vendasHabilitadas && !resgatandoCortesia
-                                      ? () => _girarEAdicionar(produto, campanhaRoletaId)
-                                      : null,
-                                  icon: const Icon(Icons.casino_outlined),
-                                  label: const Text('Girar e adicionar 1'),
-                                ),
                               if (produto.dsproduto.trim().isNotEmpty) ...[
                                 const SizedBox(height: 4),
                                 Text(
@@ -1022,6 +1032,18 @@ class _ProdutosLojaScreenState extends State<ProdutosLojaScreen> {
                   ),
                 ),
               ),
+              if (precoAtual > 0 && produto.cardapioItemId != null && campanhaRoletaId != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: OutlinedButton.icon(
+                    onPressed: vendasHabilitadas && !resgatandoCortesia
+                        ? () => _abrirRoleta(produto, campanhaRoletaId)
+                        : null,
+                    icon: Image.asset(imagemRoleta, width: 48, height: 48,
+                      semanticLabel: 'Roleta de descontos'),
+                    label: const Text('Girar'),
+                  ),
+                ),
               if (temPacote || temPromocaoPercentual)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),

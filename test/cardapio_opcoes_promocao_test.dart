@@ -21,6 +21,8 @@ void main() {
         const MethodChannel('plugins.it_nomads.com/flutter_secure_storage'), (_) async => 'token');
       final enviados = <Map<String, dynamic>>[];
       final giros = <Map<String, dynamic>>[];
+      final confirmacoes = <Map<String, dynamic>>[];
+      final descartados = <String>[];
       final cliente = MockClient((request) async {
         final path = request.url.path;
         Object data = <String, dynamic>{};
@@ -43,9 +45,15 @@ void main() {
           data = {'qt_total': 0};
         } else if (path == '/carrinho/adicionar') {
           enviados.add(Map<String, dynamic>.from(jsonDecode(request.body)));
-        } else if (path == '/beneficios-produtos/42/girar-e-adicionar') {
+        } else if (path == '/beneficios-produtos/42/sortear') {
           giros.add(Map<String, dynamic>.from(jsonDecode(request.body)));
-          data = {'percentual_desconto': 10};
+          data = {'resgate_id': giros.length, 'percentual_desconto': [0, 10, 20][giros.length - 1]};
+        } else if (path.endsWith('/confirmar')) {
+          confirmacoes.add({'path': path, ...jsonDecode(request.body) as Map});
+        } else if (path.endsWith('/dispensar')) {
+          descartados.add(path);
+        } else if (path.endsWith('/girar-e-adicionar')) {
+          fail('Girar não pode adicionar o produto.');
         }
         return http.Response(jsonEncode(data), 200, headers: {'content-type': 'application/json'});
       });
@@ -55,13 +63,32 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Produto teste'), findsOneWidget);
         if (tipo == 'ROLETA') {
-          final girar = find.text('Girar e adicionar 1');
-          for (var i = 0; i < 2; i++) {
-            await tester.tap(girar);
+          expect(find.bySemanticsLabel('Roleta de descontos'), findsWidgets);
+          const produto = {'cliente_id': 1, 'loja_id': 2, 'produto_id': 10, 'cardapioitem_id': 11};
+          for (var i = 0; i < 3; i++) {
+            await tester.tap(find.text('Girar'));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 200));
+            expect(find.text('Girando…'), findsOneWidget);
+            expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirmar')).onPressed, isNull);
+            final roda = find.descendant(of: find.byType(AlertDialog), matching: find.byType(RotationTransition));
+            final antes = tester.widget<RotationTransition>(roda).turns.value;
+            await tester.pump(const Duration(milliseconds: 300));
+            expect(tester.widget<RotationTransition>(roda).turns.value, greaterThan(antes));
+            await tester.pump(const Duration(seconds: 3));
+            await tester.pump();
+            expect(giros.length, i + 1);
+            expect(find.text(i == 0 ? 'Sem desconto neste giro' : '${i * 10}% de desconto'), findsOneWidget);
+            expect(confirmacoes.length, i < 2 ? 0 : 1);
+            await tester.tap(find.text(i == 0 ? 'Cancelar' : 'Confirmar'));
             await tester.pumpAndSettle();
           }
-          const produto = {'cliente_id': 1, 'loja_id': 2, 'produto_id': 10, 'cardapioitem_id': 11};
-          expect(giros, [produto, produto]);
+          expect(giros, [produto, produto, produto]);
+          expect(descartados, ['/beneficios-produtos/42/premios/1/dispensar']);
+          expect(confirmacoes, [
+            {...produto, 'path': '/beneficios-produtos/42/premios/2/confirmar', 'preco_confirmado': '8.10'},
+            {...produto, 'path': '/beneficios-produtos/42/premios/3/confirmar', 'preco_confirmado': '7.20'},
+          ]);
           expect(enviados, isEmpty);
           await tester.pumpWidget(const SizedBox.shrink());
           return;
